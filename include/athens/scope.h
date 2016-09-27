@@ -16,10 +16,6 @@ public:
 
 private:
     IdentifierTable m_identifier_table;
-    Scope *m_parent;
-
-    /** Use std::list to avoid pointer invalidation */
-    std::list<Scope> m_inner_scopes;
 };
 
 #endif

@@ -4,8 +4,8 @@
 #include <fstream>
 
 AstLocalImport::AstLocalImport(const std::string &path, const SourceLocation &location)
-    : m_path(path), 
-      AstImport(location)
+    : AstImport(location),
+      m_path(path)
 {
 }
 

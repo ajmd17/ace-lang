@@ -12,6 +12,8 @@ public:
 
     inline const std::string &GetName() const { return m_name; }
 
+    virtual void Visit(AstVisitor *visitor) = 0;
+
 protected:
     std::string m_name;
 };

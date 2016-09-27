@@ -3,10 +3,12 @@
 
 #include <athens/ast/ast_statement.h>
 
-class Expression : public AstStatement {
+class AstExpression : public AstStatement {
 public:
-    Expression(const SourceLocation &location);
-    virtual ~Expression() = default;
+    AstExpression(const SourceLocation &location);
+    virtual ~AstExpression() = default;
+
+    virtual void Visit(AstVisitor *visitor) = 0;
 };
 
 #endif

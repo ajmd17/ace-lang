@@ -1,9 +1,10 @@
-#ifndef STACK_TREE_H
-#define STACK_TREE_H
+#ifndef TREE_H
+#define TREE_H
 
 #include <vector>
 #include <ostream>
 #include <sstream>
+#include <iostream>
 #include <stack>
 #include <string>
 
@@ -74,6 +75,18 @@ public:
                 delete m_nodes[i];
             }
         }
+    }
+
+    inline const TreeNode<T> *TopNode() const {
+        return m_top;
+    }
+
+    inline T &Top()
+    {
+        if (!m_top) {
+            throw std::runtime_error("no top value");
+        }
+        return m_top->m_value;
     }
 
     inline const T &Top() const 

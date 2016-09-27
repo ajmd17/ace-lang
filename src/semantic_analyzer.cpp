@@ -28,10 +28,16 @@ void SemanticAnalyzer::Analyze()
             // all files must begin with a module declaration
             module_declaration->Visit(this);
             m_compilation_unit->m_module_index++;
+            
+            // open global scope
+            m_compilation_unit->CurrentModule()->m_scopes.Open(Scope());
 
             while (m_ast_iterator.HasNext()) {
                 m_ast_iterator.Next()->Visit(this);
             }
+
+            // close global scope
+            m_compilation_unit->CurrentModule()->m_scopes.Close();
 
             // decrement the index to refer to the previous module
             m_compilation_unit->m_module_index--;

@@ -3,23 +3,12 @@
 #include <athens/compilation_unit.h>
 #include <athens/ast/ast_module_declaration.h>
 #include <athens/emit/instruction.h>
-#include <athens/stack_tree.h>
+#include <athens/tree.h>
 
 #include <iostream>
 
 int main()
 {
-    Tree<int> *mytree = new Tree<int>();
-    mytree->Open(4);
-    mytree->Open(2);
-    mytree->Close();
-    mytree->Close();
-    mytree->Open(7);
-    mytree->Close();
-    mytree->operator<<(std::cout);
-    delete mytree;
-
-
     AstModuleDeclaration *module_declaration = new AstModuleDeclaration("mymodule", SourceLocation(0, 0, "blah"));
     AstModuleDeclaration *module_declaration2 = new AstModuleDeclaration("mymodule", SourceLocation(5, 4, "blah"));
 

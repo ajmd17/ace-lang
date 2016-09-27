@@ -24,7 +24,7 @@ public:
     /** all modules contained in the compilation unit */
     std::vector<std::unique_ptr<Module>> m_modules;
     /** the index of the current, active module in m_modules */
-    size_t m_module_index;
+    int m_module_index;
 
 private:
     ErrorList m_error_list;

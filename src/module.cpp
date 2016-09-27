@@ -4,30 +4,27 @@ Module::Module(const std::string &name, const SourceLocation &location)
     : m_name(name),
       m_location(location)
 {
-    // add the global scope
-    m_scopes.push_back(Scope());
-    m_current_scope = &m_scopes.back();
 }
 
-Module::Module(const Module &other)
-    : m_name(other.m_name),
-      m_location(other.m_location),
-      m_scopes(other.m_scopes)
+const Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_only) const
 {
-}
+    const TreeNode<Scope> *top = m_scopes.TopNode();
 
-Scope *Module::OpenScope()
-{
-    /*m_current_scope->m_inner_scopes.push_back(Scope());
-    Scope *new_scope = &m_current_scope->m_inner_scopes.back();
-    new_scope->m_parent = m_current_scope;
-    m_current_scope = new_scope;
-    return m_current_scope;*/
-    return nullptr;
-}
+    while (top != nullptr) {
+        const Identifier *result = 
+            top->m_value.GetIdentifierTable().LookUpIdentifier(name);
 
-Scope *Module::CloseScope()
-{
-   // Scope *parent_scope = m_current_scope->m_parent;
+        if (result != nullptr) {
+            // a result was found
+            return result;
+        }
+
+        if (this_scope_only) {
+            break;
+        }
+
+        top = top->m_parent;
+    }
+
     return nullptr;
 }

@@ -1,11 +1,13 @@
 #include <athens/identifier_table.h>
 
 IdentifierTable::IdentifierTable()
+    : m_identifier_index(0)
 {
 }
 
 IdentifierTable::IdentifierTable(const IdentifierTable &other)
-    : m_identifiers(other.m_identifiers)
+    : m_identifier_index(other.m_identifier_index),
+      m_identifiers(other.m_identifiers)
 {
 }
 
@@ -18,8 +20,7 @@ void IdentifierTable::AddAlias(const std::string &name, const Identifier &aliase
 
 void IdentifierTable::AddIdentifier(const std::string &name)
 {
-    int index = static_cast<int>(m_identifiers.size());
-    Identifier ident(name, index);
+    Identifier ident(name, m_identifier_index++);
     m_identifiers.push_back(ident);
 }
 
@@ -28,10 +29,9 @@ void IdentifierTable::AddIdentifier(const Identifier &identifier)
     m_identifiers.push_back(identifier);
 }
 
-/** Look up an identifier by name. Returns nullptr if not found */
-const Identifier *IdentifierTable::LookUpIdentifier(const std::string &name) const
+Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
 {
-    for (const Identifier &ident : m_identifiers) {
+    for (Identifier &ident : m_identifiers) {
         if (ident.GetName() == name) {
             return &ident;
         }

@@ -77,6 +77,10 @@ public:
         }
     }
 
+    inline TreeNode<T> *TopNode() {
+        return m_top;
+    }
+
     inline const TreeNode<T> *TopNode() const {
         return m_top;
     }

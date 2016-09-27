@@ -1,15 +1,12 @@
-#include <athens/ast/ast_variable_declaration.h>
+#include <athens/ast/ast_parameter.h>
 #include <athens/ast_visitor.h>
 
-AstVariableDeclaration::AstVariableDeclaration(const std::string &name, 
-    std::unique_ptr<AstExpression> &&assignment,
-    const SourceLocation &location)
-    : AstDeclaration(name, location),
-      m_assignment(std::move(assignment))
+AstParameter::AstParameter(const std::string &name, const SourceLocation &location)
+    : AstDeclaration(name, location)
 {
 }
 
-void AstVariableDeclaration::Visit(AstVisitor *visitor)
+void AstParameter::Visit(AstVisitor *visitor)
 {
     std::unique_ptr<Module> &mod = visitor->GetCompilationUnit()->CurrentModule();
     Scope &scope = mod->m_scopes.Top();
@@ -25,10 +22,5 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor)
     } else {
         // add identifier
         scope.GetIdentifierTable().AddIdentifier(m_name);
-
-        // if there was an assignment, visit it
-        if (m_assignment != nullptr) {
-            m_assignment->Visit(visitor);
-        }
     }
 }

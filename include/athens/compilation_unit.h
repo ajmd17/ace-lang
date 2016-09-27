@@ -5,7 +5,6 @@
 #include <athens/error_list.h>
 #include <athens/emit/instruction_stream.h>
 
-#include <list>
 #include <vector>
 #include <memory>
 

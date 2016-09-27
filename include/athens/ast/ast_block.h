@@ -10,7 +10,7 @@ class AstBlock : public AstStatement {
 public:
     AstBlock(const SourceLocation &location);
 
-    inline void AddChild(std::unique_ptr<AstStatement> &stmt) { m_children.push_back(std::move(stmt)); }
+    inline void AddChild(std::unique_ptr<AstStatement> &&stmt) { m_children.push_back(std::move(stmt)); }
 
     virtual void Visit(AstVisitor *visitor);
 

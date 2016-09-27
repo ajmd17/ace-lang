@@ -18,11 +18,13 @@ public:
     /** Adds the identifier to the table */
     void AddIdentifier(const Identifier &identifier);
     /** Look up an identifier by name. Returns nullptr if not found */
-    const Identifier *LookUpIdentifier(const std::string &name) const;
+    Identifier *LookUpIdentifier(const std::string &name);
 
 private:
     /** Uses std::list to avoid pointer invalidation. */
     std::list<Identifier> m_identifiers;
+    /** To be incremented every time a new identifier is added */
+    int m_identifier_index;
 };
 
 #endif

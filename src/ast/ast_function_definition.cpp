@@ -1,15 +1,17 @@
-#include <athens/ast/ast_variable_declaration.h>
+#include <athens/ast/ast_function_definition.h>
 #include <athens/ast_visitor.h>
 
-AstVariableDeclaration::AstVariableDeclaration(const std::string &name, 
-    std::unique_ptr<AstExpression> &&assignment,
+AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
+    std::vector<std::unique_ptr<AstParameter>> &&parameters,
+    std::unique_ptr<AstBlock> &&block,
     const SourceLocation &location)
     : AstDeclaration(name, location),
-      m_assignment(std::move(assignment))
+      m_parameters(std::move(parameters)),
+      m_block(std::move(block))
 {
 }
 
-void AstVariableDeclaration::Visit(AstVisitor *visitor)
+void AstFunctionDefinition::Visit(AstVisitor *visitor)
 {
     std::unique_ptr<Module> &mod = visitor->GetCompilationUnit()->CurrentModule();
     Scope &scope = mod->m_scopes.Top();
@@ -26,9 +28,18 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor)
         // add identifier
         scope.GetIdentifierTable().AddIdentifier(m_name);
 
-        // if there was an assignment, visit it
-        if (m_assignment != nullptr) {
-            m_assignment->Visit(visitor);
+        // open the scope for the parameters
+        visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Open(Scope());
+
+        // add a variable for each parameter
+        for (auto &param : m_parameters) {
+            param->Visit(visitor);
         }
+
+        // close the scope for the parameters
+        visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();
+
+        // visit the function body
+        m_block->Visit(visitor);
     }
 }

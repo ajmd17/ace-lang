@@ -20,7 +20,7 @@ public:
         from the currently opened scope. 
         If this_scope_only is set to true, only the current scope will be
         searched. */
-    const Identifier *LookUpIdentifier(const std::string &name, bool this_scope_only) const;
+    Identifier *LookUpIdentifier(const std::string &name, bool this_scope_only);
 
     Tree<Scope> m_scopes;
 

@@ -8,7 +8,8 @@
 
 class AstVariableDeclaration : public AstDeclaration {
 public:
-    AstVariableDeclaration(const std::string &name, std::unique_ptr<AstExpression> &assignment,
+    AstVariableDeclaration(const std::string &name, 
+        std::unique_ptr<AstExpression> &&assignment,
         const SourceLocation &location);
     virtual ~AstVariableDeclaration() = default;
 

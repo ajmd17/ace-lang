@@ -6,12 +6,12 @@ Module::Module(const std::string &name, const SourceLocation &location)
 {
 }
 
-const Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_only) const
+Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_only)
 {
-    const TreeNode<Scope> *top = m_scopes.TopNode();
+    TreeNode<Scope> *top = m_scopes.TopNode();
 
     while (top != nullptr) {
-        const Identifier *result = 
+        Identifier *result = 
             top->m_value.GetIdentifierTable().LookUpIdentifier(name);
 
         if (result != nullptr) {

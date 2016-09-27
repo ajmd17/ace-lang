@@ -4,7 +4,7 @@
 #include <vector>
 #include <ostream>
 #include <sstream>
-#include <iostream>
+#include <stdexcept>
 #include <stack>
 #include <string>
 

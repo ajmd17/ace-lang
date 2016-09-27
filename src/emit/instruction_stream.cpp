@@ -27,7 +27,7 @@ InstructionStream &InstructionStream::operator<<(const Instruction<> &instructio
 {
     m_data.push_back(instruction);
     for (const std::vector<char> &operand : instruction.m_data) {
-        for (size_t i = 0; i < operand.size(); i++, m_position++);
+        m_position += operand.size();
     }
     return *this;
 }

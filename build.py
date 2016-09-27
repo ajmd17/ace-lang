@@ -1,16 +1,19 @@
 import os
-import os.path
 
-path = "./src"
+src = "./src"
+bin = "./bin"
 
-# link object files together
-linkfile = "g++ -o a.out -std=c++11 -Iinclude/"
+if not os.path.exists(bin):
+    os.makedirs(bin)
 
-for dirpath, dirnames, filenames in os.walk(path):
+command = "g++ -o {}/athens -std=c++11 -Iinclude/".format(bin)
+
+for dirpath, dirnames, filenames in os.walk(src):
     for file in [f for f in filenames]:
         if file.endswith(".cpp"):
-            linkfile = "{} {}/{} ".format(linkfile, dirpath, file)
+            print("{}/{}...".format(dirpath, file))
+            command = "{} {}/{} ".format(command, dirpath, file)
 
-# execute command
-os.system("{}".format(linkfile))
+os.system("{}".format(command))
 
+print("Build complete")

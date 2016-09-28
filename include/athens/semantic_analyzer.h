@@ -2,11 +2,6 @@
 #define SEMANTIC_ANALYZER_H
 
 #include <athens/ast_visitor.h>
-#include <athens/module.h>
-#include <athens/compiler_error.h>
-#include <athens/error_list.h>
-
-#include <memory>
 
 class SemanticAnalyzer : public AstVisitor {
 public:

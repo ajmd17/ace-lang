@@ -3,21 +3,23 @@
 
 #include <athens/ast/ast_statement.h>
 
+#include <memory>
+#include <vector>
+
 class AstIterator {
 public:
     AstIterator();
     AstIterator(const AstIterator &other);
 
-    void PushBack(AstStatement *statement);
+    void PushBack(const std::shared_ptr<AstStatement> &statement);
     void ResetPosition();
-    AstStatement *Next();
-    inline bool HasNext() const { return m_current != nullptr; }
-    inline const SourceLocation &GetLocation() const { return m_current->m_location; }
+    std::shared_ptr<AstStatement> Next();
+    inline bool HasNext() const { return m_position < m_list.size(); }
+    inline const SourceLocation &GetLocation() const { return m_list[m_position]->m_location; }
 
 private:
-    AstStatement *m_start;
-    AstStatement *m_current;
-    AstStatement *m_top;
+    std::vector<std::shared_ptr<AstStatement>> m_list;
+    int m_position;
 };
 
 #endif

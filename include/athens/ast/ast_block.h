@@ -10,12 +10,14 @@ class AstBlock : public AstStatement {
 public:
     AstBlock(const SourceLocation &location);
 
-    inline void AddChild(std::unique_ptr<AstStatement> &&stmt) { m_children.push_back(std::move(stmt)); }
+    inline void AddChild(const std::shared_ptr<AstStatement> &stmt) { m_children.push_back(stmt); }
 
     virtual void Visit(AstVisitor *visitor);
+    virtual void Build(AstVisitor *visitor) const;
+    virtual void Optimize();
 
 protected:
-    std::vector<std::unique_ptr<AstStatement>> m_children;
+    std::vector<std::shared_ptr<AstStatement>> m_children;
 };
 
 #endif

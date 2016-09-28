@@ -13,6 +13,8 @@ public:
 
     virtual std::unique_ptr<Module> LoadModule(CompilationUnit *compilation_unit) const;
 
+    virtual void Optimize();
+
 protected:
     std::string m_path;
 };

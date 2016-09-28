@@ -15,6 +15,8 @@ public:
     virtual std::unique_ptr<Module> LoadModule(CompilationUnit *compilation_unit) const = 0;
 
     virtual void Visit(AstVisitor *visitor);
+    virtual void Build(AstVisitor *visitor) const;
+    virtual void Optimize() = 0;
 };
 
 #endif

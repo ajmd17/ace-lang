@@ -9,6 +9,8 @@ public:
     virtual ~AstParameter() = default;
 
     virtual void Visit(AstVisitor *visitor);
+    virtual void Build(AstVisitor *visitor) const;
+    virtual void Optimize();
 };
 
 #endif

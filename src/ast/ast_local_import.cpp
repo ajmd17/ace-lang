@@ -39,3 +39,7 @@ std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_
 
     return nullptr;
 }
+
+void AstLocalImport::Optimize()
+{
+}

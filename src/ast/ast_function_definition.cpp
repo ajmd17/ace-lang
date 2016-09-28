@@ -2,12 +2,12 @@
 #include <athens/ast_visitor.h>
 
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
-    std::vector<std::unique_ptr<AstParameter>> &&parameters,
-    std::unique_ptr<AstBlock> &&block,
+    const std::vector<std::shared_ptr<AstParameter>> &parameters,
+    const std::shared_ptr<AstBlock> &block,
     const SourceLocation &location)
     : AstDeclaration(name, location),
-      m_parameters(std::move(parameters)),
-      m_block(std::move(block))
+      m_parameters(parameters),
+      m_block(block)
 {
 }
 
@@ -42,4 +42,17 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor)
         // visit the function body
         m_block->Visit(visitor);
     }
+}
+
+void AstFunctionDefinition::Build(AstVisitor *visitor) const
+{
+}
+
+void AstFunctionDefinition::Optimize()
+{
+    for (auto &param : m_parameters) {
+        param->Optimize();
+    }
+
+    m_block->Optimize();
 }

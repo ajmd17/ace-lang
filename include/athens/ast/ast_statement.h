@@ -3,6 +3,8 @@
 
 #include <athens/source_location.h>
 
+#include <memory>
+
 // Forward declaration
 class AstVisitor;
 
@@ -15,10 +17,11 @@ public:
     inline const SourceLocation &GetLocation() const { return m_location; }
 
     virtual void Visit(AstVisitor *visitor) = 0;
+    virtual void Build(AstVisitor *visitor) const = 0;
+    virtual void Optimize() = 0;
 
 protected:
     SourceLocation m_location;
-    AstStatement *m_next;
 };
 
 #endif

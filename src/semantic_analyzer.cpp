@@ -18,8 +18,8 @@ void SemanticAnalyzer::Analyze()
     if (Assert(m_ast_iterator.HasNext(),
         CompilerError(Level_fatal, Msg_empty_module, empty_location))) {
 
-        AstStatement *first_statement = m_ast_iterator.Next();
-        AstModuleDeclaration *module_declaration = dynamic_cast<AstModuleDeclaration*>(first_statement);
+        auto first_statement = m_ast_iterator.Next();
+        auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
 
         if (Assert(module_declaration != nullptr,
             CompilerError(Level_fatal, Msg_expected_module,

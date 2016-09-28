@@ -11,22 +11,24 @@ IdentifierTable::IdentifierTable(const IdentifierTable &other)
 {
 }
 
-void IdentifierTable::AddAlias(const std::string &name, const Identifier &aliasee)
+Identifier *IdentifierTable::AddAlias(const std::string &name, const Identifier &aliasee)
 {
-    int index = aliasee.GetIndex();
-    Identifier ident(name, index);
-    m_identifiers.push_back(ident);
+    m_identifiers.push_back(Identifier(name, 
+        aliasee.GetIndex(), aliasee.GetFlags()));
+    return &m_identifiers.back();
 }
 
-void IdentifierTable::AddIdentifier(const std::string &name)
+Identifier *IdentifierTable::AddIdentifier(const std::string &name, int flags)
 {
-    Identifier ident(name, m_identifier_index++);
-    m_identifiers.push_back(ident);
+    m_identifiers.push_back(Identifier(name, 
+        m_identifier_index++, flags));
+    return &m_identifiers.back();
 }
 
-void IdentifierTable::AddIdentifier(const Identifier &identifier)
+Identifier *IdentifierTable::AddIdentifier(const Identifier &identifier)
 {
     m_identifiers.push_back(identifier);
+    return &m_identifiers.back();
 }
 
 Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)

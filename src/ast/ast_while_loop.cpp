@@ -1,12 +1,12 @@
 #include <athens/ast/ast_while_loop.h>
 #include <athens/ast_visitor.h>
 
-AstWhileLoop::AstWhileLoop(std::unique_ptr<AstExpression> &&conditional, 
-        std::unique_ptr<AstBlock> &&block,
+AstWhileLoop::AstWhileLoop(const std::shared_ptr<AstExpression> &conditional, 
+        const std::shared_ptr<AstBlock> &block,
         const SourceLocation &location)
     : AstStatement(location),
-      m_conditional(std::move(conditional)),
-      m_block(std::move(block))
+      m_conditional(conditional),
+      m_block(block)
 {
 }
 
@@ -16,4 +16,16 @@ void AstWhileLoop::Visit(AstVisitor *visitor)
     m_conditional->Visit(visitor);
     // visit the body
     m_block->Visit(visitor);
+}
+
+void AstWhileLoop::Build(AstVisitor *visitor) const
+{
+}
+
+void AstWhileLoop::Optimize()
+{
+    // optimize the conditional
+    m_conditional->Optimize();
+    // optimize the body
+    m_block->Optimize();
 }

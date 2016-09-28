@@ -11,3 +11,7 @@ void AstImport::Visit(AstVisitor *visitor)
     visitor->GetCompilationUnit()->m_modules.push_back(LoadModule(
         visitor->GetCompilationUnit()));
 }
+
+void AstImport::Build(AstVisitor *visitor) const
+{
+}

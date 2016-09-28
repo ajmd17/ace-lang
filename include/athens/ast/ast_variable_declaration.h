@@ -9,14 +9,16 @@
 class AstVariableDeclaration : public AstDeclaration {
 public:
     AstVariableDeclaration(const std::string &name, 
-        std::unique_ptr<AstExpression> &&assignment,
+        const std::shared_ptr<AstExpression> &assignment,
         const SourceLocation &location);
     virtual ~AstVariableDeclaration() = default;
 
     virtual void Visit(AstVisitor *visitor);
+    virtual void Build(AstVisitor *visitor) const;
+    virtual void Optimize();
 
 protected:
-    std::unique_ptr<AstExpression> m_assignment;
+    std::shared_ptr<AstExpression> m_assignment;
 };
 
 #endif

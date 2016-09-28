@@ -21,3 +21,11 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor)
     std::unique_ptr<Module> this_module(new Module(m_name, m_location));
     visitor->GetCompilationUnit()->m_modules.push_back(std::move(this_module));
 }
+
+void AstModuleDeclaration::Build(AstVisitor *visitor) const
+{
+}
+
+void AstModuleDeclaration::Optimize()
+{
+}

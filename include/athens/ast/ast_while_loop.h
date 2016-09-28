@@ -9,16 +9,18 @@
 
 class AstWhileLoop : public AstStatement {
 public:
-    AstWhileLoop(std::unique_ptr<AstExpression> &&conditional, 
-        std::unique_ptr<AstBlock> &&block,
+    AstWhileLoop(const std::shared_ptr<AstExpression> &conditional, 
+        const std::shared_ptr<AstBlock> &block,
         const SourceLocation &location);
     virtual ~AstWhileLoop() = default;
 
     virtual void Visit(AstVisitor *visitor);
+    virtual void Build(AstVisitor *visitor) const;
+    virtual void Optimize();
 
 private:
-    std::unique_ptr<AstExpression> m_conditional;
-    std::unique_ptr<AstBlock> m_block;
+    std::shared_ptr<AstExpression> m_conditional;
+    std::shared_ptr<AstBlock> m_block;
 };
 
 #endif

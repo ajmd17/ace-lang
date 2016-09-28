@@ -8,6 +8,8 @@ public:
     AstModuleDeclaration(const std::string &name, const SourceLocation &location);
 
     virtual void Visit(AstVisitor *visitor);
+    virtual void Build(AstVisitor *visitor) const;
+    virtual void Optimize();
 };
 
 #endif

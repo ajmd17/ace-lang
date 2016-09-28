@@ -47,16 +47,19 @@ public:
         operator_decrement;
 
 public:
-    Operator(const std::string &str, int precedence);
+    Operator(const std::string &str, 
+        int precedence, bool modifies_value = false);
     Operator(const Operator &other) = delete;
 
     inline const std::string &ToString() const { return m_str; }
     inline int GetPrecedence() const { return m_precedence; }
     inline bool IsUnary() const { return m_precedence == 0; }
+    inline bool ModifiesValue() const { return m_modifies_value; }
 
 private:
     std::string m_str;
     int m_precedence;
+    bool m_modifies_value;
 };
 
 #endif

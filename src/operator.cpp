@@ -28,26 +28,28 @@ const Operator
     Operator::operator_greater_eql(">=", 9),
 
     // Assignment operators
-    Operator::operator_assign("=", 2),
-    Operator::operator_add_assign("+=", 2),
-    Operator::operator_subtract_assign("-=", 2),
-    Operator::operator_multiply_assign("*=", 2),
-    Operator::operator_divide_assign("/=", 2),
-    Operator::operator_modulus_assign("%=", 2),
-    Operator::operator_bitwise_xor_assign("^=", 2),
-    Operator::operator_bitwise_and_assign("&=", 2),
-    Operator::operator_bitwise_or_assign("|=", 2),
+    Operator::operator_assign("=", 2, true),
+    Operator::operator_add_assign("+=", 2, true),
+    Operator::operator_subtract_assign("-=", 2, true),
+    Operator::operator_multiply_assign("*=", 2, true),
+    Operator::operator_divide_assign("/=", 2, true),
+    Operator::operator_modulus_assign("%=", 2, true),
+    Operator::operator_bitwise_xor_assign("^=", 2, true),
+    Operator::operator_bitwise_and_assign("&=", 2, true),
+    Operator::operator_bitwise_or_assign("|=", 2, true),
 
     // Unary operators
     Operator::operator_logical_not("!", 0),
     Operator::operator_negative("-", 0),
     Operator::operator_positive("+", 0),
     Operator::operator_bitwise_complement("~", 0),
-    Operator::operator_increment("++", 0),
-    Operator::operator_decrement("--", 0);
+    Operator::operator_increment("++", 0, true),
+    Operator::operator_decrement("--", 0, true);
 
-Operator::Operator(const std::string &str, int precedence)
+Operator::Operator(const std::string &str, 
+    int precedence, bool modifies_value)
     : m_str(str),
-      m_precedence(precedence)
+      m_precedence(precedence),
+      m_modifies_value(modifies_value)
 {
 }

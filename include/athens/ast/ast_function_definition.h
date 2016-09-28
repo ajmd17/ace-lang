@@ -11,16 +11,18 @@
 class AstFunctionDefinition : public AstDeclaration {
 public:
     AstFunctionDefinition(const std::string &name,
-        std::vector<std::unique_ptr<AstParameter>> &&parameters,
-        std::unique_ptr<AstBlock> &&block,
+        const std::vector<std::shared_ptr<AstParameter>> &parameters,
+        const std::shared_ptr<AstBlock> &block,
         const SourceLocation &location);
     virtual ~AstFunctionDefinition() = default;
 
     virtual void Visit(AstVisitor *visitor);
+    virtual void Build(AstVisitor *visitor) const;
+    virtual void Optimize();
 
 protected:
-    std::vector<std::unique_ptr<AstParameter>> m_parameters;
-    std::unique_ptr<AstBlock> m_block;
+    std::vector<std::shared_ptr<AstParameter>> m_parameters;
+    std::shared_ptr<AstBlock> m_block;
 };
 
 #endif

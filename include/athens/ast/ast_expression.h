@@ -9,6 +9,20 @@ public:
     virtual ~AstExpression() = default;
 
     virtual void Visit(AstVisitor *visitor) = 0;
+    virtual void Build(AstVisitor *visitor) const = 0;
+    virtual void Optimize() = 0;
+
+    /** Determines whether the expression would evaluate to true. 
+        Return -1 if it cannot be evaluated at compile time. 
+    */
+    virtual int IsTrue() const = 0;
+    
+    inline int IsFalse() const
+    { 
+        int is_true = IsTrue();
+        return (is_true == -1) ? is_true : !is_true;
+    }
+
 };
 
 #endif

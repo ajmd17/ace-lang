@@ -17,3 +17,14 @@ void AstBlock::Visit(AstVisitor *visitor)
     // go down to previous scope
     visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();
 }
+
+void AstBlock::Build(AstVisitor *visitor) const
+{
+}
+
+void AstBlock::Optimize()
+{
+    for (auto &child : m_children) {
+        child->Optimize();
+    }
+}

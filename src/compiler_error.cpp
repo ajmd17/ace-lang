@@ -6,7 +6,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_illegal_syntax, "illegal syntax" },
     { Msg_illegal_expression, "illegal expression" },
     { Msg_illegal_operator, "illegal usage of operator '%'" },
-    { Msg_const_identifier, "'%' is const and cannot be modified" },
+    { Msg_const_modified, "'%' is const and cannot be modified" },
     { Msg_prohibited_action_attribute, "attribute '%' prohibits this action" },
     { Msg_unbalanced_expression, "unbalanced expression" },
     { Msg_unexpected_character, "unexpected character '%'" },

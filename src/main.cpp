@@ -18,23 +18,23 @@ int main()
 {
     AstIterator ast_iterator;
     
-    ast_iterator.PushBack(std::shared_ptr<AstModuleDeclaration>(
+    ast_iterator.Push(std::shared_ptr<AstModuleDeclaration>(
         new AstModuleDeclaration("mymodule", SourceLocation(0, 0, "blah.ar"))));
     
     std::shared_ptr<AstNull> true_value(new AstNull(SourceLocation(8, 9, "blah.ar")));
-    ast_iterator.PushBack(std::shared_ptr<AstVariableDeclaration>(
+    ast_iterator.Push(std::shared_ptr<AstVariableDeclaration>(
         new AstVariableDeclaration("myvar", true_value, SourceLocation(1, 4, "blah.ar"))));
     
-    ast_iterator.PushBack(std::shared_ptr<AstVariable>(
+    ast_iterator.Push(std::shared_ptr<AstVariable>(
         new AstVariable("myvar", SourceLocation(1, 4, "blah.ar"))));
 
     //std::shared_ptr<AstVariable> left(new AstVariable("constvar", SourceLocation(5, 6, "blah.ar")));
     //std::shared_ptr<AstVariable> right(new AstVariable("nonconstvar", SourceLocation(5, 9, "blah.ar")));
-    //ast_iterator.PushBack(std::shared_ptr<AstBinaryExpression>(
+    //ast_iterator.Push(std::shared_ptr<AstBinaryExpression>(
     //    new AstBinaryExpression(left, right, &Operator::operator_assign, SourceLocation(1, 4, "blah.ar"))));
 
     std::shared_ptr<AstBlock> block_scope(new AstBlock(SourceLocation(8, 9, "blah.ar")));
-    ast_iterator.PushBack(std::shared_ptr<AstIfStatement>(
+    ast_iterator.Push(std::shared_ptr<AstIfStatement>(
         new AstIfStatement(true_value, block_scope, SourceLocation(8, 9, "blah.ar"))));
 
     CompilationUnit compilation_unit;

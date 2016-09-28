@@ -16,7 +16,7 @@ void AstIterator::ResetPosition()
     m_position = 0;
 }
 
-void AstIterator::PushBack(const std::shared_ptr<AstStatement> &statement)
+void AstIterator::Push(const std::shared_ptr<AstStatement> &statement)
 {
     m_list.push_back(statement);
 }

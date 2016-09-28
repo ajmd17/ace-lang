@@ -11,7 +11,7 @@ public:
     AstIterator();
     AstIterator(const AstIterator &other);
 
-    void PushBack(const std::shared_ptr<AstStatement> &statement);
+    void Push(const std::shared_ptr<AstStatement> &statement);
     void ResetPosition();
     std::shared_ptr<AstStatement> Next();
     inline bool HasNext() const { return m_position < m_list.size(); }

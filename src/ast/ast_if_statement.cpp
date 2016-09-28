@@ -22,6 +22,14 @@ void AstIfStatement::Visit(AstVisitor *visitor)
 
 void AstIfStatement::Build(AstVisitor *visitor) const
 {
+    int condition_is_true = m_conditional->IsTrue();
+    if (condition_is_true == -1) {
+        // the condition cannot be determined at compile time
+    } else if (condition_is_true) {
+        // the condition has been determined to be true
+    } else {
+        // the condition has been determined to be false
+    }
 }
 
 void AstIfStatement::Optimize()

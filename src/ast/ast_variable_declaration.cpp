@@ -11,7 +11,6 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
 
 void AstVariableDeclaration::Visit(AstVisitor *visitor)
 {
-
     AstDeclaration::Visit(visitor);
 
     // if there was an assignment, visit it

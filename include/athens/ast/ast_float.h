@@ -1,11 +1,11 @@
-#ifndef AST_NULL_H
-#define AST_NULL_H
+#ifndef AST_FLOAT_H
+#define AST_FLOAT_H
 
 #include <athens/ast/ast_constant.h>
 
-class AstNull : public AstConstant {
+class AstFloat : public AstConstant {
 public:
-    AstNull(const SourceLocation &location);
+    AstFloat(a_float value, const SourceLocation &location);
 
     virtual void Build(AstVisitor *visitor) const;
     virtual int IsTrue() const;
@@ -37,6 +37,9 @@ public:
         const std::shared_ptr<AstConstant> &right) const;
     virtual std::shared_ptr<AstConstant> operator||(
         const std::shared_ptr<AstConstant> &right) const;
+
+private:
+    a_float m_value;
 };
 
 #endif

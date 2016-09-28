@@ -20,6 +20,14 @@ void AstWhileLoop::Visit(AstVisitor *visitor)
 
 void AstWhileLoop::Build(AstVisitor *visitor) const
 {
+    int condition_is_true = m_conditional->IsTrue();
+    if (condition_is_true == -1) {
+        // the condition cannot be determined at compile time
+    } else if (condition_is_true) {
+        // the condition has been determined to be true
+    } else {
+        // the condition has been determined to be false
+    }
 }
 
 void AstWhileLoop::Optimize()

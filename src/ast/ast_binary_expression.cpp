@@ -2,7 +2,9 @@
 #include <athens/ast/ast_variable.h>
 #include <athens/ast/ast_constant.h>
 #include <athens/ast_visitor.h>
+#include <athens/operator.h>
 
+/** Attemps to reduce a variable that is const literal to the actual value. */
 static void OptimizeSide(std::shared_ptr<AstExpression> &side)
 {
     side->Optimize();
@@ -17,6 +19,9 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side)
                 // set it to be the current value
                 auto sp = side_as_var->GetIdentifier()->GetCurrentValue().lock();
                 if (sp != nullptr) {
+                    // yay! we were able to retrieve the value that
+                    // the variable is set to, so now we can use that
+                    // at compile-time rather than using a variable.
                     side = sp;
                 }
             }
@@ -24,17 +29,45 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side)
     }
 }
 
+/** Attemps to evaluate the optimized expression at compile-time. */
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left, 
-    std::shared_ptr<AstExpression> &right)
+    std::shared_ptr<AstExpression> &right, const Operator *oper)
 {
     auto left_as_constant = std::dynamic_pointer_cast<AstConstant>(left);
     auto right_as_constant = std::dynamic_pointer_cast<AstConstant>(right);
+
+    std::shared_ptr<AstConstant> result(nullptr);
+
     if (left_as_constant != nullptr && right_as_constant != nullptr) {
-        // TODO
+        // perform operations on these constants
+        if (oper == &Operator::operator_add) {
+            result = (*left_as_constant) + right_as_constant;
+        } else if (oper == &Operator::operator_subtract) {
+            result = (*left_as_constant) - right_as_constant;
+        } else if (oper == &Operator::operator_multiply) {
+            result = (*left_as_constant) * right_as_constant;
+        } else if (oper == &Operator::operator_divide) {
+            result = (*left_as_constant) / right_as_constant;
+        } else if (oper == &Operator::operator_modulus) {
+            result = (*left_as_constant) % right_as_constant;
+        } else if (oper == &Operator::operator_bitwise_xor) {
+            result = (*left_as_constant) ^ right_as_constant;
+        } else if (oper == &Operator::operator_bitwise_and) {
+            result = (*left_as_constant) & right_as_constant;
+        } else if (oper == &Operator::operator_logical_and) {
+            result = (*left_as_constant) && right_as_constant;
+        } else if (oper == &Operator::operator_logical_or) {
+            result = (*left_as_constant) || right_as_constant;
+        }
+
+        if (result == nullptr) {
+            // an error has occured during compile-time evaluation
+            // wat do ?
+        }
     }
     
     // one or both of the sides are not a constant
-    return nullptr;
+    return result;
 }
 
 AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &left,
@@ -82,22 +115,21 @@ void AstBinaryExpression::Optimize()
     // binary expression by optimizing away the right
     // side, and combining the resulting value into
     // the left side of the operation.
-    auto constant_value = ConstantFold(m_left, m_right);
+    auto constant_value = ConstantFold(m_left, m_right, m_op);
     if (constant_value != nullptr) {
         m_left = constant_value;
         m_right = nullptr;
-        //m_op = nullptr;
     }
 }
 
 int AstBinaryExpression::IsTrue() const
 {
-    bool left_true = m_left->IsTrue();
-    bool right_true = (m_right != nullptr) ? m_right->IsTrue() : true;
-
-    if (left_true != -1 && right_true != -1) {
-        return left_true && right_true;
+    if (m_right != nullptr) {
+        // the right was not optimized away,
+        // therefore we cannot determine whether or
+        // not this expression would be true or false.
+        return -1;
     }
-    // value could not be determined at compile time
-    return -1;
+
+    return m_left->IsTrue();
 }

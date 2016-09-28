@@ -75,6 +75,18 @@ std::shared_ptr<AstConstant> AstNull::operator|(
     return std::shared_ptr<AstNull>(new AstNull(m_location));
 }
 
+std::shared_ptr<AstConstant> AstNull::operator<<(
+        const std::shared_ptr<AstConstant> &right) const
+{
+    return std::shared_ptr<AstNull>(new AstNull(m_location));
+}
+
+std::shared_ptr<AstConstant> AstNull::operator>>(
+        const std::shared_ptr<AstConstant> &right) const
+{
+    return std::shared_ptr<AstNull>(new AstNull(m_location));
+}
+
 std::shared_ptr<AstConstant> AstNull::operator&&(
         const std::shared_ptr<AstConstant> &right) const
 {

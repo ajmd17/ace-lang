@@ -54,11 +54,17 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
             result = (*left_as_constant) ^ right_as_constant;
         } else if (oper == &Operator::operator_bitwise_and) {
             result = (*left_as_constant) & right_as_constant;
+        } else if (oper == &Operator::operator_bitshift_left) {
+            result = (*left_as_constant) << right_as_constant;
+        } else if (oper == &Operator::operator_bitshift_right) {
+            result = (*left_as_constant) >> right_as_constant;
         } else if (oper == &Operator::operator_logical_and) {
             result = (*left_as_constant) && right_as_constant;
         } else if (oper == &Operator::operator_logical_or) {
             result = (*left_as_constant) || right_as_constant;
         }
+        // don't have to worry about assignment operations,
+        // because at this point both sides are const and literal.
 
         if (result == nullptr) {
             // an error has occured during compile-time evaluation

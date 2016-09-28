@@ -31,6 +31,10 @@ public:
         const std::shared_ptr<AstConstant> &right) const;
     virtual std::shared_ptr<AstConstant> operator|(
         const std::shared_ptr<AstConstant> &right) const;
+    virtual std::shared_ptr<AstConstant> operator<<(
+        const std::shared_ptr<AstConstant> &right) const;
+    virtual std::shared_ptr<AstConstant> operator>>(
+        const std::shared_ptr<AstConstant> &right) const;
     
     // Logical operators
     virtual std::shared_ptr<AstConstant> operator&&(

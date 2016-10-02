@@ -5,7 +5,7 @@
 
 class SemanticAnalyzer : public AstVisitor {
 public:
-    SemanticAnalyzer(const AstIterator &ast_iterator, CompilationUnit *compilation_unit);
+    SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit);
     SemanticAnalyzer(const SemanticAnalyzer &other);
 
     /** Generates the compilation unit structure from the given statement iterator */

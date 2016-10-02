@@ -12,7 +12,17 @@ public:
 
     inline SourceFile *GetFile() const { return m_file; }
     inline size_t GetPosition() const { return m_position; }
-
+    inline bool HasNext() const { return m_position < m_file->GetSize(); }
+    inline char Peek(int n = 0) const 
+    {
+        size_t pos = m_position + n;
+        if (pos >= m_file->GetSize()) {
+            return '\0';
+        }
+        return m_file->GetBuffer()[pos]; 
+    }
+    
+    char Next();
     void Read(char *ptr, size_t num_bytes);
 
 private:

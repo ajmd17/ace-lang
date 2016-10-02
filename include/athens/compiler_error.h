@@ -67,6 +67,7 @@ enum ErrorMessage {
 
 class CompilerError {
     static const std::map<ErrorMessage, std::string> error_message_strings;
+    
 public:
     template <typename ... Args>
     CompilerError(ErrorLevel level, ErrorMessage msg,

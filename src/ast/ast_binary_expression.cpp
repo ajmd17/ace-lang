@@ -14,15 +14,16 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side)
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
         if (side_as_var->GetIdentifier() != nullptr) {
-            if (side_as_var->GetIdentifier()->GetFlags() & (Flag_const | Flag_literal)) {
-                // the variable is a const literal so we can inline it
-                // set it to be the current value
-                auto sp = side_as_var->GetIdentifier()->GetCurrentValue().lock();
-                if (sp != nullptr) {
+            if (side_as_var->GetIdentifier()->GetFlags() & (Flag_const)) {
+                // the variable is a const, now we make sure that the current
+                // value is a literal value
+                auto value_sp = side_as_var->GetIdentifier()->GetCurrentValue().lock();
+                auto constant_sp = std::dynamic_pointer_cast<AstConstant>(value_sp);
+                if (constant_sp != nullptr) {
                     // yay! we were able to retrieve the value that
                     // the variable is set to, so now we can use that
                     // at compile-time rather than using a variable.
-                    side = sp;
+                    side = constant_sp;
                 }
             }
         }

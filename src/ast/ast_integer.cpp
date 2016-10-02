@@ -146,14 +146,14 @@ std::shared_ptr<AstConstant> AstInteger::operator|(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator<<(
+std::shared_ptr<AstConstant> AstInteger::operator<<(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() << right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator>>(
+std::shared_ptr<AstConstant> AstInteger::operator>>(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstInteger>(

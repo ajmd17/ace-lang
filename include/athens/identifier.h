@@ -7,8 +7,7 @@
 #include <memory>
 
 enum IdentifierFlags {
-   Flag_const = 0x00,
-   Flag_literal = 0x01,
+   Flag_const = 0x00
 };
 
 class Identifier {

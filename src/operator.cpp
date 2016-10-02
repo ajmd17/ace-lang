@@ -1,5 +1,7 @@
 #include <athens/operator.h>
 
+#include <array>
+
 const Operator
     // Arithmetic operators
     Operator::operator_add("+", 11),
@@ -45,6 +47,61 @@ const Operator
     Operator::operator_bitwise_complement("~", 0),
     Operator::operator_increment("++", 0, true),
     Operator::operator_decrement("--", 0, true);
+
+bool Operator::IsOperator(const std::string &str)
+{
+    const Operator *tmp = nullptr;
+    return IsOperator(str, tmp);
+}
+
+bool Operator::IsOperator(const std::string &str, const Operator *&out)
+{
+    const Operator *operators[] = { 
+        &operator_add,
+        &operator_subtract, 
+        &operator_multiply, 
+        &operator_divide, 
+        &operator_modulus, 
+        &operator_bitwise_xor, 
+        &operator_bitwise_and, 
+        &operator_bitwise_or, 
+        &operator_bitshift_left, 
+        &operator_bitshift_right, 
+        &operator_logical_and, 
+        &operator_logical_or, 
+        &operator_equals, 
+        &operator_not_eql, 
+        &operator_less, 
+        &operator_greater, 
+        &operator_less_eql, 
+        &operator_greater_eql, 
+        &operator_assign, 
+        &operator_add_assign, 
+        &operator_subtract_assign, 
+        &operator_multiply_assign, 
+        &operator_divide_assign, 
+        &operator_bitwise_xor_assign, 
+        &operator_bitwise_and_assign, 
+        &operator_bitwise_or_assign, 
+        &operator_logical_not, 
+        &operator_negative, 
+        &operator_positive, 
+        &operator_bitwise_complement, 
+        &operator_increment, 
+        &operator_decrement
+    };
+
+    size_t num_operators = sizeof(operators) / sizeof(operators[0]);
+    for (int i = 0; i < num_operators; i++) {
+        auto oper = operators[i];
+        if (str == oper->ToString()) {
+            out = oper;
+            return true;
+        }
+    }
+
+    return false;
+}
 
 Operator::Operator(const std::string &str, 
     int precedence, bool modifies_value)

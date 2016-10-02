@@ -11,12 +11,62 @@
 #include <athens/ast/ast_null.h>
 #include <athens/ast/ast_block.h>
 #include <athens/emit/instruction.h>
+#include <athens/lexer.h>
+#include <athens/parser.h>
 
 #include <iostream>
+#include <string>
 
 int main()
 {
+    CompilationUnit compilation_unit;
+
+    TokenStream *token_stream = new TokenStream();
+
+    SourceFile *src_file = new SourceFile(256);
+    (*src_file) >> "module main \"Hello world\" /*blah*/ test + 4";
+
+    SourceStream src_stream(src_file);
+
+    Lexer lex(src_stream, token_stream, &compilation_unit);
+    lex.Analyze();
+    
+    delete src_file;
+
+    /*for (auto &it : token_stream->m_tokens) {
+        std::cout << "{ " 
+        << it.GetType() << ", "
+        << it.GetValue() << " }\n";
+    }*/
+
     AstIterator ast_iterator;
+    Parser parser(token_stream, &compilation_unit, &ast_iterator);
+    parser.Parse();
+
+    delete token_stream;
+
+    SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
+    semantic_analyzer.Analyze();
+
+    compilation_unit.GetErrorList().SortErrors();
+    for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
+        std::cout
+            << error.GetLocation().GetFileName() << "\t"
+            << "ln: "  << (error.GetLocation().GetLine() + 1) 
+            << ", col: " << (error.GetLocation().GetColumn() + 1) 
+            << ":\t" << error.GetText() << "\n";
+    }
+
+    if (!compilation_unit.GetErrorList().HasFatalErrors()) {
+        ast_iterator.ResetPosition();
+
+        // optimization step
+        Optimizer optimizer(&ast_iterator, &compilation_unit);
+        optimizer.Optimize();
+    }
+
+
+    /*AstIterator ast_iterator;
     
     ast_iterator.Push(std::shared_ptr<AstModuleDeclaration>(
         new AstModuleDeclaration("mymodule", SourceLocation(0, 0, "blah.ar"))));
@@ -57,7 +107,7 @@ int main()
         // optimization step
         Optimizer optimizer(ast_iterator, &compilation_unit);
         optimizer.Optimize();
-    }
+    }*/
 
     std::cin.get();
     return 0;

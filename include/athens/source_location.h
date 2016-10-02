@@ -5,11 +5,16 @@
 
 class SourceLocation {
 public:
-    SourceLocation(int line, int column, const std::string &filename = "");
+    static const SourceLocation eof;
+
+public:
+    SourceLocation(int line = 0, int column = 0, const std::string &filename = "");
     SourceLocation(const SourceLocation &other);
 
     inline int GetLine() const { return m_line; }
+    inline int &GetLine() { return m_line; }
     inline int GetColumn() const { return m_column; }
+    inline int &GetColumn() { return m_column; }
     inline const std::string &GetFileName() const { return m_filename; }
 
     bool operator<(const SourceLocation &other) const;

@@ -103,7 +103,7 @@ std::shared_ptr<AstConstant> AstFloat::operator|(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator<<(
+std::shared_ptr<AstConstant> AstFloat::operator<<(
         const std::shared_ptr<AstConstant> &right) const
 {
     // demote to integer
@@ -111,7 +111,7 @@ std::shared_ptr<AstConstant> AstFalse::operator<<(
         new AstInteger(IntValue() << right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator>>(
+std::shared_ptr<AstConstant> AstFloat::operator>>(
         const std::shared_ptr<AstConstant> &right) const
 {
     // demote to integer

@@ -14,6 +14,14 @@ SourceStream::SourceStream(const SourceStream &other)
 {
 }
 
+char SourceStream::Next() 
+{
+    if (m_position >= m_file->GetSize()) {
+        throw std::out_of_range("attempted to read past the limit");
+    }
+    return m_file->GetBuffer()[m_position++];
+}
+
 void SourceStream::Read(char *ptr, size_t num_bytes)
 {
     for (size_t i = 0; i < num_bytes; i++) {

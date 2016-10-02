@@ -46,6 +46,9 @@ public:
         operator_increment,
         operator_decrement;
 
+    static bool IsOperator(const std::string &str);
+    static bool IsOperator(const std::string &str, const Operator *&out);
+
 public:
     Operator(const std::string &str, 
         int precedence, bool modifies_value = false);

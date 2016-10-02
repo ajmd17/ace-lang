@@ -5,7 +5,7 @@
 
 class Optimizer : public AstVisitor {
 public:
-    Optimizer(const AstIterator &ast_iterator, CompilationUnit *compilation_unit);
+    Optimizer(AstIterator *ast_iterator, CompilationUnit *compilation_unit);
     Optimizer(const Optimizer &other);
 
     void Optimize();

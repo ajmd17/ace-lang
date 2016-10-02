@@ -1,105 +1,97 @@
-#include <athens/ast/ast_null.h>
-#include <athens/ast/ast_integer.h>
 #include <athens/ast/ast_void.h>
 
-AstNull::AstNull(const SourceLocation &location)
+AstVoid::AstVoid(const SourceLocation &location)
     : AstConstant(location)
 {
 }
 
-void AstNull::Build(AstVisitor *visitor) const
+void AstVoid::Build(AstVisitor *visitor) const
 {
 }
 
-int AstNull::IsTrue() const
+int AstVoid::IsTrue() const
 {
     return false;
 }
 
-a_int AstNull::IntValue() const
+a_int AstVoid::IntValue() const
 {
     return 0;
 }
 
-a_float AstNull::FloatValue() const
+a_float AstVoid::FloatValue() const
 {
     return 0.0f;
 }
 
-std::shared_ptr<AstConstant> AstNull::operator+(
-        const std::shared_ptr<AstConstant> &right) const
-{
-    // return void to signify invalid operation
-    // TODO: make it add a compiler error
-    return std::shared_ptr<AstVoid>(new AstVoid(m_location));
-}
-
-std::shared_ptr<AstConstant> AstNull::operator-(
+std::shared_ptr<AstConstant> AstVoid::operator+(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator*(
+std::shared_ptr<AstConstant> AstVoid::operator-(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator/(
+std::shared_ptr<AstConstant> AstVoid::operator*(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator%(
+std::shared_ptr<AstConstant> AstVoid::operator/(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator^(
+std::shared_ptr<AstConstant> AstVoid::operator%(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator&(
+std::shared_ptr<AstConstant> AstVoid::operator^(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator|(
+std::shared_ptr<AstConstant> AstVoid::operator&(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator<<(
+std::shared_ptr<AstConstant> AstVoid::operator|(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator>>(
+std::shared_ptr<AstConstant> AstVoid::operator<<(
         const std::shared_ptr<AstConstant> &right) const
 {
     return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator&&(
+std::shared_ptr<AstConstant> AstVoid::operator>>(
         const std::shared_ptr<AstConstant> &right) const
 {
-    // logical operations still work, so that we can do
-    // things like testing for null in an if statement.
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() && right->IntValue(), m_location));
+    return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNull::operator||(
+std::shared_ptr<AstConstant> AstVoid::operator&&(
         const std::shared_ptr<AstConstant> &right) const
 {
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() || right->IntValue(), m_location));
+    return std::shared_ptr<AstVoid>(new AstVoid(m_location));
+}
+
+std::shared_ptr<AstConstant> AstVoid::operator||(
+        const std::shared_ptr<AstConstant> &right) const
+{
+    return std::shared_ptr<AstVoid>(new AstVoid(m_location));
 }

@@ -11,6 +11,7 @@ enum TokenType {
     Token_float_literal,
     Token_string_literal,
     Token_identifier,
+    Token_keyword,
     Token_operator,
     Token_open_parenthesis,
     Token_close_parenthesis,
@@ -22,7 +23,11 @@ enum TokenType {
     Token_documentation
 };
 
-struct Token {
+class Token {
+public:
+    static std::string TokenTypeToString(TokenType type);
+
+public:
     Token(TokenType type, const std::string &value, 
         const SourceLocation &location);
     Token(const Token &other);
@@ -30,6 +35,7 @@ struct Token {
     inline TokenType GetType() const { return m_type; }
     inline const std::string &GetValue() const { return m_value; }
     inline const SourceLocation &GetLocation() const { return m_location; }
+    inline bool Empty() const { return m_type == Token_empty; }
 
 private:
     TokenType m_type;

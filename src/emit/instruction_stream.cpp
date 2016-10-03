@@ -3,10 +3,8 @@
 std::ostream &operator<<(std::ostream &os, const InstructionStream &instruction_stream)
 {
     for (const Instruction<> &ins : instruction_stream.m_data) {
-        int index = ins.m_data.size() - 1;
-        while (index >= 0) {
-            os.write(&ins.m_data[index][0], ins.m_data[index].size());
-            --index;
+        for (int i = ins.m_data.size() - 1; i >= 0; i--) {
+            os.write(&ins.m_data[i][0], ins.m_data[i].size());
         }
     }
     return os;

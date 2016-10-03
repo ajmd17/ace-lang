@@ -48,11 +48,11 @@ void AstFunctionDefinition::Build(AstVisitor *visitor) const
 {
 }
 
-void AstFunctionDefinition::Optimize()
+void AstFunctionDefinition::Optimize(AstVisitor *visitor)
 {
     for (auto &param : m_parameters) {
-        param->Optimize();
+        param->Optimize(visitor);
     }
 
-    m_block->Optimize();
+    m_block->Optimize(visitor);
 }

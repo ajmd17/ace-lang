@@ -18,7 +18,7 @@ public:
 
     virtual void Visit(AstVisitor *visitor) = 0;
     virtual void Build(AstVisitor *visitor) const = 0;
-    virtual void Optimize() = 0;
+    virtual void Optimize(AstVisitor *visitor) = 0;
 
 protected:
     SourceLocation m_location;

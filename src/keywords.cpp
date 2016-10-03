@@ -22,6 +22,9 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "void", Keyword_void },
     { "true", Keyword_true },
     { "false", Keyword_false },
+    { "return", Keyword_return },
+    { "break", Keyword_break },
+    { "continue", Keyword_continue },
 };
 
 bool Keyword::IsKeyword(const std::string &str)

@@ -13,7 +13,7 @@ public:
 
     virtual void Visit(AstVisitor *visitor);
     virtual void Build(AstVisitor *visitor) const;
-    virtual void Optimize();
+    virtual void Optimize(AstVisitor *visitor);
     virtual int IsTrue() const;
 
 private:

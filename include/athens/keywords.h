@@ -25,6 +25,9 @@ enum Keywords {
     Keyword_void,
     Keyword_true,
     Keyword_false,
+    Keyword_return,
+    Keyword_break,
+    Keyword_continue,
 };
 
 class Keyword {

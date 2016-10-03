@@ -18,6 +18,7 @@ public:
     inline const std::string &GetFileName() const { return m_filename; }
 
     bool operator<(const SourceLocation &other) const;
+    bool operator==(const SourceLocation &other) const;
 
 private:
     int m_line;

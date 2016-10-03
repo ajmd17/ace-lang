@@ -23,9 +23,9 @@ void AstVariableDeclaration::Build(AstVisitor *visitor) const
 {
 }
 
-void AstVariableDeclaration::Optimize()
+void AstVariableDeclaration::Optimize(AstVisitor *visitor)
 {
     if (m_assignment != nullptr) {
-        m_assignment->Optimize();
+        m_assignment->Optimize(visitor);
     }
 }

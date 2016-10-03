@@ -32,10 +32,10 @@ void AstIfStatement::Build(AstVisitor *visitor) const
     }
 }
 
-void AstIfStatement::Optimize()
+void AstIfStatement::Optimize(AstVisitor *visitor)
 {
     // optimize the conditional
-    m_conditional->Optimize();
+    m_conditional->Optimize(visitor);
     // optimize the body
-    m_block->Optimize();
+    m_block->Optimize(visitor);
 }

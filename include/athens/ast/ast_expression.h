@@ -10,7 +10,7 @@ public:
 
     virtual void Visit(AstVisitor *visitor) = 0;
     virtual void Build(AstVisitor *visitor) const = 0;
-    virtual void Optimize() = 0;
+    virtual void Optimize(AstVisitor *visitor) = 0;
 
     /** Determines whether the expression would evaluate to true. 
         Return -1 if it cannot be evaluated at compile time. 

@@ -11,9 +11,8 @@ public:
 
     inline const std::string &GetPath() const { return m_path; }
 
-    virtual std::unique_ptr<Module> LoadModule(CompilationUnit *compilation_unit) const;
-
-    virtual void Optimize();
+    virtual std::unique_ptr<Module>
+        LoadModule(CompilationUnit *compilation_unit);
 
 protected:
     std::string m_path;

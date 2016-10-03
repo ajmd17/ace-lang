@@ -28,3 +28,10 @@ bool SourceLocation::operator<(const SourceLocation &other) const
         return m_filename < other.m_filename;
     }
 }
+
+bool SourceLocation::operator==(const SourceLocation &other) const
+{
+    return m_line == other.m_line &&
+        m_column == other.m_column &&
+        m_filename == other.m_filename;  
+}

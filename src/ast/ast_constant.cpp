@@ -10,7 +10,7 @@ void AstConstant::Visit(AstVisitor *visitor)
     // do nothing
 }
 
-void AstConstant::Optimize()
+void AstConstant::Optimize(AstVisitor *visitor)
 {
     // do nothing
 }

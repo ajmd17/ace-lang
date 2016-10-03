@@ -15,6 +15,6 @@ void AstParameter::Build(AstVisitor *visitor) const
 {
 }
 
-void AstParameter::Optimize()
+void AstParameter::Optimize(AstVisitor *visitor)
 {
 }

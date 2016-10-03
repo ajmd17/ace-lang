@@ -15,3 +15,12 @@ void AstImport::Visit(AstVisitor *visitor)
 void AstImport::Build(AstVisitor *visitor) const
 {
 }
+
+void AstImport::Optimize(AstVisitor *visitor)
+{
+    m_ast_iterator.ResetPosition();
+
+    // optimize the imported module
+    Optimizer optimizer(&m_ast_iterator, visitor->GetCompilationUnit());
+    optimizer.Optimize();
+}

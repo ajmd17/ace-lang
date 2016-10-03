@@ -26,6 +26,6 @@ void AstModuleDeclaration::Build(AstVisitor *visitor) const
 {
 }
 
-void AstModuleDeclaration::Optimize()
+void AstModuleDeclaration::Optimize(AstVisitor *visitor)
 {
 }

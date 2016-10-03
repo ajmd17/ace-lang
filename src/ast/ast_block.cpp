@@ -22,9 +22,9 @@ void AstBlock::Build(AstVisitor *visitor) const
 {
 }
 
-void AstBlock::Optimize()
+void AstBlock::Optimize(AstVisitor *visitor)
 {
     for (auto &child : m_children) {
-        child->Optimize();
+        child->Optimize(visitor);
     }
 }

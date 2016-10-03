@@ -10,7 +10,7 @@ public:
 
     virtual void Visit(AstVisitor *visitor);
     virtual void Build(AstVisitor *visitor) const = 0;
-    virtual void Optimize();
+    virtual void Optimize(AstVisitor *visitor);
     virtual int IsTrue() const = 0;
     virtual a_int IntValue() const = 0;
     virtual a_float FloatValue() const = 0;

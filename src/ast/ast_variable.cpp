@@ -29,7 +29,7 @@ void AstVariable::Build(AstVisitor *visitor) const
 {
 }
 
-void AstVariable::Optimize()
+void AstVariable::Optimize(AstVisitor *visitor)
 {
 }
 

@@ -30,7 +30,7 @@ int main()
 
     Lexer lex(src_stream, token_stream, &compilation_unit);
     lex.Analyze();
-    
+
     delete src_file;
 
     /*for (auto &it : token_stream->m_tokens) {
@@ -40,7 +40,7 @@ int main()
     }*/
 
     AstIterator ast_iterator;
-    Parser parser(token_stream, &compilation_unit, &ast_iterator);
+    Parser parser(&ast_iterator, token_stream, &compilation_unit);
     parser.Parse();
 
     delete token_stream;

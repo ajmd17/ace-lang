@@ -1,5 +1,9 @@
 #include <athens/ast/ast_local_import.h>
 #include <athens/source_file.h>
+#include <athens/lexer.h>
+#include <athens/parser.h>
+#include <athens/semantic_analyzer.h>
+#include <athens/optimizer.h>
 
 #include <fstream>
 
@@ -9,7 +13,7 @@ AstLocalImport::AstLocalImport(const std::string &path, const SourceLocation &lo
 {
 }
 
-std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_unit) const
+std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_unit)
 {
     // find the folder which the current file is in
     std::string dir;
@@ -35,11 +39,16 @@ std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_
         file.read(source_file.GetBuffer(), max);
 
         // Todo: use the lexer and parser on this file buffer
+        TokenStream token_stream;
+        Lexer lexer(SourceStream(&source_file), &token_stream, compilation_unit);
+        lexer.Analyze();
+
+        Parser parser(&m_ast_iterator, &token_stream, compilation_unit);
+        parser.Parse();
+
+        SemanticAnalyzer semantic_analyzer(&m_ast_iterator, compilation_unit);
+        semantic_analyzer.Analyze();
     }
 
     return nullptr;
-}
-
-void AstLocalImport::Optimize()
-{
 }

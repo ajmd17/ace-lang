@@ -3,18 +3,18 @@
 
 #include <memory>
 
-Parser::Parser(TokenStream *token_stream, CompilationUnit *compilation_unit, 
-        AstIterator *ast_iterator)
-    : m_token_stream(token_stream),
-      m_compilation_unit(compilation_unit),
-      m_ast_iterator(ast_iterator)
+Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream, 
+        CompilationUnit *compilation_unit)
+    : m_ast_iterator(ast_iterator), 
+      m_token_stream(token_stream),
+      m_compilation_unit(compilation_unit)
 {
 }
 
 Parser::Parser(const Parser &other)
-    : m_token_stream(other.m_token_stream),
-      m_compilation_unit(other.m_compilation_unit),
-      m_ast_iterator(other.m_ast_iterator)
+    : m_ast_iterator(other.m_ast_iterator), 
+      m_token_stream(other.m_token_stream),
+      m_compilation_unit(other.m_compilation_unit)
 {
 }
 
@@ -60,7 +60,6 @@ const Token *Parser::Expect(TokenType type, bool read)
         switch (type) {
         case Token_identifier:
             error_msg = Msg_expected_identifier;
-            error_str = "";
             break;
         default:
             error_msg = Msg_expected_token;
@@ -84,14 +83,13 @@ const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
         if (read) {
             m_token_stream->Next();
         }
-        
+
         ErrorMessage error_msg;
         std::string error_str;
 
         switch (keyword) {
         case Keyword_module:
             error_msg = Msg_expected_module;
-            error_str = "";
             break;
         default:
             error_msg = Msg_expected_token;
@@ -128,4 +126,65 @@ void Parser::Parse()
             m_ast_iterator->Push(module_ast);
         }
     }
+
+    while (m_token_stream->HasNext()) {
+        SourceLocation location(CurrentLocation());
+
+        std::shared_ptr<AstStatement> statement(ParseStatement());
+
+        if (statement != nullptr) {
+            m_ast_iterator->Push(statement);
+        } else {
+            // expression or statement could not be evaluated
+            CompilerError error(Level_fatal,
+            Msg_illegal_expression, location);
+
+            m_compilation_unit->GetErrorList().AddError(error);
+
+            // skip ahead to avoid endlessly looping
+            m_token_stream->Next();
+        }
+    }
+}
+
+std::shared_ptr<AstStatement> Parser::ParseStatement()
+{
+    if (MatchKeyword(Keyword_import, false)) {
+        return ParseImport();
+    } else {
+        return ParseExpression(true);
+    }
+}
+
+std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
+{
+
+}
+
+std::shared_ptr<AstImport> Parser::ParseImport()
+{
+    if (ExpectKeyword(Keyword_import, true)) {
+        if (Match(Token_string_literal, false)) {
+            return ParseLocalImport();
+        } else {
+            // handle other types of imports here
+        }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstLocalImport> Parser::ParseLocalImport()
+{
+    SourceLocation location(CurrentLocation());
+
+    const Token *file = Expect(Token_string_literal, true);
+    if (file != nullptr) {
+        std::shared_ptr<AstLocalImport> result(
+            new AstLocalImport(file->GetValue(), location));
+        
+        return result;
+    }
+
+    return nullptr;
 }

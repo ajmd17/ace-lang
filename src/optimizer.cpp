@@ -13,6 +13,6 @@ Optimizer::Optimizer(const Optimizer &other)
 void Optimizer::Optimize()
 {
     while (m_ast_iterator->HasNext()) {
-        m_ast_iterator->Next()->Optimize();
+        m_ast_iterator->Next()->Optimize(this);
     }
 }

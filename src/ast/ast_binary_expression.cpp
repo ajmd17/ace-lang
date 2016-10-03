@@ -5,9 +5,9 @@
 #include <athens/operator.h>
 
 /** Attemps to reduce a variable that is const literal to the actual value. */
-static void OptimizeSide(std::shared_ptr<AstExpression> &side)
+static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visitor)
 {
-    side->Optimize();
+    side->Optimize(visitor);
 
     auto side_as_var = std::dynamic_pointer_cast<AstVariable>(side);
     if (side_as_var != nullptr) {
@@ -113,10 +113,10 @@ void AstBinaryExpression::Build(AstVisitor *visitor) const
     }
 }
 
-void AstBinaryExpression::Optimize()
+void AstBinaryExpression::Optimize(AstVisitor *visitor)
 {
-    OptimizeSide(m_left);
-    OptimizeSide(m_right);
+    OptimizeSide(m_left, visitor);
+    OptimizeSide(m_right, visitor);
 
     // check that we can further optimize the
     // binary expression by optimizing away the right

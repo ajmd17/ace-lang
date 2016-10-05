@@ -17,6 +17,14 @@ std::string Token::TokenTypeToString(TokenType type)
         return "keyword";
     case Token_operator:
         return "operator";
+    case Token_semicolon:
+        return ";";
+    case Token_colon:
+        return ":";
+    case Token_dot:
+        return ".";
+    case Token_ellipsis:
+        return "...";
     case Token_open_parenthesis:
         return "(";
     case Token_close_parenthesis:

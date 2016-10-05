@@ -15,6 +15,11 @@ int AstTrue::IsTrue() const
     return true;
 }
 
+bool AstTrue::IsNumber() const
+{
+    return true;
+}
+
 a_int AstTrue::IntValue() const
 {
     return 1;
@@ -28,6 +33,10 @@ a_float AstTrue::FloatValue() const
 std::shared_ptr<AstConstant> AstTrue::operator+(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() + right->IntValue(), m_location));
 }
@@ -35,6 +44,10 @@ std::shared_ptr<AstConstant> AstTrue::operator+(
 std::shared_ptr<AstConstant> AstTrue::operator-(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() - right->IntValue(), m_location));
 }
@@ -42,6 +55,10 @@ std::shared_ptr<AstConstant> AstTrue::operator-(
 std::shared_ptr<AstConstant> AstTrue::operator*(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() * right->IntValue(), m_location));
 }
@@ -49,6 +66,10 @@ std::shared_ptr<AstConstant> AstTrue::operator*(
 std::shared_ptr<AstConstant> AstTrue::operator/(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() - right->IntValue(), m_location));
 }
@@ -56,6 +77,10 @@ std::shared_ptr<AstConstant> AstTrue::operator/(
 std::shared_ptr<AstConstant> AstTrue::operator%(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() % right->IntValue(), m_location));
 }
@@ -63,6 +88,10 @@ std::shared_ptr<AstConstant> AstTrue::operator%(
 std::shared_ptr<AstConstant> AstTrue::operator^(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() ^ right->IntValue(), m_location));
 }
@@ -70,6 +99,10 @@ std::shared_ptr<AstConstant> AstTrue::operator^(
 std::shared_ptr<AstConstant> AstTrue::operator&(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() & right->IntValue(), m_location));
 }
@@ -77,6 +110,10 @@ std::shared_ptr<AstConstant> AstTrue::operator&(
 std::shared_ptr<AstConstant> AstTrue::operator|(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
@@ -84,6 +121,10 @@ std::shared_ptr<AstConstant> AstTrue::operator|(
 std::shared_ptr<AstConstant> AstTrue::operator<<(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
@@ -91,6 +132,10 @@ std::shared_ptr<AstConstant> AstTrue::operator<<(
 std::shared_ptr<AstConstant> AstTrue::operator>>(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
@@ -98,6 +143,10 @@ std::shared_ptr<AstConstant> AstTrue::operator>>(
 std::shared_ptr<AstConstant> AstTrue::operator&&(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() && right->IntValue(), m_location));
 }
@@ -105,6 +154,10 @@ std::shared_ptr<AstConstant> AstTrue::operator&&(
 std::shared_ptr<AstConstant> AstTrue::operator||(
         const std::shared_ptr<AstConstant> &right) const
 {
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
 }

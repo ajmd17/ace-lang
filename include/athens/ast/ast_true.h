@@ -9,6 +9,7 @@ public:
 
     virtual void Build(AstVisitor *visitor) const;
     virtual int IsTrue() const;
+    virtual bool IsNumber() const;
     virtual a_int IntValue() const;
     virtual a_float FloatValue() const;
 

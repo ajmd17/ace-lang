@@ -1,11 +1,13 @@
-#ifndef AST_NULL_H
-#define AST_NULL_H
+#ifndef AST_STRING_H
+#define AST_STRING_H
 
 #include <athens/ast/ast_constant.h>
 
-class AstNull : public AstConstant {
+#include <string>
+
+class AstString : public AstConstant {
 public:
-    AstNull(const SourceLocation &location);
+    AstString(const std::string &value, const SourceLocation &location);
 
     virtual void Build(AstVisitor *visitor) const;
     virtual int IsTrue() const;
@@ -42,6 +44,9 @@ public:
         const std::shared_ptr<AstConstant> &right) const;
     virtual std::shared_ptr<AstConstant> operator||(
         const std::shared_ptr<AstConstant> &right) const;
+
+private:
+    std::string m_value;
 };
 
 #endif

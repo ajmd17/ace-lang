@@ -1,101 +1,103 @@
-#include <athens/ast/ast_void.h>
+#include <athens/ast/ast_string.h>
 
-AstVoid::AstVoid(const SourceLocation &location)
-    : AstConstant(location)
+AstString::AstString(const std::string &value, const SourceLocation &location)
+    : AstConstant(location),
+      m_value(value)
 {
 }
 
-void AstVoid::Build(AstVisitor *visitor) const
+void AstString::Build(AstVisitor *visitor) const
 {
 }
 
-int AstVoid::IsTrue() const
+int AstString::IsTrue() const
+{
+    return -1;
+}
+
+bool AstString::IsNumber() const
 {
     return false;
 }
 
-bool AstVoid::IsNumber() const
-{
-    return false;
-}
-
-a_int AstVoid::IntValue() const
+a_int AstString::IntValue() const
 {
     return 0;
 }
 
-a_float AstVoid::FloatValue() const
+a_float AstString::FloatValue() const
 {
     return 0.0f;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator+(
+std::shared_ptr<AstConstant> AstString::operator+(
+        const std::shared_ptr<AstConstant> &right) const
+{
+    // TODO: string concatenation
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstString::operator-(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator-(
+std::shared_ptr<AstConstant> AstString::operator*(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator*(
+std::shared_ptr<AstConstant> AstString::operator/(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator/(
+std::shared_ptr<AstConstant> AstString::operator%(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator%(
+std::shared_ptr<AstConstant> AstString::operator^(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator^(
+std::shared_ptr<AstConstant> AstString::operator&(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator&(
+std::shared_ptr<AstConstant> AstString::operator|(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator|(
+std::shared_ptr<AstConstant> AstString::operator<<(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator<<(
+std::shared_ptr<AstConstant> AstString::operator>>(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator>>(
+std::shared_ptr<AstConstant> AstString::operator&&(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator&&(
-        const std::shared_ptr<AstConstant> &right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstVoid::operator||(
+std::shared_ptr<AstConstant> AstString::operator||(
         const std::shared_ptr<AstConstant> &right) const
 {
     return nullptr;

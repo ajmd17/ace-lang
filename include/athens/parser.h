@@ -6,10 +6,15 @@
 #include <athens/compilation_unit.h>
 #include <athens/ast_iterator.h>
 #include <athens/keywords.h>
+#include <athens/ast/ast_module_declaration.h>
 #include <athens/ast/ast_statement.h>
 #include <athens/ast/ast_expression.h>
 #include <athens/ast/ast_import.h>
 #include <athens/ast/ast_local_import.h>
+#include <athens/ast/ast_integer.h>
+#include <athens/ast/ast_float.h>
+#include <athens/ast/ast_string.h>
+#include <athens/ast/ast_binary_expression.h>
 
 #include <string>
 
@@ -34,6 +39,13 @@ private:
     const SourceLocation &CurrentLocation() const;
 
     std::shared_ptr<AstStatement> ParseStatement();
+    std::shared_ptr<AstExpression> ParseTerm();
+    std::shared_ptr<AstExpression> ParseParentheses();
+    std::shared_ptr<AstInteger> ParseIntegerLiteral();
+    std::shared_ptr<AstFloat> ParseFloatLiteral();
+    std::shared_ptr<AstString> ParseStringLiteral();
+    std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec, 
+    std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseExpression(bool standalone = false);
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstLocalImport> ParseLocalImport();

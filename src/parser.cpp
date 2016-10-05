@@ -1,7 +1,7 @@
 #include <athens/parser.h>
-#include <athens/ast/ast_module_declaration.h>
 
 #include <memory>
+#include <cstdlib>
 
 Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream, 
         CompilationUnit *compilation_unit)
@@ -149,16 +149,167 @@ void Parser::Parse()
 
 std::shared_ptr<AstStatement> Parser::ParseStatement()
 {
-    if (MatchKeyword(Keyword_import, false)) {
-        return ParseImport();
+    if (Match(Token_keyword, false)) {
+        if (MatchKeyword(Keyword_import, false)) {
+            return ParseImport();
+        } else {
+            return nullptr;
+        }
     } else {
         return ParseExpression(true);
     }
 }
 
+std::shared_ptr<AstExpression> Parser::ParseTerm()
+{
+    const Token *token = m_token_stream->Peek();
+    if (token == nullptr) {
+        m_token_stream->Next();
+        return nullptr;
+    }
+
+    if (Match(Token_open_parenthesis)) {
+        return ParseParentheses();
+    } else if (Match(Token_integer_literal)) {
+        return ParseIntegerLiteral();
+    } else if (Match(Token_float_literal)) {
+        return ParseFloatLiteral();
+    } else if (Match(Token_string_literal)) {
+        return ParseStringLiteral();
+    } else if (Match(Token_identifier)) {
+        return nullptr;//ParseIdentifier();
+    } else if (MatchKeyword(Keyword_true)) {
+        return nullptr;//ParseTrue();
+    } else if (MatchKeyword(Keyword_false)) {
+        return nullptr;//ParseFalse();
+    } else if (MatchKeyword(Keyword_null)) {
+        return nullptr;//ParseNull();
+    } else if (MatchKeyword(Keyword_func)) {
+        return nullptr;//ParseFunctionExpression();
+    } else if (Match(Token_operator)) {
+        return nullptr;//ParseUnaryExpression(); 
+    } else {
+        CompilerError error(Level_fatal, Msg_unexpected_token, 
+            token->GetLocation(), token->GetValue());
+        m_compilation_unit->GetErrorList().AddError(error);
+
+        m_token_stream->Next();
+        
+        return nullptr;
+    }
+}
+
+std::shared_ptr<AstExpression> Parser::ParseParentheses()
+{
+    Expect(Token_open_parenthesis, true);
+    std::shared_ptr<AstExpression> expr(ParseExpression());
+    Expect(Token_close_parenthesis, true);
+    return expr;
+}
+
+std::shared_ptr<AstInteger> Parser::ParseIntegerLiteral()
+{
+    const Token *token = Expect(Token_integer_literal, true);
+    a_int value = (a_int)atoll(token->GetValue().c_str());
+    return std::shared_ptr<AstInteger>(
+        new AstInteger(value, token->GetLocation()));
+}
+
+std::shared_ptr<AstFloat> Parser::ParseFloatLiteral()
+{
+    const Token *token = Expect(Token_float_literal, true);
+    a_float value = (a_float)atof(token->GetValue().c_str());
+    return std::shared_ptr<AstFloat>(
+        new AstFloat(value, token->GetLocation()));
+}
+
+std::shared_ptr<AstString> Parser::ParseStringLiteral()
+{
+    const Token *token = Expect(Token_string_literal, true);
+    return std::shared_ptr<AstString>(
+        new AstString(token->GetValue(), token->GetLocation()));
+}
+
+std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec, 
+    std::shared_ptr<AstExpression> left)
+{
+    while (true) {
+        // get precedence
+        int precedence = -1;
+
+        const Operator *op = nullptr;
+        const Token *token_op = m_token_stream->Peek();
+        if (token_op != nullptr) {
+            if (Operator::IsBinaryOperator(token_op->GetValue(), op)) {
+                precedence = op->GetPrecedence();
+            } else {
+                // illegal operator
+                CompilerError error(Level_fatal, Msg_illegal_operator, 
+                    token_op->GetLocation(), token_op->GetValue());
+                m_compilation_unit->GetErrorList().AddError(error);
+            }
+        }
+
+        if (precedence < expr_prec) {
+            return left;
+        } else {
+            // read the operator
+            m_token_stream->Next();
+
+            std::shared_ptr<AstExpression> right = ParseTerm();
+            if (right == nullptr) {
+                return nullptr;
+            }
+
+            // next part of expression's precedence
+            int next_prec = -1;
+
+            const Token *token_next = m_token_stream->Peek();
+            if (token_next != nullptr) {
+                const Operator *op_next = nullptr;
+                if (Operator::IsBinaryOperator(token_next->GetValue(), op_next)) {
+                    next_prec = op_next->GetPrecedence();
+                } else {
+                    // illegal operator
+                    CompilerError error(Level_fatal, Msg_illegal_operator, 
+                        token_next->GetLocation(), token_next->GetValue());
+                    m_compilation_unit->GetErrorList().AddError(error);
+                }
+            }
+
+            if (precedence < next_prec) {
+                right = ParseBinaryExpression(precedence + 1, right);
+                if (right == nullptr) {
+                    return nullptr;
+                }
+            }
+
+            left = std::shared_ptr<AstBinaryExpression>(
+                new AstBinaryExpression(left, right, op, 
+                    token_op->GetLocation()));
+        }
+    }
+    
+    return nullptr;
+}
+
 std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
 {
+    std::shared_ptr<AstExpression> term = ParseTerm();
+    if (term == nullptr) {
+        return nullptr;
+    }
 
+    if (Match(Token_operator, false)) {
+        std::shared_ptr<AstExpression> bin_expr = ParseBinaryExpression(0, term);
+        if (bin_expr == nullptr) {
+            return nullptr;
+        }
+        term = bin_expr;
+    }
+    
+    term->m_is_standalone = standalone;
+    return term;
 }
 
 std::shared_ptr<AstImport> Parser::ParseImport()
@@ -167,7 +318,7 @@ std::shared_ptr<AstImport> Parser::ParseImport()
         if (Match(Token_string_literal, false)) {
             return ParseLocalImport();
         } else {
-            // handle other types of imports here
+            // TODO: handle other types of imports here
         }
     }
 
@@ -182,7 +333,7 @@ std::shared_ptr<AstLocalImport> Parser::ParseLocalImport()
     if (file != nullptr) {
         std::shared_ptr<AstLocalImport> result(
             new AstLocalImport(file->GetValue(), location));
-        
+
         return result;
     }
 

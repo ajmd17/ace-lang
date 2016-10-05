@@ -48,6 +48,10 @@ public:
 
     static bool IsOperator(const std::string &str);
     static bool IsOperator(const std::string &str, const Operator *&out);
+    static bool IsBinaryOperator(const std::string &str);
+    static bool IsBinaryOperator(const std::string &str, const Operator *&out);
+    static bool IsUnaryOperator(const std::string &str);
+    static bool IsUnaryOperator(const std::string &str, const Operator *&out);
 
 public:
     Operator(const std::string &str, 

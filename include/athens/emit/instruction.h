@@ -46,7 +46,7 @@ template <class T, class... Ts>
 struct Instruction<T, Ts...> : Instruction<Ts...> {
     Instruction(T t, Ts...ts) : Instruction<Ts...>(ts...)
     {
-        Accept(t);
+        this->Accept(t);
     }
 };
 

@@ -60,6 +60,8 @@ Token Lexer::NextToken()
         } else {
             return ReadBlockComment();
         }
+    } else if (ch[0] == '_' || (std::isalpha(ch[0]) || (unsigned char)ch[0] >= 0xC0)) {
+        return ReadIdentifier();
     } else if (ch[0] == '+' || ch[0] == '-' || 
         ch[0] == '*' || ch[0] == '/' ||
         ch[0] == '%' || ch[0] == '^' ||
@@ -67,8 +69,50 @@ Token Lexer::NextToken()
         ch[0] == '<' || ch[0] == '>' ||
         ch[0] == '=' || ch[0] == '!') {
         return ReadOperator();
-    } else if (ch[0] == '_' || (std::isalpha(ch[0]) || (unsigned char)ch[0] >= 0xC0)) {
-        return ReadIdentifier();
+    } else if (ch[0] == ';') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_semicolon, ";", location);
+    } else if (ch[0] == ':') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_colon, ":", location);
+    } else if (ch[0] == '.') {
+        if (ch[1] == '.' && ch[2] == '.') {
+            for (int i = 0; i < 3; i++) {
+                m_source_stream.Next();
+                m_source_location.GetColumn()++;
+            }
+            return Token(Token_ellipsis, "...", location);
+        } else {
+            m_source_stream.Next();
+            m_source_location.GetColumn()++;
+            return Token(Token_dot, ".", location);
+        }
+    } else if (ch[0] == '(') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_open_parenthesis, "(", location);
+    } else if (ch[0] == ')') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_close_parenthesis, ")", location);
+    } else if (ch[0] == '[') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_open_bracket, "[", location);
+    } else if (ch[0] == ']') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_close_bracket, "]", location);
+    } else if (ch[0] == '{') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_open_brace, "{", location);
+    } else if (ch[0] == '}') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_close_brace, "}", location);
     } else {
         CompilerError error(Level_fatal, 
             Msg_unexpected_token, location, m_source_stream.Next());

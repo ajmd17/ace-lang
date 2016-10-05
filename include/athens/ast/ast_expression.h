@@ -23,6 +23,7 @@ public:
         return (is_true == -1) ? is_true : !is_true;
     }
 
+    bool m_is_standalone;
 };
 
 #endif

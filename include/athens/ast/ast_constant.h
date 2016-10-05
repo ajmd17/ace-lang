@@ -7,11 +7,13 @@
 class AstConstant : public AstExpression {
 public:
     AstConstant(const SourceLocation &location);
+    virtual ~AstConstant() = default;
 
     virtual void Visit(AstVisitor *visitor);
     virtual void Build(AstVisitor *visitor) const = 0;
     virtual void Optimize(AstVisitor *visitor);
     virtual int IsTrue() const = 0;
+    virtual bool IsNumber() const = 0;
     virtual a_int IntValue() const = 0;
     virtual a_float FloatValue() const = 0;
 

@@ -3,6 +3,11 @@
 #include <athens/ast/ast_constant.h>
 #include <athens/ast_visitor.h>
 #include <athens/operator.h>
+#include <athens/emit/instruction.h>
+
+#include <common/instructions.h>
+
+#include <iostream>
 
 /** Attemps to reduce a variable that is const literal to the actual value. */
 static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visitor)
@@ -32,7 +37,7 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visit
 
 /** Attemps to evaluate the optimized expression at compile-time. */
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left, 
-    std::shared_ptr<AstExpression> &right, const Operator *oper)
+    std::shared_ptr<AstExpression> &right, const Operator *oper, AstVisitor *visitor)
 {
     auto left_as_constant = std::dynamic_pointer_cast<AstConstant>(left);
     auto right_as_constant = std::dynamic_pointer_cast<AstConstant>(right);
@@ -66,11 +71,6 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
         }
         // don't have to worry about assignment operations,
         // because at this point both sides are const and literal.
-
-        if (result == nullptr) {
-            // an error has occured during compile-time evaluation
-            // wat do ?
-        }
     }
     
     // one or both of the sides are not a constant
@@ -108,8 +108,26 @@ void AstBinaryExpression::Visit(AstVisitor *visitor)
 
 void AstBinaryExpression::Build(AstVisitor *visitor) const
 {
+    // load left-hand side into register 0
+    m_left->Build(visitor);
+
     if (m_right != nullptr) {
         // the right side has not been optimized away
+
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+        // load right-hand side into register 1
+        m_right->Build(visitor);
+
+        // perform operation
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        if (m_op == &Operator::operator_add) {
+            visitor->GetCompilationUnit()->GetInstructionStream() << 
+                Instruction<uint8_t, uint8_t, uint8_t>(ADD, rp - 1, rp);
+        } // TODO: Handle other cases
+        
+        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
     }
 }
 
@@ -122,8 +140,9 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor)
     // binary expression by optimizing away the right
     // side, and combining the resulting value into
     // the left side of the operation.
-    auto constant_value = ConstantFold(m_left, m_right, m_op);
+    auto constant_value = ConstantFold(m_left, m_right, m_op, visitor);
     if (constant_value != nullptr) {
+        // compile-time evaluation was successful
         m_left = constant_value;
         m_right = nullptr;
     }

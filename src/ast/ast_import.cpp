@@ -1,5 +1,6 @@
 #include <athens/ast/ast_import.h>
 #include <athens/ast_visitor.h>
+#include <athens/optimizer.h>
 
 AstImport::AstImport(const SourceLocation &location)
     : AstStatement(location)

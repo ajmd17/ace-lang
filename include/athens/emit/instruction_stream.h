@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <ostream>
+#include <cstdint>
 
 class InstructionStream {
     friend std::ostream &operator<<(std::ostream &os, const InstructionStream &instruction_stream);
@@ -13,12 +14,19 @@ public:
     InstructionStream(const InstructionStream &other);
 
     inline size_t GetPosition() const { return m_position; }
+    inline uint8_t GetCurrentRegister() { return m_register_counter; }
+    inline void IncRegisterUsage() { m_register_counter++; }
+    inline void DecRegisterUsage() { m_register_counter--; }
 
     InstructionStream &operator<<(const Instruction<> &instruction);
+
 
 private:
     size_t m_position;
     std::vector<Instruction<>> m_data;
+    // incremented and decremented each time a register
+    // is used/unused
+    uint8_t m_register_counter;
 };
 
 #endif

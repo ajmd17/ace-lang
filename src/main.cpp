@@ -13,8 +13,10 @@
 #include <athens/emit/instruction.h>
 #include <athens/lexer.h>
 #include <athens/parser.h>
+#include <athens/compiler.h>
 
 #include <iostream>
+#include <fstream>
 #include <string>
 
 int main()
@@ -24,7 +26,7 @@ int main()
     TokenStream *token_stream = new TokenStream();
 
     SourceFile *src_file = new SourceFile(256);
-    (*src_file) >> "module main \"Hello world\" /*blah*/ test + 4";
+    (*src_file) >> "module main 7 + 3";
 
     SourceStream src_stream(src_file);
 
@@ -58,11 +60,21 @@ int main()
     }
 
     if (!compilation_unit.GetErrorList().HasFatalErrors()) {
+        // only optimize if there were no errors
+        // before this point
         ast_iterator.ResetPosition();
-
-        // optimization step
         Optimizer optimizer(&ast_iterator, &compilation_unit);
         optimizer.Optimize();
+
+        // compile into bytecode instructions
+        ast_iterator.ResetPosition();
+        Compiler compiler(&ast_iterator, &compilation_unit);
+        compiler.Compile();
+
+        // emit bytecode instructions to file
+        std::ofstream out("bytecode.bin", std::ios::out | std::ios::binary);
+        out << compilation_unit.GetInstructionStream();
+        out.close();
     }
 
 

@@ -91,6 +91,8 @@ public:
         MakeMessage(error_message_strings.at(m_msg).c_str(), args...);
     }
 
+    ~CompilerError() {}
+
     inline ErrorLevel GetLevel() const { return m_level; }
     inline ErrorMessage GetMessage() const { return m_msg; }
     inline const SourceLocation &GetLocation() const { return m_location; }

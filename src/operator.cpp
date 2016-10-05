@@ -56,7 +56,18 @@ bool Operator::IsOperator(const std::string &str)
 
 bool Operator::IsOperator(const std::string &str, const Operator *&out)
 {
-    const Operator *operators[] = { 
+    return IsBinaryOperator(str, out) || IsUnaryOperator(str, out);
+}
+
+bool Operator::IsBinaryOperator(const std::string &str)
+{
+    const Operator *tmp = nullptr;
+    return IsBinaryOperator(str, tmp);
+}
+
+bool Operator::IsBinaryOperator(const std::string &str, const Operator *&out)
+{
+    const Operator *binary_operators[] = { 
         &operator_add,
         &operator_subtract, 
         &operator_multiply, 
@@ -82,7 +93,31 @@ bool Operator::IsOperator(const std::string &str, const Operator *&out)
         &operator_divide_assign, 
         &operator_bitwise_xor_assign, 
         &operator_bitwise_and_assign, 
-        &operator_bitwise_or_assign, 
+        &operator_bitwise_or_assign
+    };
+
+    size_t num_binary_operators = sizeof(binary_operators) / 
+        sizeof(binary_operators[0]);
+    for (int i = 0; i < num_binary_operators; i++) {
+        auto oper = binary_operators[i];
+        if (str == oper->ToString()) {
+            out = oper;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Operator::IsUnaryOperator(const std::string &str)
+{
+    const Operator *tmp = nullptr;
+    return IsUnaryOperator(str, tmp);
+}
+
+bool Operator::IsUnaryOperator(const std::string &str, const Operator *&out)
+{
+    const Operator *unary_operators[] = {
         &operator_logical_not, 
         &operator_negative, 
         &operator_positive, 
@@ -91,9 +126,10 @@ bool Operator::IsOperator(const std::string &str, const Operator *&out)
         &operator_decrement
     };
 
-    size_t num_operators = sizeof(operators) / sizeof(operators[0]);
-    for (int i = 0; i < num_operators; i++) {
-        auto oper = operators[i];
+    size_t num_unary_operators = sizeof(unary_operators) / 
+        sizeof(unary_operators[0]);
+    for (int i = 0; i < num_unary_operators; i++) {
+        auto oper = unary_operators[i];
         if (str == oper->ToString()) {
             out = oper;
             return true;

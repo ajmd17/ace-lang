@@ -38,6 +38,8 @@ private:
     const Token *ExpectKeyword(Keywords keyword, bool read = false);
     const SourceLocation &CurrentLocation() const;
 
+    int OperatorPrecedence(const Operator *&out);
+
     std::shared_ptr<AstStatement> ParseStatement();
     std::shared_ptr<AstExpression> ParseTerm();
     std::shared_ptr<AstExpression> ParseParentheses();

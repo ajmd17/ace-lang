@@ -113,7 +113,6 @@ void AstBinaryExpression::Build(AstVisitor *visitor) const
 
     if (m_right != nullptr) {
         // the right side has not been optimized away
-
         visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
         // load right-hand side into register 1

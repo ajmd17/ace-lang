@@ -137,13 +137,35 @@ void Parser::Parse()
         } else {
             // expression or statement could not be evaluated
             CompilerError error(Level_fatal,
-            Msg_illegal_expression, location);
+                Msg_illegal_expression, location);
 
             m_compilation_unit->GetErrorList().AddError(error);
 
             // skip ahead to avoid endlessly looping
             m_token_stream->Next();
         }
+    }
+}
+
+int Parser::OperatorPrecedence(const Operator *&out)
+{
+    out = nullptr;
+    const Token *token = m_token_stream->Peek();
+    
+    if (token != nullptr && token->GetType() == Token_operator) {
+        if (!Operator::IsBinaryOperator(token->GetValue(), out)) {
+            // internal error: operator not defined
+            CompilerError error(Level_fatal,
+                Msg_internal_error, token->GetLocation());
+
+            m_compilation_unit->GetErrorList().AddError(error);
+        }
+    }
+
+    if (out != nullptr) {
+        return out->GetPrecedence();
+    } else {
+        return -1;
     }
 }
 
@@ -235,59 +257,33 @@ std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
 {
     while (true) {
         // get precedence
-        int precedence = -1;
-
         const Operator *op = nullptr;
-        const Token *token_op = m_token_stream->Peek();
-        if (token_op != nullptr) {
-            if (Operator::IsBinaryOperator(token_op->GetValue(), op)) {
-                precedence = op->GetPrecedence();
-            } else {
-                // illegal operator
-                CompilerError error(Level_fatal, Msg_illegal_operator, 
-                    token_op->GetLocation(), token_op->GetValue());
-                m_compilation_unit->GetErrorList().AddError(error);
-            }
-        }
-
+        int precedence = OperatorPrecedence(op);
         if (precedence < expr_prec) {
             return left;
-        } else {
-            // read the operator
-            m_token_stream->Next();
+        }
 
-            std::shared_ptr<AstExpression> right = ParseTerm();
+        // read the operator token
+        const Token *token = Expect(Token_operator, true);
+
+        std::shared_ptr<AstExpression> right = ParseTerm();
+        if (right == nullptr) {
+            return nullptr;
+        }
+
+        // next part of expression's precedence
+        const Operator *next_op = nullptr;
+        int next_prec = OperatorPrecedence(next_op);
+        if (precedence < next_prec) {
+            right = ParseBinaryExpression(precedence + 1, right);
             if (right == nullptr) {
                 return nullptr;
             }
-
-            // next part of expression's precedence
-            int next_prec = -1;
-
-            const Token *token_next = m_token_stream->Peek();
-            if (token_next != nullptr) {
-                const Operator *op_next = nullptr;
-                if (Operator::IsBinaryOperator(token_next->GetValue(), op_next)) {
-                    next_prec = op_next->GetPrecedence();
-                } else {
-                    // illegal operator
-                    CompilerError error(Level_fatal, Msg_illegal_operator, 
-                        token_next->GetLocation(), token_next->GetValue());
-                    m_compilation_unit->GetErrorList().AddError(error);
-                }
-            }
-
-            if (precedence < next_prec) {
-                right = ParseBinaryExpression(precedence + 1, right);
-                if (right == nullptr) {
-                    return nullptr;
-                }
-            }
-
-            left = std::shared_ptr<AstBinaryExpression>(
-                new AstBinaryExpression(left, right, op, 
-                    token_op->GetLocation()));
         }
+
+        left = std::shared_ptr<AstBinaryExpression>(
+            new AstBinaryExpression(left, right, op, 
+                token->GetLocation()));
     }
     
     return nullptr;

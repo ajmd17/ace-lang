@@ -27,8 +27,8 @@ int main()
 
     TokenStream *token_stream = new TokenStream();
 
-    SourceFile *src_file = new SourceFile(256);
-    (*src_file) >> "module main (2 + (4 + (4 + (9 + 2) + (3+5)))) + (3 + (8 + 4)) + 9 + 10";
+    SourceFile *src_file = new SourceFile(512);
+    (*src_file) >> "module main (2 * (4 + (4 * (9 + 2 * 9) + (3+5)))) + (3 * (8 + 4)) * 9 + 10";
 
     SourceStream src_stream(src_file);
 
@@ -58,9 +58,9 @@ int main()
     if (!compilation_unit.GetErrorList().HasFatalErrors()) {
         // only optimize if there were no errors
         // before this point
-        //ast_iterator.ResetPosition();
-        //Optimizer optimizer(&ast_iterator, &compilation_unit);
-        //optimizer.Optimize();
+        ast_iterator.ResetPosition();
+        Optimizer optimizer(&ast_iterator, &compilation_unit);
+        optimizer.Optimize();
 
         // compile into bytecode instructions
         ast_iterator.ResetPosition();

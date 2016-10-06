@@ -11,6 +11,9 @@ public:
         const Operator *op,
         const SourceLocation &location);
 
+    inline const std::shared_ptr<AstExpression> &GetLeft() const { return m_left; }
+    inline const std::shared_ptr<AstExpression> &GetRight() const { return m_right; }
+
     virtual void Visit(AstVisitor *visitor);
     virtual void Build(AstVisitor *visitor) const;
     virtual void Optimize(AstVisitor *visitor);

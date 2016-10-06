@@ -14,8 +14,9 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visit
 {
     side->Optimize(visitor);
 
-    auto side_as_var = std::dynamic_pointer_cast<AstVariable>(side);
-    if (side_as_var != nullptr) {
+    AstVariable *side_as_var = nullptr;
+    AstBinaryExpression *side_as_binop = nullptr;
+    if (side_as_var = dynamic_cast<AstVariable*>(side.get())) {
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
         if (side_as_var->GetIdentifier() != nullptr) {
@@ -31,6 +32,11 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visit
                     side = constant_sp;
                 }
             }
+        }
+    } else if (side_as_binop = dynamic_cast<AstBinaryExpression*>(side.get())) {
+        if (side_as_binop->GetRight() == nullptr) {
+            // right side has been optimized away, to just left side
+            side = side_as_binop->GetLeft();
         }
     }
 }
@@ -114,6 +120,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor) const
     uint8_t opcode;
     if (m_op == &Operator::operator_add) {
         opcode = ADD;
+    } else if (m_op == &Operator::operator_multiply) {
+        opcode = MUL;
     }
 
     if (left_as_binop == nullptr && right_as_binop != nullptr) {
@@ -130,43 +138,26 @@ void AstBinaryExpression::Build(AstVisitor *visitor) const
         visitor->GetCompilationUnit()->GetInstructionStream() << 
             Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
 
+        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
     } else {
         // load left-hand side into register 0
         m_left->Build(visitor);
 
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-        // load right-hand side into register 1
-        m_right->Build(visitor);
+        if (m_right != nullptr) {
+            // right side has not been optimized away
+            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+            // load right-hand side into register 1
+            m_right->Build(visitor);
 
-        // perform operation
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+            // perform operation
+            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        visitor->GetCompilationUnit()->GetInstructionStream() << 
-            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
-    }
-        
-    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-
-    // load left-hand side into register 0
-    /*m_left->Build(visitor);
-
-    if (m_right != nullptr) {
-        // the right side has not been optimized away
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-
-        // load right-hand side into register 1
-        m_right->Build(visitor);
-
-        // perform operation
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        if (m_op == &Operator::operator_add) {
             visitor->GetCompilationUnit()->GetInstructionStream() << 
-                Instruction<uint8_t, uint8_t, uint8_t>(ADD, rp - 1, rp);
-        } // TODO: Handle other cases
-        
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-    }*/
+                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+
+            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        }
+    }
 }
 
 void AstBinaryExpression::Optimize(AstVisitor *visitor)

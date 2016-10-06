@@ -17,7 +17,6 @@ AstInteger::AstInteger(a_int value, const SourceLocation &location)
 
 void AstInteger::Build(AstVisitor *visitor) const
 {
-    std::cout << "Build integer: " << m_value << "\n";
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load integer value into register

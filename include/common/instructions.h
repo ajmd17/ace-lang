@@ -44,7 +44,7 @@ enum Instructions : char {
     CMP, // cmp [% lhs, % rhs]
 
     /* Mathematical operations */
-    ADD, // add [% lhs, % rhs]
+    ADD, // add [% lhs, % rhs, % dst]
     SUB,
     MUL,
     DIV,

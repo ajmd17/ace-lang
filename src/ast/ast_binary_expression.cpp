@@ -108,8 +108,47 @@ void AstBinaryExpression::Visit(AstVisitor *visitor)
 
 void AstBinaryExpression::Build(AstVisitor *visitor) const
 {
+    AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
+    AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
+    
+    uint8_t opcode;
+    if (m_op == &Operator::operator_add) {
+        opcode = ADD;
+    }
+
+    if (left_as_binop == nullptr && right_as_binop != nullptr) {
+        // load right-hand side into register 0
+        m_right->Build(visitor);
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+        // load left-hand side into register 1
+        m_left->Build(visitor);
+
+        // perform operation
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        visitor->GetCompilationUnit()->GetInstructionStream() << 
+            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+
+    } else {
+        // load left-hand side into register 0
+        m_left->Build(visitor);
+
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        // load right-hand side into register 1
+        m_right->Build(visitor);
+
+        // perform operation
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        visitor->GetCompilationUnit()->GetInstructionStream() << 
+            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+    }
+        
+    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+
     // load left-hand side into register 0
-    m_left->Build(visitor);
+    /*m_left->Build(visitor);
 
     if (m_right != nullptr) {
         // the right side has not been optimized away
@@ -127,7 +166,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor) const
         } // TODO: Handle other cases
         
         visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-    }
+    }*/
 }
 
 void AstBinaryExpression::Optimize(AstVisitor *visitor)

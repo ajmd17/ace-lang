@@ -28,7 +28,7 @@ int main()
     TokenStream *token_stream = new TokenStream();
 
     SourceFile *src_file = new SourceFile(256);
-    (*src_file) >> "module main 2 + (3 + (8 + 4))";
+    (*src_file) >> "module main (2 + (4 + (4 + (9 + 2) + (3+5)))) + (3 + (8 + 4)) + 9 + 10";
 
     SourceStream src_stream(src_file);
 

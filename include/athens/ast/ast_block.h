@@ -18,6 +18,7 @@ public:
 
 protected:
     std::vector<std::shared_ptr<AstStatement>> m_children;
+    int m_num_locals;
 };
 
 #endif

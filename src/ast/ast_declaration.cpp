@@ -10,7 +10,8 @@ AstDeclaration::AstDeclaration(const std::string &name, const SourceLocation &lo
 
 void AstDeclaration::Visit(AstVisitor *visitor)
 {
-    std::unique_ptr<Module> &mod = visitor->GetCompilationUnit()->CurrentModule();
+    CompilationUnit *compilation_unit = visitor->GetCompilationUnit();
+    std::unique_ptr<Module> &mod = compilation_unit->CurrentModule();
     Scope &scope = mod->m_scopes.Top();
 
     // look up variable to make sure it doesn't already exist
@@ -25,4 +26,14 @@ void AstDeclaration::Visit(AstVisitor *visitor)
         // add identifier
         m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
     }
+}
+
+void AstDeclaration::Build(AstVisitor *visitor) const
+{
+    // get current stack size
+    int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+    // set identifier stack location
+    m_identifier->SetStackLocation(stack_location);
+    // increment stack size
+    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 }

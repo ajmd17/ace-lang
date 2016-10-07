@@ -28,7 +28,13 @@ int main()
     TokenStream *token_stream = new TokenStream();
 
     SourceFile *src_file = new SourceFile(512);
-    (*src_file) >> "module main (2 * (4 + (4 * (9 + 2 * 9) + (3+5)))) + (3 * (8 + 4)) * 9 + 10";
+    (*src_file) >> "module main\n"
+                   "var a = 2\n"
+                   "var b = 3\n"
+                   "{ var x = 99\nx + 3\na + 4}\n"
+                   "a + b * 3000\n"
+                   ;
+                   //"b + (2 * (4 + (4 * (9 + 2 * 9) + (3+5)))) + (3 * (8 + 4)) * 9 + 10\n";
 
     SourceStream src_stream(src_file);
 

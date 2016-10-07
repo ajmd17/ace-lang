@@ -13,6 +13,7 @@ enum TokenType {
     Token_identifier,
     Token_keyword,
     Token_operator,
+    Token_comma,
     Token_semicolon,
     Token_colon,
     Token_dot,

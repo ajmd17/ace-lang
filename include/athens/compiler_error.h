@@ -41,7 +41,6 @@ enum ErrorMessage {
     Msg_expected_module,
     Msg_empty_module,
     Msg_module_already_defined,
-    Msg_multiple_driver_modules,
     Msg_module_not_imported,
     Msg_could_not_open_file,
     Msg_identifier_is_module,

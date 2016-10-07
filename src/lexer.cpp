@@ -69,6 +69,10 @@ Token Lexer::NextToken()
         ch[0] == '<' || ch[0] == '>' ||
         ch[0] == '=' || ch[0] == '!') {
         return ReadOperator();
+    } else if (ch[0] == ',') {
+        m_source_stream.Next();
+        m_source_location.GetColumn()++;
+        return Token(Token_comma, ",", location);
     } else if (ch[0] == ';') {
         m_source_stream.Next();
         m_source_location.GetColumn()++;

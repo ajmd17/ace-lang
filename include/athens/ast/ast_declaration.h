@@ -15,7 +15,7 @@ public:
     inline Identifier *GetIdentifier() const { return m_identifier; }
 
     virtual void Visit(AstVisitor *visitor);
-    virtual void Build(AstVisitor *visitor) const = 0;
+    virtual void Build(AstVisitor *visitor) const;
     virtual void Optimize(AstVisitor *visitor) = 0;
 
 protected:

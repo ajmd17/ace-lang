@@ -19,6 +19,8 @@ public:
 
     inline const std::string &GetName() const { return m_name; }
     inline int GetIndex() const { return m_index; }
+    inline int GetStackLocation() const { return m_stack_location; }
+    inline void SetStackLocation(int stack_location) { m_stack_location = stack_location; }
     inline int GetUseCount() const { return m_usecount; }
     inline int GetFlags() const { return m_flags; }
     inline void SetFlags(int flags) { m_flags = flags; }
@@ -29,6 +31,7 @@ public:
 private:
     std::string m_name;
     int m_index;
+    int m_stack_location;
     int m_usecount;
     int m_flags;
     std::weak_ptr<AstExpression> m_current_value;

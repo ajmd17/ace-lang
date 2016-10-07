@@ -18,6 +18,15 @@ Parser::Parser(const Parser &other)
 {
 }
 
+const Token *Parser::MatchAhead(TokenType type, int n) 
+{
+    const Token *peek = m_token_stream->Peek(n);
+    if (peek != nullptr && peek->GetType() == type) {
+        return peek;
+    }
+    return nullptr;
+}
+
 const Token *Parser::Match(TokenType type, bool read)
 {
     const Token *peek = m_token_stream->Peek();
@@ -174,12 +183,14 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
     if (Match(Token_keyword, false)) {
         if (MatchKeyword(Keyword_import, false)) {
             return ParseImport();
-        } else {
-            return nullptr;
+        } else if (MatchKeyword(Keyword_var, false)) {
+            return ParseVariableDeclaration();
         }
-    } else {
-        return ParseExpression(true);
+    } else if (Match(Token_open_brace, false)) {
+        return ParseBlock();
     }
+    
+    return ParseExpression(true);
 }
 
 std::shared_ptr<AstExpression> Parser::ParseTerm()
@@ -199,13 +210,13 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     } else if (Match(Token_string_literal)) {
         return ParseStringLiteral();
     } else if (Match(Token_identifier)) {
-        return nullptr;//ParseIdentifier();
+        return ParseIdentifier();
     } else if (MatchKeyword(Keyword_true)) {
-        return nullptr;//ParseTrue();
+        return ParseTrue();
     } else if (MatchKeyword(Keyword_false)) {
-        return nullptr;//ParseFalse();
+        return ParseFalse();
     } else if (MatchKeyword(Keyword_null)) {
-        return nullptr;//ParseNull();
+        return ParseNull();
     } else if (MatchKeyword(Keyword_func)) {
         return nullptr;//ParseFunctionExpression();
     } else if (Match(Token_operator)) {
@@ -250,6 +261,88 @@ std::shared_ptr<AstString> Parser::ParseStringLiteral()
     const Token *token = Expect(Token_string_literal, true);
     return std::shared_ptr<AstString>(
         new AstString(token->GetValue(), token->GetLocation()));
+}
+
+std::shared_ptr<AstExpression> Parser::ParseIdentifier()
+{
+    const Token *token = Expect(Token_identifier, false);
+    if (MatchAhead(Token_open_parenthesis, 1)) {
+        // function call
+        return ParseFunctionCall();
+    } else {
+        // read identifier token
+        m_token_stream->Next();
+
+        // return variable
+        return std::shared_ptr<AstVariable>(
+                new AstVariable(token->GetValue(), token->GetLocation()));
+    }
+}
+
+std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
+{
+    const Token *token = Expect(Token_identifier, true);
+    Expect(Token_open_parenthesis, true);
+
+    std::vector<std::shared_ptr<AstExpression>> args;
+
+    if (!Match(Token_close_parenthesis, false)) {
+        while (true) {
+            std::shared_ptr<AstExpression> expr = ParseExpression();
+            if (expr == nullptr) {
+                return nullptr;
+            }
+
+            args.push_back(expr);
+
+            if (Match(Token_close_parenthesis, true)) {
+                // stop reading function arguments
+                break;
+            } else if (!Expect(Token_comma, true)) {
+                // unexpected token
+                return nullptr;
+            }
+        }
+    }
+    
+    return std::shared_ptr<AstFunctionCall>(
+            new AstFunctionCall(token->GetValue(), args, token->GetLocation()));
+}
+
+std::shared_ptr<AstTrue> Parser::ParseTrue()
+{
+    const Token *token = ExpectKeyword(Keyword_true, true);
+    return std::shared_ptr<AstTrue>(
+        new AstTrue(token->GetLocation()));
+}
+
+std::shared_ptr<AstFalse> Parser::ParseFalse()
+{
+    const Token *token = ExpectKeyword(Keyword_false, true);
+    return std::shared_ptr<AstFalse>(
+        new AstFalse(token->GetLocation()));
+}
+
+std::shared_ptr<AstNull> Parser::ParseNull()
+{
+    const Token *token = ExpectKeyword(Keyword_null, true);
+    return std::shared_ptr<AstNull>(
+        new AstNull(token->GetLocation()));
+}
+
+std::shared_ptr<AstBlock> Parser::ParseBlock()
+{
+    const Token *token = Expect(Token_open_brace, true);
+    if (token != nullptr) {
+        std::shared_ptr<AstBlock> block(new AstBlock(token->GetLocation()));
+        while (!Match(Token_close_brace, true)) {
+            block->AddChild(ParseStatement());
+        }
+        
+        return block;
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec, 
@@ -306,6 +399,38 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
     
     term->m_is_standalone = standalone;
     return term;
+}
+
+std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
+{
+    const Token *token = ExpectKeyword(Keyword_var, true);
+    const Token *identifier = Expect(Token_identifier, true);
+
+    if (identifier != nullptr) {
+        std::shared_ptr<AstExpression> assignment(nullptr);
+
+        const Token *op = Match(Token_operator, true);
+        if (op != nullptr) {
+            if (op->GetValue() == Operator::operator_assign.ToString()) {
+                // read assignment expression
+                assignment = ParseExpression();
+            } else {
+                // unexpected operator
+                CompilerError error(Level_fatal,
+                    Msg_illegal_operator, op->GetLocation());
+
+                m_compilation_unit->GetErrorList().AddError(error);
+            }
+        } else {
+            // assign variable to null
+            assignment.reset(new AstNull(CurrentLocation()));
+        }
+
+        return std::shared_ptr<AstVariableDeclaration>(
+            new AstVariableDeclaration(identifier->GetValue(), assignment, token->GetLocation()));
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<AstImport> Parser::ParseImport()

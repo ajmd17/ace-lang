@@ -1,6 +1,11 @@
 #include <athens/ast/ast_variable.h>
 #include <athens/ast_visitor.h>
 #include <athens/ast/ast_constant.h>
+#include <athens/emit/instruction.h>
+
+#include <common/instructions.h>
+
+#include <iostream>
 
 AstVariable::AstVariable(const std::string &name, const SourceLocation &location)
     : AstExpression(location),
@@ -27,6 +32,15 @@ void AstVariable::Visit(AstVisitor *visitor)
 
 void AstVariable::Build(AstVisitor *visitor) const
 {
+    int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+    int stack_location = m_identifier->GetStackLocation();
+    int offset = stack_size - stack_location;
+
+    // get active register
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    // load stack value at offset value into register
+    visitor->GetCompilationUnit()->GetInstructionStream() << 
+        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
 }
 
 void AstVariable::Optimize(AstVisitor *visitor)

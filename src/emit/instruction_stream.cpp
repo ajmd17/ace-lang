@@ -12,14 +12,16 @@ std::ostream &operator<<(std::ostream &os, const InstructionStream &instruction_
 
 InstructionStream::InstructionStream()
     : m_position(0),
-      m_register_counter(0)
+      m_register_counter(0),
+      m_stack_size(0)
 {
 }
 
 InstructionStream::InstructionStream(const InstructionStream &other)
     : m_position(other.m_position), 
       m_data(other.m_data),
-      m_register_counter(other.m_register_counter)
+      m_register_counter(other.m_register_counter),
+      m_stack_size(other.m_stack_size)
 {
 }
 

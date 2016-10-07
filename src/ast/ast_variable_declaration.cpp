@@ -1,5 +1,8 @@
 #include <athens/ast/ast_variable_declaration.h>
 #include <athens/ast_visitor.h>
+#include <athens/emit/instruction.h>
+
+#include <common/instructions.h>
 
 AstVariableDeclaration::AstVariableDeclaration(const std::string &name, 
     const std::shared_ptr<AstExpression> &assignment,
@@ -21,6 +24,18 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor)
 
 void AstVariableDeclaration::Build(AstVisitor *visitor) const
 {
+    AstDeclaration::Build(visitor);
+
+    if (m_assignment != nullptr) {
+        m_assignment->Build(visitor);
+
+        // get active register
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // add instruction to store on stack
+        visitor->GetCompilationUnit()->GetInstructionStream() << 
+            Instruction<uint8_t, uint8_t>(PUSH, rp);
+    }
 }
 
 void AstVariableDeclaration::Optimize(AstVisitor *visitor)

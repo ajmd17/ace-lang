@@ -20,7 +20,7 @@ public:
     inline Identifier *GetIdentifier() const { return m_identifier; }
 
     virtual void Visit(AstVisitor *visitor);
-    virtual void Build(AstVisitor *visitor) const;
+    virtual void Build(AstVisitor *visitor);
     virtual void Optimize(AstVisitor *visitor);
 
     virtual int IsTrue() const;

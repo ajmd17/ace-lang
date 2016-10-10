@@ -30,7 +30,7 @@ void AstVariable::Visit(AstVisitor *visitor)
     }
 }
 
-void AstVariable::Build(AstVisitor *visitor) const
+void AstVariable::Build(AstVisitor *visitor)
 {
     int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int stack_location = m_identifier->GetStackLocation();

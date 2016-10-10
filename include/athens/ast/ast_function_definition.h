@@ -16,9 +16,9 @@ public:
         const SourceLocation &location);
     virtual ~AstFunctionDefinition() = default;
 
-    virtual void Visit(AstVisitor *visitor);
-    virtual void Build(AstVisitor *visitor) const;
-    virtual void Optimize(AstVisitor *visitor);
+    virtual void Visit(AstVisitor *visitor) override;
+    virtual void Build(AstVisitor *visitor) override;
+    virtual void Optimize(AstVisitor *visitor) override;
 
 protected:
     std::vector<std::shared_ptr<AstParameter>> m_parameters;

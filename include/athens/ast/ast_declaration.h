@@ -14,8 +14,8 @@ public:
     inline const std::string &GetName() const { return m_name; }
     inline Identifier *GetIdentifier() const { return m_identifier; }
 
-    virtual void Visit(AstVisitor *visitor);
-    virtual void Build(AstVisitor *visitor) const;
+    virtual void Visit(AstVisitor *visitor) override;
+    virtual void Build(AstVisitor *visitor) override;
     virtual void Optimize(AstVisitor *visitor) = 0;
 
 protected:

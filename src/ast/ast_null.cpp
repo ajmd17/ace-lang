@@ -7,7 +7,7 @@ AstNull::AstNull(const SourceLocation &location)
 {
 }
 
-void AstNull::Build(AstVisitor *visitor) const
+void AstNull::Build(AstVisitor *visitor)
 {
 }
 

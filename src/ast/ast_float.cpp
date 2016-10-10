@@ -10,7 +10,7 @@ AstFloat::AstFloat(a_float value, const SourceLocation &location)
 {
 }
 
-void AstFloat::Build(AstVisitor *visitor) const
+void AstFloat::Build(AstVisitor *visitor)
 {
 }
 

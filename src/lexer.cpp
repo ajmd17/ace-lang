@@ -15,6 +15,7 @@ Lexer::Lexer(const SourceStream &source_stream, TokenStream *token_stream,
       m_token_stream(token_stream),
       m_compilation_unit(compilation_unit)
 {
+    m_source_location.SetFileName(m_source_stream.GetFile()->GetFilePath());
 }
 
 Lexer::Lexer(const Lexer &other)
@@ -414,6 +415,7 @@ void Lexer::SkipWhitespace()
     while (m_source_stream.HasNext() && std::isspace(m_source_stream.Peek())) {
         if (m_source_stream.Next() == '\n') {
             m_source_location.GetLine()++;
+            m_source_location.GetColumn() = 0;
         } else {
             m_source_location.GetColumn()++;
         }

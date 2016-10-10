@@ -6,7 +6,7 @@ AstString::AstString(const std::string &value, const SourceLocation &location)
 {
 }
 
-void AstString::Build(AstVisitor *visitor) const
+void AstString::Build(AstVisitor *visitor)
 {
 }
 

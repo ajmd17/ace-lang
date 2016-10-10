@@ -30,7 +30,7 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor)
     m_block->Visit(visitor);
 }
 
-void AstFunctionDefinition::Build(AstVisitor *visitor) const
+void AstFunctionDefinition::Build(AstVisitor *visitor)
 {
     AstDeclaration::Build(visitor);
 }

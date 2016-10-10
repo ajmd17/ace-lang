@@ -14,10 +14,10 @@ public:
     inline const std::shared_ptr<AstExpression> &GetLeft() const { return m_left; }
     inline const std::shared_ptr<AstExpression> &GetRight() const { return m_right; }
 
-    virtual void Visit(AstVisitor *visitor);
-    virtual void Build(AstVisitor *visitor) const;
-    virtual void Optimize(AstVisitor *visitor);
-    virtual int IsTrue() const;
+    virtual void Visit(AstVisitor *visitor) override;
+    virtual void Build(AstVisitor *visitor) override;
+    virtual void Optimize(AstVisitor *visitor) override;
+    virtual int IsTrue() const override;
 
 private:
     std::shared_ptr<AstExpression> m_left;

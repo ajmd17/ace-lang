@@ -28,7 +28,7 @@ void AstBlock::Visit(AstVisitor *visitor)
     visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();
 }
 
-void AstBlock::Build(AstVisitor *visitor) const
+void AstBlock::Build(AstVisitor *visitor)
 {
     for (const std::shared_ptr<AstStatement> &stmt : m_children) {
         stmt->Build(visitor);

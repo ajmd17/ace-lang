@@ -6,6 +6,7 @@
 #include <athens/optimizer.h>
 
 #include <fstream>
+#include <iostream>
 
 AstLocalImport::AstLocalImport(const std::string &path, const SourceLocation &location)
     : AstImport(location),
@@ -13,7 +14,7 @@ AstLocalImport::AstLocalImport(const std::string &path, const SourceLocation &lo
 {
 }
 
-std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_unit)
+void AstLocalImport::Visit(AstVisitor *visitor)
 {
     // find the folder which the current file is in
     std::string dir;
@@ -27,7 +28,7 @@ std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_
     std::ifstream file(filepath, std::ios::in | std::ios::ate);
 
     if (!file.is_open()) {
-        compilation_unit->GetErrorList().AddError(CompilerError(
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             Level_fatal, Msg_could_not_open_file, m_location, filepath));
     } else {
         // get number of bytes
@@ -35,20 +36,18 @@ std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_
         // seek to beginning
         file.seekg(0, std::ios::beg);
         // load stream into file buffer
-        SourceFile source_file(max);
+        SourceFile source_file(filepath, max);
         file.read(source_file.GetBuffer(), max);
 
-        // Todo: use the lexer and parser on this file buffer
+        // use the lexer and parser on this file buffer
         TokenStream token_stream;
-        Lexer lexer(SourceStream(&source_file), &token_stream, compilation_unit);
+        Lexer lexer(SourceStream(&source_file), &token_stream, visitor->GetCompilationUnit());
         lexer.Analyze();
 
-        Parser parser(&m_ast_iterator, &token_stream, compilation_unit);
+        Parser parser(&m_ast_iterator, &token_stream, visitor->GetCompilationUnit());
         parser.Parse();
 
-        SemanticAnalyzer semantic_analyzer(&m_ast_iterator, compilation_unit);
+        SemanticAnalyzer semantic_analyzer(&m_ast_iterator, visitor->GetCompilationUnit());
         semantic_analyzer.Analyze();
     }
-
-    return nullptr;
 }

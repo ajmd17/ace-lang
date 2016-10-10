@@ -1,6 +1,7 @@
 #include <athens/token_stream.h>
 
 TokenStream::TokenStream()
+	: m_position(0)
 {
 }
 

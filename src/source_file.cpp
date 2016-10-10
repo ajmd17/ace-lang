@@ -3,8 +3,9 @@
 #include <stdexcept>
 #include <cstring>
 
-SourceFile::SourceFile(size_t size)
-    : m_position(0),
+SourceFile::SourceFile(const std::string &filepath, size_t size)
+    : m_filepath(filepath),
+      m_position(0),
       m_size(size)
 {
     m_buffer = new char[m_size];

@@ -11,8 +11,7 @@ public:
 
     inline const std::string &GetPath() const { return m_path; }
 
-    virtual std::unique_ptr<Module>
-        LoadModule(CompilationUnit *compilation_unit);
+    virtual void Visit(AstVisitor *visitor) override;
 
 protected:
     std::string m_path;

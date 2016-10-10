@@ -16,6 +16,7 @@ public:
     inline int GetColumn() const { return m_column; }
     inline int &GetColumn() { return m_column; }
     inline const std::string &GetFileName() const { return m_filename; }
+    inline void SetFileName(const std::string &filename) { m_filename = filename; }
 
     bool operator<(const SourceLocation &other) const;
     bool operator==(const SourceLocation &other) const;

@@ -112,7 +112,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor)
     }
 }
 
-void AstBinaryExpression::Build(AstVisitor *visitor) const
+void AstBinaryExpression::Build(AstVisitor *visitor)
 {
     AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
     AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());

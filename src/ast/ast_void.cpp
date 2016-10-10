@@ -5,7 +5,7 @@ AstVoid::AstVoid(const SourceLocation &location)
 {
 }
 
-void AstVoid::Build(AstVisitor *visitor) const
+void AstVoid::Build(AstVisitor *visitor)
 {
 }
 

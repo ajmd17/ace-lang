@@ -13,9 +13,9 @@ public:
         const SourceLocation &location);
     virtual ~AstVariableDeclaration() = default;
 
-    virtual void Visit(AstVisitor *visitor);
-    virtual void Build(AstVisitor *visitor) const;
-    virtual void Optimize(AstVisitor *visitor);
+    virtual void Visit(AstVisitor *visitor) override;
+    virtual void Build(AstVisitor *visitor) override;
+    virtual void Optimize(AstVisitor *visitor) override;
 
 protected:
     std::shared_ptr<AstExpression> m_assignment;

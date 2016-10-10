@@ -22,19 +22,21 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor)
     }
 }
 
-void AstVariableDeclaration::Build(AstVisitor *visitor) const
+void AstVariableDeclaration::Build(AstVisitor *visitor)
 {
     AstDeclaration::Build(visitor);
 
-    if (m_assignment != nullptr) {
-        m_assignment->Build(visitor);
+    if (m_identifier->GetUseCount() > 0) {
+        if (m_assignment != nullptr) {
+            m_assignment->Build(visitor);
 
-        // get active register
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+            // get active register
+            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        // add instruction to store on stack
-        visitor->GetCompilationUnit()->GetInstructionStream() << 
-            Instruction<uint8_t, uint8_t>(PUSH, rp);
+            // add instruction to store on stack
+            visitor->GetCompilationUnit()->GetInstructionStream() << 
+                Instruction<uint8_t, uint8_t>(PUSH, rp);
+        }
     }
 }
 

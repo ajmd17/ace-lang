@@ -9,7 +9,7 @@ public:
     virtual ~AstExpression() = default;
 
     virtual void Visit(AstVisitor *visitor) = 0;
-    virtual void Build(AstVisitor *visitor) const = 0;
+    virtual void Build(AstVisitor *visitor) = 0;
     virtual void Optimize(AstVisitor *visitor) = 0;
 
     /** Determines whether the expression would evaluate to true. 

@@ -58,7 +58,7 @@ const Token *Parser::Expect(TokenType type, bool read)
 {
     const Token *token = Match(type, read);
     if (token == nullptr) {
-        SourceLocation location = m_token_stream->Peek()->GetLocation();
+        SourceLocation location = CurrentLocation();
         if (read) {
             m_token_stream->Next();
         }
@@ -88,7 +88,7 @@ const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
 {
     const Token *token = MatchKeyword(keyword, read);
     if (token == nullptr) {
-        SourceLocation location = m_token_stream->Peek()->GetLocation();
+        SourceLocation location = CurrentLocation();
         if (read) {
             m_token_stream->Next();
         }

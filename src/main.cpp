@@ -19,63 +19,83 @@
 #include <fstream>
 #include <string>
 
-int main()
+int main(int argc, char *argv[])
 {
-    const char *filename = "bytecode.bin";
+    if (argc == 1) {
+        std::cout << "\tUsage: " << argv[0] << " <file>\n";
 
-    CompilationUnit compilation_unit;
+    } else if (argc >= 2) {
 
-    TokenStream *token_stream = new TokenStream();
+        const char *in_filename = argv[1];
+        const char *out_filename = "bytecode.bin";
 
-    SourceFile *src_file = new SourceFile(512);
-    (*src_file) >> "module main\n"
-                   "import \"blah.txt\";\n"
-                   "var a = 2;\n"
-                   "var b = 3;\n"
-                   "{ var x = 99; x + 3; a + 4; }\n"
-                   "a + b * 3000;\n";
-                   //"b + (2 * (4 + (4 * (9 + 2 * 9) + (3+5)))) + (3 * (8 + 4)) * 9 + 10\n";
 
-    SourceStream src_stream(src_file);
+        std::ifstream in_file(in_filename, std::ios::in | std::ios::ate);
+        if (!in_file.is_open()) {
+            std::cout << "Could not open file: " << in_filename << "\n";
+        } else {
+            // get number of bytes
+            size_t max = in_file.tellg();
+            // seek to beginning
+            in_file.seekg(0, std::ios::beg);
+            // load stream into file buffer
+            SourceFile source_file(in_filename, max);
+            in_file.read(source_file.GetBuffer(), max);
+            in_file.close();
 
-    Lexer lex(src_stream, token_stream, &compilation_unit);
-    lex.Analyze();
+            SourceStream source_stream(&source_file);
 
-    delete src_file;
 
-    AstIterator ast_iterator;
-    Parser parser(&ast_iterator, token_stream, &compilation_unit);
-    parser.Parse();
+            CompilationUnit compilation_unit;
 
-    delete token_stream;
+            TokenStream token_stream;
 
-    SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
-    semantic_analyzer.Analyze();
+           /* SourceFile *src_file = new SourceFile("main_file", 512);
+            (*src_file) >> "module main\n"
+                           "import \"blah.txt\";\n"
+                           "var a = 2;\n"
+                           "var b = 3;\n"
+                           "{ var x = 99; x + 3; a + 4; }\n"
+                           "a + b * 3000;\n";
+                           //"b + (2 * (4 + (4 * (9 + 2 * 9) + (3+5)))) + (3 * (8 + 4)) * 9 + 10\n";*/
 
-    compilation_unit.GetErrorList().SortErrors();
-    for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
-        std::cout
-            << "ln: "  << (error.GetLocation().GetLine() + 1) 
-            << ", col: " << (error.GetLocation().GetColumn() + 1) 
-            << ":\t" << error.GetText() << "\n";
-    }
+            Lexer lex(source_stream, &token_stream, &compilation_unit);
+            lex.Analyze();
 
-    if (!compilation_unit.GetErrorList().HasFatalErrors()) {
-        // only optimize if there were no errors
-        // before this point
-        ast_iterator.ResetPosition();
-        Optimizer optimizer(&ast_iterator, &compilation_unit);
-        optimizer.Optimize();
+            AstIterator ast_iterator;
+            Parser parser(&ast_iterator, &token_stream, &compilation_unit);
+            parser.Parse();
 
-        // compile into bytecode instructions
-        ast_iterator.ResetPosition();
-        Compiler compiler(&ast_iterator, &compilation_unit);
-        compiler.Compile();
+            SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
+            semantic_analyzer.Analyze();
 
-        // emit bytecode instructions to file
-        std::ofstream out(filename, std::ios::out | std::ios::binary);
-        out << compilation_unit.GetInstructionStream();
-        out.close();
+            compilation_unit.GetErrorList().SortErrors();
+            for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
+                std::cout
+                    << error.GetLocation().GetFileName() << "\t"
+                    << "ln: "  << (error.GetLocation().GetLine() + 1) 
+                    << ", col: " << (error.GetLocation().GetColumn() + 1) 
+                    << ":\t" << error.GetText() << "\n";
+            }
+
+            if (!compilation_unit.GetErrorList().HasFatalErrors()) {
+                // only optimize if there were no errors
+                // before this point
+                ast_iterator.ResetPosition();
+                Optimizer optimizer(&ast_iterator, &compilation_unit);
+                optimizer.Optimize();
+
+                // compile into bytecode instructions
+                ast_iterator.ResetPosition();
+                Compiler compiler(&ast_iterator, &compilation_unit);
+                compiler.Compile();
+
+                // emit bytecode instructions to file
+                std::ofstream out(out_filename, std::ios::out | std::ios::binary);
+                out << compilation_unit.GetInstructionStream();
+                out.close();
+            }
+        }
     }
 
     std::cin.get();

@@ -18,7 +18,7 @@ void AstWhileLoop::Visit(AstVisitor *visitor)
     m_block->Visit(visitor);
 }
 
-void AstWhileLoop::Build(AstVisitor *visitor) const
+void AstWhileLoop::Build(AstVisitor *visitor)
 {
     int condition_is_true = m_conditional->IsTrue();
     if (condition_is_true == -1) {

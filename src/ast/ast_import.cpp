@@ -1,20 +1,20 @@
 #include <athens/ast/ast_import.h>
 #include <athens/ast_visitor.h>
 #include <athens/optimizer.h>
+#include <athens/compiler.h>
 
 AstImport::AstImport(const SourceLocation &location)
     : AstStatement(location)
 {
 }
 
-void AstImport::Visit(AstVisitor *visitor)
+void AstImport::Build(AstVisitor *visitor)
 {
-    visitor->GetCompilationUnit()->m_modules.push_back(LoadModule(
-        visitor->GetCompilationUnit()));
-}
+    m_ast_iterator.ResetPosition();
 
-void AstImport::Build(AstVisitor *visitor) const
-{
+    // compile the imported module
+    Compiler compiler(&m_ast_iterator, visitor->GetCompilationUnit());
+    compiler.Compile();
 }
 
 void AstImport::Optimize(AstVisitor *visitor)

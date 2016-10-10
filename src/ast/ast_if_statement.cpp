@@ -20,7 +20,7 @@ void AstIfStatement::Visit(AstVisitor *visitor)
     m_block->Visit(visitor);
 }
 
-void AstIfStatement::Build(AstVisitor *visitor) const
+void AstIfStatement::Build(AstVisitor *visitor)
 {
     int condition_is_true = m_conditional->IsTrue();
     if (condition_is_true == -1) {

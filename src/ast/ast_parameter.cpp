@@ -11,7 +11,7 @@ void AstParameter::Visit(AstVisitor *visitor)
     AstDeclaration::Visit(visitor);
 }
 
-void AstParameter::Build(AstVisitor *visitor) const
+void AstParameter::Build(AstVisitor *visitor)
 {
 }
 

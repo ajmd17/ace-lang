@@ -22,7 +22,7 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor)
     visitor->GetCompilationUnit()->m_modules.push_back(std::move(this_module));
 }
 
-void AstModuleDeclaration::Build(AstVisitor *visitor) const
+void AstModuleDeclaration::Build(AstVisitor *visitor)
 {
 }
 

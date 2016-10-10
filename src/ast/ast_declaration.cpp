@@ -28,12 +28,14 @@ void AstDeclaration::Visit(AstVisitor *visitor)
     }
 }
 
-void AstDeclaration::Build(AstVisitor *visitor) const
+void AstDeclaration::Build(AstVisitor *visitor)
 {
-    // get current stack size
-    int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-    // set identifier stack location
-    m_identifier->SetStackLocation(stack_location);
-    // increment stack size
-    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+    if (m_identifier->GetUseCount() > 0) {
+        // get current stack size
+        int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        // set identifier stack location
+        m_identifier->SetStackLocation(stack_location);
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+    }
 }

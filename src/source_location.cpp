@@ -1,6 +1,6 @@
 #include <athens/source_location.h>
 
-const SourceLocation SourceLocation::eof(-1, -1, "");
+const SourceLocation SourceLocation::eof(-1, -1, "eof");
 
 SourceLocation::SourceLocation(int line, int column, const std::string &filename)
     : m_line(line),

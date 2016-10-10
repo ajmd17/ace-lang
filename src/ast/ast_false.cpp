@@ -10,7 +10,7 @@ AstFalse::AstFalse(const SourceLocation &location)
 {
 }
 
-void AstFalse::Build(AstVisitor *visitor) const
+void AstFalse::Build(AstVisitor *visitor)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

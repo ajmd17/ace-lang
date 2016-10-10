@@ -27,7 +27,7 @@ void AstFunctionCall::Visit(AstVisitor *visitor)
     }
 }
 
-void AstFunctionCall::Build(AstVisitor *visitor) const
+void AstFunctionCall::Build(AstVisitor *visitor)
 {
 }
 

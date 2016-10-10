@@ -52,7 +52,7 @@ int AstVariable::IsTrue() const
     if (m_identifier != nullptr) {
         // we can only check if this is true during
         // compile time if it is const literal
-        if (m_identifier->GetFlags() & (Flag_const)) {
+        if (m_identifier->GetFlags() & Flag_const) {
             auto value_sp = m_identifier->GetCurrentValue().lock();
             auto constant_sp = std::dynamic_pointer_cast<AstConstant>(value_sp);
             if (constant_sp != nullptr) {

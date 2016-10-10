@@ -1,5 +1,9 @@
 #include <athens/ast/ast_false.h>
 #include <athens/ast/ast_integer.h>
+#include <athens/ast_visitor.h>
+#include <athens/emit/instruction.h>
+
+#include <common/instructions.h>
 
 AstFalse::AstFalse(const SourceLocation &location)
     : AstConstant(location)
@@ -8,6 +12,11 @@ AstFalse::AstFalse(const SourceLocation &location)
 
 void AstFalse::Build(AstVisitor *visitor) const
 {
+    // get active register
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    // load integer (0) value into register
+    visitor->GetCompilationUnit()->GetInstructionStream() << 
+        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
 }
 
 int AstFalse::IsTrue() const

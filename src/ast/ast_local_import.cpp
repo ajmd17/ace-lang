@@ -24,9 +24,9 @@ std::unique_ptr<Module> AstLocalImport::LoadModule(CompilationUnit *compilation_
     
     // create relative path
     std::string filepath(dir + m_path);
-
     std::ifstream file(filepath, std::ios::in | std::ios::ate);
-    if (!file.good()) {
+
+    if (!file.is_open()) {
         compilation_unit->GetErrorList().AddError(CompilerError(
             Level_fatal, Msg_could_not_open_file, m_location, filepath));
     } else {

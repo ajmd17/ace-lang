@@ -139,6 +139,11 @@ void Parser::Parse()
     while (m_token_stream->HasNext()) {
         SourceLocation location(CurrentLocation());
 
+        // read semicolon tokens
+        if (Match(Token_semicolon, true)) {
+            continue;
+        }
+
         std::shared_ptr<AstStatement> statement(ParseStatement());
 
         if (statement != nullptr) {
@@ -336,7 +341,10 @@ std::shared_ptr<AstBlock> Parser::ParseBlock()
     if (token != nullptr) {
         std::shared_ptr<AstBlock> block(new AstBlock(token->GetLocation()));
         while (!Match(Token_close_brace, true)) {
-            block->AddChild(ParseStatement());
+            // read semicolon tokens
+            if (!Match(Token_semicolon, true)) {
+                block->AddChild(ParseStatement());
+            }
         }
         
         return block;

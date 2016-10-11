@@ -20,6 +20,7 @@ enum ErrorMessage {
     Msg_illegal_expression,
     Msg_illegal_operator,
     Msg_const_modified,
+    Msg_cannot_modify_rvalue,
     Msg_prohibited_action_attribute,
     Msg_unbalanced_expression,
     Msg_unexpected_character,

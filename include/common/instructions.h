@@ -26,10 +26,11 @@ enum Instructions : char {
     LOAD_ADDR, // load_addr [% reg, i32 val]
     LOAD_LOCAL, // load_local [% reg, $ idx]
 
+    /* Copy register value to stack location */
+    MOV,  // mov [$ dst, % src]
     /* Push a value from register to the stack */
-    PUSH,     // push     [% src]
-
-    POP, // pop
+    PUSH, // push [% src]
+    POP,  // pop
 
     /* Jump to address stored in register */
     JMP, // jmp [% address]

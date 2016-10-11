@@ -45,19 +45,8 @@ int main(int argc, char *argv[])
 
             SourceStream source_stream(&source_file);
 
-
             CompilationUnit compilation_unit;
-
             TokenStream token_stream;
-
-           /* SourceFile *src_file = new SourceFile("main_file", 512);
-            (*src_file) >> "module main\n"
-                           "import \"blah.txt\";\n"
-                           "var a = 2;\n"
-                           "var b = 3;\n"
-                           "{ var x = 99; x + 3; a + 4; }\n"
-                           "a + b * 3000;\n";
-                           //"b + (2 * (4 + (4 * (9 + 2 * 9) + (3+5)))) + (3 * (8 + 4)) * 9 + 10\n";*/
 
             Lexer lex(source_stream, &token_stream, &compilation_unit);
             lex.Analyze();

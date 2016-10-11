@@ -34,7 +34,7 @@ bool Keyword::IsKeyword(const std::string &str)
 
 std::string Keyword::ToString(Keywords keyword)
 {
-    for (auto &&it : keyword_strings) {
+    for (auto &it : keyword_strings) {
         if (it.second == keyword) {
             return it.first;
         }

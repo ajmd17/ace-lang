@@ -108,6 +108,11 @@ void AstBinaryExpression::Visit(AstVisitor *visitor)
                     CompilerError(Level_fatal, Msg_const_modified, 
                         m_left->GetLocation(), left_as_var->GetName()));
             }
+        } else {
+            // cannot modify an rvalue
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_cannot_modify_rvalue,
+                    m_left->GetLocation()));
         }
     }
 }
@@ -117,45 +122,69 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
     AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
     AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
     
-    uint8_t opcode;
-    if (m_op == &Operator::operator_add) {
-        opcode = ADD;
-    } else if (m_op == &Operator::operator_multiply) {
-        opcode = MUL;
-    }
-
-    if (left_as_binop == nullptr && right_as_binop != nullptr) {
-        // load right-hand side into register 0
-        m_right->Build(visitor);
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-
-        // load left-hand side into register 1
-        m_left->Build(visitor);
-
-        // perform operation
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        visitor->GetCompilationUnit()->GetInstructionStream() << 
-            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
-
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-    } else {
-        // load left-hand side into register 0
-        m_left->Build(visitor);
-
-        if (m_right != nullptr) {
-            // right side has not been optimized away
-            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-            // load right-hand side into register 1
+    if (m_op->ModifiesValue()) {
+        if (m_op == &Operator::operator_assign) {
+            // load right-hand side into register 0
             m_right->Build(visitor);
+            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+            // get current register index
+            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+            // get stack offset of left-hand side
+            auto left_as_var = std::dynamic_pointer_cast<AstVariable>(m_left);
+            if (left_as_var != nullptr) {
+                int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+                int stack_location = left_as_var->GetIdentifier()->GetStackLocation();
+                int offset = stack_size - stack_location;
+
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint16_t, uint8_t>(MOV, offset, rp - 1);
+            }
+
+            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        }
+    } else {
+        uint8_t opcode;
+        if (m_op == &Operator::operator_add) {
+            opcode = ADD;
+        } else if (m_op == &Operator::operator_multiply) {
+            opcode = MUL;
+        }
+
+        if (left_as_binop == nullptr && right_as_binop != nullptr) {
+            // load right-hand side into register 0
+            m_right->Build(visitor);
+            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+            // load left-hand side into register 1
+            m_left->Build(visitor);
 
             // perform operation
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             visitor->GetCompilationUnit()->GetInstructionStream() << 
-                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
 
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        } else {
+            // load left-hand side into register 0
+            m_left->Build(visitor);
+
+            if (m_right != nullptr) {
+                // right side has not been optimized away
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                // load right-hand side into register 1
+                m_right->Build(visitor);
+
+                // perform operation
+                uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+
+                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+            }
         }
     }
 }

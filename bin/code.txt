@@ -1,5 +1,10 @@
 module main;
-import "blah.txt";
+
+var a = 6;
+a = 2;
+a + 1;
+
+//import "blah.txt";
 
 /*var a = 3;
 var b = 6;
@@ -9,5 +14,3 @@ var b = 6;
   a + 4;
 }
 a + b * 30000;*/
-
-

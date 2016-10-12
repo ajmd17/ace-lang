@@ -40,7 +40,7 @@ a_float AstTrue::FloatValue() const
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator+(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -51,7 +51,7 @@ std::shared_ptr<AstConstant> AstTrue::operator+(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator-(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -62,7 +62,7 @@ std::shared_ptr<AstConstant> AstTrue::operator-(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator*(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -73,7 +73,7 @@ std::shared_ptr<AstConstant> AstTrue::operator*(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator/(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -84,7 +84,7 @@ std::shared_ptr<AstConstant> AstTrue::operator/(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator%(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -95,7 +95,7 @@ std::shared_ptr<AstConstant> AstTrue::operator%(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator^(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -106,7 +106,7 @@ std::shared_ptr<AstConstant> AstTrue::operator^(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -117,7 +117,7 @@ std::shared_ptr<AstConstant> AstTrue::operator&(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator|(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -128,7 +128,7 @@ std::shared_ptr<AstConstant> AstTrue::operator|(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator<<(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -139,7 +139,7 @@ std::shared_ptr<AstConstant> AstTrue::operator<<(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator>>(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -150,7 +150,7 @@ std::shared_ptr<AstConstant> AstTrue::operator>>(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator&&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -161,7 +161,7 @@ std::shared_ptr<AstConstant> AstTrue::operator&&(
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator||(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;

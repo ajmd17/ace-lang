@@ -24,12 +24,12 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visit
                 // the variable is a const, now we make sure that the current
                 // value is a literal value
                 auto value_sp = side_as_var->GetIdentifier()->GetCurrentValue().lock();
-                auto constant_sp = std::dynamic_pointer_cast<AstConstant>(value_sp);
+                AstConstant *constant_sp = dynamic_cast<AstConstant*>(value_sp.get());
                 if (constant_sp != nullptr) {
                     // yay! we were able to retrieve the value that
                     // the variable is set to, so now we can use that
                     // at compile-time rather than using a variable.
-                    side = constant_sp;
+                    side.reset(constant_sp);
                 }
             }
         }
@@ -45,8 +45,8 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visit
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left, 
     std::shared_ptr<AstExpression> &right, const Operator *oper, AstVisitor *visitor)
 {
-    auto left_as_constant = std::dynamic_pointer_cast<AstConstant>(left);
-    auto right_as_constant = std::dynamic_pointer_cast<AstConstant>(right);
+    AstConstant *left_as_constant = dynamic_cast<AstConstant*>(left.get());
+    AstConstant *right_as_constant = dynamic_cast<AstConstant*>(right.get());
 
     std::shared_ptr<AstConstant> result(nullptr);
 
@@ -100,7 +100,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor)
     m_right->Visit(visitor);
 
     if (m_op->ModifiesValue()) {
-        auto left_as_var = std::dynamic_pointer_cast<AstVariable>(m_left);
+        AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get());
         if (left_as_var != nullptr) {
             // make sure we are not modifying a const
             if (left_as_var->GetIdentifier() != nullptr) {
@@ -148,9 +148,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
         uint8_t opcode;
         if (m_op == &Operator::operator_add) {
             opcode = ADD;
+        } else if (m_op == &Operator::operator_subtract) {
+            opcode = SUB;
         } else if (m_op == &Operator::operator_multiply) {
             opcode = MUL;
         }
+        // TODO: handle more operators
 
         if (left_as_binop == nullptr && right_as_binop != nullptr) {
             // load right-hand side into register 0

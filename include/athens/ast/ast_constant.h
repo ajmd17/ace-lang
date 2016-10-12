@@ -19,33 +19,33 @@ public:
 
     // Arithmetic operators
     virtual std::shared_ptr<AstConstant> operator+(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator-(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator*(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator/(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator%(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
 
     // Bitwise operators
     virtual std::shared_ptr<AstConstant> operator^(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator&(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator|(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator<<(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator>>(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
 
     // Logical operators
     virtual std::shared_ptr<AstConstant> operator&&(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
     virtual std::shared_ptr<AstConstant> operator||(
-        const std::shared_ptr<AstConstant> &right) const = 0;
+        AstConstant *right) const = 0;
 };
 
 #endif

@@ -33,67 +33,67 @@ a_float AstNull::FloatValue() const
 }
 
 std::shared_ptr<AstConstant> AstNull::operator+(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator-(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator*(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator/(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator%(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator^(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator|(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator<<(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator>>(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstNull::operator&&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     // logical operations still work, so that we can do
     // things like testing for null in an if statement.
@@ -102,7 +102,7 @@ std::shared_ptr<AstConstant> AstNull::operator&&(
 }
 
 std::shared_ptr<AstConstant> AstNull::operator||(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));

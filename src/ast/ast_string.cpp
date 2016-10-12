@@ -31,74 +31,74 @@ a_float AstString::FloatValue() const
 }
 
 std::shared_ptr<AstConstant> AstString::operator+(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     // TODO: string concatenation
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator-(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator*(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator/(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator%(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator^(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator|(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator<<(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator>>(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator&&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstString::operator||(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }

@@ -46,14 +46,14 @@ a_float AstInteger::FloatValue() const
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator+(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
     }
     
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right.get()) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         return std::shared_ptr<AstFloat>(
             new AstFloat(FloatValue() + right->FloatValue(), m_location));
     } else {
@@ -63,14 +63,14 @@ std::shared_ptr<AstConstant> AstInteger::operator+(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator-(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
     }
     
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right.get()) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         return std::shared_ptr<AstFloat>(
             new AstFloat(FloatValue() - right->FloatValue(), m_location));
     } else {
@@ -80,14 +80,14 @@ std::shared_ptr<AstConstant> AstInteger::operator-(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator*(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
     }
     
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right.get()) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         return std::shared_ptr<AstFloat>(
             new AstFloat(FloatValue() * right->FloatValue(), m_location));
     } else {
@@ -97,14 +97,14 @@ std::shared_ptr<AstConstant> AstInteger::operator*(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator/(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
     }
     
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right.get()) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         a_float result;
         a_float right_float = right->FloatValue();
         if (right_float == 0.0) {
@@ -129,14 +129,14 @@ std::shared_ptr<AstConstant> AstInteger::operator/(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator%(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
     }
     
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right.get()) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         a_float result;
         a_float right_float = right->FloatValue();
         if (right_float == 0.0) {
@@ -161,7 +161,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator^(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -172,7 +172,7 @@ std::shared_ptr<AstConstant> AstInteger::operator^(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -183,7 +183,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator|(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -194,7 +194,7 @@ std::shared_ptr<AstConstant> AstInteger::operator|(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator<<(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -205,7 +205,7 @@ std::shared_ptr<AstConstant> AstInteger::operator<<(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator>>(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -216,7 +216,7 @@ std::shared_ptr<AstConstant> AstInteger::operator>>(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator&&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -227,7 +227,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&&(
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator||(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;

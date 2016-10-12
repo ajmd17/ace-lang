@@ -30,73 +30,73 @@ a_float AstVoid::FloatValue() const
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator+(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator-(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator*(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator/(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator%(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator^(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator|(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator<<(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator>>(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator&&(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator||(
-        const std::shared_ptr<AstConstant> &right) const
+        AstConstant *right) const
 {
     return nullptr;
 }

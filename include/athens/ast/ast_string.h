@@ -17,33 +17,33 @@ public:
 
     // Arithmetic operators
     virtual std::shared_ptr<AstConstant> operator+(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator-(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator*(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator/(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator%(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
 
     // Bitwise operators
     virtual std::shared_ptr<AstConstant> operator^(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator&(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator|(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator<<(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator>>(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     
     // Logical operators
     virtual std::shared_ptr<AstConstant> operator&&(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator||(
-        const std::shared_ptr<AstConstant> &right) const override;
+        AstConstant *right) const override;
 
 private:
     std::string m_value;

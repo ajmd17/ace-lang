@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 
 Lexer::Lexer(const SourceStream &source_stream, TokenStream *token_stream,
     CompilationUnit *compilation_unit)
@@ -134,43 +135,37 @@ char Lexer::ReadEscapeCode()
     // location of the start of the escape code
     SourceLocation location(m_source_location);
 
-    char esc[3] = { '\0' };
+    char esc = '\0';
 
-    if (!HasNext()) {
-        return '\0';
+    if (HasNext()) {
+        esc = m_source_stream.Next();
+        m_source_location.GetColumn()++;
+
+        // TODO: add support for unicode escapes
+        switch (esc) {
+        case 't':
+            return '\t';
+        case 'b':
+            return '\b';
+        case 'n':
+            return '\n';
+        case 'r':
+            return '\r';
+        case 'f':
+            return '\f';
+        case '\'':
+        case '\"':
+        case '\\':
+            // return the escape itself
+            break;
+        default:
+            m_compilation_unit->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_unrecognized_escape_sequence, 
+                    location, std::string("\\") + esc));
+        }
     }
-    esc[0] = m_source_stream.Next();
-    m_source_location.GetColumn()++;
 
-    if (!HasNext()) {
-        return '\0';
-    }
-    esc[1] = m_source_stream.Next();
-    m_source_location.GetColumn()++;
-
-    // TODO: add support for unicode escapes
-    switch (esc[1]) {
-    case 't':
-        return '\t';
-    case 'b':
-        return '\b';
-    case 'n':
-        return '\n';
-    case 'r':
-        return '\r';
-    case 'f':
-        return '\f';
-    case '\'':
-    case '\"':
-    case '\\':
-        return esc[1];
-    default:
-        m_compilation_unit->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_unrecognized_escape_sequence, 
-                location, std::string(esc)));
-
-        return '\0';
-    }
+    return esc;
 }
 
 Token Lexer::ReadStringLiteral()
@@ -185,28 +180,54 @@ Token Lexer::ReadStringLiteral()
 
     char ch = m_source_stream.Peek();
     while (true) {
-        if (ch == '\n' || !HasNext()) {
+        // the character as a utf-32 character
+        unsigned int ic = 0;
+        char *ic_bytes = reinterpret_cast<char*>(&ic);
+        // check to see if it is a utf-8 character
+        unsigned char uc = (unsigned char)ch;
+        if (uc >= 0 && uc <= 127) {
+            // 1-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            m_source_location.GetColumn()++;
+        } else if ((uc & 0xE0) == 0xC0) {
+            // 2-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            ic_bytes[1] = m_source_stream.Next();
+            m_source_location.GetColumn() += 2;
+        } else if ((uc & 0xF0) == 0xE0) {
+            // 3-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            ic_bytes[1] = m_source_stream.Next();
+            ic_bytes[2] = m_source_stream.Next();
+            m_source_location.GetColumn() += 3;
+        } else if ((uc & 0xF8) == 0xF0) {
+            // 4-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            ic_bytes[1] = m_source_stream.Next();
+            ic_bytes[2] = m_source_stream.Next();
+            ic_bytes[3] = m_source_stream.Next();
+            m_source_location.GetColumn() += 4;
+        }
+
+        if (ic == (unsigned int)('\n') || !HasNext()) {
             // unterminated string literal
             m_compilation_unit->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_unterminated_string_literal, 
                     location));
 
             break;
-        } else if (ch == delim) {
+        } else if (ic == (unsigned int)delim) {
             // end of string
-            // consume the delimiter
-            m_source_stream.Next();
-            m_source_location.GetColumn()++;
 
             break;
         }
 
         // determine whether to read an escape sequence
-        if (ch == '\\') {
+        if (ic == (unsigned int)('\\')) {
             value += ReadEscapeCode();
         } else {
-            value += m_source_stream.Next();
-            m_source_location.GetColumn()++;
+            // Append the character array itself
+            value.append(ic_bytes);
         }
         
         ch = m_source_stream.Peek();
@@ -382,14 +403,42 @@ Token Lexer::ReadIdentifier()
     // store the name in this string
     std::string value;
 
-    char ch;
-    do {
-        value += m_source_stream.Next();
-        m_source_location.GetColumn()++;
+    char ch = m_source_stream.Peek();
+    while (std::isdigit(ch) || ch == '_' || (std::isalpha(ch) || (unsigned char)ch >= 0xC0)) {
+        // the character as a utf-32 character
+        unsigned int ic = 0;
+        char *ic_bytes = reinterpret_cast<char*>(&ic);
+        // check to see if it is a utf-8 character
+        unsigned char uc = (unsigned char)ch;
+        if (uc >= 0 && uc <= 127) {
+            // 1-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            m_source_location.GetColumn()++;
+        } else if ((uc & 0xE0) == 0xC0) {
+            // 2-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            ic_bytes[1] = m_source_stream.Next();
+            m_source_location.GetColumn() += 2;
+        } else if ((uc & 0xF0) == 0xE0) {
+            // 3-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            ic_bytes[1] = m_source_stream.Next();
+            ic_bytes[2] = m_source_stream.Next();
+            m_source_location.GetColumn() += 3;
+        } else if ((uc & 0xF8) == 0xF0) {
+            // 4-byte character
+            ic_bytes[0] = m_source_stream.Next();
+            ic_bytes[1] = m_source_stream.Next();
+            ic_bytes[2] = m_source_stream.Next();
+            ic_bytes[3] = m_source_stream.Next();
+            m_source_location.GetColumn() += 4;
+        }
 
+        // append the character pointer
+        value.append(ic_bytes);
+        // set ch to be the next character in the buffer
         ch = m_source_stream.Peek();
-    } while (std::isdigit(ch) || ch == '_' ||
-        (std::isalpha(ch) || (unsigned char)ch >= 0xC0));
+    } 
 
     TokenType type = Token_identifier;
 

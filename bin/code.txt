@@ -1,8 +1,12 @@
 module main;
 
-var a = 6;
-a = 2;
-a - 1;
+
+var Ä = 72;
+Ä + 34;
+Ä = 2;
+
+var переменная = 91;
+переменная + 0;
 
 //import "blah.txt";
 

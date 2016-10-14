@@ -16,7 +16,7 @@ public:
 
     virtual void Visit(AstVisitor *visitor) override;
     virtual void Build(AstVisitor *visitor) override;
-    virtual void Optimize(AstVisitor *visitor) = 0;
+    virtual void Optimize(AstVisitor *visitor) override = 0;
 
 protected:
     std::string m_name;

@@ -19,11 +19,11 @@ public:
         &GetArguments() const { return m_args; }
     inline Identifier *GetIdentifier() const { return m_identifier; }
 
-    virtual void Visit(AstVisitor *visitor);
-    virtual void Build(AstVisitor *visitor);
-    virtual void Optimize(AstVisitor *visitor);
+    virtual void Visit(AstVisitor *visitor) override;
+    virtual void Build(AstVisitor *visitor) override;
+    virtual void Optimize(AstVisitor *visitor) override;
 
-    virtual int IsTrue() const;
+    virtual int IsTrue() const override;
 
 protected:
     std::string m_name;

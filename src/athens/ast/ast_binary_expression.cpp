@@ -16,7 +16,7 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visit
 
     AstVariable *side_as_var = nullptr;
     AstBinaryExpression *side_as_binop = nullptr;
-    if (side_as_var = dynamic_cast<AstVariable*>(side.get())) {
+    if ((side_as_var = dynamic_cast<AstVariable*>(side.get())) != nullptr) {
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
         if (side_as_var->GetIdentifier() != nullptr) {
@@ -33,7 +33,7 @@ static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visit
                 }
             }
         }
-    } else if (side_as_binop = dynamic_cast<AstBinaryExpression*>(side.get())) {
+    } else if ((side_as_binop = dynamic_cast<AstBinaryExpression*>(side.get())) != nullptr) {
         if (side_as_binop->GetRight() == nullptr) {
             // right side has been optimized away, to just left side
             side = side_as_binop->GetLeft();

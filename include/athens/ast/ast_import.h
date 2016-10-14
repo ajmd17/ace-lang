@@ -14,7 +14,7 @@ public:
     AstImport(const SourceLocation &location);
     virtual ~AstImport() = default;
 
-    virtual void Visit(AstVisitor *visitor) = 0;
+    virtual void Visit(AstVisitor *visitor) override = 0;
     virtual void Build(AstVisitor *visitor) override;
     virtual void Optimize(AstVisitor *visitor) override;
 

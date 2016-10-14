@@ -178,7 +178,7 @@ char *utf8_strcat(char *dst, const char *src)
     while (*dst) {
         dst++;
     }
-    while (*dst++ = *src++);
+    while ((*dst++ = *src++) != '\0');
     return --dst;
 }
 
@@ -187,7 +187,7 @@ u32char *utf32_strcat(u32char *dst, const u32char *src)
     while (*dst) {
         dst++;
     }
-    while (*dst++ = *src++);
+    while ((*dst++ = *src++) != 0);
     return --dst;
 }
 

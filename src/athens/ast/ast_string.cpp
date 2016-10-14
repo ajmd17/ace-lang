@@ -26,7 +26,7 @@ void AstString::Build(AstVisitor *visitor)
     // load static object into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint32_t>(
-            STORE_STATIC_STRING, rp, m_static_id);
+            LOAD_STATIC, rp, m_static_id);
 }
 
 int AstString::IsTrue() const

@@ -1,7 +1,6 @@
 module main;
 
-var Ä = "blah";
-
+var Ä = "hello world";
 Ä;
 
 {

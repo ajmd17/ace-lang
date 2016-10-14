@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         const char *in_filename = argv[1];
         const char *out_filename = "bytecode.bin";
 
-        std::ifstream in_file(in_filename, std::ios::in | std::ios::ate);
+        std::ifstream in_file(in_filename, std::ios::in | std::ios::ate | std::ios::binary);
 
         if (!in_file.is_open()) {
             ucout << "Could not open file: " << Utf8String(in_filename) << "\n";
@@ -90,6 +90,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    std::cin.get();
     return 0;
 }

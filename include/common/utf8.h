@@ -37,6 +37,30 @@ inline void utf8_init()
 #endif
 }
 
+inline char *utf32_get_bytes(u32char &ch)
+{
+    return reinterpret_cast<char*>(&ch);
+}
+
+inline bool utf32_isspace(u32char ch)
+{
+    return ch == (u32char)' '  || 
+           ch == (u32char)'\n' || 
+           ch == (u32char)'\t' || 
+           ch == (u32char)'\r';
+}
+
+inline bool utf32_isdigit(u32char ch)
+{
+    return ((u32char)ch >= '0') && ((u32char)ch <= '9');
+}
+
+inline bool utf32_isalpha(u32char ch)
+{
+    return (ch >= 0xC0) || ((ch >= (u32char)'A' && ch <= (u32char)'Z') ||
+        (ch >= (u32char)'a' && ch <= (u32char)'z'));
+}
+
 int utf8_strlen(const char *str);
 int utf32_strlen(const u32char *str);
 int utf8_strcmp(const char *s1, const char *s2);

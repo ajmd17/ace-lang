@@ -5,26 +5,30 @@
 // dest, src
 
 // parameters are marked in square brackets
-// i8 = 8-bit integer (1 byte)
+// i8  = 8-bit integer (1 byte)
 // i32 = 32-bit integer (4 bytes)
 // i64 = 64-bit integer (8 bytes)
-// u8 = 8-bit unsigned integer (1 byte)
+// u8  = 8-bit unsigned integer (1 byte)
 // u32 = 32-bit unsigned integer (4 bytes)
 // u64 = 64-bit unsigned integer (8 bytes)
-// f = float (4 bytes)
-// d = double (8 bytes)
-// $ = stack offset (2 bytes)
-// % = register (1 byte)
-// @ = address (4 bytes)
+// f   = float (4 bytes)
+// d   = double (8 bytes)
+// []  = array
+// $   = stack offset (2 bytes)
+// %   = register (1 byte)
+// @   = address (4 bytes)
 
 enum Instructions : char {
+    /* Store values in static memory */
+    STORE_STATIC_STRING, // static_str [u32 len, i8[] str]
     /* Load a value into a register */
-    LOAD_I32,  // load_i32  [% reg, i32 val]
-    LOAD_I64,  // load_i64  [% reg, i64 val]
-    LOAD_F,    // load_f    [% reg, f val]
-    LOAD_D,    // load_d    [% reg, d val]
-    LOAD_ADDR, // load_addr [% reg, i32 val]
-    LOAD_LOCAL, // load_local [% reg, $ idx]
+    LOAD_I32,    // load_i32    [% reg, i32 val]
+    LOAD_I64,    // load_i64    [% reg, i64 val]
+    LOAD_F,      // load_f      [% reg, f val]
+    LOAD_D,      // load_d      [% reg, d val]
+    LOAD_ADDR,   // load_addr   [% reg, i32 val]
+    LOAD_LOCAL,  // load_local  [% reg, $ idx]
+    LOAD_STATIC, // load_static [% reg, u32 idx]
 
     /* Copy register value to stack location */
     MOV,  // mov [$ dst, % src]

@@ -3,13 +3,14 @@
 
 #include <athens/emit/instruction.h>
 #include <athens/emit/label.h>
+#include <athens/emit/static_object.h>
 
 #include <vector>
 #include <ostream>
 #include <cstdint>
 
 class InstructionStream {
-    friend std::ostream &operator<<(std::ostream &os, const InstructionStream &instruction_stream);
+    friend std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream);
 public:
     InstructionStream();
     InstructionStream(const InstructionStream &other);
@@ -27,6 +28,9 @@ public:
     inline int NewLabelId() { return m_label_id++; }
     inline void AddLabel(const Label &label) { m_labels.push_back(label); }
 
+    inline int NewStaticId() { return m_static_id++; }
+    inline void AddStaticString(const StaticString &static_string) { m_static_strings.push_back(static_string); }
+
     InstructionStream &operator<<(const Instruction<> &instruction);
 
 
@@ -43,6 +47,10 @@ private:
     std::vector<Label> m_labels;
     // the current label id
     int m_label_id;
+    // the current static object id
+    int m_static_id;
+    // all static strings
+    std::vector<StaticString> m_static_strings;
 };
 
 #endif

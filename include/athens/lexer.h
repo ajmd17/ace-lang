@@ -6,6 +6,8 @@
 #include <athens/source_location.h>
 #include <athens/compilation_unit.h>
 
+#include <common/utf8.h>
+
 class Lexer {
 public:
     Lexer(const SourceStream &source_stream, TokenStream *token_stream, 
@@ -17,7 +19,7 @@ public:
     /** Reads the next token and returns it */
     Token NextToken();
     /** Reads two characters that make up an escape code and returns actual value */
-    char ReadEscapeCode();
+    u32char ReadEscapeCode();
     /** Reads a string literal and returns the token */
     Token ReadStringLiteral();
     /** Reads a number literal and returns the token */

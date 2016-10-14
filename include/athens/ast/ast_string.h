@@ -47,6 +47,9 @@ public:
 
 private:
     std::string m_value;
+
+    // set while compiling
+    int m_static_id;
 };
 
 #endif

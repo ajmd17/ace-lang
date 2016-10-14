@@ -1,10 +1,15 @@
 module main;
 
+var Ä = "blah";
 
-var Ä = 72;
-Ä + 34;
-Ä = 2;
+Ä;
 
+{
+var x = 12;
+x + 1;
+}
+
+var переменная = 1;
 переменная + 0;
 
 //import "blah.txt";

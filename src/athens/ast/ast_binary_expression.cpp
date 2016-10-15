@@ -143,6 +143,43 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             }
 
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        } else {
+            // assignment/operation
+            
+            uint8_t opcode;
+            if (m_op == &Operator::operator_add_assign) {
+                opcode = ADD;
+            } else if (m_op == &Operator::operator_subtract_assign) {
+                opcode = SUB;
+            } else if (m_op == &Operator::operator_multiply_assign) {
+                opcode = MUL;
+            }
+
+            // load right-hand side into register 0
+            m_right->Build(visitor);
+            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+            // load left-hand side into register 1
+            m_left->Build(visitor);
+
+            // perform operation
+            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+            visitor->GetCompilationUnit()->GetInstructionStream() << 
+                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+
+            // now move the result into the left hand side
+            auto left_as_var = std::dynamic_pointer_cast<AstVariable>(m_left);
+            if (left_as_var != nullptr) {
+                int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+                int stack_location = left_as_var->GetIdentifier()->GetStackLocation();
+                int offset = stack_size - stack_location;
+
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint16_t, uint8_t>(MOV, offset, rp - 1);
+            }
+
+            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         }
     } else {
         uint8_t opcode;

@@ -96,8 +96,9 @@ bool Operator::IsBinaryOperator(const std::string &str, const Operator *&out)
         &operator_bitwise_or_assign
     };
 
-    size_t num_binary_operators = sizeof(binary_operators) / 
-        sizeof(binary_operators[0]);
+    size_t num_binary_operators = 
+        sizeof(binary_operators) / sizeof(binary_operators[0]);
+        
     for (int i = 0; i < num_binary_operators; i++) {
         auto oper = binary_operators[i];
         if (str == oper->ToString()) {

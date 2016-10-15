@@ -30,6 +30,15 @@ public:
 
     inline int NewStaticId() { return m_static_id++; }
     inline void AddStaticString(const StaticString &static_string) { m_static_strings.push_back(static_string); }
+    inline int FindStaticString(const std::string &value) const
+    {
+        for (const StaticString &ss : m_static_strings) {
+            if (ss.m_value == value) {
+                return ss.m_id;
+            }
+        }
+        return -1;
+    }
 
     InstructionStream &operator<<(const Instruction<> &instruction);
 

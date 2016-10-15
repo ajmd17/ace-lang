@@ -14,12 +14,17 @@ AstString::AstString(const std::string &value, const SourceLocation &location)
 
 void AstString::Build(AstVisitor *visitor)
 {
-    m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-    
-    StaticString ss;
-    ss.m_id = m_static_id;
-    ss.m_value = m_value;
-    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticString(ss);
+    int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticString(m_value);
+    if (found_id == -1) {
+        m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+        
+        StaticString ss;
+        ss.m_id = m_static_id;
+        ss.m_value = m_value;
+        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticString(ss);
+    } else {
+        m_static_id = found_id;
+    }
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <cstdlib>
+#include <cstdio>
 
 Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream, 
         CompilationUnit *compilation_unit)
@@ -369,6 +370,7 @@ std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
 
         std::shared_ptr<AstExpression> right = ParseTerm();
         if (right == nullptr) {
+            std::printf("right term was nullptr\n");
             return nullptr;
         }
 

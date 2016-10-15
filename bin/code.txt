@@ -3,6 +3,9 @@ module main;
 var Ä = "hello world";
 Ä;
 
+var bbb = "переменная";
+bbb + 2;
+
 {
 var x = 12;
 x + 1;
@@ -13,11 +16,13 @@ var переменная = 1;
 
 //import "blah.txt";
 
-/*var a = 3;
-var b = 6;
-{
-  var x = 99;
-  x + 3;
-  a + 4;
-}
-a + b * 30000;*/
+//var a = 3;
+//var b = 6;
+//{
+//  var x = 99;
+//  x + 3;
+//  a + 4;
+//}
+
+var a1 = 1;
+a1 += 2;

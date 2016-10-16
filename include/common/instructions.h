@@ -19,6 +19,8 @@
 // @   = address (4 bytes)
 
 enum Instructions : char {
+    /* No operation */
+    NOP = 0x00, // nop
     /* Store values in static memory */
     STORE_STATIC_STRING, // static_str [u32 len, i8[] str]
     /* Load a value into a register */
@@ -35,6 +37,9 @@ enum Instructions : char {
     /* Push a value from register to the stack */
     PUSH, // push [% src]
     POP,  // pop
+
+    ECHO,         // echo [% reg]
+    ECHO_NEWLINE, // echo_nl
 
     /* Jump to address stored in register */
     JMP, // jmp [% address]

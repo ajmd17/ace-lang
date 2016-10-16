@@ -191,6 +191,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
             return ParseImport();
         } else if (MatchKeyword(Keyword_var, false)) {
             return ParseVariableDeclaration();
+        } else if (MatchKeyword(Keyword_print, false)) {
+            return ParsePrintStatement();
         }
     } else if (Match(Token_open_brace, false)) {
         return ParseBlock();
@@ -354,6 +356,35 @@ std::shared_ptr<AstBlock> Parser::ParseBlock()
     return nullptr;
 }
 
+std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
+{
+    const Token *token = ExpectKeyword(Keyword_print, true);
+    if (token != nullptr) {
+        bool has_parentheses = false;
+        if (Match(Token_open_parenthesis, true)) {
+            has_parentheses = true;
+        }
+
+        std::vector<std::shared_ptr<AstExpression>> arguments;
+        while (true) {
+            arguments.push_back(ParseExpression());
+
+            if (!Match(Token_comma, true)) {
+                break;
+            }
+        }
+
+        if (has_parentheses) {
+            Expect(Token_close_parenthesis, true);
+        }
+
+        return std::shared_ptr<AstPrintStatement>(
+            new AstPrintStatement(arguments, token->GetLocation()));
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec, 
     std::shared_ptr<AstExpression> left)
 {
@@ -370,7 +401,6 @@ std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
 
         std::shared_ptr<AstExpression> right = ParseTerm();
         if (right == nullptr) {
-            std::printf("right term was nullptr\n");
             return nullptr;
         }
 

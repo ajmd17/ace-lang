@@ -22,6 +22,7 @@
 #include <athens/ast/ast_false.h>
 #include <athens/ast/ast_null.h>
 #include <athens/ast/ast_block.h>
+#include <athens/ast/ast_print_statement.h>
 
 #include <string>
 
@@ -60,6 +61,7 @@ private:
     std::shared_ptr<AstFalse> ParseFalse();
     std::shared_ptr<AstNull> ParseNull();
     std::shared_ptr<AstBlock> ParseBlock();
+    std::shared_ptr<AstPrintStatement> ParsePrintStatement();
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec, 
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseExpression(bool standalone = false);

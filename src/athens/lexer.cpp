@@ -271,8 +271,7 @@ Token Lexer::ReadNumberLiteral()
                 type = Token_float_literal;
                 int pos_change = 0;
                 u32char next_ch = m_source_stream.Next(pos_change);
-                char *next_ch_bytes = reinterpret_cast<char*>(&next_ch);
-                value.append(next_ch_bytes);
+                value.append(utf32_get_bytes(next_ch));
                 m_source_location.GetColumn() += pos_change;
             }
         }
@@ -295,8 +294,7 @@ Token Lexer::ReadHexNumberLiteral()
     for (int i = 0; i < 2; i++) {
         int pos_change = 0;
         u32char next_ch = m_source_stream.Next(pos_change);
-        char *next_ch_bytes = reinterpret_cast<char*>(&next_ch);
-        value.append(next_ch_bytes);
+        value.append(utf32_get_bytes(next_ch));
         m_source_location.GetColumn() += pos_change;
     }
 
@@ -304,8 +302,7 @@ Token Lexer::ReadHexNumberLiteral()
     do {
         int pos_change = 0;
         u32char next_ch = m_source_stream.Next(pos_change);
-        char *next_ch_bytes = reinterpret_cast<char*>(&next_ch);
-        value.append(next_ch_bytes);
+        value.append(utf32_get_bytes(next_ch));
         m_source_location.GetColumn() += pos_change;
         ch = m_source_stream.Peek();
     } while (std::isxdigit(ch));
@@ -416,7 +413,7 @@ Token Lexer::ReadOperator()
     std::string op_2;
     op_2 += utf32_get_bytes(ch[0]);
     op_2 += utf32_get_bytes(ch[1]);
-    
+
     std::string op_1;
     op_1 += utf32_get_bytes(ch[0]);
 
@@ -450,10 +447,8 @@ Token Lexer::ReadIdentifier()
         int pos_change = 0;
         ch = m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-
-        char *ch_bytes = reinterpret_cast<char*>(&ch);
         // append the raw bytes
-        value.append(ch_bytes);
+        value.append(utf32_get_bytes(ch));
         // set ch to be the next character in the buffer
         ch = m_source_stream.Peek();
     } 

@@ -13,7 +13,7 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
 
 void AstFunctionDefinition::Visit(AstVisitor *visitor)
 {
-    AstDeclaration::Visit(visitor);
+    // TODO
 
     /*// open the scope for the parameters
     visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Open(Scope());
@@ -28,11 +28,13 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor)
 
     // visit the function body
     m_block->Visit(visitor);
+
+    AstDeclaration::Visit(visitor);
 }
 
 void AstFunctionDefinition::Build(AstVisitor *visitor)
 {
-    AstDeclaration::Build(visitor);
+    // TODO
 }
 
 void AstFunctionDefinition::Optimize(AstVisitor *visitor)

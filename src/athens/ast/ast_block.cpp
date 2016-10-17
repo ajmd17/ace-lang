@@ -30,7 +30,7 @@ void AstBlock::Visit(AstVisitor *visitor)
 
 void AstBlock::Build(AstVisitor *visitor)
 {
-    for (const std::shared_ptr<AstStatement> &stmt : m_children) {
+    for (std::shared_ptr<AstStatement> &stmt : m_children) {
         stmt->Build(visitor);
     }
 

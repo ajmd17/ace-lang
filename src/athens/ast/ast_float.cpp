@@ -1,5 +1,9 @@
 #include <athens/ast/ast_float.h>
 #include <athens/ast/ast_integer.h>
+#include <athens/ast_visitor.h>
+#include <athens/emit/instruction.h>
+
+#include <common/instructions.h>
 
 #include <limits>
 #include <cmath>
@@ -12,6 +16,11 @@ AstFloat::AstFloat(a_float value, const SourceLocation &location)
 
 void AstFloat::Build(AstVisitor *visitor)
 {
+    // get active register
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    // load integer value into register
+    visitor->GetCompilationUnit()->GetInstructionStream() << 
+        Instruction<uint8_t, uint8_t, float>(LOAD_F, rp, m_value);
 }
 
 int AstFloat::IsTrue() const
@@ -183,4 +192,13 @@ std::shared_ptr<AstConstant> AstFloat::operator||(
     // demote to integer
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
+}
+
+std::shared_ptr<AstConstant> AstFloat::Equals(AstConstant *right) const
+{
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    return std::shared_ptr<AstFloat>(
+        new AstFloat(FloatValue() == right->FloatValue(), m_location));
 }

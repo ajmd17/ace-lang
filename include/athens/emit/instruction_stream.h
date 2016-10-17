@@ -2,7 +2,6 @@
 #define INSTRUCTION_STREAM_H
 
 #include <athens/emit/instruction.h>
-#include <athens/emit/label.h>
 #include <athens/emit/static_object.h>
 
 #include <vector>
@@ -17,6 +16,8 @@ public:
 
     inline size_t GetPosition() const { return m_position; }
 
+    inline const std::vector<Instruction<>> &GetData() const { return m_data; }
+
     inline uint8_t GetCurrentRegister() const { return m_register_counter; }
     inline void IncRegisterUsage() { m_register_counter++; }
     inline void DecRegisterUsage() { m_register_counter--; }
@@ -25,23 +26,21 @@ public:
     inline void IncStackSize() { m_stack_size++; }
     inline void DecStackSize() { m_stack_size--; }
 
-    inline int NewLabelId() { return m_label_id++; }
-    inline void AddLabel(const Label &label) { m_labels.push_back(label); }
-
     inline int NewStaticId() { return m_static_id++; }
-    inline void AddStaticString(const StaticString &static_string) { m_static_strings.push_back(static_string); }
-    inline int FindStaticString(const std::string &value) const
+
+    inline void AddStaticObject(const StaticObject &static_object) { m_static_objects.push_back(static_object); }
+    inline int FindStaticObject(const StaticObject &static_object)
     {
-        for (const StaticString &ss : m_static_strings) {
-            if (ss.m_value == value) {
-                return ss.m_id;
+        for (const StaticObject &so : m_static_objects) {
+            if (so == static_object) {
+                return so.m_id;
             }
         }
+        // not found
         return -1;
     }
 
     InstructionStream &operator<<(const Instruction<> &instruction);
-
 
 private:
     size_t m_position;
@@ -52,14 +51,10 @@ private:
     // incremented each time a variable is pushed,
     // decremented each time a stack frame is closed
     int m_stack_size;
-    // all labels in the bytecode stream
-    std::vector<Label> m_labels;
-    // the current label id
-    int m_label_id;
     // the current static object id
     int m_static_id;
-    // all static strings
-    std::vector<StaticString> m_static_strings;
+
+    std::vector<StaticObject> m_static_objects;
 };
 
 #endif

@@ -1,6 +1,8 @@
 #include <athens/ast/ast_null.h>
 #include <athens/ast/ast_integer.h>
 #include <athens/ast/ast_void.h>
+#include <athens/ast/ast_false.h>
+#include <athens/ast/ast_true.h>
 
 AstNull::AstNull(const SourceLocation &location)
     : AstConstant(location)
@@ -106,4 +108,12 @@ std::shared_ptr<AstConstant> AstNull::operator||(
 {
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
+}
+
+std::shared_ptr<AstConstant> AstNull::Equals(AstConstant *right) const
+{
+    if (dynamic_cast<AstNull*>(right) != nullptr) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    }
+    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }

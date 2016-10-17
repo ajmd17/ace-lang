@@ -236,3 +236,12 @@ std::shared_ptr<AstConstant> AstInteger::operator||(
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
 }
+
+std::shared_ptr<AstConstant> AstInteger::Equals(AstConstant *right) const
+{
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    return std::shared_ptr<AstInteger>(
+        new AstInteger(IntValue() == right->IntValue(), m_location));
+}

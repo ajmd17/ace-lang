@@ -14,7 +14,9 @@ AstPrintStatement::AstPrintStatement(const std::vector<std::shared_ptr<AstExpres
 void AstPrintStatement::Visit(AstVisitor *visitor)
 {
     for (auto &arg : m_arguments) {
-        arg->Visit(visitor);
+        if (arg != nullptr) {
+            arg->Visit(visitor);
+        }
     }
 }
 
@@ -41,6 +43,8 @@ void AstPrintStatement::Build(AstVisitor *visitor)
 void AstPrintStatement::Optimize(AstVisitor *visitor)
 {
     for (auto &arg : m_arguments) {
-        arg->Optimize(visitor);
+        if (arg != nullptr) {
+            arg->Optimize(visitor);
+        }
     }
 }

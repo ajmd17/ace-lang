@@ -6,9 +6,11 @@
 
 // parameters are marked in square brackets
 // i8  = 8-bit integer (1 byte)
+// i16 = 16-bit integer (2 bytes)
 // i32 = 32-bit integer (4 bytes)
 // i64 = 64-bit integer (8 bytes)
 // u8  = 8-bit unsigned integer (1 byte)
+// u16 = 16-bit unsigned integer (2 bytes)
 // u32 = 32-bit unsigned integer (4 bytes)
 // u64 = 64-bit unsigned integer (8 bytes)
 // f   = float (4 bytes)
@@ -21,16 +23,18 @@
 enum Instructions : char {
     /* No operation */
     NOP = 0x00, // nop
+
     /* Store values in static memory */
-    STORE_STATIC_STRING, // static_str [u32 len, i8[] str]
+    STORE_STATIC_STRING,  // static_str  [u32 len, i8[] str]
+    STORE_STATIC_ADDRESS, // static_addr [u32 val]
+
     /* Load a value into a register */
     LOAD_I32,    // load_i32    [% reg, i32 val]
     LOAD_I64,    // load_i64    [% reg, i64 val]
     LOAD_F,      // load_f      [% reg, f val]
     LOAD_D,      // load_d      [% reg, d val]
-    LOAD_ADDR,   // load_addr   [% reg, i32 val]
     LOAD_LOCAL,  // load_local  [% reg, $ idx]
-    LOAD_STATIC, // load_static [% reg, u32 idx]
+    LOAD_STATIC, // load_static [% reg, u16 idx]
 
     /* Copy register value to stack location */
     MOV,  // mov [$ dst, % src]

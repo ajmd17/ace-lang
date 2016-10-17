@@ -1,0 +1,680 @@
+#include <athens/dis/decompilation_unit.h>
+#include <common/instructions.h>
+
+#include <sstream>
+#include <cstring>
+#include <cstdio>
+
+DecompilationUnit::DecompilationUnit(const ByteStream &bs)
+    : m_bs(bs)
+{
+}
+
+InstructionStream DecompilationUnit::Decompile(std::ostream *os)
+{
+    InstructionStream is;
+
+    while (m_bs.HasNext()) {
+        uint8_t code = m_bs.Next();
+        switch (code) {
+        case NOP:
+        {
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os) << "nop" << std::endl;
+            }
+
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
+        case STORE_STATIC_STRING: 
+        {
+            uint32_t len;
+            m_bs.Read(&len);
+
+            char *str = new char[len + 1];
+            std::memset(str, 0, len + 1);
+            m_bs.Read(str, len);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "str [" 
+                        << "u32(" << len << "), " 
+                        << "\"" << str << "\"" 
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint32_t, const char*>(code, len, str);
+
+            delete[] str;
+
+            break;
+        }
+        case STORE_STATIC_ADDRESS: 
+        {
+            uint32_t val;
+            m_bs.Read(&val);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << "addr [@(" << val << ")]" << std::endl;
+                os->unsetf(std::ios::hex);
+            }
+
+            is << Instruction<uint8_t, uint32_t>(code, val);
+            
+            break;
+        }
+        case LOAD_I32: 
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            int32_t val;
+            m_bs.Read(&val);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "load_i32 [" 
+                        << "%" << (int)reg << ", " 
+                        << "i32(" << val << ")" 
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, int32_t>(code, reg, val);
+            
+            break;
+        }
+        case LOAD_I64: 
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            int64_t val;
+            m_bs.Read(&val);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "load_i64 [" 
+                        << "%" << (int)reg << ", " 
+                        << "i64(" << val << ")" 
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, int64_t>(code, reg, val);
+            
+            break;
+        }
+        case LOAD_F: 
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            float val;
+            m_bs.Read(&val);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "load_f [" 
+                        << "%" << (int)reg << ", " 
+                        << "float(" << val << ")" 
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, float>(code, reg, val);
+            
+            break;
+        }
+        case LOAD_D: 
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            double val;
+            m_bs.Read(&val);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "load_d [" 
+                        << "%" << (int)reg << ", " 
+                        << "double(" << val << ")" 
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, double>(code, reg, val);
+            
+            break;
+        }
+        case LOAD_LOCAL: 
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint16_t offset;
+            m_bs.Read(&offset);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "load_local [" 
+                        << "%" << (int)reg << ", " 
+                        "$(sp-" << offset << ")"
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, offset);
+            
+            break;
+        }
+        case LOAD_STATIC: 
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint16_t index;
+            m_bs.Read(&index);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "load_static [" 
+                        << "%" << (int)reg << ", " 
+                        << "#" << index
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, index);
+            
+            break;
+        }
+        case MOV: 
+        {
+            uint16_t dst;
+            m_bs.Read(&dst);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "mov [" 
+                        << "$(sp-" << dst << "), "
+                        << "%" << (int)src
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint16_t, uint8_t>(code, dst, src);
+            
+            break;
+        }
+        case PUSH: 
+        {
+            uint8_t src;
+            m_bs.Read(&src);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "push ["
+                        << "%" << (int)src
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, src);
+            
+            break;
+        }
+        case POP:
+        {
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "pop"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
+        case ECHO:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "echo ["
+                        << "%" << (int)reg
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, reg);
+
+            break;
+        }
+        case ECHO_NEWLINE:
+        {
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "echo_newline" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
+        case JMP:
+        {
+            uint8_t addr;
+            m_bs.Read(&addr);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "jmp ["
+                        << "%" << (int)addr
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, addr);
+
+            break;
+        }
+        case JE:
+        {
+            uint8_t addr;
+            m_bs.Read(&addr);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "je ["
+                        << "%" << (int)addr
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, addr);
+
+            break;
+        }
+        case JNE:
+        {
+            uint8_t addr;
+            m_bs.Read(&addr);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "jne ["
+                        << "%" << (int)addr
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, addr);
+
+            break;
+        }
+        case JG:
+        {
+            uint8_t addr;
+            m_bs.Read(&addr);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "jg ["
+                        << "%" << (int)addr
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, addr);
+
+            break;
+        }
+        case JGE:
+        {
+            uint8_t addr;
+            m_bs.Read(&addr);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "jge ["
+                        << "%" << (int)addr
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, addr);
+
+            break;
+        }
+        case CALL:
+        {
+            uint8_t func;
+            m_bs.Read(&func);
+
+            uint8_t argc;
+            m_bs.Read(&argc);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "call ["
+                        << "%" << (int)func << ", "
+                        << "u8(" << argc << ")"
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t>(code, func, argc);
+
+            break;
+        }
+        case RET:
+        {
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "ret"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
+        case CMP:
+        {
+            uint8_t lhs;
+            m_bs.Read(&lhs);
+
+            uint8_t rhs;
+            m_bs.Read(&rhs);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "cmp ["
+                        << "%" << (int)lhs << ", "
+                        << "%" << (int)rhs
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t>(code, lhs, rhs);
+
+            break;
+        }
+        case ADD:
+        {
+            uint8_t lhs;
+            m_bs.Read(&lhs);
+
+            uint8_t rhs;
+            m_bs.Read(&rhs);
+
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "add ["
+                        << "%" << (int)lhs << ", "
+                        << "%" << (int)rhs << ", "
+                        << "%" << (int)dst
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+            break;
+        }
+        case SUB:
+        {
+            uint8_t lhs;
+            m_bs.Read(&lhs);
+
+            uint8_t rhs;
+            m_bs.Read(&rhs);
+
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "sub ["
+                        << "%" << (int)lhs << ", "
+                        << "%" << (int)rhs << ", "
+                        << "%" << (int)dst
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+            break;
+        }
+        case MUL:
+        {
+            uint8_t lhs;
+            m_bs.Read(&lhs);
+
+            uint8_t rhs;
+            m_bs.Read(&rhs);
+
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "mul ["
+                        << "%" << (int)lhs << ", "
+                        << "%" << (int)rhs << ", "
+                        << "%" << (int)dst
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+            break;
+        }
+        case DIV:
+        {
+            uint8_t lhs;
+            m_bs.Read(&lhs);
+
+            uint8_t rhs;
+            m_bs.Read(&rhs);
+
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "div ["
+                        << "%" << (int)lhs << ", "
+                        << "%" << (int)rhs << ", "
+                        << "%" << (int)dst
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+            break;
+        }
+        case MOD:
+        {
+            uint8_t lhs;
+            m_bs.Read(&lhs);
+
+            uint8_t rhs;
+            m_bs.Read(&rhs);
+
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "mod ["
+                        << "%" << (int)lhs << ", "
+                        << "%" << (int)rhs << ", "
+                        << "%" << (int)dst
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+            break;
+        }
+        case EXIT:
+        {
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "exit" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
+        default:
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "??" 
+                    << std::endl;
+            }
+            // unrecognized instruction
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
+    }
+
+    return is;
+}

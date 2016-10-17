@@ -1,9 +1,11 @@
 #include <athens/ast/ast_binary_expression.h>
 #include <athens/ast/ast_variable.h>
 #include <athens/ast/ast_constant.h>
+#include <athens/ast/ast_integer.h>
 #include <athens/ast_visitor.h>
 #include <athens/operator.h>
 #include <athens/emit/instruction.h>
+#include <athens/emit/static_object.h>
 
 #include <common/instructions.h>
 
@@ -74,6 +76,8 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
             result = (*left_as_constant) && right_as_constant;
         } else if (oper == &Operator::operator_logical_or) {
             result = (*left_as_constant) || right_as_constant;
+        } else if (oper == &Operator::operator_equals) {
+            result = left_as_constant->Equals(right_as_constant);
         }
         // don't have to worry about assignment operations,
         // because at this point both sides are const and literal.
@@ -182,48 +186,314 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         }
     } else {
-        uint8_t opcode;
-        if (m_op == &Operator::operator_add) {
-            opcode = ADD;
-        } else if (m_op == &Operator::operator_subtract) {
-            opcode = SUB;
-        } else if (m_op == &Operator::operator_multiply) {
-            opcode = MUL;
-        }
-        // TODO: handle more operators
+        if (m_op->GetType() == ARITHMETIC) {
+            uint8_t opcode;
+            if (m_op == &Operator::operator_add) {
+                opcode = ADD;
+            } else if (m_op == &Operator::operator_subtract) {
+                opcode = SUB;
+            } else if (m_op == &Operator::operator_multiply) {
+                opcode = MUL;
+            }
+            // TODO: handle more operators
 
-        if (left_as_binop == nullptr && right_as_binop != nullptr) {
-            // load right-hand side into register 0
-            m_right->Build(visitor);
-            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-
-            // load left-hand side into register 1
-            m_left->Build(visitor);
-
-            // perform operation
-            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
-                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
-
-            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-        } else {
-            // load left-hand side into register 0
-            m_left->Build(visitor);
-
-            if (m_right != nullptr) {
-                // right side has not been optimized away
-                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-                // load right-hand side into register 1
+            if (left_as_binop == nullptr && right_as_binop != nullptr) {
+                // load right-hand side into register 0
                 m_right->Build(visitor);
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+                // load left-hand side into register 1
+                m_left->Build(visitor);
 
                 // perform operation
                 uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
                 visitor->GetCompilationUnit()->GetInstructionStream() << 
-                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
 
                 visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+            } else {
+                // load left-hand side into register 0
+                m_left->Build(visitor);
+
+                if (m_right != nullptr) {
+                    // right side has not been optimized away
+                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                    // load right-hand side into register 1
+                    m_right->Build(visitor);
+
+                    // perform operation
+                    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                    visitor->GetCompilationUnit()->GetInstructionStream() << 
+                        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+
+                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                }
+            }
+        } else if (m_op->GetType() == LOGICAL) {
+            std::shared_ptr<AstExpression> first = nullptr;
+            std::shared_ptr<AstExpression> second = nullptr;
+
+            if (left_as_binop == nullptr && right_as_binop != nullptr) {
+                first = m_right;
+                second = m_left;
+            } else {
+                first = m_left;
+                second = m_right;
+            }
+
+            if (m_op == &Operator::operator_logical_and) {
+                uint8_t rp;
+
+                // the label to jump to the very end, and set the result to false
+                StaticObject false_label;
+                false_label.m_type = StaticObject::TYPE_LABEL;
+                false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                StaticObject true_label;
+                true_label.m_type = StaticObject::TYPE_LABEL;
+                true_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                { // do first part of expression
+
+                    bool folded = false;
+                    { // attempt to constant fold the values
+                        std::shared_ptr<AstExpression> tmp(new AstInteger(0, SourceLocation::eof));
+                        auto constant_folded = ConstantFold(first, tmp, &Operator::operator_equals, visitor);
+                        if (constant_folded != nullptr) {
+                            int folded_value = constant_folded->IsTrue();
+                            folded = folded_value == 1 || folded_value == 0;
+
+                            if (folded_value == 1) {
+                                // value is equal to 0, therefor it is false.
+                                // load the label address from static memory into register 0
+                                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+                                // jump to end, the value is false
+                                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                                    Instruction<uint8_t, uint8_t>(JMP, rp);
+                            } else if (folded_value == 0) {
+                                // do not jump at all, only accept the code that it is true
+                            }
+                        }
+                    }
+
+                    std::cout << "first folded = " << folded << "\n";
+
+                    if (!folded) {
+                        // load left-hand side into register 0
+                        first->Build(visitor);
+
+                        // increment register usage
+                        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                        // since this is an AND operation, jump as soon as the lhs is determined to be false
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                        // load the value '0' (false) into register 1
+                        visitor->GetCompilationUnit()->GetInstructionStream() << 
+                            Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+                        // compare lhs to 0 (false)
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
+                        // unclaim the register
+                        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                        // get current register index
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                        // load the label address from static memory into register 0
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+                        // jump if they are equal: i.e the value is false
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t>(JE, rp);
+                    }
+                }
+
+                // if we are at this point then lhs is true, so now test the rhs
+                if (second != nullptr) {
+                    bool folded = false;
+                    { // attempt to constant fold the values
+                        std::shared_ptr<AstExpression> tmp(new AstInteger(0, SourceLocation::eof));
+                        auto constant_folded = ConstantFold(second, tmp, &Operator::operator_equals, visitor);
+                        if (constant_folded != nullptr) {
+                            int folded_value = constant_folded->IsTrue();
+                            folded = folded_value == 1 || folded_value == 0;
+
+                            if (folded_value == 1) {
+                                // value is equal to 0, therefor it is false.
+                                // load the label address from static memory into register 0
+                                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+                                // jump to end, the value is false
+                                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                                    Instruction<uint8_t, uint8_t>(JMP, rp);
+                            } else if (folded_value == 0) {
+                                // do not jump at all, only accept the code that it is true
+                            }
+                        }
+                    }
+
+                    std::cout << "second folded = " << folded << "\n";
+
+                    if (!folded) {
+                        // load right-hand side into register 1
+                        second->Build(visitor);
+                        // increment register usage
+                        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                        // get register position
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                        // load the value '0' (false) into register 1
+                        visitor->GetCompilationUnit()->GetInstructionStream() << 
+                            Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+                        // compare rhs to 0 (false)
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
+
+                        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                        // get current register index
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                        // load the label address from static memory into register 0
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+                        // jump if they are equal: i.e the value is false
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t>(JE, rp);
+                    }
+                    
+                }
+
+                // both values were true at this point so load the value '1' (for true)    
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
+
+                // jump to the VERY end (so we don't load '0' value)
+                // increment register usage
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                // get register position
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                // load the label address from static memory into register 1
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+                // jump
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(JMP, rp);
+
+                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                // get current register index
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                // here is where the value is false
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+
+                // if true, skip to here to avoid loading '0' into the register
+                true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
+            } else if (m_op == &Operator::operator_logical_or) {
+                uint8_t rp;
+
+                // the label to jump to the very end, and set the result to false
+                StaticObject false_label;
+                false_label.m_type = StaticObject::TYPE_LABEL;
+                false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                StaticObject true_label;
+                true_label.m_type = StaticObject::TYPE_LABEL;
+                true_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                // load left-hand side into register 0
+                first->Build(visitor);
+
+                // increment register usage
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                // since this is an OR operation, jump as soon as the lhs is determined to be anything but 0
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                // load the value '0' (false) into register 1
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+                // compare lhs to 0 (false)
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
+                // unclaim the register
+                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                // get current register index
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+
+                // load the label address from static memory into register 0
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+                // jump if they are not equal: i.e the value is true
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(JNE, rp);
+
+                // if we are at this point then lhs is true, so now test the rhs
+                if (second != nullptr) {
+                    // load right-hand side into register 1
+                    second->Build(visitor);
+                    // increment register usage
+                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                    // get register position
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                    // load the value '0' (false) into register 1
+                    visitor->GetCompilationUnit()->GetInstructionStream() << 
+                        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+                    // compare rhs to 0 (false)
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
+
+                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                    // get current register index
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                    // load the label address from static memory into register 0
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+                    // jump if they are equal: i.e the value is true
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t>(JNE, rp);
+                    
+                }
+
+                // no values were true at this point so load the value '0' (for false)    
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+
+                // jump to the VERY end (so we don't load 'true' value)
+                // increment register usage
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                // get register position
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                // load the label address from static memory into register 1
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+                // jump if they are equal: i.e the value is false
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(JMP, rp);
+
+                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                // get current register index
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                // here is where the value is true
+                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
+
+                // if true, skip to here to avoid loading '0' into the register
+                false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
             }
         }
     }

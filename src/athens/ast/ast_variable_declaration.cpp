@@ -14,20 +14,24 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
 
 void AstVariableDeclaration::Visit(AstVisitor *visitor)
 {
-    AstDeclaration::Visit(visitor);
-
     // if there was an assignment, visit it
     if (m_assignment != nullptr) {
         m_assignment->Visit(visitor);
     }
+
+    AstDeclaration::Visit(visitor);
 }
 
 void AstVariableDeclaration::Build(AstVisitor *visitor)
 {
-    AstDeclaration::Build(visitor);
-
     if (m_identifier->GetUseCount() > 0) {
         if (m_assignment != nullptr) {
+            // get current stack size
+            int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+            // set identifier stack location
+            m_identifier->SetStackLocation(stack_location);
+
+
             m_assignment->Build(visitor);
 
             // get active register
@@ -36,6 +40,9 @@ void AstVariableDeclaration::Build(AstVisitor *visitor)
             // add instruction to store on stack
             visitor->GetCompilationUnit()->GetInstructionStream() << 
                 Instruction<uint8_t, uint8_t>(PUSH, rp);
+
+            // increment stack size
+            visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
         }
     }
 }

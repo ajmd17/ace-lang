@@ -1,17 +1,24 @@
 module main;
 
-var Ä = "hello world";
+/*var Ä = "hello world";
+print("Ä == ", Ä);
+
+var xx8 = 2;
+if xx8 {
+  print ("xx8 == true.");
+}
 
 Ä;
-var b = "hello world";
+var b = "hello worfld";
 print(b);
 
 var ☭ = "переменная"
-print("☭ = ", ☭)
+print("☭ == ", ☭)
 
 {
 var x = 12;
 x + 1;
+var yy;
 }
 
 var переменная = 1;
@@ -27,5 +34,16 @@ var переменная = 1;
 //  a + 4;
 //}
 
-var a1 = 1;
+/*var a1 = 1;
 a1 += 2;
+
+var a1 = 1;
+a1;
+a1; 
+a1;*/
+var a = 4;
+var xx0 = 4 && 87;
+
+if 1 {
+  print("1");
+}

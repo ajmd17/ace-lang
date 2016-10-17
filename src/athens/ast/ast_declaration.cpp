@@ -27,15 +27,3 @@ void AstDeclaration::Visit(AstVisitor *visitor)
         m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
     }
 }
-
-void AstDeclaration::Build(AstVisitor *visitor)
-{
-    if (m_identifier->GetUseCount() > 0) {
-        // get current stack size
-        int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-        // set identifier stack location
-        m_identifier->SetStackLocation(stack_location);
-        // increment stack size
-        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
-    }
-}

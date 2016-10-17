@@ -100,3 +100,9 @@ std::shared_ptr<AstConstant> AstVoid::operator||(
 {
     return nullptr;
 }
+
+std::shared_ptr<AstConstant> AstVoid::Equals(
+        AstConstant *right) const
+{
+    return nullptr;
+}

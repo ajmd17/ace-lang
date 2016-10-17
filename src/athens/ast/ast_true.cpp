@@ -170,3 +170,12 @@ std::shared_ptr<AstConstant> AstTrue::operator||(
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
 }
+
+std::shared_ptr<AstConstant> AstTrue::Equals(AstConstant *right) const
+{
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    return std::shared_ptr<AstInteger>(
+        new AstInteger(right->FloatValue() != 0.0f, m_location));
+}

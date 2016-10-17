@@ -14,14 +14,13 @@ AstString::AstString(const std::string &value, const SourceLocation &location)
 
 void AstString::Build(AstVisitor *visitor)
 {
-    int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticString(m_value);
+    StaticObject so(m_value.c_str());
+
+    int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
     if (found_id == -1) {
         m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-        
-        StaticString ss;
-        ss.m_id = m_static_id;
-        ss.m_value = m_value;
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticString(ss);
+        so.m_id = m_static_id;
+        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
     } else {
         m_static_id = found_id;
     }
@@ -30,7 +29,7 @@ void AstString::Build(AstVisitor *visitor)
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load static object into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint32_t>(
+        Instruction<uint8_t, uint8_t, uint16_t>(
             LOAD_STATIC, rp, m_static_id);
 }
 
@@ -124,5 +123,11 @@ std::shared_ptr<AstConstant> AstString::operator&&(
 std::shared_ptr<AstConstant> AstString::operator||(
         AstConstant *right) const
 {
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstString::Equals(AstConstant *right) const
+{
+    // TODO
     return nullptr;
 }

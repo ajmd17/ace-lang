@@ -191,6 +191,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
             return ParseImport();
         } else if (MatchKeyword(Keyword_var, false)) {
             return ParseVariableDeclaration();
+        } else if (MatchKeyword(Keyword_if, false)) {
+            return ParseIfStatement();
         } else if (MatchKeyword(Keyword_print, false)) {
             return ParsePrintStatement();
         }
@@ -356,6 +358,24 @@ std::shared_ptr<AstBlock> Parser::ParseBlock()
     return nullptr;
 }
 
+std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
+{
+    const Token *token = ExpectKeyword(Keyword_if, true);
+    if (token != nullptr) {
+        auto conditional = ParseExpression();
+        auto block = ParseBlock();
+
+        if (conditional == nullptr || block == nullptr) {
+            return nullptr;
+        }
+
+        return std::shared_ptr<AstIfStatement>(
+            new AstIfStatement(conditional, block, token->GetLocation()));
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
 {
     const Token *token = ExpectKeyword(Keyword_print, true);
@@ -366,8 +386,19 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
         }
 
         std::vector<std::shared_ptr<AstExpression>> arguments;
+
         while (true) {
-            arguments.push_back(ParseExpression());
+            SourceLocation loc(CurrentLocation());
+            auto expr = ParseExpression();
+
+            if (expr == nullptr) {
+                // expression or statement could not be evaluated
+                CompilerError error(Level_fatal, Msg_illegal_expression, loc);
+                m_compilation_unit->GetErrorList().AddError(error);
+
+            } else {
+                arguments.push_back(expr);
+            }
 
             if (!Match(Token_comma, true)) {
                 break;

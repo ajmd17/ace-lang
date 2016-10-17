@@ -157,3 +157,12 @@ std::shared_ptr<AstConstant> AstFalse::operator||(
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
 }
+
+std::shared_ptr<AstConstant> AstFalse::Equals(AstConstant *right) const
+{
+    if (!right->IsNumber()) {
+        return nullptr;
+    }
+    return std::shared_ptr<AstInteger>(
+        new AstInteger(right->FloatValue() != 0.0f, m_location));
+}

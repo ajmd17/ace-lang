@@ -44,6 +44,8 @@ public:
         AstConstant *right) const override;
     virtual std::shared_ptr<AstConstant> operator||(
         AstConstant *right) const override;
+    
+    virtual std::shared_ptr<AstConstant> Equals(AstConstant *right) const override;
 
 private:
     a_int m_value;

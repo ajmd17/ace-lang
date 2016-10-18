@@ -9,8 +9,9 @@
 
 class AstIfStatement : public AstStatement {
 public:
-    AstIfStatement(const std::shared_ptr<AstExpression> &conditional, 
+    AstIfStatement(const std::shared_ptr<AstExpression> &conditional,
         const std::shared_ptr<AstBlock> &block,
+        const std::shared_ptr<AstBlock> &else_block,
         const SourceLocation &location);
     virtual ~AstIfStatement() = default;
 
@@ -21,6 +22,7 @@ public:
 private:
     std::shared_ptr<AstExpression> m_conditional;
     std::shared_ptr<AstBlock> m_block;
+    std::shared_ptr<AstBlock> m_else_block;
 };
 
 #endif

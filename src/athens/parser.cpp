@@ -4,22 +4,22 @@
 #include <cstdlib>
 #include <cstdio>
 
-Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream, 
+Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream,
         CompilationUnit *compilation_unit)
-    : m_ast_iterator(ast_iterator), 
+    : m_ast_iterator(ast_iterator),
       m_token_stream(token_stream),
       m_compilation_unit(compilation_unit)
 {
 }
 
 Parser::Parser(const Parser &other)
-    : m_ast_iterator(other.m_ast_iterator), 
+    : m_ast_iterator(other.m_ast_iterator),
       m_token_stream(other.m_token_stream),
       m_compilation_unit(other.m_compilation_unit)
 {
 }
 
-const Token *Parser::MatchAhead(TokenType type, int n) 
+const Token *Parser::MatchAhead(TokenType type, int n)
 {
     const Token *peek = m_token_stream->Peek(n);
     if (peek != nullptr && peek->GetType() == type) {
@@ -73,7 +73,7 @@ const Token *Parser::Expect(TokenType type, bool read)
             error_str = Token::TokenTypeToString(type);
         }
 
-        CompilerError error(Level_fatal, 
+        CompilerError error(Level_fatal,
             error_msg, location, error_str);
 
         m_compilation_unit->GetErrorList().AddError(error);
@@ -105,7 +105,7 @@ const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
 
         CompilerError error(Level_fatal,
             error_msg, location, error_str);
-        
+
         m_compilation_unit->GetErrorList().AddError(error);
     }
 
@@ -163,7 +163,7 @@ int Parser::OperatorPrecedence(const Operator *&out)
 {
     out = nullptr;
     const Token *token = m_token_stream->Peek();
-    
+
     if (token != nullptr && token->GetType() == Token_operator) {
         if (!Operator::IsBinaryOperator(token->GetValue(), out)) {
             // internal error: operator not defined
@@ -196,7 +196,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
     } else if (Match(Token_open_brace, false)) {
         return ParseBlock();
     }
-    
+
     return ParseExpression(true);
 }
 
@@ -227,14 +227,14 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     } else if (MatchKeyword(Keyword_func)) {
         return nullptr;//ParseFunctionExpression();
     } else if (Match(Token_operator)) {
-        return nullptr;//ParseUnaryExpression(); 
+        return nullptr;//ParseUnaryExpression();
     } else {
-        CompilerError error(Level_fatal, Msg_unexpected_token, 
+        CompilerError error(Level_fatal, Msg_unexpected_token,
             token->GetLocation(), token->GetValue());
         m_compilation_unit->GetErrorList().AddError(error);
 
         m_token_stream->Next();
-        
+
         return nullptr;
     }
 }
@@ -311,7 +311,7 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
             }
         }
     }
-    
+
     return std::shared_ptr<AstFunctionCall>(
             new AstFunctionCall(token->GetValue(), args, token->GetLocation()));
 }
@@ -348,7 +348,7 @@ std::shared_ptr<AstBlock> Parser::ParseBlock()
                 block->AddChild(ParseStatement());
             }
         }
-        
+
         return block;
     }
 
@@ -359,15 +359,30 @@ std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
 {
     const Token *token = ExpectKeyword(Keyword_if, true);
     if (token != nullptr) {
-        auto conditional = ParseExpression();
-        auto block = ParseBlock();
+        std::shared_ptr<AstExpression> conditional = ParseExpression();
+        std::shared_ptr<AstBlock> block = ParseBlock();
 
         if (conditional == nullptr || block == nullptr) {
             return nullptr;
         }
 
+        std::shared_ptr<AstBlock> else_block = nullptr;
+        // parse else statement if the "else" keyword is found
+        const Token *else_token = MatchKeyword(Keyword_else, true);
+        if (else_token != nullptr) {
+            // check for "if" keyword for else-if
+            if (MatchKeyword(Keyword_if, false)) {
+                else_block = std::shared_ptr<AstBlock>(new AstBlock(else_token->GetLocation()));
+                else_block->AddChild(ParseIfStatement());
+            } else {
+                // parse block after "else keyword
+                else_block = ParseBlock();
+            }
+        }
+
         return std::shared_ptr<AstIfStatement>(
-            new AstIfStatement(conditional, block, token->GetLocation()));
+            new AstIfStatement(conditional, block, else_block,
+                token->GetLocation()));
     }
 
     return nullptr;
@@ -413,7 +428,7 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
     return nullptr;
 }
 
-std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec, 
+std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
     std::shared_ptr<AstExpression> left)
 {
     while (true) {
@@ -443,10 +458,10 @@ std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
         }
 
         left = std::shared_ptr<AstBinaryExpression>(
-            new AstBinaryExpression(left, right, op, 
+            new AstBinaryExpression(left, right, op,
                 token->GetLocation()));
     }
-    
+
     return nullptr;
 }
 
@@ -464,7 +479,7 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
         }
         term = bin_expr;
     }
-    
+
     term->m_is_standalone = standalone;
     return term;
 }

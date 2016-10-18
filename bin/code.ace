@@ -1,63 +1,29 @@
-module main;
+module Example
 
-/*var Ä = "hello world";
-print("Ä == ", Ä);
 
-var xx8 = 2;
-if xx8 {
-  print ("xx8 == true.");
-}
+print("true as string == ", true)
 
-Ä;
-var b = "hello worfld";
-print(b);
-
-var ☭ = "переменная"
-print("☭ == ", ☭)
-
-{
-var x = 12;
-x + 1;
-var yy;
-}
-
-var переменная = 1;
-переменная + 0;
-
-//import "blah.txt";
-
-//var a = 3;
-//var b = 6;
-//{
-//  var x = 99;
-//  x + 3;
-//  a + 4;
-//}
-
-/*var a1 = 1;
-a1 += 2;
-
-var a1 = 1;
-a1;
-a1; 
-a1;*/
-/*var a = 4;
-var xx0 = 1 && 2;
-
-if xx0 {
-  print("lubię pociągi");
-}*/
-
-var abc = null;
+var abc = null
 if abc == null {
-  print("abc == null");
+  print("abc == null")
 }
 
 if abc {
-  print("abc");
+    print("abc")
+} else {
+    print("abc did not evaluate to true. value of abc = ", abc)
 }
 
-var x = null;
-print("x == ", x);
-x = "blarg";
-print("x == ", x);
+// check if abc == 0
+if abc == 0 {
+    print("abc == 0 evaluated to true")
+} else if abc == null {
+    print("abc == null evaluated to true")
+} else {
+    print("real value of abc == ", abc)
+}
+
+var x = null
+print("x == ", x)
+x = "blarg"
+print("x == ", x)

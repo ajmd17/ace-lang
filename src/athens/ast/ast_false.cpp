@@ -14,9 +14,9 @@ void AstFalse::Build(AstVisitor *visitor)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    // load integer (0) value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() << 
-        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+    // load value into register
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
 }
 
 int AstFalse::IsTrue() const

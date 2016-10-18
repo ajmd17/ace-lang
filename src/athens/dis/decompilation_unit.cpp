@@ -31,7 +31,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case STORE_STATIC_STRING: 
+        case STORE_STATIC_STRING:
         {
             uint32_t len;
             m_bs.Read(&len);
@@ -44,11 +44,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "str [" 
-                        << "u32(" << len << "), " 
-                        << "\"" << str << "\"" 
+
+                (*os)
+                    << "str ["
+                        << "u32(" << len << "), "
+                        << "\"" << str << "\""
                     << "]"
                     << std::endl;
             }
@@ -59,7 +59,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case STORE_STATIC_ADDRESS: 
+        case STORE_STATIC_ADDRESS:
         {
             uint32_t val;
             m_bs.Read(&val);
@@ -68,17 +68,17 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
+
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << "addr [@(" << val << ")]" << std::endl;
                 os->unsetf(std::ios::hex);
             }
 
             is << Instruction<uint8_t, uint32_t>(code, val);
-            
+
             break;
         }
-        case LOAD_I32: 
+        case LOAD_I32:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -90,20 +90,20 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "load_i32 [" 
-                        << "%" << (int)reg << ", " 
-                        << "i32(" << val << ")" 
-                    << "]" 
+
+                (*os)
+                    << "load_i32 ["
+                        << "%" << (int)reg << ", "
+                        << "i32(" << val << ")"
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t, int32_t>(code, reg, val);
-            
+
             break;
         }
-        case LOAD_I64: 
+        case LOAD_I64:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -115,20 +115,20 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "load_i64 [" 
-                        << "%" << (int)reg << ", " 
-                        << "i64(" << val << ")" 
-                    << "]" 
+
+                (*os)
+                    << "load_i64 ["
+                        << "%" << (int)reg << ", "
+                        << "i64(" << val << ")"
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t, int64_t>(code, reg, val);
-            
+
             break;
         }
-        case LOAD_F: 
+        case LOAD_F:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -140,20 +140,20 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "load_f [" 
-                        << "%" << (int)reg << ", " 
-                        << "float(" << val << ")" 
-                    << "]" 
+
+                (*os)
+                    << "load_f ["
+                        << "%" << (int)reg << ", "
+                        << "float(" << val << ")"
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t, float>(code, reg, val);
-            
+
             break;
         }
-        case LOAD_D: 
+        case LOAD_D:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -165,20 +165,20 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "load_d [" 
-                        << "%" << (int)reg << ", " 
-                        << "double(" << val << ")" 
-                    << "]" 
+
+                (*os)
+                    << "load_d ["
+                        << "%" << (int)reg << ", "
+                        << "double(" << val << ")"
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t, double>(code, reg, val);
-            
+
             break;
         }
-        case LOAD_LOCAL: 
+        case LOAD_LOCAL:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -190,20 +190,20 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "load_local [" 
-                        << "%" << (int)reg << ", " 
+
+                (*os)
+                    << "load_local ["
+                        << "%" << (int)reg << ", "
                         "$(sp-" << offset << ")"
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, offset);
-            
+
             break;
         }
-        case LOAD_STATIC: 
+        case LOAD_STATIC:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -215,20 +215,20 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "load_static [" 
-                        << "%" << (int)reg << ", " 
+
+                (*os)
+                    << "load_static ["
+                        << "%" << (int)reg << ", "
                         << "#" << index
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, index);
-            
+
             break;
         }
-        case LOAD_NULL: 
+        case LOAD_NULL:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -237,19 +237,61 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "load_null [" 
+
+                (*os)
+                    << "load_null ["
                         << "%" << (int)reg
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t>(code, reg);
-            
+
             break;
         }
-        case MOV: 
+        case LOAD_TRUE:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_true ["
+                        << "%" << (int)reg
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, reg);
+
+            break;
+        }
+        case LOAD_FALSE:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_false ["
+                        << "%" << (int)reg
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, reg);
+
+            break;
+        }
+        case MOV:
         {
             uint16_t dst;
             m_bs.Read(&dst);
@@ -261,20 +303,20 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "mov [" 
+
+                (*os)
+                    << "mov ["
                         << "$(sp-" << dst << "), "
                         << "%" << (int)src
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint16_t, uint8_t>(code, dst, src);
-            
+
             break;
         }
-        case PUSH: 
+        case PUSH:
         {
             uint8_t src;
             m_bs.Read(&src);
@@ -283,16 +325,16 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "push ["
                         << "%" << (int)src
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
             is << Instruction<uint8_t, uint8_t>(code, src);
-            
+
             break;
         }
         case POP:
@@ -301,8 +343,8 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "pop"
                     << std::endl;
             }
@@ -320,11 +362,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "echo ["
                         << "%" << (int)reg
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -338,9 +380,9 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "echo_newline" 
+
+                (*os)
+                    << "echo_newline"
                     << std::endl;
             }
 
@@ -357,11 +399,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "jmp ["
                         << "%" << (int)addr
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -378,11 +420,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "je ["
                         << "%" << (int)addr
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -399,11 +441,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "jne ["
                         << "%" << (int)addr
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -420,11 +462,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "jg ["
                         << "%" << (int)addr
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -441,11 +483,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "jge ["
                         << "%" << (int)addr
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -465,12 +507,12 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "call ["
                         << "%" << (int)func << ", "
                         << "u8(" << argc << ")"
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -484,8 +526,8 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "ret"
                     << std::endl;
             }
@@ -506,12 +548,12 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "cmp ["
                         << "%" << (int)lhs << ", "
                         << "%" << (int)rhs
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -528,11 +570,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "cmpz ["
                         << "%" << (int)lhs
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -555,13 +597,13 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "add ["
                         << "%" << (int)lhs << ", "
                         << "%" << (int)rhs << ", "
                         << "%" << (int)dst
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -584,13 +626,13 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "sub ["
                         << "%" << (int)lhs << ", "
                         << "%" << (int)rhs << ", "
                         << "%" << (int)dst
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -613,13 +655,13 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "mul ["
                         << "%" << (int)lhs << ", "
                         << "%" << (int)rhs << ", "
                         << "%" << (int)dst
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -642,13 +684,13 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "div ["
                         << "%" << (int)lhs << ", "
                         << "%" << (int)rhs << ", "
                         << "%" << (int)dst
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -671,13 +713,13 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
+
+                (*os)
                     << "mod ["
                         << "%" << (int)lhs << ", "
                         << "%" << (int)rhs << ", "
                         << "%" << (int)dst
-                    << "]" 
+                    << "]"
                     << std::endl;
             }
 
@@ -691,9 +733,9 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "exit" 
+
+                (*os)
+                    << "exit"
                     << std::endl;
             }
 
@@ -706,9 +748,9 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
                 os->unsetf(std::ios::hex);
-                
-                (*os) 
-                    << "??" 
+
+                (*os)
+                    << "??"
                     << std::endl;
             }
             // unrecognized instruction

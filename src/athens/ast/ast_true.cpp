@@ -14,9 +14,9 @@ void AstTrue::Build(AstVisitor *visitor)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    // load integer (1) value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() << 
-        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
+    // load value into register
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
 }
 
 int AstTrue::IsTrue() const
@@ -45,7 +45,7 @@ std::shared_ptr<AstConstant> AstTrue::operator+(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() + right->IntValue(), m_location));
 }
@@ -56,7 +56,7 @@ std::shared_ptr<AstConstant> AstTrue::operator-(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() - right->IntValue(), m_location));
 }
@@ -67,7 +67,7 @@ std::shared_ptr<AstConstant> AstTrue::operator*(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() * right->IntValue(), m_location));
 }
@@ -78,7 +78,7 @@ std::shared_ptr<AstConstant> AstTrue::operator/(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() - right->IntValue(), m_location));
 }
@@ -89,7 +89,7 @@ std::shared_ptr<AstConstant> AstTrue::operator%(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() % right->IntValue(), m_location));
 }
@@ -100,7 +100,7 @@ std::shared_ptr<AstConstant> AstTrue::operator^(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() ^ right->IntValue(), m_location));
 }
@@ -111,7 +111,7 @@ std::shared_ptr<AstConstant> AstTrue::operator&(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() & right->IntValue(), m_location));
 }
@@ -122,7 +122,7 @@ std::shared_ptr<AstConstant> AstTrue::operator|(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
@@ -133,7 +133,7 @@ std::shared_ptr<AstConstant> AstTrue::operator<<(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
@@ -144,7 +144,7 @@ std::shared_ptr<AstConstant> AstTrue::operator>>(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
@@ -155,7 +155,7 @@ std::shared_ptr<AstConstant> AstTrue::operator&&(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() && right->IntValue(), m_location));
 }
@@ -166,7 +166,7 @@ std::shared_ptr<AstConstant> AstTrue::operator||(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
 }

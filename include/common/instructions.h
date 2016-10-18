@@ -57,7 +57,8 @@ enum Instructions : char {
     RET, // ret
 
     /* Compare to register values */
-    CMP, // cmp [% lhs, % rhs]
+    CMP,  // cmp [% lhs, % rhs]
+    CMPZ, // cmpz [% lhs]
 
     /* Mathematical operations */
     ADD, // add [% lhs, % rhs, % dst]

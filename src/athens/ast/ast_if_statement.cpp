@@ -39,21 +39,21 @@ void AstIfStatement::Build(AstVisitor *visitor)
         // build the conditional
         m_conditional->Build(visitor);
 
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        //visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
         // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        //rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
         // load the value '0' (false) into register 1
-        visitor->GetCompilationUnit()->GetInstructionStream() << 
-            Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+       // visitor->GetCompilationUnit()->GetInstructionStream() << 
+        //    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+        
         // compare the conditional to 0
         visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint8_t>(
-                CMP, rp - 1, rp);
+            Instruction<uint8_t, uint8_t>(CMPZ, rp);
 
         // unclaim the register
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+       // visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+       // rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         // load the label address from static memory into register 0
         visitor->GetCompilationUnit()->GetInstructionStream() <<

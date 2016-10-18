@@ -48,7 +48,14 @@ if xx0 {
   print("lubię pociągi");
 }*/
 
-if true {}
+var abc = null;
+if abc == null {
+  print("abc == null");
+}
+
+if abc {
+  print("abc");
+}
 
 var x = null;
 print("x == ", x);

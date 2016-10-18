@@ -223,21 +223,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 if (!folded) {
                     // load left-hand side into register 0
                     first->Build(visitor);
-
-                    // increment register usage
-                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
                     // since this is an AND operation, jump as soon as the lhs is determined to be false
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-                    // load the value '0' (false) into register 1
-                    visitor->GetCompilationUnit()->GetInstructionStream() << 
-                        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
                     // compare lhs to 0 (false)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
-                    // unclaim the register
-                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                    // get current register index
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                        Instruction<uint8_t, uint8_t>(CMPZ, rp);
+
                     // load the label address from static memory into register 0
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
@@ -274,22 +265,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 if (!folded) {
                     // load right-hand side into register 1
                     second->Build(visitor);
-                    // increment register usage
-                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
                     // get register position
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                    // load the value '0' (false) into register 1
-                    visitor->GetCompilationUnit()->GetInstructionStream() << 
-                        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
                     // compare rhs to 0 (false)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
-
-                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                    // get current register index
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
+                        Instruction<uint8_t, uint8_t>(CMPZ, rp);
                     // load the label address from static memory into register 0
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
@@ -372,23 +352,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 if (!folded) {
                     // load left-hand side into register 0
                     first->Build(visitor);
-
-                    // increment register usage
-                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
                     // since this is an OR operation, jump as soon as the lhs is determined to be anything but 0
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-                    // load the value '0' (false) into register 1
-                    visitor->GetCompilationUnit()->GetInstructionStream() << 
-                        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
                     // compare lhs to 0 (false)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
-                    // unclaim the register
-                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                    // get current register index
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-
+                        Instruction<uint8_t, uint8_t>(CMPZ, rp);
                     // load the label address from static memory into register 0
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
@@ -423,22 +391,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 if (!folded) {
                     // load right-hand side into register 1
                     second->Build(visitor);
-                    // increment register usage
-                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
                     // get register position
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                    // load the value '0' (false) into register 1
-                    visitor->GetCompilationUnit()->GetInstructionStream() << 
-                        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
                     // compare rhs to 0 (false)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
-
-                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                    // get current register index
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
+                        Instruction<uint8_t, uint8_t>(CMPZ, rp);
                     // load the label address from static memory into register 0
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
@@ -509,7 +466,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                     Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
 
                 visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                
+
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
                 // load the label address from static memory into register 0

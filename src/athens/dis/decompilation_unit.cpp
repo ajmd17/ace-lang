@@ -519,6 +519,27 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case CMPZ:
+        {
+            uint8_t lhs;
+            m_bs.Read(&lhs);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+                
+                (*os) 
+                    << "cmpz ["
+                        << "%" << (int)lhs
+                    << "]" 
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, lhs);
+
+            break;
+        }
         case ADD:
         {
             uint8_t lhs;

@@ -1,3 +1,0 @@
-module mod;
-var ghghg = 28;
-ghghg + 7;

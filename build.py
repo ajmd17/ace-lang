@@ -1,6 +1,6 @@
 import os
 
-debug_str = "-g"
+options = ""
 
 src_dir = "./src"
 bin_dir = "./bin"
@@ -8,7 +8,7 @@ bin_dir = "./bin"
 if not os.path.exists(bin_dir):
     os.makedirs(bin_dir)
 
-command = "g++ {} -o {}/athens -std=gnu++11 -O1 -Iinclude/".format(debug_str, bin_dir)
+command = "g++ {} -o {}/athens -std=gnu++11 -O2 -Iinclude/".format(options, bin_dir)
 
 for dirpath, dirnames, filenames in os.walk(src_dir):
     for file in [f for f in filenames]:

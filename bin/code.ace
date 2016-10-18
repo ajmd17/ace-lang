@@ -41,9 +41,16 @@ var a1 = 1;
 a1;
 a1; 
 a1;*/
-var a = 4;
-var xx0 = 4 && 87;
+/*var a = 4;
+var xx0 = 1 && 2;
 
-if 1 {
-  print("1");
-}
+if xx0 {
+  print("lubię pociągi");
+}*/
+
+if true {}
+
+var x = null;
+print("x == ", x);
+x = "blarg";
+print("x == ", x);

@@ -1,5 +1,7 @@
 #include <athens/ast/ast_integer.h>
 #include <athens/ast/ast_float.h>
+#include <athens/ast/ast_null.h>
+#include <athens/ast/ast_false.h>
 #include <athens/ast_visitor.h>
 #include <athens/emit/instruction.h>
 
@@ -219,6 +221,12 @@ std::shared_ptr<AstConstant> AstInteger::operator&&(
         AstConstant *right) const
 {
     if (!right->IsNumber()) {
+        // this operator is valid to compare against null
+        AstNull *ast_null = dynamic_cast<AstNull*>(right);
+        if (ast_null != nullptr) {
+            return std::shared_ptr<AstFalse>(
+                new AstFalse(m_location));
+        }
         return nullptr;
     }
     
@@ -230,6 +238,12 @@ std::shared_ptr<AstConstant> AstInteger::operator||(
         AstConstant *right) const
 {
     if (!right->IsNumber()) {
+        // this operator is valid to compare against null
+        AstNull *ast_null = dynamic_cast<AstNull*>(right);
+        if (ast_null != nullptr) {
+            return std::shared_ptr<AstInteger>(
+                new AstInteger(IntValue() || 0, m_location));
+        }
         return nullptr;
     }
     

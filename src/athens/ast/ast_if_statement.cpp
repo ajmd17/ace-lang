@@ -26,10 +26,9 @@ void AstIfStatement::Visit(AstVisitor *visitor)
 
 void AstIfStatement::Build(AstVisitor *visitor)
 {
-    //int condition_is_true = m_conditional->IsTrue();
-    //if (condition_is_true == -1) {
+    int condition_is_true = m_conditional->IsTrue();
+    if (condition_is_true == -1) {
         // the condition cannot be determined at compile time
-
         uint8_t rp;
 
         // the label for after this code block
@@ -39,7 +38,6 @@ void AstIfStatement::Build(AstVisitor *visitor)
 
         // build the conditional
         m_conditional->Build(visitor);
-
 
         visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
         // get current register index
@@ -73,11 +71,15 @@ void AstIfStatement::Build(AstVisitor *visitor)
 
         visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(after_label);
 
-    //} else if (condition_is_true) {
+    } else if (condition_is_true) {
         // the condition has been determined to be true
-    //} else {
+
+        // enter the block
+        m_block->Build(visitor);
+    } else {
         // the condition has been determined to be false
-    //}
+        // do nothing
+    }
 }
 
 void AstIfStatement::Optimize(AstVisitor *visitor)

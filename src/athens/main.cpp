@@ -123,7 +123,21 @@ void decompile_bytecode_file(const Utf8String &filename, const Utf8String &out_f
         ByteStream bs(&source_file);
 
         DecompilationUnit decompilation_unit(bs);
-        InstructionStream instruction_stream = decompilation_unit.Decompile(&ucout);
+
+        bool write_to_file = false;
+        std::ostream *os = nullptr;
+        if (out_filename == "") {
+            os = &ucout;
+        } else {
+            write_to_file = true;
+            os = new std::ofstream(out_filename.GetData(), std::ios::out | std::ios::binary);
+        }
+
+        InstructionStream instruction_stream = decompilation_unit.Decompile(os);
+
+        if (write_to_file) {
+            delete os;
+        }
     }
 }
 
@@ -150,10 +164,6 @@ int main(int argc, char *argv[])
 
             if (has_option(argv, argv + argc, "-o")) {
                 out_filename = get_option_value(argv, argv + argc, "-o");
-            }
-
-            if (out_filename == "") {
-                out_filename = "out.txt";
             }
         } else {
             mode = COMPILE_SOURCE;

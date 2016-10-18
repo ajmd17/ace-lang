@@ -35,6 +35,7 @@ enum Instructions : char {
     LOAD_D,      // load_d      [% reg, d val]
     LOAD_LOCAL,  // load_local  [% reg, $ idx]
     LOAD_STATIC, // load_static [% reg, u16 idx]
+    LOAD_NULL,   // load_null   [% reg]
 
     /* Copy register value to stack location */
     MOV,  // mov [$ dst, % src]

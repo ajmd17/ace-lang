@@ -60,9 +60,6 @@ const Token *Parser::Expect(TokenType type, bool read)
     const Token *token = Match(type, read);
     if (token == nullptr) {
         SourceLocation location = CurrentLocation();
-        if (read) {
-            m_token_stream->Next();
-        }
 
         ErrorMessage error_msg;
         std::string error_str;

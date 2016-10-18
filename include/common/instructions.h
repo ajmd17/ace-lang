@@ -13,8 +13,8 @@
 // u16 = 16-bit unsigned integer (2 bytes)
 // u32 = 32-bit unsigned integer (4 bytes)
 // u64 = 64-bit unsigned integer (8 bytes)
-// f   = float (4 bytes)
-// d   = double (8 bytes)
+// f32 = 32-bit float (4 bytes)
+// f64 = 64-bit float (8 bytes)
 // []  = array
 // $   = stack offset (2 bytes)
 // %   = register (1 byte)
@@ -31,8 +31,8 @@ enum Instructions : char {
     /* Load a value into a register */
     LOAD_I32,    // load_i32    [% reg, i32 val]
     LOAD_I64,    // load_i64    [% reg, i64 val]
-    LOAD_F,      // load_f      [% reg, f val]
-    LOAD_D,      // load_d      [% reg, d val]
+    LOAD_F32,    // load_f32    [% reg, f32 val]
+    LOAD_F64,    // load_f64    [% reg, f64 val]
     LOAD_LOCAL,  // load_local  [% reg, $ idx]
     LOAD_STATIC, // load_static [% reg, u16 idx]
     LOAD_NULL,   // load_null   [% reg]

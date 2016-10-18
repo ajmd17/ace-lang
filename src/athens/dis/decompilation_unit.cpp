@@ -128,7 +128,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case LOAD_F:
+        case LOAD_F32:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -142,9 +142,9 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "load_f ["
+                    << "load_f32 ["
                         << "%" << (int)reg << ", "
-                        << "float(" << val << ")"
+                        << "f32(" << val << ")"
                     << "]"
                     << std::endl;
             }
@@ -153,7 +153,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case LOAD_D:
+        case LOAD_F64:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -167,9 +167,9 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "load_d ["
+                    << "load_f64 ["
                         << "%" << (int)reg << ", "
-                        << "double(" << val << ")"
+                        << "f64(" << val << ")"
                     << "]"
                     << std::endl;
             }

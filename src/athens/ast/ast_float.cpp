@@ -19,8 +19,8 @@ void AstFloat::Build(AstVisitor *visitor)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load integer value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() << 
-        Instruction<uint8_t, uint8_t, float>(LOAD_F, rp, m_value);
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, float>(LOAD_F32, rp, m_value);
 }
 
 int AstFloat::IsTrue() const
@@ -188,7 +188,7 @@ std::shared_ptr<AstConstant> AstFloat::operator||(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     // demote to integer
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));

@@ -536,6 +536,41 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case BEGIN_TRY:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "begin_try ["
+                        << "%" << (int)reg
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, reg);
+
+            break;
+        }
+        case END_TRY:
+        {
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os) << "end_try" << std::endl;
+            }
+
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
         case CMP:
         {
             uint8_t lhs;

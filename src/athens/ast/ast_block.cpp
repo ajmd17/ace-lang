@@ -36,7 +36,7 @@ void AstBlock::Build(AstVisitor *visitor)
 
     // pop all local variables off the stack
     for (int i = 0; i < m_num_locals; i++) {
-        visitor->GetCompilationUnit()->GetInstructionStream() << 
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t>(POP);
 
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();

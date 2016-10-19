@@ -24,12 +24,13 @@
 #include <athens/ast/ast_block.h>
 #include <athens/ast/ast_if_statement.h>
 #include <athens/ast/ast_print_statement.h>
+#include <athens/ast/ast_try_catch.h>
 
 #include <string>
 
 class Parser {
 public:
-    Parser(AstIterator *ast_iterator, TokenStream *token_stream, 
+    Parser(AstIterator *ast_iterator, TokenStream *token_stream,
         CompilationUnit *compilation_unit);
     Parser(const Parser &other);
 
@@ -64,7 +65,8 @@ private:
     std::shared_ptr<AstBlock> ParseBlock();
     std::shared_ptr<AstIfStatement> ParseIfStatement();
     std::shared_ptr<AstPrintStatement> ParsePrintStatement();
-    std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec, 
+    std::shared_ptr<AstTryCatch> ParseTryCatchStatement();
+    std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseExpression(bool standalone = false);
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration();

@@ -6,45 +6,14 @@
 #include <athens/operator.h>
 #include <athens/emit/instruction.h>
 #include <athens/emit/static_object.h>
+#include <athens/optimizer.h>
 
 #include <common/instructions.h>
 
 #include <iostream>
 
-/** Attemps to reduce a variable that is const literal to the actual value. */
-static void OptimizeSide(std::shared_ptr<AstExpression> &side, AstVisitor *visitor)
-{
-    side->Optimize(visitor);
-
-    AstVariable *side_as_var = nullptr;
-    AstBinaryExpression *side_as_binop = nullptr;
-    if ((side_as_var = dynamic_cast<AstVariable*>(side.get())) != nullptr) {
-        // the side is a variable, so we can further optimize by inlining,
-        // only if it is const, and a literal.
-        if (side_as_var->GetIdentifier() != nullptr) {
-            if (side_as_var->GetIdentifier()->GetFlags() & (Flag_const)) {
-                // the variable is a const, now we make sure that the current
-                // value is a literal value
-                auto value_sp = side_as_var->GetIdentifier()->GetCurrentValue().lock();
-                AstConstant *constant_sp = dynamic_cast<AstConstant*>(value_sp.get());
-                if (constant_sp != nullptr) {
-                    // yay! we were able to retrieve the value that
-                    // the variable is set to, so now we can use that
-                    // at compile-time rather than using a variable.
-                    side.reset(constant_sp);
-                }
-            }
-        }
-    } else if ((side_as_binop = dynamic_cast<AstBinaryExpression*>(side.get())) != nullptr) {
-        if (side_as_binop->GetRight() == nullptr) {
-            // right side has been optimized away, to just left side
-            side = side_as_binop->GetLeft();
-        }
-    }
-}
-
 /** Attemps to evaluate the optimized expression at compile-time. */
-static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left, 
+static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left,
     std::shared_ptr<AstExpression> &right, const Operator *oper, AstVisitor *visitor)
 {
     AstConstant *left_as_constant = dynamic_cast<AstConstant*>(left.get());
@@ -82,7 +51,7 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
         // don't have to worry about assignment operations,
         // because at this point both sides are const and literal.
     }
-    
+
     // one or both of the sides are not a constant
     return result;
 }
@@ -109,7 +78,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor)
             // make sure we are not modifying a const
             if (left_as_var->GetIdentifier() != nullptr) {
                 visitor->Assert(!(left_as_var->GetIdentifier()->GetFlags() & Flag_const),
-                    CompilerError(Level_fatal, Msg_const_modified, 
+                    CompilerError(Level_fatal, Msg_const_modified,
                         m_left->GetLocation(), left_as_var->GetName()));
             }
         } else {
@@ -125,7 +94,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 {
     AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
     AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
-    
+
     if (m_op->GetType() == ARITHMETIC) {
         uint8_t opcode;
         if (m_op == &Operator::operator_add) {
@@ -148,7 +117,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             // perform operation
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
 
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
@@ -165,7 +134,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 // perform operation
                 uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
 
                 visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
@@ -277,11 +246,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(JE, rp);
                 }
-                
+
             }
 
-            // both values were true at this point so load the value '1' (for true)    
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
+            // both values were true at this point so load the value '1' (for true)
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
 
             // jump to the VERY end (so we don't load '0' value)
@@ -303,7 +272,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
             false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
             // here is where the value is false
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
 
             // if true, skip to here to avoid loading '0' into the register
@@ -403,11 +372,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(JNE, rp);
                 }
-                
+
             }
 
-            // no values were true at this point so load the value '0' (for false)    
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
+            // no values were true at this point so load the value '0' (for false)
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
 
             // jump to the VERY end (so we don't load 'true' value)
@@ -429,7 +398,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
             true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
             // here is where the value is true
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
 
             // skip to here to avoid loading '1' into the register
@@ -439,11 +408,10 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
         }
     } else if (m_op->GetType() == COMPARISON) {
-        if (m_op == &Operator::operator_equals) {   
+        if (m_op == &Operator::operator_equals) {
             uint8_t rp;
 
             if (m_right != nullptr) {
-
                 StaticObject true_label;
                 true_label.m_type = StaticObject::TYPE_LABEL;
                 true_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
@@ -462,7 +430,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
 
                 visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
@@ -475,7 +443,6 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 // jump if they are equal
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t>(JE, rp);
-
 
                 // values are not equal at this point
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
@@ -528,14 +495,14 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 int stack_location = left_as_var->GetIdentifier()->GetStackLocation();
                 int offset = stack_size - stack_location;
 
-                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint16_t, uint8_t>(MOV, offset, rp - 1);
             }
 
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         } else {
             // assignment/operation
-            
+
             uint8_t opcode;
             if (m_op == &Operator::operator_add_assign) {
                 opcode = ADD;
@@ -555,7 +522,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             // perform operation
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
 
             // now move the result into the left hand side
@@ -565,7 +532,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 int stack_location = left_as_var->GetIdentifier()->GetStackLocation();
                 int offset = stack_size - stack_location;
 
-                visitor->GetCompilationUnit()->GetInstructionStream() << 
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint16_t, uint8_t>(MOV, offset, rp - 1);
             }
 
@@ -576,8 +543,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
 void AstBinaryExpression::Optimize(AstVisitor *visitor)
 {
-    OptimizeSide(m_left, visitor);
-    OptimizeSide(m_right, visitor);
+    Optimizer::OptimizeExpr(m_left, visitor);
+    Optimizer::OptimizeExpr(m_right, visitor);
 
     // check that we can further optimize the
     // binary expression by optimizing away the right
@@ -601,4 +568,20 @@ int AstBinaryExpression::IsTrue() const
     }
 
     return m_left->IsTrue();
+}
+
+bool AstBinaryExpression::MayHaveSideEffects() const
+{
+    bool left_side_effects = m_left->MayHaveSideEffects();
+    bool right_side_effects = false;
+
+    if (m_right != nullptr) {
+        right_side_effects = m_right->MayHaveSideEffects();
+    }
+
+    if (m_op->ModifiesValue()) {
+        return true;
+    }
+
+    return left_side_effects || right_side_effects;
 }

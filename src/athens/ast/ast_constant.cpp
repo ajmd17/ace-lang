@@ -14,3 +14,9 @@ void AstConstant::Optimize(AstVisitor *visitor)
 {
     // do nothing
 }
+
+bool AstConstant::MayHaveSideEffects() const
+{
+    // constants do not have side effects
+    return false;
+}

@@ -5,7 +5,7 @@ print("true as string == ", true)
 
 var abc = null
 if abc == null {
-  print("abc == null")
+    print("abc == null")
 }
 
 if abc {
@@ -27,3 +27,13 @@ var x = null
 print("x == ", x)
 x = "blarg"
 print("x == ", x)
+
+try {
+  print("try-block")
+  print("try to crash")
+  var a = true
+  var b = 9
+  print("a + b = ", a + b)
+} catch {
+  print("catch-block")
+}

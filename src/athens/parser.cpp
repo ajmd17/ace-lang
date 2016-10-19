@@ -192,6 +192,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
             return ParseIfStatement();
         } else if (MatchKeyword(Keyword_print, false)) {
             return ParsePrintStatement();
+        } else if (MatchKeyword(Keyword_try, false)) {
+            return ParseTryCatchStatement();
         }
     } else if (Match(Token_open_brace, false)) {
         return ParseBlock();
@@ -423,6 +425,29 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
 
         return std::shared_ptr<AstPrintStatement>(
             new AstPrintStatement(arguments, token->GetLocation()));
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstTryCatch> Parser::ParseTryCatchStatement()
+{
+    const Token *token = ExpectKeyword(Keyword_try, true);
+    if (token != nullptr) {
+        std::shared_ptr<AstBlock> try_block(ParseBlock());
+        std::shared_ptr<AstBlock> catch_block(nullptr);
+
+        if (ExpectKeyword(Keyword_catch, true)) {
+            // TODO: Add exception argument
+            catch_block = ParseBlock();
+        }
+
+        if (try_block == nullptr || catch_block == nullptr) {
+            return nullptr;
+        }
+
+        return std::shared_ptr<AstTryCatch>(
+            new AstTryCatch(try_block, catch_block, token->GetLocation()));
     }
 
     return nullptr;

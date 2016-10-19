@@ -14,7 +14,7 @@ AstVariable::AstVariable(const std::string &name, const SourceLocation &location
 {
 }
 
-void AstVariable::Visit(AstVisitor *visitor) 
+void AstVariable::Visit(AstVisitor *visitor)
 {
     // make sure that the variable exists
     std::unique_ptr<Module> &mod = visitor->GetCompilationUnit()->CurrentModule();
@@ -39,7 +39,7 @@ void AstVariable::Build(AstVisitor *visitor)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load stack value at offset value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() << 
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
 }
 
@@ -60,6 +60,12 @@ int AstVariable::IsTrue() const
             }
         }
     }
-    
+
     return -1;
+}
+
+bool AstVariable::MayHaveSideEffects() const
+{
+    // a simple variable reference does not cause side effects
+    return false;
 }

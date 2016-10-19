@@ -19,6 +19,7 @@ public:
     virtual void Optimize(AstVisitor *visitor) override;
 
     virtual int IsTrue() const override;
+    virtual bool MayHaveSideEffects() const override;
 
 protected:
     std::string m_name;

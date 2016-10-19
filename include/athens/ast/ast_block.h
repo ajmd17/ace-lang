@@ -11,6 +11,7 @@ public:
     AstBlock(const SourceLocation &location);
 
     inline void AddChild(const std::shared_ptr<AstStatement> &stmt) { m_children.push_back(stmt); }
+    inline int NumLocals() const { return m_num_locals; }
 
     virtual void Visit(AstVisitor *visitor) override;
     virtual void Build(AstVisitor *visitor) override;

@@ -18,6 +18,7 @@ public:
     virtual void Build(AstVisitor *visitor) override;
     virtual void Optimize(AstVisitor *visitor) override;
     virtual int IsTrue() const override;
+    virtual bool MayHaveSideEffects() const override;
 
 private:
     std::shared_ptr<AstExpression> m_left;

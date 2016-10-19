@@ -62,6 +62,7 @@ void AstIfStatement::Build(AstVisitor *visitor)
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
         }
+
         // jump if they are equal: i.e the value is false
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(JE, rp);
@@ -96,11 +97,21 @@ void AstIfStatement::Build(AstVisitor *visitor)
 
     } else if (condition_is_true) {
         // the condition has been determined to be true
+        if (m_conditional->MayHaveSideEffects()) {
+            // if there is a possibility of side effects,
+            // build the conditional into the binary
+            m_conditional->Build(visitor);
+        }
         // enter the block
         m_block->Build(visitor);
         // do not accept the else-block
     } else {
         // the condition has been determined to be false
+        if (m_conditional->MayHaveSideEffects()) {
+            // if there is a possibility of side effects,
+            // build the conditional into the binary
+            m_conditional->Build(visitor);
+        }
         // only visit the else-block (if it exists)
         if (m_else_block != nullptr) {
             m_else_block->Build(visitor);

@@ -50,13 +50,16 @@ enum Instructions : char {
 
     /* Jump to address stored in register */
     JMP, // jmp [% address]
-    JE, // je [% address]
+    JE,  // je [% address]
     JNE, // jne [% address]
-    JG, // jg [% address]
+    JG,  // jg [% address]
     JGE, // jge [% address]
 
     CALL, // call [% function, u8 argc]
-    RET, // ret
+    RET,  // ret
+
+    BEGIN_TRY, // begin_try [% catch_addr]
+    END_TRY,
 
     /* Compare to register values */
     CMP,  // cmp [% lhs, % rhs]

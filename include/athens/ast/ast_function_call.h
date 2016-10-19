@@ -15,7 +15,7 @@ public:
     virtual ~AstFunctionCall() = default;
 
     inline const std::string &GetName() const { return m_name; }
-    inline const std::vector<std::shared_ptr<AstExpression>> 
+    inline const std::vector<std::shared_ptr<AstExpression>>
         &GetArguments() const { return m_args; }
     inline Identifier *GetIdentifier() const { return m_identifier; }
 
@@ -24,6 +24,7 @@ public:
     virtual void Optimize(AstVisitor *visitor) override;
 
     virtual int IsTrue() const override;
+    virtual bool MayHaveSideEffects() const override;
 
 protected:
     std::string m_name;

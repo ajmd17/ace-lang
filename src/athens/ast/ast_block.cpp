@@ -1,8 +1,8 @@
-#include <athens/ast/ast_block.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
+#include <athens/ast/ast_block.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 AstBlock::AstBlock(const SourceLocation &location)
     : AstStatement(location),

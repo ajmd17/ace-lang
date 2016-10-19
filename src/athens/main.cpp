@@ -1,23 +1,23 @@
-#include <athens/module.h>
-#include <athens/semantic_analyzer.h>
-#include <athens/optimizer.h>
-#include <athens/compilation_unit.h>
-#include <athens/ast/ast_module_declaration.h>
-#include <athens/ast/ast_variable_declaration.h>
-#include <athens/ast/ast_variable.h>
-#include <athens/ast/ast_binary_expression.h>
-#include <athens/ast/ast_if_statement.h>
-#include <athens/ast/ast_true.h>
-#include <athens/ast/ast_null.h>
-#include <athens/ast/ast_block.h>
-#include <athens/emit/instruction.h>
-#include <athens/lexer.h>
-#include <athens/parser.h>
-#include <athens/compiler.h>
-#include <athens/dis/decompilation_unit.h>
-#include <athens/dis/byte_stream.h>
+#include <athens/module.hpp>
+#include <athens/semantic_analyzer.hpp>
+#include <athens/optimizer.hpp>
+#include <athens/compilation_unit.hpp>
+#include <athens/ast/ast_module_declaration.hpp>
+#include <athens/ast/ast_variable_declaration.hpp>
+#include <athens/ast/ast_variable.hpp>
+#include <athens/ast/ast_binary_expression.hpp>
+#include <athens/ast/ast_if_statement.hpp>
+#include <athens/ast/ast_true.hpp>
+#include <athens/ast/ast_null.hpp>
+#include <athens/ast/ast_block.hpp>
+#include <athens/emit/instruction.hpp>
+#include <athens/lexer.hpp>
+#include <athens/parser.hpp>
+#include <athens/compiler.hpp>
+#include <athens/dis/decompilation_unit.hpp>
+#include <athens/dis/byte_stream.hpp>
 
-#include <common/utf8.h>
+#include <common/utf8.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -25,7 +25,7 @@
 #include <algorithm>
 
 /** check if the option is set */
-inline bool has_option(char **begin, char **end, const std::string &opt) 
+inline bool has_option(char **begin, char **end, const std::string &opt)
 {
     return std::find(begin, end, opt) != end;
 }
@@ -75,8 +75,8 @@ void build_source_file(const Utf8String &filename, const Utf8String &out_filenam
         for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
             ucout
                 << Utf8String(error.GetLocation().GetFileName().c_str()) << "\t"
-                << "ln: "  << (error.GetLocation().GetLine() + 1) 
-                << ", col: " << (error.GetLocation().GetColumn() + 1) 
+                << "ln: "  << (error.GetLocation().GetLine() + 1)
+                << ", col: " << (error.GetLocation().GetColumn() + 1)
                 << ":\t" << Utf8String(error.GetText().c_str()) << "\n";
         }
 

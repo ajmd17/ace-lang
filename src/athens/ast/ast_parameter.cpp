@@ -1,5 +1,5 @@
-#include <athens/ast/ast_parameter.h>
-#include <athens/ast_visitor.h>
+#include <athens/ast/ast_parameter.hpp>
+#include <athens/ast_visitor.hpp>
 
 AstParameter::AstParameter(const std::string &name, const SourceLocation &location)
     : AstDeclaration(name, location)

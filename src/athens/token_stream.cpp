@@ -1,4 +1,4 @@
-#include <athens/token_stream.h>
+#include <athens/token_stream.hpp>
 
 TokenStream::TokenStream()
 	: m_position(0)

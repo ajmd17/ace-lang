@@ -1,4 +1,4 @@
-#include <athens/ast_iterator.h>
+#include <athens/ast_iterator.hpp>
 
 AstIterator::AstIterator()
     : m_position(0)

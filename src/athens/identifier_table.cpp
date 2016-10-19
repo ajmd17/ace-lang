@@ -1,4 +1,4 @@
-#include <athens/identifier_table.h>
+#include <athens/identifier_table.hpp>
 
 IdentifierTable::IdentifierTable()
     : m_identifier_index(0)
@@ -13,14 +13,14 @@ IdentifierTable::IdentifierTable(const IdentifierTable &other)
 
 Identifier *IdentifierTable::AddAlias(const std::string &name, const Identifier &aliasee)
 {
-    m_identifiers.push_back(Identifier(name, 
+    m_identifiers.push_back(Identifier(name,
         aliasee.GetIndex(), aliasee.GetFlags()));
     return &m_identifiers.back();
 }
 
 Identifier *IdentifierTable::AddIdentifier(const std::string &name, int flags)
 {
-    m_identifiers.push_back(Identifier(name, 
+    m_identifiers.push_back(Identifier(name,
         m_identifier_index++, flags));
     return &m_identifiers.back();
 }

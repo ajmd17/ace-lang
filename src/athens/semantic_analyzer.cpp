@@ -1,5 +1,5 @@
-#include <athens/semantic_analyzer.h>
-#include <athens/ast/ast_module_declaration.h>
+#include <athens/semantic_analyzer.hpp>
+#include <athens/ast/ast_module_declaration.hpp>
 
 SemanticAnalyzer::SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
     : AstVisitor(ast_iterator, compilation_unit)
@@ -28,7 +28,7 @@ void SemanticAnalyzer::Analyze()
             // all files must begin with a module declaration
             module_declaration->Visit(this);
             m_compilation_unit->m_module_index++;
-            
+
             // open global scope
             m_compilation_unit->CurrentModule()->m_scopes.Open(Scope());
 

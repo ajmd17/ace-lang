@@ -1,4 +1,4 @@
-#include <athens/source_file.h>
+#include <athens/source_file.hpp>
 
 #include <stdexcept>
 #include <cstring>

@@ -1,4 +1,4 @@
-#include <athens/compiler.h>
+#include <athens/compiler.hpp>
 
 Compiler::Compiler(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
     : AstVisitor(ast_iterator, compilation_unit)

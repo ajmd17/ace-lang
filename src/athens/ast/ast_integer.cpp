@@ -1,11 +1,11 @@
-#include <athens/ast/ast_integer.h>
-#include <athens/ast/ast_float.h>
-#include <athens/ast/ast_null.h>
-#include <athens/ast/ast_false.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
+#include <athens/ast/ast_integer.hpp>
+#include <athens/ast/ast_float.hpp>
+#include <athens/ast/ast_null.hpp>
+#include <athens/ast/ast_false.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 #include <iostream>
 #include <limits>
@@ -22,7 +22,7 @@ void AstInteger::Build(AstVisitor *visitor)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load integer value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() << 
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, m_value);
 }
 
@@ -53,7 +53,7 @@ std::shared_ptr<AstConstant> AstInteger::operator+(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     // we have to determine weather or not to promote this to a float
     if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         return std::shared_ptr<AstFloat>(
@@ -70,7 +70,7 @@ std::shared_ptr<AstConstant> AstInteger::operator-(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     // we have to determine weather or not to promote this to a float
     if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         return std::shared_ptr<AstFloat>(
@@ -87,7 +87,7 @@ std::shared_ptr<AstConstant> AstInteger::operator*(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     // we have to determine weather or not to promote this to a float
     if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         return std::shared_ptr<AstFloat>(
@@ -104,7 +104,7 @@ std::shared_ptr<AstConstant> AstInteger::operator/(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     // we have to determine weather or not to promote this to a float
     if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         a_float result;
@@ -136,7 +136,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     // we have to determine weather or not to promote this to a float
     if (dynamic_cast<const AstFloat*>(right) != nullptr) {
         a_float result;
@@ -168,7 +168,7 @@ std::shared_ptr<AstConstant> AstInteger::operator^(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() ^ right->IntValue(), m_location));
 }
@@ -179,7 +179,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() & right->IntValue(), m_location));
 }
@@ -190,7 +190,7 @@ std::shared_ptr<AstConstant> AstInteger::operator|(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
@@ -201,7 +201,7 @@ std::shared_ptr<AstConstant> AstInteger::operator<<(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() << right->IntValue(), m_location));
 }
@@ -212,7 +212,7 @@ std::shared_ptr<AstConstant> AstInteger::operator>>(
     if (!right->IsNumber()) {
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() >> right->IntValue(), m_location));
 }
@@ -229,7 +229,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&&(
         }
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() && right->IntValue(), m_location));
 }
@@ -246,7 +246,7 @@ std::shared_ptr<AstConstant> AstInteger::operator||(
         }
         return nullptr;
     }
-    
+
     return std::shared_ptr<AstInteger>(
         new AstInteger(IntValue() || right->IntValue(), m_location));
 }

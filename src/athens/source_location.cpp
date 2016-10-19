@@ -1,4 +1,4 @@
-#include <athens/source_location.h>
+#include <athens/source_location.hpp>
 
 const SourceLocation SourceLocation::eof(-1, -1, "eof");
 
@@ -33,5 +33,5 @@ bool SourceLocation::operator==(const SourceLocation &other) const
 {
     return m_line == other.m_line &&
         m_column == other.m_column &&
-        m_filename == other.m_filename;  
+        m_filename == other.m_filename;
 }

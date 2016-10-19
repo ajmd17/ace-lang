@@ -1,4 +1,4 @@
-#include <athens/compiler_error.h>
+#include <athens/compiler_error.hpp>
 
 const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     /* Fatal errors */

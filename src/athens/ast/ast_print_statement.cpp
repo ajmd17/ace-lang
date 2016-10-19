@@ -1,8 +1,8 @@
-#include <athens/ast/ast_print_statement.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
+#include <athens/ast/ast_print_statement.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 AstPrintStatement::AstPrintStatement(const std::vector<std::shared_ptr<AstExpression>> &arguments,
         const SourceLocation &location)
@@ -29,14 +29,14 @@ void AstPrintStatement::Build(AstVisitor *visitor)
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->
             GetInstructionStream().GetCurrentRegister();
-        
+
         // emit instruction
-        visitor->GetCompilationUnit()->GetInstructionStream() << 
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(ECHO, rp);
     }
 
     // print newline
-    visitor->GetCompilationUnit()->GetInstructionStream() << 
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t>(ECHO_NEWLINE);
 }
 

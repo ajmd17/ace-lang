@@ -1,9 +1,9 @@
-#include <athens/ast/ast_string.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
-#include <athens/emit/static_object.h>
+#include <athens/ast/ast_string.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
+#include <athens/emit/static_object.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 AstString::AstString(const std::string &value, const SourceLocation &location)
     : AstConstant(location),

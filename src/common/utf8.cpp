@@ -1,4 +1,4 @@
-#include <common/utf8.h> 
+#include <common/utf8.hpp> 
 
 int utf8_strlen(const char *str)
 {
@@ -102,7 +102,7 @@ int utf32_strcmp(const u32char *lhs, const u32char *rhs)
 
 char *utf8_strcpy(char *dst, const char *src)
 {
-    // copy all raw bytes   
+    // copy all raw bytes
     for (int i = 0; (dst[i] = src[i]) != '\0'; i++);
     return dst;
 }
@@ -117,7 +117,7 @@ char *utf8_strncpy(char *dst, const char *src, size_t n)
 {
     size_t i = 0;
     size_t count = 0;
-    
+
     size_t max = strlen(dst) + 1;
 
     for (; src[i] != '\0'; i++, count++) {
@@ -146,7 +146,7 @@ char *utf8_strncpy(char *dst, const char *src, size_t n)
             dst[i + 2] = src[i + 2];
             dst[i + 3] = src[i + 3];
             i += 3;
-        } else { 
+        } else {
             break; // invalid utf-8
         }
     }
@@ -198,7 +198,7 @@ u32char char8to32(const char *str)
         // not wide enough to store the character
         return -1;
     }
-    
+
     u32char result = 0;
 
     char *result_bytes = reinterpret_cast<char*>(&result);
@@ -379,7 +379,7 @@ Utf8String &Utf8String::operator=(const Utf8String &other)
     if (m_data != nullptr) {
         delete[] m_data;
     }
-    
+
     // copy raw bytes
     m_size = strlen(other.m_data) + 1;
     m_data = new char[m_size];

@@ -1,6 +1,6 @@
-#include <athens/ast/ast_function_call.h>
-#include <athens/ast_visitor.h>
-#include <athens/ast/ast_constant.h>
+#include <athens/ast/ast_function_call.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/ast/ast_constant.hpp>
 
 AstFunctionCall::AstFunctionCall(const std::string &name,
         const std::vector<std::shared_ptr<AstExpression>> &args, const SourceLocation &location)

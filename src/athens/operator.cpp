@@ -1,4 +1,4 @@
-#include <athens/operator.h>
+#include <athens/operator.hpp>
 
 #include <array>
 
@@ -9,14 +9,14 @@ const Operator
     Operator::operator_multiply("*", 12, ARITHMETIC),
     Operator::operator_divide("/", 12, ARITHMETIC),
     Operator::operator_modulus("%", 12, ARITHMETIC),
-    
+
     // Bitwise operators
     Operator::operator_bitwise_xor("^", 6, BITWISE),
     Operator::operator_bitwise_and("&", 7, BITWISE),
     Operator::operator_bitwise_or("|", 5, BITWISE),
     Operator::operator_bitshift_left("<<", 10, BITWISE),
     Operator::operator_bitshift_right(">>", 10, BITWISE),
-    
+
     // Logical operators
     Operator::operator_logical_and("&&", 4, LOGICAL),
     Operator::operator_logical_or("||", 3, LOGICAL),
@@ -67,38 +67,38 @@ bool Operator::IsBinaryOperator(const std::string &str)
 
 bool Operator::IsBinaryOperator(const std::string &str, const Operator *&out)
 {
-    const Operator *binary_operators[] = { 
+    const Operator *binary_operators[] = {
         &operator_add,
-        &operator_subtract, 
-        &operator_multiply, 
-        &operator_divide, 
-        &operator_modulus, 
-        &operator_bitwise_xor, 
-        &operator_bitwise_and, 
-        &operator_bitwise_or, 
-        &operator_bitshift_left, 
-        &operator_bitshift_right, 
-        &operator_logical_and, 
-        &operator_logical_or, 
-        &operator_equals, 
-        &operator_not_eql, 
-        &operator_less, 
-        &operator_greater, 
-        &operator_less_eql, 
-        &operator_greater_eql, 
-        &operator_assign, 
-        &operator_add_assign, 
-        &operator_subtract_assign, 
-        &operator_multiply_assign, 
-        &operator_divide_assign, 
-        &operator_bitwise_xor_assign, 
-        &operator_bitwise_and_assign, 
+        &operator_subtract,
+        &operator_multiply,
+        &operator_divide,
+        &operator_modulus,
+        &operator_bitwise_xor,
+        &operator_bitwise_and,
+        &operator_bitwise_or,
+        &operator_bitshift_left,
+        &operator_bitshift_right,
+        &operator_logical_and,
+        &operator_logical_or,
+        &operator_equals,
+        &operator_not_eql,
+        &operator_less,
+        &operator_greater,
+        &operator_less_eql,
+        &operator_greater_eql,
+        &operator_assign,
+        &operator_add_assign,
+        &operator_subtract_assign,
+        &operator_multiply_assign,
+        &operator_divide_assign,
+        &operator_bitwise_xor_assign,
+        &operator_bitwise_and_assign,
         &operator_bitwise_or_assign
     };
 
-    size_t num_binary_operators = 
+    size_t num_binary_operators =
         sizeof(binary_operators) / sizeof(binary_operators[0]);
-        
+
     for (int i = 0; i < num_binary_operators; i++) {
         auto oper = binary_operators[i];
         if (str == oper->ToString()) {
@@ -119,15 +119,15 @@ bool Operator::IsUnaryOperator(const std::string &str)
 bool Operator::IsUnaryOperator(const std::string &str, const Operator *&out)
 {
     const Operator *unary_operators[] = {
-        &operator_logical_not, 
-        &operator_negative, 
-        &operator_positive, 
-        &operator_bitwise_complement, 
-        &operator_increment, 
+        &operator_logical_not,
+        &operator_negative,
+        &operator_positive,
+        &operator_bitwise_complement,
+        &operator_increment,
         &operator_decrement
     };
 
-    size_t num_unary_operators = sizeof(unary_operators) / 
+    size_t num_unary_operators = sizeof(unary_operators) /
         sizeof(unary_operators[0]);
     for (int i = 0; i < num_unary_operators; i++) {
         auto oper = unary_operators[i];
@@ -140,7 +140,7 @@ bool Operator::IsUnaryOperator(const std::string &str, const Operator *&out)
     return false;
 }
 
-Operator::Operator(const std::string &str, 
+Operator::Operator(const std::string &str,
     int precedence, OperatorType type, bool modifies_value)
     : m_str(str),
       m_precedence(precedence),

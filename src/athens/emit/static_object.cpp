@@ -1,11 +1,11 @@
-#include <athens/emit/static_object.h>
+#include <athens/emit/static_object.hpp>
 
 #include <cstring>
 
 StaticObject::StaticObject()
-    : m_id(0), 
+    : m_id(0),
       m_type(TYPE_NONE)
-{   
+{
 }
 
 StaticObject::StaticObject(int i)
@@ -52,7 +52,7 @@ StaticObject &StaticObject::operator=(const StaticObject &other)
 
     m_id = other.m_id;
     m_type = other.m_type;
-    
+
     if (m_type == TYPE_LABEL) {
         m_value.lbl = other.m_value.lbl;
     } else if (m_type == TYPE_STRING) {

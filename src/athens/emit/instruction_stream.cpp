@@ -1,6 +1,6 @@
-#include <athens/emit/instruction_stream.h>
+#include <athens/emit/instruction_stream.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -33,7 +33,7 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
 
     for (const StaticObject &so : instruction_stream.m_static_objects) {
         if (so.m_type == StaticObject::TYPE_LABEL) {
-            Instruction<uint8_t, uint32_t> store_ins(STORE_STATIC_ADDRESS, 
+            Instruction<uint8_t, uint32_t> store_ins(STORE_STATIC_ADDRESS,
                 so.m_value.lbl + label_offset);
 
             for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
@@ -68,7 +68,7 @@ InstructionStream::InstructionStream()
 }
 
 InstructionStream::InstructionStream(const InstructionStream &other)
-    : m_position(other.m_position), 
+    : m_position(other.m_position),
       m_data(other.m_data),
       m_register_counter(other.m_register_counter),
       m_stack_size(other.m_stack_size),

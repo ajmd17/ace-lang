@@ -1,9 +1,9 @@
-#include <athens/ast/ast_float.h>
-#include <athens/ast/ast_integer.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
+#include <athens/ast/ast_float.hpp>
+#include <athens/ast/ast_integer.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 #include <limits>
 #include <cmath>

@@ -1,8 +1,8 @@
-#include <athens/ast/ast_declaration.h>
-#include <athens/ast_visitor.h>
+#include <athens/ast/ast_declaration.hpp>
+#include <athens/ast_visitor.hpp>
 
 AstDeclaration::AstDeclaration(const std::string &name, const SourceLocation &location)
-    : AstStatement(location), 
+    : AstStatement(location),
       m_name(name),
       m_identifier(nullptr)
 {

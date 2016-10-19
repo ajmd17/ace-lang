@@ -1,4 +1,5 @@
-#include <athens/keywords.h>
+#include <athens/keywords.hpp>
+
 #include <stdexcept>
 
 const std::map<std::string, Keywords> Keyword::keyword_strings = {

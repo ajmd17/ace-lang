@@ -1,4 +1,4 @@
-#include <athens/module.h>
+#include <athens/module.hpp>
 
 Module::Module(const std::string &name, const SourceLocation &location)
     : m_name(name),
@@ -11,7 +11,7 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
     TreeNode<Scope> *top = m_scopes.TopNode();
 
     while (top != nullptr) {
-        Identifier *result = 
+        Identifier *result =
             top->m_value.GetIdentifierTable().LookUpIdentifier(name);
 
         if (result != nullptr) {

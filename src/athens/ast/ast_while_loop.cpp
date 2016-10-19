@@ -1,7 +1,7 @@
-#include <athens/ast/ast_while_loop.h>
-#include <athens/ast_visitor.h>
+#include <athens/ast/ast_while_loop.hpp>
+#include <athens/ast_visitor.hpp>
 
-AstWhileLoop::AstWhileLoop(const std::shared_ptr<AstExpression> &conditional, 
+AstWhileLoop::AstWhileLoop(const std::shared_ptr<AstExpression> &conditional,
         const std::shared_ptr<AstBlock> &block,
         const SourceLocation &location)
     : AstStatement(location),

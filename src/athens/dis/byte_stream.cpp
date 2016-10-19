@@ -1,4 +1,4 @@
-#include <athens/dis/byte_stream.h>
+#include <athens/dis/byte_stream.hpp>
 
 #include <stdexcept>
 
@@ -14,7 +14,7 @@ ByteStream::ByteStream(const ByteStream &other)
 {
 }
 
-char ByteStream::Peek() const 
+char ByteStream::Peek() const
 {
     if (m_position >= m_file->GetSize()) {
         return '\0';
@@ -24,7 +24,7 @@ char ByteStream::Peek() const
     return m_file->GetBuffer()[m_position];
 }
 
-char ByteStream::Next() 
+char ByteStream::Next()
 {
     if (m_position >= m_file->GetSize()) {
         return '\0';

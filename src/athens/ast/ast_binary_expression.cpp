@@ -1,14 +1,14 @@
-#include <athens/ast/ast_binary_expression.h>
-#include <athens/ast/ast_variable.h>
-#include <athens/ast/ast_constant.h>
-#include <athens/ast/ast_integer.h>
-#include <athens/ast_visitor.h>
-#include <athens/operator.h>
-#include <athens/emit/instruction.h>
-#include <athens/emit/static_object.h>
-#include <athens/optimizer.h>
+#include <athens/ast/ast_binary_expression.hpp>
+#include <athens/ast/ast_variable.hpp>
+#include <athens/ast/ast_constant.hpp>
+#include <athens/ast/ast_integer.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/operator.hpp>
+#include <athens/emit/instruction.hpp>
+#include <athens/emit/static_object.hpp>
+#include <athens/optimizer.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 #include <iostream>
 

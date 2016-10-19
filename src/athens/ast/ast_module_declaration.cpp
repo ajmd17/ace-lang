@@ -1,5 +1,5 @@
-#include <athens/ast/ast_module_declaration.h>
-#include <athens/ast_visitor.h>
+#include <athens/ast/ast_module_declaration.hpp>
+#include <athens/ast_visitor.hpp>
 
 AstModuleDeclaration::AstModuleDeclaration(const std::string &name, const SourceLocation &location)
     : AstDeclaration(name, location)

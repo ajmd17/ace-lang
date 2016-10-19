@@ -1,7 +1,7 @@
-#include <athens/optimizer.h>
-#include <athens/ast/ast_binary_expression.h>
-#include <athens/ast/ast_variable.h>
-#include <athens/ast/ast_constant.h>
+#include <athens/optimizer.hpp>
+#include <athens/ast/ast_binary_expression.hpp>
+#include <athens/ast/ast_variable.hpp>
+#include <athens/ast/ast_constant.hpp>
 
 void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor)
 {

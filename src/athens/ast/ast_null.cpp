@@ -1,12 +1,12 @@
-#include <athens/ast/ast_null.h>
-#include <athens/ast/ast_integer.h>
-#include <athens/ast/ast_void.h>
-#include <athens/ast/ast_false.h>
-#include <athens/ast/ast_true.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
+#include <athens/ast/ast_null.hpp>
+#include <athens/ast/ast_integer.hpp>
+#include <athens/ast/ast_void.hpp>
+#include <athens/ast/ast_false.hpp>
+#include <athens/ast/ast_true.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 AstNull::AstNull(const SourceLocation &location)
     : AstConstant(location)
@@ -18,7 +18,7 @@ void AstNull::Build(AstVisitor *visitor)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load integer value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() << 
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(LOAD_NULL, rp);
 }
 
@@ -145,7 +145,7 @@ std::shared_ptr<AstConstant> AstNull::Equals(AstConstant *right) const
         // only another null value should be equal
         return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     }
-    
+
     // other values never equal to null
     return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }

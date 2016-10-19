@@ -1,4 +1,4 @@
-#include <athens/ast/ast_void.h>
+#include <athens/ast/ast_void.hpp>
 
 AstVoid::AstVoid(const SourceLocation &location)
     : AstConstant(location)

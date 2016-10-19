@@ -1,4 +1,4 @@
-#include <athens/identifier.h>
+#include <athens/identifier.hpp>
 
 Identifier::Identifier(const std::string &name, int index, int flags)
     : m_name(name),

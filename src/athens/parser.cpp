@@ -1,4 +1,4 @@
-#include <athens/parser.h>
+#include <athens/parser.hpp>
 
 #include <memory>
 #include <cstdlib>

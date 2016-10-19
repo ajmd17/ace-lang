@@ -1,5 +1,5 @@
-#include <athens/dis/decompilation_unit.h>
-#include <common/instructions.h>
+#include <athens/dis/decompilation_unit.hpp>
+#include <common/instructions.hpp>
 
 #include <sstream>
 #include <cstring>

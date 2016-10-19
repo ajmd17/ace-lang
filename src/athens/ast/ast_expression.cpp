@@ -1,4 +1,4 @@
-#include <athens/ast/ast_expression.h>
+#include <athens/ast/ast_expression.hpp>
 
 AstExpression::AstExpression(const SourceLocation &location)
     : AstStatement(location),

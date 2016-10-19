@@ -1,9 +1,9 @@
-#include <athens/ast/ast_try_catch.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
-#include <athens/emit/static_object.h>
+#include <athens/ast/ast_try_catch.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
+#include <athens/emit/static_object.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 AstTryCatch::AstTryCatch(const std::shared_ptr<AstBlock> &try_block,
     const std::shared_ptr<AstBlock> &catch_block,

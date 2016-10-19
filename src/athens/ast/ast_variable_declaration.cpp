@@ -1,10 +1,10 @@
-#include <athens/ast/ast_variable_declaration.h>
-#include <athens/ast_visitor.h>
-#include <athens/emit/instruction.h>
+#include <athens/ast/ast_variable_declaration.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
-AstVariableDeclaration::AstVariableDeclaration(const std::string &name, 
+AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
     const std::shared_ptr<AstExpression> &assignment,
     const SourceLocation &location)
     : AstDeclaration(name, location),
@@ -38,7 +38,7 @@ void AstVariableDeclaration::Build(AstVisitor *visitor)
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             // add instruction to store on stack
-            visitor->GetCompilationUnit()->GetInstructionStream() << 
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t>(PUSH, rp);
 
             // increment stack size

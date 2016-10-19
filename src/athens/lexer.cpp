@@ -1,7 +1,7 @@
-#include <athens/lexer.h>
-#include <athens/operator.h>
-#include <athens/compiler_error.h>
-#include <athens/keywords.h>
+#include <athens/lexer.hpp>
+#include <athens/operator.hpp>
+#include <athens/compiler_error.hpp>
+#include <athens/keywords.hpp>
 
 #include <array>
 #include <sstream>
@@ -69,7 +69,7 @@ Token Lexer::NextToken()
         }
     } else if (ch[0] == '_' || utf32_isalpha(ch[0])) {
         return ReadIdentifier();
-    } else if (ch[0] == '+' || ch[0] == '-' || 
+    } else if (ch[0] == '+' || ch[0] == '-' ||
         ch[0] == '*' || ch[0] == '/' ||
         ch[0] == '%' || ch[0] == '^' ||
         ch[0] == '&' || ch[0] == '|' ||
@@ -137,7 +137,7 @@ Token Lexer::NextToken()
         return Token(Token_close_brace, "}", location);
     } else {
         int pos_change = 0;
-        CompilerError error(Level_fatal, 
+        CompilerError error(Level_fatal,
             Msg_unexpected_token, location, m_source_stream.Next(pos_change));
 
         m_compilation_unit->GetErrorList().AddError(error);
@@ -178,7 +178,7 @@ u32char Lexer::ReadEscapeCode()
             break;
         default:
             m_compilation_unit->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_unrecognized_escape_sequence, 
+                CompilerError(Level_fatal, Msg_unrecognized_escape_sequence,
                     location, std::string("\\") + utf32_get_bytes(esc)));
             esc = (u32char)'\0';
         }
@@ -208,7 +208,7 @@ Token Lexer::ReadStringLiteral()
         if (ch == (u32char)'\n' || !HasNext()) {
             // unterminated string literal
             m_compilation_unit->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_unterminated_string_literal, 
+                CompilerError(Level_fatal, Msg_unterminated_string_literal,
                     location));
 
             if (ch == (u32char)'\n') {
@@ -232,7 +232,7 @@ Token Lexer::ReadStringLiteral()
             // Append the character itself
             value.append(utf32_get_bytes(ch));
         }
-        
+
         ch = m_source_stream.Next(pos_change);
     }
 
@@ -451,14 +451,14 @@ Token Lexer::ReadIdentifier()
         value.append(utf32_get_bytes(ch));
         // set ch to be the next character in the buffer
         ch = m_source_stream.Peek();
-    } 
+    }
 
     TokenType type = Token_identifier;
 
     if (Keyword::IsKeyword(value)) {
         type = Token_keyword;
     }
-    
+
     return Token(type, value, location);
 }
 

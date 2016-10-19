@@ -1,4 +1,4 @@
-#include <athens/ast/ast_constant.h>
+#include <athens/ast/ast_constant.hpp>
 
 AstConstant::AstConstant(const SourceLocation &location)
     : AstExpression(location)

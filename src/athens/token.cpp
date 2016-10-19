@@ -1,4 +1,4 @@
-#include <athens/token.h>
+#include <athens/token.hpp>
 
 std::string Token::TokenTypeToString(TokenType type)
 {

@@ -1,4 +1,4 @@
-#include <athens/source_stream.h>
+#include <athens/source_stream.hpp>
 
 #include <stdexcept>
 
@@ -14,7 +14,7 @@ SourceStream::SourceStream(const SourceStream &other)
 {
 }
 
-u32char SourceStream::Peek() const 
+u32char SourceStream::Peek() const
 {
     size_t pos = m_position;
     if (pos >= m_file->GetSize()) {
@@ -56,7 +56,7 @@ u32char SourceStream::Peek() const
     return u32_ch;
 }
 
-u32char SourceStream::Next() 
+u32char SourceStream::Next()
 {
     int tmp;
     return Next(tmp);

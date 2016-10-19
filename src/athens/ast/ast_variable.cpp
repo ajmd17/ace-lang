@@ -1,9 +1,9 @@
-#include <athens/ast/ast_variable.h>
-#include <athens/ast_visitor.h>
-#include <athens/ast/ast_constant.h>
-#include <athens/emit/instruction.h>
+#include <athens/ast/ast_variable.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/ast/ast_constant.hpp>
+#include <athens/emit/instruction.hpp>
 
-#include <common/instructions.h>
+#include <common/instructions.hpp>
 
 #include <iostream>
 

@@ -1,5 +1,5 @@
-#include <athens/ast/ast_function_definition.h>
-#include <athens/ast_visitor.h>
+#include <athens/ast/ast_function_definition.hpp>
+#include <athens/ast_visitor.hpp>
 
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
     const std::vector<std::shared_ptr<AstParameter>> &parameters,

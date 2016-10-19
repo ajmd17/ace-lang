@@ -1,9 +1,9 @@
-#include <athens/ast/ast_local_import.h>
-#include <athens/source_file.h>
-#include <athens/lexer.h>
-#include <athens/parser.h>
-#include <athens/semantic_analyzer.h>
-#include <athens/optimizer.h>
+#include <athens/ast/ast_local_import.hpp>
+#include <athens/source_file.hpp>
+#include <athens/lexer.hpp>
+#include <athens/parser.hpp>
+#include <athens/semantic_analyzer.hpp>
+#include <athens/optimizer.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -22,7 +22,7 @@ void AstLocalImport::Visit(AstVisitor *visitor)
     if (index != std::string::npos) {
         dir = m_location.GetFileName().substr(0, index) + "/";
     }
-    
+
     // create relative path
     std::string filepath(dir + m_path);
     std::ifstream file(filepath, std::ios::in | std::ios::ate);

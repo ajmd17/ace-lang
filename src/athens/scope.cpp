@@ -1,4 +1,4 @@
-#include <athens/scope.h>
+#include <athens/scope.hpp>
 
 Scope::Scope()
 {

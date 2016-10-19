@@ -23,6 +23,7 @@ if abc == 0 {
     print("real value of abc == ", abc)
 }
 
+
 var x = null
 print("x == ", x)
 x = "blarg"
@@ -37,3 +38,5 @@ try {
 } catch {
   print("catch-block")
 }
+
+print("0.0 == false : ", 0.0 == false)

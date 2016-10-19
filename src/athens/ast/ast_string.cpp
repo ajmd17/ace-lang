@@ -1,4 +1,6 @@
 #include <athens/ast/ast_string.hpp>
+#include <athens/ast/ast_true.hpp>
+#include <athens/ast/ast_false.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
 #include <athens/emit/static_object.hpp>
@@ -35,7 +37,8 @@ void AstString::Build(AstVisitor *visitor)
 
 int AstString::IsTrue() const
 {
-    return -1;
+    // strings evaluate to true
+    return 1;
 }
 
 bool AstString::IsNumber() const
@@ -45,11 +48,13 @@ bool AstString::IsNumber() const
 
 a_int AstString::IntValue() const
 {
+    // not valid
     return 0;
 }
 
 a_float AstString::FloatValue() const
 {
+    // not valid
     return 0.0f;
 }
 
@@ -117,13 +122,21 @@ std::shared_ptr<AstConstant> AstString::operator>>(
 std::shared_ptr<AstConstant> AstString::operator&&(
         AstConstant *right) const
 {
-    return nullptr;
+    // string literals evaluate to true
+    bool right_true = right->IsTrue();
+    if (right_true == 1) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else if (right_true == 0) {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    } else {
+        return nullptr;
+    }
 }
 
 std::shared_ptr<AstConstant> AstString::operator||(
         AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstTrue>(new AstTrue(m_location));
 }
 
 std::shared_ptr<AstConstant> AstString::Equals(AstConstant *right) const

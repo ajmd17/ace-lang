@@ -1,5 +1,7 @@
 #include <athens/ast/ast_float.hpp>
 #include <athens/ast/ast_integer.hpp>
+#include <athens/ast/ast_true.hpp>
+#include <athens/ast/ast_false.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
 
@@ -81,15 +83,12 @@ std::shared_ptr<AstConstant> AstFloat::operator/(
         return nullptr;
     }
 
-    a_float result;
     a_float right_float = right->FloatValue();
     if (right_float == 0.0) {
-        // division by zero, return NaN
-        result = std::numeric_limits<decltype(result)>::quiet_NaN();
-    } else {
-        result = FloatValue() / right_float;
+        // division by zero
+        return nullptr;
     }
-    return std::shared_ptr<AstFloat>(new AstFloat(result, m_location));
+    return std::shared_ptr<AstFloat>(new AstFloat(FloatValue() / right_float, m_location));
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator%(
@@ -99,99 +98,84 @@ std::shared_ptr<AstConstant> AstFloat::operator%(
         return nullptr;
     }
 
-    a_float result;
     a_float right_float = right->FloatValue();
     if (right_float == 0.0) {
-        // division by zero, return NaN
-        result = std::numeric_limits<decltype(result)>::quiet_NaN();
-    } else {
-        result = std::fmod(FloatValue(), right_float);
+        // division by zero
+        return nullptr;
     }
-    return std::shared_ptr<AstFloat>(new AstFloat(result, m_location));
+
+    return std::shared_ptr<AstFloat>(new AstFloat(std::fmod(FloatValue(), right_float), m_location));
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator^(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-
-    // demote to integer
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() ^ right->IntValue(), m_location));
+    // invalid operator on floats
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator&(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-
-    // demote to integer
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() & right->IntValue(), m_location));
+    // invalid operator on floats
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator|(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-
-    // demote to integer
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() | right->IntValue(), m_location));
+    // invalid operator on floats
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator<<(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-
-    // demote to integer
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() << right->IntValue(), m_location));
+    // invalid operator on floats
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator>>(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-
-    // demote to integer
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() >> right->IntValue(), m_location));
+    // invalid operator on floats
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator&&(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    int left_true = IsTrue();
+    int right_true = right->IsTrue();
+
+    if (left_true == -1 || right_true == -1) {
+        // indeterminate
         return nullptr;
     }
 
-    // demote to integer
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() && right->IntValue(), m_location));
+    if (left_true && right_true) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    }
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator||(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    int left_true = IsTrue();
+    int right_true = right->IsTrue();
+
+    if (left_true == -1 || right_true == -1) {
+        // indeterminate
         return nullptr;
     }
 
-    // demote to integer
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() || right->IntValue(), m_location));
+    if (left_true || right_true) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    }
 }
 
 std::shared_ptr<AstConstant> AstFloat::Equals(AstConstant *right) const

@@ -2,6 +2,8 @@
 #include <athens/ast/ast_variable.hpp>
 #include <athens/ast/ast_constant.hpp>
 #include <athens/ast/ast_integer.hpp>
+#include <athens/ast/ast_true.hpp>
+#include <athens/ast/ast_false.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/operator.hpp>
 #include <athens/emit/instruction.hpp>
@@ -169,7 +171,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             { // do first part of expression
                 bool folded = false;
                 { // attempt to constant fold the values
-                    std::shared_ptr<AstExpression> tmp(new AstInteger(0, SourceLocation::eof));
+                    std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                     auto constant_folded = ConstantFold(first, tmp, &Operator::operator_equals, visitor);
                     if (constant_folded != nullptr) {
                         int folded_value = constant_folded->IsTrue();
@@ -211,7 +213,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             if (second != nullptr) {
                 bool folded = false;
                 { // attempt to constant fold the values
-                    std::shared_ptr<AstExpression> tmp(new AstInteger(0, SourceLocation::eof));
+                    std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                     auto constant_folded = ConstantFold(second, tmp, &Operator::operator_equals, visitor);
                     if (constant_folded != nullptr) {
                         int folded_value = constant_folded->IsTrue();
@@ -249,11 +251,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
             }
 
-            // both values were true at this point so load the value '1' (for true)
+            // both values were true at this point so load the value 'true'
             visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
+                Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
 
-            // jump to the VERY end (so we don't load '0' value)
+            // jump to the VERY end (so we don't load 'false' value)
             // increment register usage
             visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
             // get register position
@@ -273,9 +275,9 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
             // here is where the value is false
             visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+                Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
 
-            // if true, skip to here to avoid loading '0' into the register
+            // if true, skip to here to avoid loading 'false' into the register
             true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
 
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
@@ -297,7 +299,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             { // do first part of expression
                 bool folded = false;
                 { // attempt to constant fold the values
-                    std::shared_ptr<AstExpression> tmp(new AstInteger(0, SourceLocation::eof));
+                    std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                     auto constant_folded = ConstantFold(first, tmp, &Operator::operator_equals, visitor);
                     if (constant_folded != nullptr) {
                         int folded_value = constant_folded->IsTrue();
@@ -339,7 +341,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             if (second != nullptr) {
                 bool folded = false;
                 { // attempt to constant fold the values
-                    std::shared_ptr<AstExpression> tmp(new AstInteger(0, SourceLocation::eof));
+                    std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                     auto constant_folded = ConstantFold(second, tmp, &Operator::operator_equals, visitor);
                     if (constant_folded != nullptr) {
                         int folded_value = constant_folded->IsTrue();
@@ -372,12 +374,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(JNE, rp);
                 }
-
             }
 
-            // no values were true at this point so load the value '0' (for false)
+            // no values were true at this point so load the value 'false'
             visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+                Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
 
             // jump to the VERY end (so we don't load 'true' value)
             // increment register usage
@@ -397,14 +398,14 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
+
             // here is where the value is true
             visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
+                Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
 
-            // skip to here to avoid loading '1' into the register
+            // skip to here to avoid loading 'true' into the register
             false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-
-            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
         }
     } else if (m_op->GetType() == COMPARISON) {
@@ -446,7 +447,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
                 // values are not equal at this point
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 0);
+                    Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
+
                 // jump to the VERY end (so we don't load 'true' value)
                 // increment register usage
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
@@ -463,17 +465,16 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-
                 true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
 
                 // values are equal
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, 1);
+                    Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
 
                 false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
 
                 visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
-                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
             } else {
                 // load left-hand side into register
                 m_left->Build(visitor);
@@ -489,7 +490,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             // get stack offset of left-hand side
-            auto left_as_var = std::dynamic_pointer_cast<AstVariable>(m_left);
+            AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get());
             if (left_as_var != nullptr) {
                 int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
                 int stack_location = left_as_var->GetIdentifier()->GetStackLocation();

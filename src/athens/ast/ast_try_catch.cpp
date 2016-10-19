@@ -67,14 +67,14 @@ void AstTryCatch::Build(AstVisitor *visitor)
     catch_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
     visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(catch_label);
 
-    // build the catch-block
-    m_catch_block->Build(visitor);
-
-    // exception was thrown, pop all local variables from stack
+    // exception was thrown, pop all local variables from the try-block
     for (int i = 0; i < m_try_block->NumLocals(); i++) {
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t>(POP);
     }
+
+    // build the catch-block
+    m_catch_block->Build(visitor);
 
     end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
     visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);

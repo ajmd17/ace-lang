@@ -1,4 +1,5 @@
 #include <athens/ast/ast_false.hpp>
+#include <athens/ast/ast_true.hpp>
 #include <athens/ast/ast_integer.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
@@ -26,7 +27,7 @@ int AstFalse::IsTrue() const
 
 bool AstFalse::IsNumber() const
 {
-    return true;
+    return false;
 }
 
 a_int AstFalse::IntValue() const
@@ -41,128 +42,86 @@ a_float AstFalse::FloatValue() const
 
 std::shared_ptr<AstConstant> AstFalse::operator+(AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() + right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator-(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() - right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator*(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() * right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator/(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() - right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator%(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() % right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator^(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() ^ right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator&(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() & right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator|(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() | right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator<<(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() << right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator>>(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() >> right->IntValue(), m_location));
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator&&(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() && right->IntValue(), m_location));
+    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator||(
         AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    bool right_true = right->IsTrue();
+    if (right_true == 1) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else if (right_true == 0) {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    } else {
         return nullptr;
     }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() || right->IntValue(), m_location));
 }
 
 std::shared_ptr<AstConstant> AstFalse::Equals(AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
+    if (dynamic_cast<AstFalse*>(right) != nullptr) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(right->FloatValue() != 0.0f, m_location));
+    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }

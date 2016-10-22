@@ -1,4 +1,4 @@
-#include <common/utf8.hpp> 
+#include <common/utf8.hpp>
 
 int utf8_strlen(const char *str)
 {
@@ -7,11 +7,16 @@ int utf8_strlen(const char *str)
 
     for (int i = 0; i < max; i++, count++) {
         unsigned char c = (unsigned char)str[i];
-        if (c >= 0 && c <= 127) i += 0;
-        else if ((c & 0xE0) == 0xC0) i += 1;
-        else if ((c & 0xF0) == 0xE0) i += 2;
-        else if ((c & 0xF8) == 0xF0) i += 3;
-        else return -1;//invalid utf8
+        if (c >= 0 && c <= 127) {
+        } else if ((c & 0xE0) == 0xC0) {
+            i += 1;
+        } else if ((c & 0xF0) == 0xE0) {
+            i += 2;
+        } else if ((c & 0xF8) == 0xF0) {
+            i += 3;
+        } else { //invalid utf8
+            return -1;
+        }
     }
 
     return count;

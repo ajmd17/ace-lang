@@ -1,4 +1,4 @@
-module Example
+module ExampleProgram
 
 
 print("true as string == ", true)
@@ -22,7 +22,6 @@ if abc {
 } else {
     print("real value of abc == ", abc)
 }*/
-
 
 var x = null
 print("x == ", x)

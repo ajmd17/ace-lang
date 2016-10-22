@@ -8,6 +8,7 @@
 #include <athens/keywords.hpp>
 #include <athens/ast/ast_module_declaration.hpp>
 #include <athens/ast/ast_variable_declaration.hpp>
+#include <athens/ast/ast_function_definition.hpp>
 #include <athens/ast/ast_statement.hpp>
 #include <athens/ast/ast_expression.hpp>
 #include <athens/ast/ast_import.hpp>
@@ -70,6 +71,7 @@ private:
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseExpression(bool standalone = false);
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration();
+    std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition();
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstLocalImport> ParseLocalImport();
 };

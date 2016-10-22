@@ -1,8 +1,10 @@
 #include <athens/ast/ast_parameter.hpp>
 #include <athens/ast_visitor.hpp>
 
-AstParameter::AstParameter(const std::string &name, const SourceLocation &location)
-    : AstDeclaration(name, location)
+AstParameter::AstParameter(const std::string &name, bool is_variadic,
+    const SourceLocation &location)
+    : AstDeclaration(name, location),
+      m_is_variadic(is_variadic)
 {
 }
 

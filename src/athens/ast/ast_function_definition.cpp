@@ -26,8 +26,10 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor)
     // close the scope for the parameters
     visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();*/
 
-    // visit the function body
-    m_block->Visit(visitor);
+    if (m_block != nullptr) {
+        // visit the function body
+        m_block->Visit(visitor);
+    }
 
     AstDeclaration::Visit(visitor);
 }
@@ -40,8 +42,12 @@ void AstFunctionDefinition::Build(AstVisitor *visitor)
 void AstFunctionDefinition::Optimize(AstVisitor *visitor)
 {
     for (auto &param : m_parameters) {
-        param->Optimize(visitor);
+        if (param != nullptr) {
+            param->Optimize(visitor);
+        }
     }
 
-    m_block->Optimize(visitor);
+    if (m_block != nullptr) {
+        m_block->Optimize(visitor);
+    }
 }

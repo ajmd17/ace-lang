@@ -1,41 +1,44 @@
 module ExampleProgram
 
 
-print("true as string == ", true)
+func blah (arg1) {
+    print ("arg1 = ", arg1)
+    func inner (a, b) {
+        print ("(inner) a = ", a, "    b = ", b);
+    }
+    inner ("sup", arg1);
+}
+
+
+
+blah ("hello world");
+
+print ("true as string == ", true)
 
 var abc = null
 if abc == null {
-    print("abc == null")
+    print ("abc == null")
 }
+
+print ("abc = 1 == ", abc = 1)
 
 if abc {
-    print("abc")
+    print ("abc")
 } else {
-    print("abc did not evaluate to true. value of abc = ", abc)
+    print ("abc did not evaluate to true. value of abc = ", abc)
 }
-
-// check if abc == 0
-/*if abc == 0 {
-    print("abc == 0 evaluated to true")
-} else if abc == null {
-    print("abc == null evaluated to true")
-} else {
-    print("real value of abc == ", abc)
-}*/
 
 var x = null
-print("x == ", x)
+print ("x == ", x)
 x = "blarg"
-print("x == ", x)
+print ("x == ", x)
 
 try {
-  print("try-block")
-  print("try to crash")
+  print ("try-block")
+  print ("try to crash")
   var a = true
   var b = 9
-  print("a + b = ", a + b)
+  print ("a + b = ", a + b)
 } catch {
-  print("catch-block")
+  print ("catch-block")
 }
-
-print("0 == false : ", 0 == false)

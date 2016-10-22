@@ -297,24 +297,21 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
 
     std::vector<std::shared_ptr<AstExpression>> args;
 
-    if (!Match(Token_close_parenthesis, false)) {
-        while (true) {
-            std::shared_ptr<AstExpression> expr = ParseExpression();
-            if (expr == nullptr) {
-                return nullptr;
-            }
+    while (!Match(Token_close_parenthesis, false)) {
+        std::shared_ptr<AstExpression> expr = ParseExpression();
+        if (expr == nullptr) {
+            return nullptr;
+        }
 
-            args.push_back(expr);
+        args.push_back(expr);
 
-            if (Match(Token_close_parenthesis, true)) {
-                // stop reading function arguments
-                break;
-            } else if (!Expect(Token_comma, true)) {
-                // unexpected token
-                return nullptr;
-            }
+        if (!Match(Token_comma, true)) {
+            // unexpected token
+            break;
         }
     }
+
+    Expect(Token_close_parenthesis, true);
 
     return std::shared_ptr<AstFunctionCall>(
             new AstFunctionCall(token->GetValue(), args, token->GetLocation()));

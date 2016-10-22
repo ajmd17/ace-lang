@@ -12,16 +12,15 @@ AstBlock::AstBlock(const SourceLocation &location)
 
 void AstBlock::Visit(AstVisitor *visitor)
 {
-    auto &mod = visitor->GetCompilationUnit()->CurrentModule();
     // open the new scope
-    mod->m_scopes.Open(Scope());
+    visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Open(Scope());
     // visit all children in the block
     for (auto &child : m_children) {
         child->Visit(visitor);
     }
 
     // store number of locals, so we can pop them from the stack later
-    Scope &this_scope = mod->m_scopes.Top();
+    Scope &this_scope = visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Top();
     m_num_locals = this_scope.GetIdentifierTable().GetIdentifierIndex();
 
     // go down to previous scope

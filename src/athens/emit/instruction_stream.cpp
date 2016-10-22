@@ -21,13 +21,15 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
     // plus the size of the address
     uint32_t label_offset = (uint32_t)os.tellp();
     for (const StaticObject &so : instruction_stream.m_static_objects) {
+        label_offset += sizeof(uint8_t);  // opcode
         if (so.m_type == StaticObject::TYPE_LABEL) {
-            label_offset += sizeof(uint8_t);  // opcode
             label_offset += sizeof(uint32_t); // address
         } else if (so.m_type == StaticObject::TYPE_STRING) {
-            label_offset += sizeof(uint8_t); // opcode
             label_offset += sizeof(uint32_t); // string length
             label_offset += std::strlen(so.m_value.str);
+        } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
+            label_offset += sizeof(uint32_t); // address
+            label_offset += sizeof(uint8_t); // num args
         }
     }
 
@@ -41,8 +43,15 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
             }
 
         } else if (so.m_type == StaticObject::TYPE_STRING) {
-            Instruction<uint8_t, uint32_t, const char*> store_ins(
-                STORE_STATIC_STRING, std::strlen(so.m_value.str), so.m_value.str);
+            Instruction<uint8_t, uint32_t, const char*> store_ins(STORE_STATIC_STRING,
+                std::strlen(so.m_value.str), so.m_value.str);
+
+            for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
+                os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+            }
+        } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
+            Instruction<uint8_t, uint32_t, uint8_t> store_ins(STORE_STATIC_FUNCTION,
+                so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
 
             for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
                 os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());

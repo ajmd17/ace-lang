@@ -23,6 +23,9 @@ public:
 protected:
     std::vector<std::shared_ptr<AstParameter>> m_parameters;
     std::shared_ptr<AstBlock> m_block;
+
+    // set while compiling
+    int m_static_id;
 };
 
 #endif

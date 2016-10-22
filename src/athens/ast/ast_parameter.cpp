@@ -1,5 +1,8 @@
 #include <athens/ast/ast_parameter.hpp>
 #include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
+
+#include <common/instructions.hpp>
 
 AstParameter::AstParameter(const std::string &name, bool is_variadic,
     const SourceLocation &location)
@@ -15,6 +18,13 @@ void AstParameter::Visit(AstVisitor *visitor)
 
 void AstParameter::Build(AstVisitor *visitor)
 {
+    // get current stack size
+    int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+    // set identifier stack location
+    m_identifier->SetStackLocation(stack_location);
+
+    // increment stack size
+    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 }
 
 void AstParameter::Optimize(AstVisitor *visitor)

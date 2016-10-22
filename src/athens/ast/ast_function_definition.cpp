@@ -1,5 +1,9 @@
 #include <athens/ast/ast_function_definition.hpp>
 #include <athens/ast_visitor.hpp>
+#include <athens/emit/instruction.hpp>
+#include <athens/emit/static_object.hpp>
+
+#include <common/instructions.hpp>
 
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
     const std::vector<std::shared_ptr<AstParameter>> &parameters,
@@ -7,36 +11,119 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
     const SourceLocation &location)
     : AstDeclaration(name, location),
       m_parameters(parameters),
-      m_block(block)
+      m_block(block),
+      m_static_id(0)
 {
 }
 
 void AstFunctionDefinition::Visit(AstVisitor *visitor)
 {
-    // TODO
-
-    /*// open the scope for the parameters
+    // open the new scope for parameters
     visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Open(Scope());
 
-    // add a variable for each parameter
     for (auto &param : m_parameters) {
-        param->Visit(visitor);
+        if (param != nullptr) {
+            // add the identifier to the table
+            param->Visit(visitor);
+        }
     }
 
-    // close the scope for the parameters
-    visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();*/
-
+    // function body
     if (m_block != nullptr) {
         // visit the function body
         m_block->Visit(visitor);
     }
+
+    // close parameter scope
+    visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();
 
     AstDeclaration::Visit(visitor);
 }
 
 void AstFunctionDefinition::Build(AstVisitor *visitor)
 {
-    // TODO
+    if (m_identifier->GetUseCount() > 0) {
+        // get current stack size
+        int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        // set identifier stack location
+        m_identifier->SetStackLocation(stack_location);
+
+        // the properties of this function
+        StaticFunction sf;
+        sf.m_nargs = (uint8_t)m_parameters.size();
+
+        // the register index variable we will reuse
+        uint8_t rp;
+
+        // the label to jump to the very end
+        StaticObject end_label;
+        end_label.m_type = StaticObject::TYPE_LABEL;
+        end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+        // jump to end as to not execute the function body
+        // get current register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        // load the label address from static memory into register
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+        // jump if they are equal: i.e the value is false
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(JMP, rp);
+
+        // store the function address before the function body
+        sf.m_addr = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+
+        // increase stack size by the number of parameters
+        int param_stack_size = 0;
+        for (auto &param : m_parameters) {
+            if (param != nullptr) {
+                param->Build(visitor);
+                param_stack_size++;
+            }
+        }
+
+        if (m_block != nullptr) {
+            // build the function body
+            m_block->Build(visitor);
+        }
+
+        // add RET instruction
+        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+
+        for (int i = 0; i < param_stack_size; i++) {
+            visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+        }
+
+        // set the label's position to after the block
+        end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+
+        // store function data as a static object
+        StaticObject so(sf);
+        int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
+        if (found_id == -1) {
+            m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+            so.m_id = m_static_id;
+            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
+        } else {
+            m_static_id = found_id;
+        }
+
+        // store local variable
+        // get register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // load the static object into register
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);
+
+        // store on stack
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(PUSH, rp);
+
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+    }
 }
 
 void AstFunctionDefinition::Optimize(AstVisitor *visitor)

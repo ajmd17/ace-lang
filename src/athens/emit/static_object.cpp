@@ -24,6 +24,13 @@ StaticObject::StaticObject(const char *str)
     std::strcpy(m_value.str, str);
 }
 
+StaticObject::StaticObject(StaticFunction func)
+    : m_id(0),
+      m_type(TYPE_FUNCTION)
+{
+    m_value.func = func;
+}
+
 StaticObject::StaticObject(const StaticObject &other)
     : m_id(other.m_id),
       m_type(other.m_type)
@@ -34,6 +41,8 @@ StaticObject::StaticObject(const StaticObject &other)
         int len = std::strlen(other.m_value.str);
         m_value.str = new char[len + 1];
         std::strcpy(m_value.str, other.m_value.str);
+    } else if (other.m_type == TYPE_FUNCTION) {
+        m_value.func = other.m_value.func;
     }
 }
 
@@ -59,6 +68,8 @@ StaticObject &StaticObject::operator=(const StaticObject &other)
         int len = std::strlen(other.m_value.str);
         m_value.str = new char[len + 1];
         std::strcpy(m_value.str, other.m_value.str);
+    } else if (other.m_type == TYPE_FUNCTION) {
+        m_value.func = other.m_value.func;
     }
 
     return *this;
@@ -77,6 +88,10 @@ bool StaticObject::operator==(const StaticObject &other) const
         break;
     case TYPE_STRING:
         return !(std::strcmp(m_value.str, other.m_value.str));
+        break;
+    case TYPE_FUNCTION:
+        return m_value.func.m_addr == other.m_value.func.m_addr &&
+               m_value.func.m_nargs == other.m_value.func.m_nargs;
         break;
     }
 }

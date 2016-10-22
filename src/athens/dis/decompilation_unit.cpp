@@ -78,6 +78,29 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case STORE_STATIC_FUNCTION:
+        {
+            uint32_t addr;
+            m_bs.Read(&addr);
+
+            uint8_t nargs;
+            m_bs.Read(&nargs);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << "func [@(" << addr << "), "
+                      << "u8(" << (int)nargs << ")]" << std::endl;
+                os->unsetf(std::ios::hex);
+            }
+
+            is << Instruction<uint8_t, uint32_t, uint8_t>(code, addr, nargs);
+
+            break;
+        }
         case LOAD_I32:
         {
             uint8_t reg;
@@ -511,7 +534,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 (*os)
                     << "call ["
                         << "%" << (int)func << ", "
-                        << "u8(" << argc << ")"
+                        << "u8(" << (int)argc << ")"
                     << "]"
                     << std::endl;
             }

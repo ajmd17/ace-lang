@@ -221,7 +221,12 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     } else if (Match(Token_string_literal)) {
         return ParseStringLiteral();
     } else if (Match(Token_identifier)) {
-        return ParseIdentifier();
+        auto ident = ParseIdentifier();
+        if (Match(Token_dot, false)) {
+            return ParseMemberAccess(ident);
+        } else {
+            return ident;
+        }
     } else if (MatchKeyword(Keyword_true)) {
         return ParseTrue();
     } else if (MatchKeyword(Keyword_false)) {
@@ -274,7 +279,7 @@ std::shared_ptr<AstString> Parser::ParseStringLiteral()
         new AstString(token->GetValue(), token->GetLocation()));
 }
 
-std::shared_ptr<AstExpression> Parser::ParseIdentifier()
+std::shared_ptr<AstIdentifier> Parser::ParseIdentifier()
 {
     const Token *token = Expect(Token_identifier, false);
     if (MatchAhead(Token_open_parenthesis, 1)) {
@@ -286,7 +291,7 @@ std::shared_ptr<AstExpression> Parser::ParseIdentifier()
 
         // return variable
         return std::shared_ptr<AstVariable>(
-                new AstVariable(token->GetValue(), token->GetLocation()));
+            new AstVariable(token->GetValue(), token->GetLocation()));
     }
 }
 
@@ -315,6 +320,20 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
 
     return std::shared_ptr<AstFunctionCall>(
             new AstFunctionCall(token->GetValue(), args, token->GetLocation()));
+}
+
+std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstExpression> left)
+{
+    Expect(Token_dot, true);
+
+    std::shared_ptr<AstExpression> right(ParseIdentifier());
+
+    if (Match(Token_dot, false)) {
+        right = ParseMemberAccess(right);
+    }
+
+    return std::shared_ptr<AstMemberAccess>(
+        new AstMemberAccess(left, right, left->GetLocation()));
 }
 
 std::shared_ptr<AstTrue> Parser::ParseTrue()

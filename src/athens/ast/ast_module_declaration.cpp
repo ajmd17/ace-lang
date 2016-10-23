@@ -13,6 +13,7 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor)
         if (mod->GetName() == m_name) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_module_already_defined, m_location, m_name));
+                
             break;
         }
     }

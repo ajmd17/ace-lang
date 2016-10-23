@@ -31,6 +31,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_module_already_defined, "module '%' was already defined or imported" },
     { Msg_module_not_imported, "module '%' was not imported" },
     { Msg_identifier_is_module, "identifier '%' is the name of a module" },
+    { Msg_invalid_module_access, "'%' is a module, expected an identifier or function call" },
     { Msg_could_not_open_file, "could not open file '%'" },
     { Msg_import_outside_global, "import not allowed outside of global scope" },
     { Msg_import_current_file, "attempt to import current file" },

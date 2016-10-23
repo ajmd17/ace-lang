@@ -1,0 +1,4 @@
+ module Mod2
+
+ var y = 7;
+print ("(Mod2) y = ", y)

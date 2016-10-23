@@ -19,6 +19,7 @@
 #include <athens/ast/ast_binary_expression.hpp>
 #include <athens/ast/ast_function_call.hpp>
 #include <athens/ast/ast_variable.hpp>
+#include <athens/ast/ast_member_access.hpp>
 #include <athens/ast/ast_true.hpp>
 #include <athens/ast/ast_false.hpp>
 #include <athens/ast/ast_null.hpp>
@@ -58,8 +59,9 @@ private:
     std::shared_ptr<AstInteger> ParseIntegerLiteral();
     std::shared_ptr<AstFloat> ParseFloatLiteral();
     std::shared_ptr<AstString> ParseStringLiteral();
-    std::shared_ptr<AstExpression> ParseIdentifier();
+    std::shared_ptr<AstIdentifier> ParseIdentifier();
     std::shared_ptr<AstFunctionCall> ParseFunctionCall();
+    std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
     std::shared_ptr<AstNull> ParseNull();

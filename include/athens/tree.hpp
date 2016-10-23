@@ -65,10 +65,15 @@ public:
     Tree()
         : m_top(nullptr)
     {
+        // open root
+        Open(T());
     }
 
     ~Tree()
     {
+        // close root
+        Close();
+
         // first in, first out
         for (int i = m_nodes.size() - 1; i >= 0; i--) {
             if (m_nodes[i] != nullptr) {

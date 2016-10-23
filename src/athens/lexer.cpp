@@ -55,7 +55,7 @@ Token Lexer::NextToken()
 
     if (ch[0] == '\"') {
         return ReadStringLiteral();
-    } else if (utf32_isdigit(ch[0]) || ch[0] == '.') {
+    } else if (utf32_isdigit(ch[0]) || (ch[0] == '.' && utf32_isdigit(ch[1]))) {
         return ReadNumberLiteral();
     } else if (ch[0] == '0' && (ch[1] == 'x' || ch[1] == 'X')) {
         return ReadHexNumberLiteral();

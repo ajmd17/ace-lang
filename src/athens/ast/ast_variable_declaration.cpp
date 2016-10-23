@@ -12,17 +12,17 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
 {
 }
 
-void AstVariableDeclaration::Visit(AstVisitor *visitor)
+void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     // if there was an assignment, visit it
     if (m_assignment != nullptr) {
-        m_assignment->Visit(visitor);
+        m_assignment->Visit(visitor, mod);
     }
 
-    AstDeclaration::Visit(visitor);
+    AstDeclaration::Visit(visitor, mod);
 }
 
-void AstVariableDeclaration::Build(AstVisitor *visitor)
+void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
     if (m_identifier->GetUseCount() > 0) {
         if (m_assignment != nullptr) {
@@ -31,8 +31,7 @@ void AstVariableDeclaration::Build(AstVisitor *visitor)
             // set identifier stack location
             m_identifier->SetStackLocation(stack_location);
 
-
-            m_assignment->Build(visitor);
+            m_assignment->Build(visitor, mod);
 
             // get active register
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -47,9 +46,9 @@ void AstVariableDeclaration::Build(AstVisitor *visitor)
     }
 }
 
-void AstVariableDeclaration::Optimize(AstVisitor *visitor)
+void AstVariableDeclaration::Optimize(AstVisitor *visitor, Module *mod)
 {
     if (m_assignment != nullptr) {
-        m_assignment->Optimize(visitor);
+        m_assignment->Optimize(visitor, mod);
     }
 }

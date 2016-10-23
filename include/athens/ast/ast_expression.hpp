@@ -8,9 +8,9 @@ public:
     AstExpression(const SourceLocation &location);
     virtual ~AstExpression() = default;
 
-    virtual void Visit(AstVisitor *visitor) override = 0;
-    virtual void Build(AstVisitor *visitor) override = 0;
-    virtual void Optimize(AstVisitor *visitor) override = 0;
+    virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
+    virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
+    virtual void Optimize(AstVisitor *visitor, Module *mod) override = 0;
 
     /** Determine whether the expression would evaluate to true.
         Returns -1 if it cannot be evaluated at compile time.

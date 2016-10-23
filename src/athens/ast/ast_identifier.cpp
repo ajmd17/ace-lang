@@ -1,5 +1,8 @@
 #include <athens/ast/ast_identifier.hpp>
 #include <athens/ast_visitor.hpp>
+#include <athens/module.hpp>
+
+#include <iostream>
 
 AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &location)
     : AstExpression(location),
@@ -8,10 +11,9 @@ AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &loca
 {
 }
 
-void AstIdentifier::Visit(AstVisitor *visitor)
+void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
 {
     // make sure that the variable exists
-    std::unique_ptr<Module> &mod = visitor->GetCompilationUnit()->CurrentModule();
     Scope &scope = mod->m_scopes.Top();
 
     // the variable must exist in the active scope or a parent scope

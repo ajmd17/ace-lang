@@ -16,7 +16,7 @@ AstFloat::AstFloat(a_float value, const SourceLocation &location)
 {
 }
 
-void AstFloat::Build(AstVisitor *visitor)
+void AstFloat::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

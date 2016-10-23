@@ -1,6 +1,7 @@
 #include <athens/ast/ast_block.hpp>
-#include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/module.hpp>
 
 #include <common/instructions.hpp>
 
@@ -10,27 +11,28 @@ AstBlock::AstBlock(const SourceLocation &location)
 {
 }
 
-void AstBlock::Visit(AstVisitor *visitor)
+void AstBlock::Visit(AstVisitor *visitor, Module *mod)
 {
     // open the new scope
-    visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Open(Scope());
+    mod->m_scopes.Open(Scope());
+
     // visit all children in the block
     for (auto &child : m_children) {
-        child->Visit(visitor);
+        child->Visit(visitor, mod);
     }
 
     // store number of locals, so we can pop them from the stack later
-    Scope &this_scope = visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Top();
+    Scope &this_scope = mod->m_scopes.Top();
     m_num_locals = this_scope.GetIdentifierTable().GetIdentifierIndex();
 
     // go down to previous scope
-    visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();
+    mod->m_scopes.Close();
 }
 
-void AstBlock::Build(AstVisitor *visitor)
+void AstBlock::Build(AstVisitor *visitor, Module *mod)
 {
     for (std::shared_ptr<AstStatement> &stmt : m_children) {
-        stmt->Build(visitor);
+        stmt->Build(visitor, mod);
     }
 
     // pop all local variables off the stack
@@ -42,9 +44,9 @@ void AstBlock::Build(AstVisitor *visitor)
     }
 }
 
-void AstBlock::Optimize(AstVisitor *visitor)
+void AstBlock::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &child : m_children) {
-        child->Optimize(visitor);
+        child->Optimize(visitor, mod);
     }
 }

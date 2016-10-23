@@ -1,7 +1,9 @@
 #include <athens/ast/ast_member_access.hpp>
-#include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
 #include <athens/emit/static_object.hpp>
+#include <athens/ast/ast_function_call.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/module.hpp>
 
 #include <common/instructions.hpp>
 
@@ -11,65 +13,71 @@ AstMemberAccess::AstMemberAccess(std::shared_ptr<AstExpression> left,
     : AstExpression(location),
       m_left(left),
       m_right(right),
-      m_lhs_mod(false),
-      m_mod_index(0),
-      m_mod_index_before(0)
+      m_lhs_mod(nullptr)
 {
 }
 
-void AstMemberAccess::Visit(AstVisitor *visitor)
+void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 {
-    // store the module index
-    m_mod_index = visitor->GetCompilationUnit()->m_module_index;
-    m_mod_index_before = m_mod_index;
-
     AstIdentifier *left_as_identifier = dynamic_cast<AstIdentifier*>(m_left.get());
     if (left_as_identifier != nullptr) {
         // check if left-hand side is a module
         for (int i = 0; i < visitor->GetCompilationUnit()->m_modules.size(); i++) {
-            auto &mod = visitor->GetCompilationUnit()->m_modules[i];
-            if (mod != nullptr && mod->GetName() == left_as_identifier->GetName()) {
-                m_lhs_mod = true;
+            auto &found_mod = visitor->GetCompilationUnit()->m_modules[i];
+            if (found_mod != nullptr && found_mod->GetName() == left_as_identifier->GetName()) {
 
                 // module with name found, change module index
-                m_mod_index = i;
-                visitor->GetCompilationUnit()->m_module_index = m_mod_index;
+                m_lhs_mod = found_mod.get();
+                // accept the right-hand side
+                m_right->Visit(visitor, m_lhs_mod);
 
-                break;
+                return;
             }
         }
     }
 
-    if (!m_lhs_mod) {
+    if (m_lhs_mod == nullptr) {
         // TODO: object member access
-        m_left->Visit(visitor);
+        m_left->Visit(visitor, mod);
+        // accept the right-hand side
+        m_right->Visit(visitor, mod);
     }
-
-    // accept the right-hand side
-    m_right->Visit(visitor);
-
-    // reset the module index
-    visitor->GetCompilationUnit()->m_module_index = m_mod_index_before;
 }
 
-void AstMemberAccess::Build(AstVisitor *visitor)
+void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 {
-    // set new module index
-    visitor->GetCompilationUnit()->m_module_index = m_mod_index;
+    if (m_lhs_mod != nullptr) {
+        // simple module access such as SomeModule.dosomething()
 
-    if (!m_lhs_mod) {
-        // TODO: object member access
-        m_left->Build(visitor);
+        // module index has already been set while analyzing
+        mod = m_lhs_mod;
+    } else {
+        // check to see if it is a function call on an object
+        // such as: myobject.dosomething()
+
+        AstExpression *rightmost = m_right.get();
+        AstMemberAccess *rightmost_as_mem = dynamic_cast<AstMemberAccess*>(rightmost);
+        while (rightmost_as_mem != nullptr) {
+            rightmost = rightmost_as_mem->GetRight().get();
+            rightmost_as_mem = dynamic_cast<AstMemberAccess*>(rightmost);
+        }
+
+        // check if right-hand side is a function call
+        AstFunctionCall *rightmost_as_function_call = dynamic_cast<AstFunctionCall*>(rightmost);
+        if (rightmost_as_function_call != nullptr) {
+            // it is function call on an object
+            // add the left hand side to the parameters
+            rightmost_as_function_call->AddArgument(m_left);
+        } else {
+            // TODO: object member access
+        }
     }
 
-    // accept the right-hand side
-    m_right->Build(visitor);
-
-    // reset the module index
-    visitor->GetCompilationUnit()->m_module_index = m_mod_index_before;
+    // accept the next part of this member access
+    m_right->Build(visitor, mod);
 }
 
-void AstMemberAccess::Optimize(AstVisitor *visitor)
+void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 

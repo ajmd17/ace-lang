@@ -1,11 +1,12 @@
 #include <athens/optimizer.hpp>
+#include <athens/ast/ast_module_declaration.hpp>
 #include <athens/ast/ast_binary_expression.hpp>
 #include <athens/ast/ast_variable.hpp>
 #include <athens/ast/ast_constant.hpp>
 
-void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor)
+void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor, Module *mod)
 {
-    expr->Optimize(visitor);
+    expr->Optimize(visitor, mod);
 
     AstVariable *expr_as_var = nullptr;
     AstBinaryExpression *expr_as_binop = nullptr;
@@ -46,7 +47,23 @@ Optimizer::Optimizer(const Optimizer &other)
 
 void Optimizer::Optimize()
 {
-    while (m_ast_iterator->HasNext()) {
-        m_ast_iterator->Next()->Optimize(this);
+    if (m_ast_iterator->HasNext()) {
+        auto first_statement = m_ast_iterator->Next();
+        auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
+
+        if (module_declaration != nullptr) {
+            // all files must begin with a module declaration
+            module_declaration->Optimize(this, nullptr);
+            m_compilation_unit->m_module_index++;
+
+            Module *mod = m_compilation_unit->m_modules[m_compilation_unit->m_module_index].get();
+
+            while (m_ast_iterator->HasNext()) {
+                m_ast_iterator->Next()->Optimize(this, mod);
+            }
+
+            // decrement the index to refer to the previous module
+            m_compilation_unit->m_module_index--;
+        }
     }
 }

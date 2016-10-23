@@ -59,7 +59,7 @@ const Token *Parser::Expect(TokenType type, bool read)
 {
     const Token *token = Match(type, read);
     if (token == nullptr) {
-        SourceLocation location = CurrentLocation();
+        SourceLocation location(CurrentLocation());
 
         ErrorMessage error_msg;
         std::string error_str;
@@ -86,7 +86,7 @@ const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
 {
     const Token *token = MatchKeyword(keyword, read);
     if (token == nullptr) {
-        SourceLocation location = CurrentLocation();
+        SourceLocation location(CurrentLocation());
         if (read) {
             m_token_stream->Next();
         }
@@ -212,31 +212,28 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         return nullptr;
     }
 
+    std::shared_ptr<AstExpression> expr;
+
     if (Match(Token_open_parenthesis)) {
-        return ParseParentheses();
+        expr = ParseParentheses();
     } else if (Match(Token_integer_literal)) {
-        return ParseIntegerLiteral();
+        expr = ParseIntegerLiteral();
     } else if (Match(Token_float_literal)) {
-        return ParseFloatLiteral();
+        expr = ParseFloatLiteral();
     } else if (Match(Token_string_literal)) {
-        return ParseStringLiteral();
+        expr = ParseStringLiteral();
     } else if (Match(Token_identifier)) {
-        auto ident = ParseIdentifier();
-        if (Match(Token_dot, false)) {
-            return ParseMemberAccess(ident);
-        } else {
-            return ident;
-        }
+        expr = ParseIdentifier();
     } else if (MatchKeyword(Keyword_true)) {
-        return ParseTrue();
+        expr = ParseTrue();
     } else if (MatchKeyword(Keyword_false)) {
-        return ParseFalse();
+        expr = ParseFalse();
     } else if (MatchKeyword(Keyword_null)) {
-        return ParseNull();
+        expr = ParseNull();
     } else if (MatchKeyword(Keyword_func)) {
-        return nullptr;//ParseFunctionExpression();
+        expr = nullptr;//ParseFunctionExpression();
     } else if (Match(Token_operator)) {
-        return nullptr;//ParseUnaryExpression();
+        expr = nullptr;//ParseUnaryExpression();
     } else {
         CompilerError error(Level_fatal, Msg_unexpected_token,
             token->GetLocation(), token->GetValue());
@@ -246,6 +243,12 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 
         return nullptr;
     }
+
+    if (Match(Token_dot, false)) {
+        return ParseMemberAccess(expr);
+    }
+
+    return expr;
 }
 
 std::shared_ptr<AstExpression> Parser::ParseParentheses()

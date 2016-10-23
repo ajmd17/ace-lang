@@ -17,7 +17,7 @@ AstInteger::AstInteger(a_int value, const SourceLocation &location)
 {
 }
 
-void AstInteger::Build(AstVisitor *visitor)
+void AstInteger::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

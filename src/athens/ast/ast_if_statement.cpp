@@ -18,19 +18,19 @@ AstIfStatement::AstIfStatement(const std::shared_ptr<AstExpression> &conditional
 {
 }
 
-void AstIfStatement::Visit(AstVisitor *visitor)
+void AstIfStatement::Visit(AstVisitor *visitor, Module *mod)
 {
     // visit the conditional
-    m_conditional->Visit(visitor);
+    m_conditional->Visit(visitor, mod);
     // visit the body
-    m_block->Visit(visitor);
+    m_block->Visit(visitor, mod);
     // visit the else-block (if it exists)
     if (m_else_block != nullptr) {
-        m_else_block->Visit(visitor);
+        m_else_block->Visit(visitor, mod);
     }
 }
 
-void AstIfStatement::Build(AstVisitor *visitor)
+void AstIfStatement::Build(AstVisitor *visitor, Module *mod)
 {
     int condition_is_true = m_conditional->IsTrue();
     if (condition_is_true == -1) {
@@ -50,10 +50,11 @@ void AstIfStatement::Build(AstVisitor *visitor)
         // get current register index
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
         // build the conditional
-        m_conditional->Build(visitor);
+        m_conditional->Build(visitor, mod);
         // compare the conditional to 0
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(CMPZ, rp);
+
         // load the label address from static memory into register 0
         if (m_else_block != nullptr) {
             visitor->GetCompilationUnit()->GetInstructionStream() <<
@@ -68,7 +69,7 @@ void AstIfStatement::Build(AstVisitor *visitor)
             Instruction<uint8_t, uint8_t>(JE, rp);
 
         // enter the block
-        m_block->Build(visitor);
+        m_block->Build(visitor, mod);
         // jump to the very end now that we've accepted the if-block
         visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
         // get current register index
@@ -87,7 +88,7 @@ void AstIfStatement::Build(AstVisitor *visitor)
             // set the label's position to where the else-block would be
             else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
-            m_else_block->Build(visitor);
+            m_else_block->Build(visitor, mod);
         }
 
         // set the label's position to after the block,
@@ -100,33 +101,33 @@ void AstIfStatement::Build(AstVisitor *visitor)
         if (m_conditional->MayHaveSideEffects()) {
             // if there is a possibility of side effects,
             // build the conditional into the binary
-            m_conditional->Build(visitor);
+            m_conditional->Build(visitor, mod);
         }
         // enter the block
-        m_block->Build(visitor);
+        m_block->Build(visitor, mod);
         // do not accept the else-block
     } else {
         // the condition has been determined to be false
         if (m_conditional->MayHaveSideEffects()) {
             // if there is a possibility of side effects,
             // build the conditional into the binary
-            m_conditional->Build(visitor);
+            m_conditional->Build(visitor, mod);
         }
         // only visit the else-block (if it exists)
         if (m_else_block != nullptr) {
-            m_else_block->Build(visitor);
+            m_else_block->Build(visitor, mod);
         }
     }
 }
 
-void AstIfStatement::Optimize(AstVisitor *visitor)
+void AstIfStatement::Optimize(AstVisitor *visitor, Module *mod)
 {
     // optimize the conditional
-    m_conditional->Optimize(visitor);
+    m_conditional->Optimize(visitor, mod);
     // optimize the body
-    m_block->Optimize(visitor);
+    m_block->Optimize(visitor, mod);
     // optimize the else-block (if it exists)
     if (m_else_block != nullptr) {
-        m_else_block->Optimize(visitor);
+        m_else_block->Optimize(visitor, mod);
     }
 }

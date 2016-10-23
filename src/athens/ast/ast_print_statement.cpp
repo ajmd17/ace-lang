@@ -11,20 +11,20 @@ AstPrintStatement::AstPrintStatement(const std::vector<std::shared_ptr<AstExpres
 {
 }
 
-void AstPrintStatement::Visit(AstVisitor *visitor)
+void AstPrintStatement::Visit(AstVisitor *visitor, Module *mod)
 {
     for (auto &arg : m_arguments) {
         if (arg != nullptr) {
-            arg->Visit(visitor);
+            arg->Visit(visitor, mod);
         }
     }
 }
 
-void AstPrintStatement::Build(AstVisitor *visitor)
+void AstPrintStatement::Build(AstVisitor *visitor, Module *mod)
 {
     // accept each argument
     for (auto &arg : m_arguments) {
-        arg->Build(visitor);
+        arg->Build(visitor, mod);
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->
@@ -40,11 +40,11 @@ void AstPrintStatement::Build(AstVisitor *visitor)
                 Instruction<uint8_t>(ECHO_NEWLINE);
 }
 
-void AstPrintStatement::Optimize(AstVisitor *visitor)
+void AstPrintStatement::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &arg : m_arguments) {
         if (arg != nullptr) {
-            arg->Optimize(visitor);
+            arg->Optimize(visitor, mod);
         }
     }
 }

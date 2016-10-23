@@ -12,12 +12,12 @@ AstVariable::AstVariable(const std::string &name, const SourceLocation &location
 {
 }
 
-void AstVariable::Visit(AstVisitor *visitor)
+void AstVariable::Visit(AstVisitor *visitor, Module *mod)
 {
-    AstIdentifier::Visit(visitor);
+    AstIdentifier::Visit(visitor, mod);
 }
 
-void AstVariable::Build(AstVisitor *visitor)
+void AstVariable::Build(AstVisitor *visitor, Module *mod)
 {
     int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int stack_location = m_identifier->GetStackLocation();
@@ -30,7 +30,7 @@ void AstVariable::Build(AstVisitor *visitor)
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
 }
 
-void AstVariable::Optimize(AstVisitor *visitor)
+void AstVariable::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 

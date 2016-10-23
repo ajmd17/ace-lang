@@ -14,15 +14,15 @@ AstTryCatch::AstTryCatch(const std::shared_ptr<AstBlock> &try_block,
 {
 }
 
-void AstTryCatch::Visit(AstVisitor *visitor)
+void AstTryCatch::Visit(AstVisitor *visitor, Module *mod)
 {
     // accept the try block
-    m_try_block->Visit(visitor);
+    m_try_block->Visit(visitor, mod);
     // accept the catch block
-    m_catch_block->Visit(visitor);
+    m_catch_block->Visit(visitor, mod);
 }
 
-void AstTryCatch::Build(AstVisitor *visitor)
+void AstTryCatch::Build(AstVisitor *visitor, Module *mod)
 {
     uint8_t rp;
 
@@ -47,7 +47,7 @@ void AstTryCatch::Build(AstVisitor *visitor)
         Instruction<uint8_t, uint8_t>(BEGIN_TRY, rp);
 
     // build the try-block
-    m_try_block->Build(visitor);
+    m_try_block->Build(visitor, mod);
 
     // send the instruction to end the try-block
     visitor->GetCompilationUnit()->GetInstructionStream() <<
@@ -74,16 +74,16 @@ void AstTryCatch::Build(AstVisitor *visitor)
     }
 
     // build the catch-block
-    m_catch_block->Build(visitor);
+    m_catch_block->Build(visitor, mod);
 
     end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
     visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
 }
 
-void AstTryCatch::Optimize(AstVisitor *visitor)
+void AstTryCatch::Optimize(AstVisitor *visitor, Module *mod)
 {
     // optimize the try block
-    m_try_block->Optimize(visitor);
+    m_try_block->Optimize(visitor, mod);
     // optimize the catch block
-    m_catch_block->Optimize(visitor);
+    m_catch_block->Optimize(visitor, mod);
 }

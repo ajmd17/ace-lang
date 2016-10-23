@@ -6,14 +6,14 @@ AstModuleDeclaration::AstModuleDeclaration(const std::string &name, const Source
 {
 }
 
-void AstModuleDeclaration::Visit(AstVisitor *visitor)
+void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     // make sure this module was not already declared/imported
-    for (const std::unique_ptr<Module> &mod : visitor->GetCompilationUnit()->m_modules) {
-        if (mod->GetName() == m_name) {
+    for (const std::unique_ptr<Module> &it : visitor->GetCompilationUnit()->m_modules) {
+        if (it->GetName() == m_name) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_module_already_defined, m_location, m_name));
-                
+
             break;
         }
     }
@@ -23,10 +23,10 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor)
     visitor->GetCompilationUnit()->m_modules.push_back(std::move(this_module));
 }
 
-void AstModuleDeclaration::Build(AstVisitor *visitor)
+void AstModuleDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstModuleDeclaration::Optimize(AstVisitor *visitor)
+void AstModuleDeclaration::Optimize(AstVisitor *visitor, Module *mod)
 {
 }

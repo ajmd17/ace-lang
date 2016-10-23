@@ -14,7 +14,7 @@ AstLocalImport::AstLocalImport(const std::string &path, const SourceLocation &lo
 {
 }
 
-void AstLocalImport::Visit(AstVisitor *visitor)
+void AstLocalImport::Visit(AstVisitor *visitor, Module *mod)
 {
     // find the folder which the current file is in
     std::string dir;

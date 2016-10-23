@@ -13,7 +13,7 @@ AstNull::AstNull(const SourceLocation &location)
 {
 }
 
-void AstNull::Build(AstVisitor *visitor)
+void AstNull::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

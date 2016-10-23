@@ -4,11 +4,12 @@
 #include <athens/ast/ast_integer.hpp>
 #include <athens/ast/ast_true.hpp>
 #include <athens/ast/ast_false.hpp>
-#include <athens/ast_visitor.hpp>
 #include <athens/operator.hpp>
 #include <athens/emit/instruction.hpp>
 #include <athens/emit/static_object.hpp>
 #include <athens/optimizer.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/module.hpp>
 
 #include <common/instructions.hpp>
 
@@ -69,10 +70,10 @@ AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &l
 {
 }
 
-void AstBinaryExpression::Visit(AstVisitor *visitor)
+void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-    m_left->Visit(visitor);
-    m_right->Visit(visitor);
+    m_left->Visit(visitor, mod);
+    m_right->Visit(visitor, mod);
 
     if (m_op->ModifiesValue()) {
         AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get());
@@ -92,7 +93,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor)
     }
 }
 
-void AstBinaryExpression::Build(AstVisitor *visitor)
+void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 {
     AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
     AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
@@ -110,11 +111,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
         if (left_as_binop == nullptr && right_as_binop != nullptr) {
             // load right-hand side into register 0
-            m_right->Build(visitor);
+            m_right->Build(visitor, mod);
             visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
             // load left-hand side into register 1
-            m_left->Build(visitor);
+            m_left->Build(visitor, mod);
 
             // perform operation
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -125,13 +126,13 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         } else {
             // load left-hand side into register 0
-            m_left->Build(visitor);
+            m_left->Build(visitor, mod);
 
             if (m_right != nullptr) {
                 // right side has not been optimized away
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
                 // load right-hand side into register 1
-                m_right->Build(visitor);
+                m_right->Build(visitor, mod);
 
                 // perform operation
                 uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -193,7 +194,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
                 if (!folded) {
                     // load left-hand side into register 0
-                    first->Build(visitor);
+                    first->Build(visitor, mod);
                     // since this is an AND operation, jump as soon as the lhs is determined to be false
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
                     // compare lhs to 0 (false)
@@ -235,7 +236,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
                 if (!folded) {
                     // load right-hand side into register 1
-                    second->Build(visitor);
+                    second->Build(visitor, mod);
                     // get register position
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
                     // compare rhs to 0 (false)
@@ -322,7 +323,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
                 if (!folded) {
                     // load left-hand side into register 0
-                    first->Build(visitor);
+                    first->Build(visitor, mod);
                     // since this is an OR operation, jump as soon as the lhs is determined to be anything but 0
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
                     // compare lhs to 0 (false)
@@ -361,7 +362,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
 
                 if (!folded) {
                     // load right-hand side into register 1
-                    second->Build(visitor);
+                    second->Build(visitor, mod);
                     // get register position
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
                     // compare rhs to 0 (false)
@@ -422,12 +423,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
 
                 // load left-hand side into register 0
-                m_left->Build(visitor);
+                m_left->Build(visitor, mod);
 
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
                 // load right-hand side into register 1
-                m_right->Build(visitor);
+                m_right->Build(visitor, mod);
 
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
@@ -477,13 +478,13 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
                 visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
             } else {
                 // load left-hand side into register
-                m_left->Build(visitor);
+                m_left->Build(visitor, mod);
             }
         }
     } else if (m_op->GetType() == ASSIGNMENT) {
         if (m_op == &Operator::operator_assign) {
             // load right-hand side into register 0
-            m_right->Build(visitor);
+            m_right->Build(visitor, mod);
             visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
             // get current register index
@@ -514,11 +515,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
             }
 
             // load right-hand side into register 0
-            m_right->Build(visitor);
+            m_right->Build(visitor, mod);
             visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
             // load left-hand side into register 1
-            m_left->Build(visitor);
+            m_left->Build(visitor, mod);
 
             // perform operation
             uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -542,10 +543,10 @@ void AstBinaryExpression::Build(AstVisitor *visitor)
     }
 }
 
-void AstBinaryExpression::Optimize(AstVisitor *visitor)
+void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
-    Optimizer::OptimizeExpr(m_left, visitor);
-    Optimizer::OptimizeExpr(m_right, visitor);
+    Optimizer::OptimizeExpr(m_left, visitor, mod);
+    Optimizer::OptimizeExpr(m_right, visitor, mod);
 
     // check that we can further optimize the
     // binary expression by optimizing away the right

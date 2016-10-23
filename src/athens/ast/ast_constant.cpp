@@ -5,12 +5,12 @@ AstConstant::AstConstant(const SourceLocation &location)
 {
 }
 
-void AstConstant::Visit(AstVisitor *visitor)
+void AstConstant::Visit(AstVisitor *visitor, Module *mod)
 {
     // do nothing
 }
 
-void AstConstant::Optimize(AstVisitor *visitor)
+void AstConstant::Optimize(AstVisitor *visitor, Module *mod)
 {
     // do nothing
 }

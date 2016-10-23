@@ -9,9 +9,9 @@ public:
         const SourceLocation &location);
     virtual ~AstParameter() = default;
 
-    virtual void Visit(AstVisitor *visitor) override;
-    virtual void Build(AstVisitor *visitor) override;
-    virtual void Optimize(AstVisitor *visitor) override;
+    virtual void Visit(AstVisitor *visitor, Module *mod) override;
+    virtual void Build(AstVisitor *visitor, Module *mod) override;
+    virtual void Optimize(AstVisitor *visitor, Module *mod) override;
 
     bool IsVariadic() const { return m_is_variadic; }
 

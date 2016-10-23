@@ -1,7 +1,8 @@
 #include <athens/ast/ast_function_definition.hpp>
-#include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
 #include <athens/emit/static_object.hpp>
+#include <athens/ast_visitor.hpp>
+#include <athens/module.hpp>
 
 #include <common/instructions.hpp>
 
@@ -16,31 +17,31 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
 {
 }
 
-void AstFunctionDefinition::Visit(AstVisitor *visitor)
+void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 {
     // open the new scope for parameters
-    visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Open(Scope());
+    mod->m_scopes.Open(Scope());
 
     for (auto &param : m_parameters) {
         if (param != nullptr) {
             // add the identifier to the table
-            param->Visit(visitor);
+            param->Visit(visitor, mod);
         }
     }
 
     // function body
     if (m_block != nullptr) {
         // visit the function body
-        m_block->Visit(visitor);
+        m_block->Visit(visitor, mod);
     }
 
     // close parameter scope
-    visitor->GetCompilationUnit()->CurrentModule()->m_scopes.Close();
+    mod->m_scopes.Close();
 
-    AstDeclaration::Visit(visitor);
+    AstDeclaration::Visit(visitor, mod);
 }
 
-void AstFunctionDefinition::Build(AstVisitor *visitor)
+void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)
 {
     if (m_identifier->GetUseCount() > 0) {
         // get current stack size
@@ -77,14 +78,14 @@ void AstFunctionDefinition::Build(AstVisitor *visitor)
         int param_stack_size = 0;
         for (auto &param : m_parameters) {
             if (param != nullptr) {
-                param->Build(visitor);
+                param->Build(visitor, mod);
                 param_stack_size++;
             }
         }
 
         if (m_block != nullptr) {
             // build the function body
-            m_block->Build(visitor);
+            m_block->Build(visitor, mod);
         }
 
         // add RET instruction
@@ -126,15 +127,15 @@ void AstFunctionDefinition::Build(AstVisitor *visitor)
     }
 }
 
-void AstFunctionDefinition::Optimize(AstVisitor *visitor)
+void AstFunctionDefinition::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &param : m_parameters) {
         if (param != nullptr) {
-            param->Optimize(visitor);
+            param->Optimize(visitor, mod);
         }
     }
 
     if (m_block != nullptr) {
-        m_block->Optimize(visitor);
+        m_block->Optimize(visitor, mod);
     }
 }

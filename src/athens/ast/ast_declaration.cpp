@@ -1,5 +1,6 @@
 #include <athens/ast/ast_declaration.hpp>
 #include <athens/ast_visitor.hpp>
+#include <athens/module.hpp>
 
 AstDeclaration::AstDeclaration(const std::string &name, const SourceLocation &location)
     : AstStatement(location),
@@ -8,10 +9,9 @@ AstDeclaration::AstDeclaration(const std::string &name, const SourceLocation &lo
 {
 }
 
-void AstDeclaration::Visit(AstVisitor *visitor)
+void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     CompilationUnit *compilation_unit = visitor->GetCompilationUnit();
-    std::unique_ptr<Module> &mod = compilation_unit->CurrentModule();
     Scope &scope = mod->m_scopes.Top();
 
     // look up variable to make sure it doesn't already exist
@@ -20,7 +20,7 @@ void AstDeclaration::Visit(AstVisitor *visitor)
     m_identifier = mod->LookUpIdentifier(m_name, true);
     if (m_identifier != nullptr) {
         // a collision was found, add an error
-        visitor->GetCompilationUnit()->GetErrorList().AddError(
+        compilation_unit->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_redeclared_identifier, m_location, m_name));
     } else {
         // add identifier

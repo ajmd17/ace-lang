@@ -11,9 +11,11 @@ public:
     AstIterator();
     AstIterator(const AstIterator &other);
 
-    void Push(const std::shared_ptr<AstStatement> &statement);
-    void ResetPosition();
-    std::shared_ptr<AstStatement> Next();
+    inline void Push(const std::shared_ptr<AstStatement> &statement) { m_list.push_back(statement); }
+    inline void ResetPosition() { m_position = 0; }
+    inline std::shared_ptr<AstStatement> &Peek() { return m_list[m_position]; }
+    inline const std::shared_ptr<AstStatement> &Peek() const { return m_list[m_position]; }
+    inline std::shared_ptr<AstStatement> Next() { return m_list[m_position++]; }
     inline bool HasNext() const { return m_position < m_list.size(); }
     inline const SourceLocation &GetLocation() const { return m_list[m_position]->m_location; }
 

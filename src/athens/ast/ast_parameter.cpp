@@ -11,12 +11,12 @@ AstParameter::AstParameter(const std::string &name, bool is_variadic,
 {
 }
 
-void AstParameter::Visit(AstVisitor *visitor)
+void AstParameter::Visit(AstVisitor *visitor, Module *mod)
 {
-    AstDeclaration::Visit(visitor);
+    AstDeclaration::Visit(visitor, mod);
 }
 
-void AstParameter::Build(AstVisitor *visitor)
+void AstParameter::Build(AstVisitor *visitor, Module *mod)
 {
     // get current stack size
     int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
@@ -27,6 +27,6 @@ void AstParameter::Build(AstVisitor *visitor)
     visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 }
 
-void AstParameter::Optimize(AstVisitor *visitor)
+void AstParameter::Optimize(AstVisitor *visitor, Module *mod)
 {
 }

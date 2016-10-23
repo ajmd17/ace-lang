@@ -2,3 +2,7 @@
 
  var y = 7;
 print ("(Mod2) y = ", y)
+
+func printstr (obj) {
+    print("obj = ", obj);
+}

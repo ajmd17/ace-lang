@@ -13,19 +13,19 @@ AstFunctionCall::AstFunctionCall(const std::string &name,
 {
 }
 
-void AstFunctionCall::Visit(AstVisitor *visitor)
+void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 {
-    AstIdentifier::Visit(visitor);
+    AstIdentifier::Visit(visitor, mod);
 
     // visit each argument
     for (auto &arg : m_args) {
         if (arg != nullptr) {
-            arg->Visit(visitor);
+            arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
         }
     }
 }
 
-void AstFunctionCall::Build(AstVisitor *visitor)
+void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
 {
     int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int stack_location = m_identifier->GetStackLocation();
@@ -39,7 +39,7 @@ void AstFunctionCall::Build(AstVisitor *visitor)
     // push a copy of each argument to the stack
     for (auto &arg : m_args) {
         if (arg != nullptr) {
-            arg->Build(visitor);
+            arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
 
             // get active register
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -83,12 +83,12 @@ void AstFunctionCall::Build(AstVisitor *visitor)
     }
 }
 
-void AstFunctionCall::Optimize(AstVisitor *visitor)
+void AstFunctionCall::Optimize(AstVisitor *visitor, Module *mod)
 {
     // optimize each argument
     for (auto &arg : m_args) {
         if (arg != nullptr) {
-            arg->Optimize(visitor);
+            arg->Optimize(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
         }
     }
 }

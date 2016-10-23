@@ -13,12 +13,13 @@ public:
         const SourceLocation &location);
     virtual ~AstFunctionCall() = default;
 
+    inline void AddArgument(const std::shared_ptr<AstExpression> &arg) { m_args.push_back(arg); }
     inline const std::vector<std::shared_ptr<AstExpression>>
         &GetArguments() const { return m_args; }
 
-    virtual void Visit(AstVisitor *visitor) override;
-    virtual void Build(AstVisitor *visitor) override;
-    virtual void Optimize(AstVisitor *visitor) override;
+    virtual void Visit(AstVisitor *visitor, Module *mod) override;
+    virtual void Build(AstVisitor *visitor, Module *mod) override;
+    virtual void Optimize(AstVisitor *visitor, Module *mod) override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;

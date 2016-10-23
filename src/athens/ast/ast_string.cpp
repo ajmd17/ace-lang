@@ -14,7 +14,7 @@ AstString::AstString(const std::string &value, const SourceLocation &location)
 {
 }
 
-void AstString::Build(AstVisitor *visitor)
+void AstString::Build(AstVisitor *visitor, Module *mod)
 {
     StaticObject so(m_value.c_str());
 

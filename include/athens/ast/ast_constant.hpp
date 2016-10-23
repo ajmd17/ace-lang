@@ -9,9 +9,10 @@ public:
     AstConstant(const SourceLocation &location);
     virtual ~AstConstant() = default;
 
-    virtual void Visit(AstVisitor *visitor) override;
-    virtual void Build(AstVisitor *visitor) override = 0;
-    virtual void Optimize(AstVisitor *visitor) override;
+    virtual void Visit(AstVisitor *visitor, Module *mod) override;
+    virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
+    virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+
     virtual int IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override;
     virtual bool IsNumber() const = 0;

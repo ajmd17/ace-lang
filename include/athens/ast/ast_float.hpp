@@ -7,7 +7,8 @@ class AstFloat : public AstConstant {
 public:
     AstFloat(a_float value, const SourceLocation &location);
 
-    virtual void Build(AstVisitor *visitor) override;
+    virtual void Build(AstVisitor *visitor, Module *mod) override;
+    
     virtual int IsTrue() const override;
     virtual bool IsNumber() const override;
     virtual a_int IntValue() const override;

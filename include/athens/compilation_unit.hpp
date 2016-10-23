@@ -14,8 +14,10 @@ public:
     CompilationUnit();
     CompilationUnit(const CompilationUnit &other) = delete;
 
-    inline std::unique_ptr<Module> &CurrentModule() { return m_modules[m_module_index]; }
-    inline const std::unique_ptr<Module> &CurrentModule() const { return m_modules[m_module_index]; }
+    inline std::unique_ptr<Module> &GetModule(int i) { return m_modules[i]; }
+    inline const std::unique_ptr<Module> &GetModule(int i) const { return m_modules[i]; }
+    inline std::unique_ptr<Module> &GetCurrentModule() { return m_modules[m_module_index]; }
+    inline const std::unique_ptr<Module> &GetCurrentModule() const { return m_modules[m_module_index]; }
     inline ErrorList &GetErrorList() { return m_error_list; }
     inline const ErrorList &GetErrorList() const { return m_error_list; }
     inline InstructionStream &GetInstructionStream() { return m_instruction_stream; }

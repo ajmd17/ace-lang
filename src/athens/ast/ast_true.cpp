@@ -11,7 +11,7 @@ AstTrue::AstTrue(const SourceLocation &location)
 {
 }
 
-void AstTrue::Build(AstVisitor *visitor)
+void AstTrue::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

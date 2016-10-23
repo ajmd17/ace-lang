@@ -1,6 +1,16 @@
 module ExampleProgram
 import "mod2.ace"
 
+var teststr = "hello";
+
+Mod2.printstr(teststr);
+teststr.Mod2.printstr();
+
+"hi, this is a test of calling a function on a string literal".Mod2.printstr()
+
+func println (obj) {
+    print (obj);
+}
 
 print("Mod2.y = ", Mod2.y)
 

@@ -8,7 +8,7 @@ AstImport::AstImport(const SourceLocation &location)
 {
 }
 
-void AstImport::Build(AstVisitor *visitor)
+void AstImport::Build(AstVisitor *visitor, Module *mod)
 {
     m_ast_iterator.ResetPosition();
 
@@ -17,7 +17,7 @@ void AstImport::Build(AstVisitor *visitor)
     compiler.Compile();
 }
 
-void AstImport::Optimize(AstVisitor *visitor)
+void AstImport::Optimize(AstVisitor *visitor, Module *mod)
 {
     m_ast_iterator.ResetPosition();
 

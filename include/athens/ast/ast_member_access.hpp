@@ -14,9 +14,14 @@ public:
         const SourceLocation &location);
     virtual ~AstMemberAccess() = default;
 
-    virtual void Visit(AstVisitor *visitor) override;
-    virtual void Build(AstVisitor *visitor) override;
-    virtual void Optimize(AstVisitor *visitor) override;
+    std::shared_ptr<AstExpression> &GetLeft() { return m_left; }
+    const std::shared_ptr<AstExpression> &GetLeft() const { return m_left; }
+    std::shared_ptr<AstExpression> &GetRight() { return m_right; }
+    const std::shared_ptr<AstExpression> &GetRight() const { return m_right; }
+
+    virtual void Visit(AstVisitor *visitor, Module *mod) override;
+    virtual void Build(AstVisitor *visitor, Module *mod) override;
+    virtual void Optimize(AstVisitor *visitor, Module *mod) override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
@@ -26,11 +31,7 @@ private:
     std::shared_ptr<AstExpression> m_right;
 
     // is m_left a module name
-    bool m_lhs_mod;
-    // module index of left-hand side
-    int m_mod_index;
-    // original module index
-    int m_mod_index_before;
+    Module *m_lhs_mod;
 };
 
 #endif

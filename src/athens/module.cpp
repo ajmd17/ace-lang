@@ -28,3 +28,20 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
 
     return nullptr;
 }
+
+bool Module::LookUpUserType(const std::string &type, ObjectType &out)
+{
+    for (ObjectType &it : m_user_types) {
+        if (it.ToString() == type) {
+            out = it;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Module::AddUserType(const ObjectType &type)
+{
+    m_user_types.push_back(type);
+}

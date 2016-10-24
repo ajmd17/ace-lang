@@ -92,3 +92,14 @@ bool AstMemberAccess::MayHaveSideEffects() const
     // TODO
     return true;
 }
+
+ObjectType AstMemberAccess::GetObjectType() const
+{
+    const AstExpression *rightmost = m_right.get();
+    const AstMemberAccess *rightmost_as_mem = dynamic_cast<const AstMemberAccess*>(rightmost);
+    while (rightmost_as_mem != nullptr) {
+        rightmost = rightmost_as_mem->GetRight().get();
+        rightmost_as_mem = dynamic_cast<const AstMemberAccess*>(rightmost);
+    }
+    return rightmost->GetObjectType();
+}

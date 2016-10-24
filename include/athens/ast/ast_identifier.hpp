@@ -20,6 +20,7 @@ public:
 
     virtual int IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override = 0;
+    virtual ObjectType GetObjectType() const override;
 
 protected:
     std::string m_name;

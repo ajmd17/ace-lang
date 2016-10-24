@@ -6,6 +6,7 @@
 #include <athens/compilation_unit.hpp>
 #include <athens/ast_iterator.hpp>
 #include <athens/keywords.hpp>
+#include <athens/object_type.hpp>
 #include <athens/ast/ast_module_declaration.hpp>
 #include <athens/ast/ast_variable_declaration.hpp>
 #include <athens/ast/ast_function_definition.hpp>
@@ -27,6 +28,7 @@
 #include <athens/ast/ast_if_statement.hpp>
 #include <athens/ast/ast_print_statement.hpp>
 #include <athens/ast/ast_try_catch.hpp>
+#include <athens/ast/ast_type_specification.hpp>
 
 #include <string>
 
@@ -72,6 +74,7 @@ private:
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseExpression(bool standalone = false);
+    std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration();
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition();
     std::shared_ptr<AstImport> ParseImport();

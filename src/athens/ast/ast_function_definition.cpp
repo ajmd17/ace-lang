@@ -39,6 +39,9 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Close();
 
     AstDeclaration::Visit(visitor, mod);
+
+    // functions are const implicitly
+    m_identifier->SetFlags(FLAG_CONST);
 }
 
 void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)

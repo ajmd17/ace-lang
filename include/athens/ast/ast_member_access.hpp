@@ -25,6 +25,7 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
+    virtual ObjectType GetObjectType() const override;
 
 private:
     std::shared_ptr<AstExpression> m_left;

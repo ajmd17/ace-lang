@@ -25,6 +25,11 @@ int AstTrue::IsTrue() const
     return true;
 }
 
+ObjectType AstTrue::GetObjectType() const
+{
+    return ObjectType::type_builtin_bool;
+}
+
 bool AstTrue::IsNumber() const
 {
     return false;

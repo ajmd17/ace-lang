@@ -14,6 +14,11 @@ int AstVoid::IsTrue() const
     return false;
 }
 
+ObjectType AstVoid::GetObjectType() const
+{
+    return ObjectType::type_builtin_void;
+}
+
 bool AstVoid::IsNumber() const
 {
     return false;

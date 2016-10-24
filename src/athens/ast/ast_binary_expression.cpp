@@ -75,12 +75,20 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     m_left->Visit(visitor, mod);
     m_right->Visit(visitor, mod);
 
+    // make sure the types are compatible
+    ObjectType left_type = m_left->GetObjectType();
+    ObjectType right_type = m_right->GetObjectType();
+
     if (m_op->ModifiesValue()) {
+        visitor->Assert(ObjectType::TypeCompatible(left_type, right_type, true),
+            CompilerError(Level_fatal, Msg_mismatched_types,
+                m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
+
         AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get());
         if (left_as_var != nullptr) {
-            // make sure we are not modifying a const
             if (left_as_var->GetIdentifier() != nullptr) {
-                visitor->Assert(!(left_as_var->GetIdentifier()->GetFlags() & Flag_const),
+                // make sure we are not modifying a const
+                visitor->Assert(!(left_as_var->GetIdentifier()->GetFlags() & FLAG_CONST),
                     CompilerError(Level_fatal, Msg_const_modified,
                         m_left->GetLocation(), left_as_var->GetName()));
             }
@@ -90,6 +98,12 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                 CompilerError(Level_fatal, Msg_cannot_modify_rvalue,
                     m_left->GetLocation()));
         }
+    } else {
+        // types still matter, but Any will be allowed.
+        visitor->Assert(right_type.ToString() == ObjectType::type_builtin_any.ToString() ||
+                        ObjectType::TypeCompatible(left_type, right_type, false),
+            CompilerError(Level_fatal, Msg_mismatched_types,
+                m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
     }
 }
 
@@ -586,4 +600,20 @@ bool AstBinaryExpression::MayHaveSideEffects() const
     }
 
     return left_side_effects || right_side_effects;
+}
+
+ObjectType AstBinaryExpression::GetObjectType() const
+{
+    ObjectType left_type = m_left->GetObjectType();
+    ObjectType right_type = m_right->GetObjectType();
+
+    if (m_op->ModifiesValue() &&
+        (left_type.ToString() != ObjectType::type_builtin_any.ToString() &&
+        right_type.ToString() == ObjectType::type_builtin_any.ToString())) {
+        // special case for assignment operators.
+        // cannot set a strict type to 'Any'.
+       return ObjectType::type_builtin_void;
+    }
+
+    return ObjectType::FindCompatibleType(left_type, right_type);
 }

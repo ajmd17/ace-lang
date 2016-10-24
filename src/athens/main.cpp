@@ -74,10 +74,10 @@ void build_source_file(const Utf8String &filename, const Utf8String &out_filenam
         compilation_unit.GetErrorList().SortErrors();
         for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
             ucout
-                << Utf8String(error.GetLocation().GetFileName().c_str()) << "\t"
-                << "ln: "  << (error.GetLocation().GetLine() + 1)
-                << ", col: " << (error.GetLocation().GetColumn() + 1)
-                << ":\t" << Utf8String(error.GetText().c_str()) << "\n";
+                << Utf8String(error.GetLocation().GetFileName().c_str()) << " "
+                << "(" << (error.GetLocation().GetLine() + 1)
+                << ", " << (error.GetLocation().GetColumn() + 1)
+                << "): " << Utf8String(error.GetText().c_str()) << "\n";
         }
 
         if (!compilation_unit.GetErrorList().HasFatalErrors()) {

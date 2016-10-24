@@ -2,12 +2,13 @@
 #define IDENTIFIER_HPP
 
 #include <athens/ast/ast_expression.hpp>
+#include <athens/object_type.hpp>
 
 #include <string>
 #include <memory>
 
 enum IdentifierFlags {
-   Flag_const = 0x01
+   FLAG_CONST = 0x01
 };
 
 class Identifier {
@@ -24,9 +25,15 @@ public:
     inline int GetUseCount() const { return m_usecount; }
     inline int GetFlags() const { return m_flags; }
     inline void SetFlags(int flags) { m_flags = flags; }
-
     inline std::weak_ptr<AstExpression> GetCurrentValue() const { return m_current_value; }
     inline void SetCurrentValue(std::shared_ptr<AstExpression> expr) { m_current_value = expr; }
+    inline const ObjectType &GetObjectType() const { return m_object_type; }
+    inline void SetObjectType(const ObjectType &object_type) { m_object_type = object_type; }
+
+    inline bool TypeCompatible(const ObjectType &other_type) const
+    {
+        return ObjectType::TypeCompatible(m_object_type, other_type);
+    }
 
 private:
     std::string m_name;
@@ -35,6 +42,7 @@ private:
     int m_usecount;
     int m_flags;
     std::weak_ptr<AstExpression> m_current_value;
+    ObjectType m_object_type;
 };
 
 #endif

@@ -2,7 +2,7 @@
 #define AST_CONSTANT_HPP
 
 #include <athens/ast/ast_expression.hpp>
-#include <athens/types.hpp>
+#include <athens/typedefs.hpp>
 
 class AstConstant : public AstExpression {
 public:
@@ -15,6 +15,7 @@ public:
 
     virtual int IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override;
+    virtual ObjectType GetObjectType() const override = 0;
     virtual bool IsNumber() const = 0;
     virtual a_int IntValue() const = 0;
     virtual a_float FloatValue() const = 0;

@@ -14,7 +14,7 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
         if (expr_as_var->GetIdentifier() != nullptr) {
-            if (expr_as_var->GetIdentifier()->GetFlags() & (Flag_const)) {
+            if (expr_as_var->GetIdentifier()->GetFlags() & FLAG_CONST) {
                 // the variable is a const, now we make sure that the current
                 // value is a literal value
                 auto value_sp = expr_as_var->GetIdentifier()->GetCurrentValue().lock();

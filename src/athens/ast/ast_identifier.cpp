@@ -25,3 +25,8 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
         m_identifier->IncUseCount();
     }
 }
+
+ObjectType AstIdentifier::GetObjectType() const
+{
+    return m_identifier->GetObjectType();
+}

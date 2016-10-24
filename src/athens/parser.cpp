@@ -530,12 +530,37 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
     return term;
 }
 
+std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
+{
+    const Token *left = Expect(Token_identifier, true);
+    if (left != nullptr) {
+        std::shared_ptr<AstTypeSpecification> right(nullptr);
+        if (Match(Token_dot, true)) {
+            // read next part
+            right = ParseTypeSpecification();
+        }
+
+        return std::shared_ptr<AstTypeSpecification>(
+            new AstTypeSpecification(left->GetValue(), right, left->GetLocation()));
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
 {
     const Token *token = ExpectKeyword(Keyword_var, true);
     const Token *identifier = Expect(Token_identifier, true);
 
     if (identifier != nullptr) {
+
+        std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
+
+        if (Match(Token_colon, true)) {
+            // read object type
+            type_spec = ParseTypeSpecification();
+        }
+
         std::shared_ptr<AstExpression> assignment(nullptr);
 
         const Token *op = Match(Token_operator, true);
@@ -556,7 +581,10 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
         }
 
         return std::shared_ptr<AstVariableDeclaration>(
-            new AstVariableDeclaration(identifier->GetValue(), assignment, token->GetLocation()));
+            new AstVariableDeclaration(identifier->GetValue(),
+                type_spec,
+                assignment,
+                token->GetLocation()));
     }
 
     return nullptr;

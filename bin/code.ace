@@ -1,7 +1,11 @@
 module ExampleProgram
 import "mod2.ace"
 
-var teststr = "hello";
+var teststr: String = "sup";
+
+var num: Number = 4 + "hello"; // legal
+var myint: Int = 0;
+
 
 Mod2.printstr(teststr);
 teststr.Mod2.printstr();
@@ -14,7 +18,7 @@ func println (obj) {
 
 print("Mod2.y = ", Mod2.y)
 
-func blah (arg1) {
+func blah (arg1, arg2) {
     print ("arg1 = ", arg1)
     func inner (a, b) {
         print ("(inner) a = ", a, "    b = ", b);

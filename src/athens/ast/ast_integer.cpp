@@ -32,6 +32,11 @@ int AstInteger::IsTrue() const
     return m_value != 0;
 }
 
+ObjectType AstInteger::GetObjectType() const
+{
+    return ObjectType::type_builtin_int;
+}
+
 bool AstInteger::IsNumber() const
 {
     return true;

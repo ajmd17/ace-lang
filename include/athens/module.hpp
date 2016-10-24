@@ -4,8 +4,9 @@
 #include <athens/scope.hpp>
 #include <athens/source_location.hpp>
 #include <athens/tree.hpp>
+#include <athens/object_type.hpp>
 
-#include <list>
+#include <vector>
 #include <string>
 
 class Module {
@@ -22,11 +23,17 @@ public:
         searched. */
     Identifier *LookUpIdentifier(const std::string &name, bool this_scope_only);
 
+    /** Check to see if a user has declared a type with this name */
+    bool LookUpUserType(const std::string &type, ObjectType &out);
+    /** Add this type to the list of user-defined types */
+    void AddUserType(const ObjectType &type);
+
     Tree<Scope> m_scopes;
 
 private:
     std::string m_name;
     SourceLocation m_location;
+    std::vector<ObjectType> m_user_types;
 };
 
 #endif

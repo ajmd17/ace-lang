@@ -10,6 +10,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
 
     virtual int IsTrue() const override;
+    virtual ObjectType GetObjectType() const override;
     virtual bool IsNumber() const override;
     virtual a_int IntValue() const override;
     virtual a_float FloatValue() const override;

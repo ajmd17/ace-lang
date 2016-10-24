@@ -4,9 +4,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 
-// forward declaration
+// forward declarations
 class ObjectType;
+class AstExpression;
 
 typedef std::pair<std::string, ObjectType> DataMember_t;
 
@@ -25,8 +27,9 @@ public:
 
 public:
     ObjectType();
-    ObjectType(const std::string &str);
-    ObjectType(const std::string &str, const std::vector<DataMember_t> &data_members);
+    ObjectType(const std::string &str, std::shared_ptr<AstExpression> default_value);
+    ObjectType(const std::string &str, std::shared_ptr<AstExpression> default_value,
+        const std::vector<DataMember_t> &data_members);
     ObjectType(const ObjectType &other);
 
     inline const std::string &ToString() const { return m_str; }
@@ -36,11 +39,14 @@ public:
     const ObjectType &GetDataMemberType(const std::string &name) const;
     void AddDataMember(const DataMember_t &data_member);
 
+    inline std::shared_ptr<AstExpression> GetDefaultValue() const { return m_default_value; }
+
     static bool TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers = false);
     static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right);
 
 protected:
     std::string m_str;
+    std::shared_ptr<AstExpression> m_default_value;
     std::vector<DataMember_t> m_data_members;
 };
 

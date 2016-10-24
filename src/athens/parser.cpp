@@ -553,7 +553,6 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
     const Token *identifier = Expect(Token_identifier, true);
 
     if (identifier != nullptr) {
-
         std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
 
         if (Match(Token_colon, true)) {
@@ -575,16 +574,11 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
 
                 m_compilation_unit->GetErrorList().AddError(error);
             }
-        } else {
-            // assign variable to null
-            assignment.reset(new AstNull(CurrentLocation()));
         }
 
         return std::shared_ptr<AstVariableDeclaration>(
             new AstVariableDeclaration(identifier->GetValue(),
-                type_spec,
-                assignment,
-                token->GetLocation()));
+                type_spec, assignment, token->GetLocation()));
     }
 
     return nullptr;

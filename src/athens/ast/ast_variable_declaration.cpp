@@ -1,4 +1,5 @@
 #include <athens/ast/ast_variable_declaration.hpp>
+#include <athens/ast/ast_null.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
 #include <athens/object_type.hpp>
@@ -19,21 +20,37 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     ObjectType object_type;
 
-    if (m_type_specification != nullptr) {
-        m_type_specification->Visit(visitor, mod);
-        object_type = m_type_specification->GetObjectType();
-    }
+    if (m_type_specification == nullptr && m_assignment == nullptr) {
+        // error; requires either type, or assignment.
+        visitor->GetCompilationUnit()->GetErrorList().AddError(
+            CompilerError(Level_fatal, Msg_missing_type_and_assignment, m_location, m_name));
+    } else {
+        if (m_type_specification != nullptr) {
+            m_type_specification->Visit(visitor, mod);
+            object_type = m_type_specification->GetObjectType();
 
-    // if there was an assignment, visit it
-    if (m_assignment != nullptr) {
-        m_assignment->Visit(visitor, mod);
+            if (m_assignment == nullptr) {
+                // Assign variable to the default value for the specified type.
+                m_assignment = object_type.GetDefaultValue();
+            }
+        }
 
-        // make sure type is compatible with assignment
-        ObjectType assignment_type = m_assignment->GetObjectType();
+        // if there was an assignment, visit it
+        if (m_assignment != nullptr) {
+            m_assignment->Visit(visitor, mod);
 
-        visitor->Assert(ObjectType::TypeCompatible(object_type, assignment_type, true),
-            CompilerError(Level_fatal, Msg_mismatched_types, m_assignment->GetLocation(),
-                object_type.ToString(), assignment_type.ToString()));
+            // make sure type is compatible with assignment
+            ObjectType assignment_type = m_assignment->GetObjectType();
+
+            if (m_type_specification != nullptr) {
+                visitor->Assert(ObjectType::TypeCompatible(object_type, assignment_type, true),
+                    CompilerError(Level_fatal, Msg_mismatched_types, m_assignment->GetLocation(),
+                        object_type.ToString(), assignment_type.ToString()));
+            } else {
+                // Set the type to be the deduced type from the expression.
+                object_type = assignment_type;
+            }
+        }
     }
 
     AstDeclaration::Visit(visitor, mod);

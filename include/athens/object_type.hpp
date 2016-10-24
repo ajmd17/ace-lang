@@ -15,7 +15,8 @@ typedef std::pair<std::string, ObjectType> DataMember_t;
 class ObjectType {
 public:
     static const ObjectType
-        type_builtin_void, // invalid type
+        type_builtin_undefined, // invalid type
+        type_builtin_void,
         type_builtin_any,
         type_builtin_bool,
         type_builtin_number,
@@ -41,6 +42,7 @@ public:
 
     inline std::shared_ptr<AstExpression> GetDefaultValue() const { return m_default_value; }
 
+    static ObjectType MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types);
     static bool TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers = false);
     static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right);
 

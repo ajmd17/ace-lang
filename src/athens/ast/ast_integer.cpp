@@ -1,7 +1,9 @@
 #include <athens/ast/ast_integer.hpp>
 #include <athens/ast/ast_float.hpp>
 #include <athens/ast/ast_null.hpp>
+#include <athens/ast/ast_true.hpp>
 #include <athens/ast/ast_false.hpp>
+#include <athens/ast/ast_undefined.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/emit/instruction.hpp>
 
@@ -52,8 +54,7 @@ a_float AstInteger::FloatValue() const
     return static_cast<a_float>(m_value);
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator+(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator+(AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -69,8 +70,7 @@ std::shared_ptr<AstConstant> AstInteger::operator+(
     }
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator-(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator-(AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -86,8 +86,7 @@ std::shared_ptr<AstConstant> AstInteger::operator-(
     }
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator*(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator*(AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -103,8 +102,7 @@ std::shared_ptr<AstConstant> AstInteger::operator*(
     }
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator/(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator/(AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -115,8 +113,8 @@ std::shared_ptr<AstConstant> AstInteger::operator/(
         a_float result;
         a_float right_float = right->FloatValue();
         if (right_float == 0.0) {
-            // division by zero, return NaN
-            result = std::numeric_limits<decltype(result)>::quiet_NaN();
+            // division by zero, return Undefined
+            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
         } else {
             result = FloatValue() / right_float;
         }
@@ -125,9 +123,8 @@ std::shared_ptr<AstConstant> AstInteger::operator/(
     } else {
         a_int right_int = right->IntValue();
         if (right_int == 0) {
-            // division by zero, return NaN
-            return std::shared_ptr<AstFloat>(
-                new AstFloat(std::numeric_limits<a_float>::quiet_NaN(), m_location));
+            // division by zero, return Undefined
+            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
         } else {
             return std::shared_ptr<AstInteger>(
                 new AstInteger(IntValue() / right_int, m_location));
@@ -135,8 +132,7 @@ std::shared_ptr<AstConstant> AstInteger::operator/(
     }
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator%(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
 {
     if (!right->IsNumber()) {
         return nullptr;
@@ -147,8 +143,8 @@ std::shared_ptr<AstConstant> AstInteger::operator%(
         a_float result;
         a_float right_float = right->FloatValue();
         if (right_float == 0.0) {
-            // division by zero, return NaN
-            result = std::numeric_limits<decltype(result)>::quiet_NaN();
+            // division by zero, return Undefined
+            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
         } else {
             result = std::fmod(FloatValue(), right_float);
         }
@@ -157,9 +153,8 @@ std::shared_ptr<AstConstant> AstInteger::operator%(
     } else {
         a_int right_int = right->IntValue();
         if (right_int == 0) {
-            // division by zero, return NaN
-            return std::shared_ptr<AstFloat>(
-                new AstFloat(std::numeric_limits<a_float>::quiet_NaN(), m_location));
+            // division by zero, return Undefined
+            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
         } else {
             return std::shared_ptr<AstInteger>(
                 new AstInteger(IntValue() % right_int, m_location));
@@ -167,10 +162,11 @@ std::shared_ptr<AstConstant> AstInteger::operator%(
     }
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator^(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    // right must be integer
+    if (!right->IsNumber() ||
+         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
         return nullptr;
     }
 
@@ -178,10 +174,11 @@ std::shared_ptr<AstConstant> AstInteger::operator^(
         new AstInteger(IntValue() ^ right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    // right must be integer
+    if (!right->IsNumber() ||
+         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
         return nullptr;
     }
 
@@ -189,10 +186,11 @@ std::shared_ptr<AstConstant> AstInteger::operator&(
         new AstInteger(IntValue() & right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator|(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    // right must be integer
+    if (!right->IsNumber() ||
+         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
         return nullptr;
     }
 
@@ -200,10 +198,11 @@ std::shared_ptr<AstConstant> AstInteger::operator|(
         new AstInteger(IntValue() | right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator<<(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    // right must be integer
+    if (!right->IsNumber() ||
+         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
         return nullptr;
     }
 
@@ -211,10 +210,11 @@ std::shared_ptr<AstConstant> AstInteger::operator<<(
         new AstInteger(IntValue() << right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator>>(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator>>(AstConstant *right) const
 {
-    if (!right->IsNumber()) {
+    // right must be integer
+    if (!right->IsNumber() ||
+         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
         return nullptr;
     }
 
@@ -222,38 +222,58 @@ std::shared_ptr<AstConstant> AstInteger::operator>>(
         new AstInteger(IntValue() >> right->IntValue(), m_location));
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator&&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator&&(AstConstant *right) const
 {
+    int this_true = IsTrue();
+    int right_true = right->IsTrue();
+
     if (!right->IsNumber()) {
         // this operator is valid to compare against null
         AstNull *ast_null = dynamic_cast<AstNull*>(right);
         if (ast_null != nullptr) {
+            // rhs is null, return false
             return std::shared_ptr<AstFalse>(
                 new AstFalse(m_location));
         }
         return nullptr;
     }
 
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() && right->IntValue(), m_location));
+    if (this_true == 1 && right_true == 1) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else if (this_true == 0 && right_true == 0) {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    } else {
+        // indeterminate
+        return nullptr;
+    }
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator||(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::operator||(AstConstant *right) const
 {
+    int this_true = IsTrue();
+    int right_true = right->IsTrue();
+
     if (!right->IsNumber()) {
         // this operator is valid to compare against null
         AstNull *ast_null = dynamic_cast<AstNull*>(right);
         if (ast_null != nullptr) {
-            return std::shared_ptr<AstInteger>(
-                new AstInteger(IntValue() || 0, m_location));
+            if (this_true == 1) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else if (this_true == 0) {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            }
         }
         return nullptr;
     }
 
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() || right->IntValue(), m_location));
+    if (this_true == 1 || right_true == 1) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else if (this_true == 0 || right_true == 0) {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    } else {
+        // indeterminate
+        return nullptr;
+    }
 }
 
 std::shared_ptr<AstConstant> AstInteger::Equals(AstConstant *right) const

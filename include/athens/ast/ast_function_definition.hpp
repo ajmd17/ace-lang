@@ -4,6 +4,7 @@
 #include <athens/ast/ast_declaration.hpp>
 #include <athens/ast/ast_parameter.hpp>
 #include <athens/ast/ast_block.hpp>
+#include <athens/ast/ast_type_specification.hpp>
 
 #include <memory>
 #include <vector>
@@ -12,6 +13,7 @@ class AstFunctionDefinition : public AstDeclaration {
 public:
     AstFunctionDefinition(const std::string &name,
         const std::vector<std::shared_ptr<AstParameter>> &parameters,
+        const std::shared_ptr<AstTypeSpecification> &type_specification,
         const std::shared_ptr<AstBlock> &block,
         const SourceLocation &location);
     virtual ~AstFunctionDefinition() = default;
@@ -22,6 +24,7 @@ public:
 
 protected:
     std::vector<std::shared_ptr<AstParameter>> m_parameters;
+    std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstBlock> m_block;
 
     // set while compiling

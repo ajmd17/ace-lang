@@ -26,6 +26,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_invalid_constructor, "invalid constructor" },
     { Msg_expected_type_got_identifier, "'%' is an identifier, expected a type" },
     { Msg_missing_type_and_assignment, "no type or assignment has been provided for '%'" },
+    { Msg_function_missing_return_type, "function '%' is missing return type" },
     { Msg_unknown_type, "unknown type, '%'" },
     { Msg_redeclared_type, "type '%' has already been declared in this module" },
     { Msg_mismatched_types, "mismatched types '%' and '%'" },

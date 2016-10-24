@@ -3,15 +3,20 @@
 #include <athens/emit/static_object.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/module.hpp>
+#include <athens/object_type.hpp>
 
 #include <common/instructions.hpp>
 
+#include <iostream>
+
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
     const std::vector<std::shared_ptr<AstParameter>> &parameters,
+    const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstBlock> &block,
     const SourceLocation &location)
     : AstDeclaration(name, location),
       m_parameters(parameters),
+      m_type_specification(type_specification),
       m_block(block),
       m_static_id(0)
 {
@@ -19,6 +24,9 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
 
 void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 {
+    ObjectType object_type;
+    std::vector<ObjectType> param_types;
+
     // open the new scope for parameters
     mod->m_scopes.Open(Scope());
 
@@ -26,7 +34,24 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
         if (param != nullptr) {
             // add the identifier to the table
             param->Visit(visitor, mod);
+
+            // add the param's type to param_types
+            if (param->GetIdentifier() != nullptr) {
+                param_types.push_back(param->GetIdentifier()->GetObjectType());
+            } else {
+                // bad parameter
+                param_types.push_back(ObjectType::type_builtin_undefined);
+            }
         }
+    }
+
+    // TODO: Make it deduce return type
+    if (m_type_specification == nullptr) {
+        visitor->GetCompilationUnit()->GetErrorList().AddError(
+            CompilerError(Level_fatal, Msg_function_missing_return_type, m_location, m_name));
+    } else {
+        m_type_specification->Visit(visitor, mod);
+        object_type = ObjectType::MakeFunctionType(m_type_specification->GetObjectType(), param_types);
     }
 
     // function body
@@ -40,7 +65,10 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
-    // functions are const implicitly
+    std::cout << "object_type = " << object_type.ToString() << "\n";
+
+    m_identifier->SetObjectType(object_type);
+    // functions are implicitly const
     m_identifier->SetFlags(FLAG_CONST);
 }
 

@@ -627,11 +627,20 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition()
             Expect(Token_close_parenthesis, true);
         }
 
+        // TODO: Be able to deduce return type
+        // for now, just require explicit type specification.
+        std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
+        if (Match(Token_colon, true)) {
+            // read object type
+            type_spec = ParseTypeSpecification();
+        }
+
         // parse function block
         block = ParseBlock();
 
         return std::shared_ptr<AstFunctionDefinition>(
-            new AstFunctionDefinition(identifier->GetValue(), parameters, block, token->GetLocation()));
+            new AstFunctionDefinition(identifier->GetValue(),
+                parameters, type_spec, block, token->GetLocation()));
 
     }
 

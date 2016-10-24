@@ -3,6 +3,6 @@
  var y = 7;
 print ("(Mod2) y = ", y)
 
-func printstr (obj) {
+func printstr (obj) : Any {
     print("obj = ", obj);
 }

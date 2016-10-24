@@ -3,22 +3,26 @@ import "mod2.ace"
 
 var teststr = "sup";
 
-var num: Number = 4 + 22.5; // legal
+
+var num: Number = 4 // legal
 //var myint: Int = 4 + 22.5; // illegal
+print("num = ", num);
+print("num * 23 = ", num * 23);
+
 Mod2.printstr(teststr);
 teststr.Mod2.printstr();
 
 "hi, this is a test of calling a function on a string literal".Mod2.printstr()
 
-func println (obj) {
+func println (obj) : Any {
     print (obj);
 }
 
 print("Mod2.y = ", Mod2.y)
 
-func blah (arg1) {
+func blah (arg1) : Int {
     print ("arg1 = ", arg1)
-    func inner (a, b) {
+    func inner (a, b) : Int {
         print ("(inner) a = ", a, "    b = ", b);
     }
     inner ("sup", arg1);

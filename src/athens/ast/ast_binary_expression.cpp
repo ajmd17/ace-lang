@@ -120,6 +120,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             opcode = SUB;
         } else if (m_op == &Operator::operator_multiply) {
             opcode = MUL;
+        } else if (m_op == &Operator::operator_divide) {
+            opcode = DIV;
         }
         // TODO: handle more operators
 
@@ -526,6 +528,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 opcode = SUB;
             } else if (m_op == &Operator::operator_multiply_assign) {
                 opcode = MUL;
+            } else if (m_op == &Operator::operator_divide_assign) {
+                opcode = DIV;
             }
 
             // load right-hand side into register 0
@@ -612,7 +616,7 @@ ObjectType AstBinaryExpression::GetObjectType() const
         right_type.ToString() == ObjectType::type_builtin_any.ToString())) {
         // special case for assignment operators.
         // cannot set a strict type to 'Any'.
-       return ObjectType::type_builtin_void;
+       return ObjectType::type_builtin_undefined;
     }
 
     return ObjectType::FindCompatibleType(left_type, right_type);

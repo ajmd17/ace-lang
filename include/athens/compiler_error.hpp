@@ -39,6 +39,7 @@ enum ErrorMessage {
     Msg_invalid_constructor,
     Msg_expected_type_got_identifier,
     Msg_missing_type_and_assignment,
+    Msg_function_missing_return_type,
     Msg_unknown_type,
     Msg_redeclared_type,
     Msg_mismatched_types,

@@ -1,4 +1,4 @@
-#ifndef TYPSDEFS_HPP
+#ifndef TYPEDEFS_HPP
 #define TYPEDEFS_HPP
 
 #include <cstdint>

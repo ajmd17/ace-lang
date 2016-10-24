@@ -1,5 +1,6 @@
 #include <athens/object_type.hpp>
 #include <athens/ast/ast_expression.hpp>
+#include <athens/ast/ast_undefined.hpp>
 #include <athens/ast/ast_void.hpp>
 #include <athens/ast/ast_null.hpp>
 #include <athens/ast/ast_false.hpp>
@@ -8,6 +9,7 @@
 #include <athens/ast/ast_string.hpp>
 
 const ObjectType
+    ObjectType::type_builtin_undefined("Undefined", std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof))),
     ObjectType::type_builtin_void("Void", std::shared_ptr<AstVoid>(new AstVoid(SourceLocation::eof))),
     ObjectType::type_builtin_any("Any", std::shared_ptr<AstNull>(new AstNull(SourceLocation::eof))),
     ObjectType::type_builtin_bool("Bool", std::shared_ptr<AstFalse>(new AstFalse(SourceLocation::eof))),
@@ -18,7 +20,9 @@ const ObjectType
 
 const ObjectType *ObjectType::GetBuiltinType(const std::string &str)
 {
-    if (str == type_builtin_void.ToString()) {
+    if (str == type_builtin_undefined.ToString()) {
+        return &type_builtin_undefined;
+    } else if (str == type_builtin_void.ToString()) {
         return &type_builtin_void;
     } else if (str == type_builtin_any.ToString()) {
         return &type_builtin_any;
@@ -67,11 +71,31 @@ ObjectType::ObjectType(const ObjectType &other)
 {
 }
 
+ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types)
+{
+    std::string type_str = "Function (" + return_type.ToString() + ") ";
+    if (!param_types.empty()) {
+        for (int i = 0; i < param_types.size(); i++) {
+            type_str += "(" + param_types[i].ToString() + ")";
+            if (i != param_types.size() - 1) {
+                type_str +=  " ";
+            }
+        }
+    } else {
+        type_str += "(Void)";
+    }
+
+    return ObjectType(type_str, std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
+}
+
 bool ObjectType::TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers) {
     std::string left_str = left.ToString();
     std::string right_str = right.ToString();
 
-    if (left_str == right_str || left_str == type_builtin_any.ToString()) {
+    if (left_str == type_builtin_undefined.ToString() || right_str == type_builtin_undefined.ToString()) {
+        // nothing is compatible with Undefined!
+        return false;
+    } else if (left_str == right_str || left_str == type_builtin_any.ToString()) {
         return true;
     } else if (left_str == type_builtin_number.ToString()) {
         // if the type Number is specified, it could be either Int or Float.
@@ -94,31 +118,31 @@ ObjectType ObjectType::FindCompatibleType(const ObjectType &left, const ObjectTy
 
     if (left_str == right_str) {
         return left;
-    } else if (left_str == type_builtin_void.ToString() ||
-               right_str == type_builtin_void.ToString()) {
-        return type_builtin_void;
+    } else if (left_str == type_builtin_undefined.ToString() ||
+               right_str == type_builtin_undefined.ToString()) {
+        return type_builtin_undefined;
     } else if (left_str == type_builtin_any.ToString() ||
                right_str == type_builtin_any.ToString()) {
         return type_builtin_any;
     } else if (left_str == type_builtin_number.ToString()) {
         return (right_str == type_builtin_int.ToString() ||
-                right_str == type_builtin_float.ToString()) ? left : type_builtin_void;
+                right_str == type_builtin_float.ToString()) ? left : type_builtin_undefined;
     } else if (left_str == type_builtin_int.ToString()) {
         return (right_str == type_builtin_number.ToString() ||
-                right_str == type_builtin_float.ToString()) ? right : type_builtin_void;
+                right_str == type_builtin_float.ToString()) ? right : type_builtin_undefined;
     } else if (left_str == type_builtin_float.ToString()) {
         return (right_str == type_builtin_number.ToString() ||
-                right_str == type_builtin_int.ToString()) ? left : type_builtin_void;
+                right_str == type_builtin_int.ToString()) ? left : type_builtin_undefined;
     } else if (right_str == type_builtin_number.ToString()) {
         return (left_str == type_builtin_int.ToString() ||
-                left_str == type_builtin_float.ToString()) ? right : type_builtin_void;
+                left_str == type_builtin_float.ToString()) ? right : type_builtin_undefined;
     } else if (right_str == type_builtin_int.ToString()) {
         return (left_str == type_builtin_number.ToString() ||
-                left_str == type_builtin_float.ToString()) ? left : type_builtin_void;
+                left_str == type_builtin_float.ToString()) ? left : type_builtin_undefined;
     } else if (right_str == type_builtin_float.ToString()) {
         return (left_str == type_builtin_number.ToString() ||
-                left_str == type_builtin_int.ToString()) ? right : type_builtin_void;
+                left_str == type_builtin_int.ToString()) ? right : type_builtin_undefined;
     }
 
-    return type_builtin_void;
+    return type_builtin_undefined;
 }

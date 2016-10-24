@@ -1,12 +1,10 @@
 module ExampleProgram
 import "mod2.ace"
 
-var teststr: String = "sup";
+var teststr = "sup";
 
 var num: Number = 4 + 22.5; // legal
 //var myint: Int = 4 + 22.5; // illegal
-print("x1 = ", x1);
-
 Mod2.printstr(teststr);
 teststr.Mod2.printstr();
 

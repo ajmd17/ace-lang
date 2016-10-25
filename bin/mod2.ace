@@ -1,6 +1,6 @@
- module Mod2
+module Mod2
 
- var y = 7;
+let y = 7;
 print ("(Mod2) y = ", y)
 
 func printstr (obj) : Any {

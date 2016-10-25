@@ -186,7 +186,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
     if (Match(Token_keyword, false)) {
         if (MatchKeyword(Keyword_import, false)) {
             return ParseImport();
-        } else if (MatchKeyword(Keyword_var, false)) {
+        } else if (MatchKeyword(Keyword_let, false)) {
             return ParseVariableDeclaration();
         } else if (MatchKeyword(Keyword_func, false)) {
             return ParseFunctionDefinition();
@@ -244,8 +244,10 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         return nullptr;
     }
 
-    if (Match(Token_dot, false)) {
-        return ParseMemberAccess(expr);
+    if (expr != nullptr) {
+        if (Match(Token_dot, false)) {
+            return ParseMemberAccess(expr);
+        }
     }
 
     return expr;
@@ -285,17 +287,21 @@ std::shared_ptr<AstString> Parser::ParseStringLiteral()
 std::shared_ptr<AstIdentifier> Parser::ParseIdentifier()
 {
     const Token *token = Expect(Token_identifier, false);
-    if (MatchAhead(Token_open_parenthesis, 1)) {
-        // function call
-        return ParseFunctionCall();
-    } else {
-        // read identifier token
-        m_token_stream->Next();
+    if (token != nullptr) {
+        if (MatchAhead(Token_open_parenthesis, 1)) {
+            // function call
+            return ParseFunctionCall();
+        } else {
+            // read identifier token
+            m_token_stream->Next();
 
-        // return variable
-        return std::shared_ptr<AstVariable>(
-            new AstVariable(token->GetValue(), token->GetLocation()));
+            // return variable
+            return std::shared_ptr<AstVariable>(
+                new AstVariable(token->GetValue(), token->GetLocation()));
+        }
     }
+
+    return nullptr;
 }
 
 std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
@@ -415,32 +421,28 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
 {
     const Token *token = ExpectKeyword(Keyword_print, true);
     if (token != nullptr) {
-        bool has_parentheses = false;
-        if (Match(Token_open_parenthesis, true)) {
-            has_parentheses = true;
-        }
-
         std::vector<std::shared_ptr<AstExpression>> arguments;
 
-        while (true) {
-            SourceLocation loc(CurrentLocation());
-            auto expr = ParseExpression();
+        // print statement now requires parentheses
+        if (Expect(Token_open_parenthesis, true)) {
+            while (true) {
+                SourceLocation loc(CurrentLocation());
+                auto expr = ParseExpression();
 
-            if (expr == nullptr) {
-                // expression or statement could not be evaluated
-                CompilerError error(Level_fatal, Msg_illegal_expression, loc);
-                m_compilation_unit->GetErrorList().AddError(error);
+                if (expr == nullptr) {
+                    // expression or statement could not be evaluated
+                    CompilerError error(Level_fatal, Msg_illegal_expression, loc);
+                    m_compilation_unit->GetErrorList().AddError(error);
 
-            } else {
-                arguments.push_back(expr);
+                } else {
+                    arguments.push_back(expr);
+                }
+
+                if (!Match(Token_comma, true)) {
+                    break;
+                }
             }
 
-            if (!Match(Token_comma, true)) {
-                break;
-            }
-        }
-
-        if (has_parentheses) {
             Expect(Token_close_parenthesis, true);
         }
 
@@ -549,10 +551,10 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
 
 std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
 {
-    const Token *token = ExpectKeyword(Keyword_var, true);
+    const Token *token = ExpectKeyword(Keyword_let, true);
     const Token *identifier = Expect(Token_identifier, true);
 
-    if (identifier != nullptr) {
+    if (token != nullptr && identifier != nullptr) {
         std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
 
         if (Match(Token_colon, true)) {

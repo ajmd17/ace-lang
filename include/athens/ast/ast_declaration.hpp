@@ -3,6 +3,7 @@
 
 #include <athens/ast/ast_statement.hpp>
 #include <athens/identifier.hpp>
+#include <athens/object_type.hpp>
 
 #include <string>
 
@@ -13,6 +14,7 @@ public:
 
     inline const std::string &GetName() const { return m_name; }
     inline Identifier *GetIdentifier() const { return m_identifier; }
+    ObjectType GetObjectType() const;
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override = 0;

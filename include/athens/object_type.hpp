@@ -25,6 +25,9 @@ public:
         type_builtin_string;
 
     static const ObjectType *GetBuiltinType(const std::string &str);
+    static ObjectType MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types);
+    static bool TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers = false);
+    static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right);
 
 public:
     ObjectType();
@@ -37,14 +40,12 @@ public:
 
     inline const std::vector<DataMember_t> &GetDataMembers() const { return m_data_members; }
     bool HasDataMember(const std::string &name) const;
-    const ObjectType &GetDataMemberType(const std::string &name) const;
+    ObjectType GetDataMemberType(const std::string &name) const;
     void AddDataMember(const DataMember_t &data_member);
 
     inline std::shared_ptr<AstExpression> GetDefaultValue() const { return m_default_value; }
 
-    static ObjectType MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types);
-    static bool TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers = false);
-    static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right);
+    inline bool operator==(const ObjectType &other) const { return m_str == other.m_str; }
 
 protected:
     std::string m_str;

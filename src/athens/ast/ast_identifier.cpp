@@ -28,5 +28,8 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
 
 ObjectType AstIdentifier::GetObjectType() const
 {
-    return m_identifier->GetObjectType();
+    if (m_identifier != nullptr) {
+        return m_identifier->GetObjectType();
+    }
+    return ObjectType::type_builtin_undefined;
 }

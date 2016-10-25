@@ -5,11 +5,11 @@
 #include <string>
 
 enum OperatorType {
-    ARITHMETIC,
-    BITWISE,
-    LOGICAL,
-    COMPARISON,
-    ASSIGNMENT,
+    ARITHMETIC = 1,
+    BITWISE = 2,
+    LOGICAL = 4,
+    COMPARISON = 8,
+    ASSIGNMENT = 16,
 };
 
 class Operator {
@@ -63,19 +63,19 @@ public:
 
 public:
     Operator(const std::string &str,
-        int precedence, OperatorType type, bool modifies_value = false);
+        int precedence, int type, bool modifies_value = false);
     Operator(const Operator &other) = delete;
 
     inline const std::string &ToString() const { return m_str; }
     inline int GetPrecedence() const { return m_precedence; }
     inline bool IsUnary() const { return m_precedence == 0; }
-    inline OperatorType GetType() const { return m_type; }
+    inline int GetType() const { return m_type; }
     inline bool ModifiesValue() const { return m_modifies_value; }
 
 private:
     std::string m_str;
     int m_precedence;
-    OperatorType m_type;
+    int m_type;
     bool m_modifies_value;
 };
 

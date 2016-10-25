@@ -6,6 +6,8 @@
 
 #include <common/instructions.hpp>
 
+#include <cassert>
+
 AstFunctionCall::AstFunctionCall(const std::string &name,
         const std::vector<std::shared_ptr<AstExpression>> &args, const SourceLocation &location)
     : AstIdentifier(name, location),
@@ -27,6 +29,8 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
 void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
 {
+    assert(m_identifier != nullptr);
+
     int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int stack_location = m_identifier->GetStackLocation();
     int offset = stack_size - stack_location;

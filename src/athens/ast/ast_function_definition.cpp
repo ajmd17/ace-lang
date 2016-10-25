@@ -8,6 +8,7 @@
 #include <common/instructions.hpp>
 
 #include <iostream>
+#include <cassert>
 
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
     const std::vector<std::shared_ptr<AstParameter>> &parameters,
@@ -24,6 +25,12 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
 
 void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 {
+    if (mod->m_scopes.TopNode()->m_parent == nullptr) {
+        std::cout << "<" << m_name << "> at global scope\n";
+    } else {
+        std::cout << "<" << m_name << "> at local scope\n";
+    }
+
     ObjectType object_type;
     std::vector<ObjectType> param_types;
 
@@ -65,11 +72,11 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
-    std::cout << "object_type = " << object_type.ToString() << "\n";
+    assert(m_identifier != nullptr);
 
-    m_identifier->SetObjectType(object_type);
     // functions are implicitly const
     m_identifier->SetFlags(FLAG_CONST);
+    m_identifier->SetObjectType(object_type);
 }
 
 void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)

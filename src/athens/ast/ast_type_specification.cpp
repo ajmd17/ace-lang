@@ -30,7 +30,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 } else {
                     // error, unknown type
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_unknown_type, m_location, m_left));
+                        CompilerError(Level_fatal, Msg_undefined_type, m_location, m_left));
                 }
             }
         } else {

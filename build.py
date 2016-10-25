@@ -1,6 +1,6 @@
 import os
 
-options = ""
+options = "-g"
 
 src_dir = "./src"
 bin_dir = "./bin"

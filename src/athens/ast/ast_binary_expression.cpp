@@ -80,17 +80,30 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     ObjectType right_type = m_right->GetObjectType();
 
     if (m_op->ModifiesValue()) {
-        visitor->Assert(ObjectType::TypeCompatible(left_type, right_type, true),
-            CompilerError(Level_fatal, Msg_mismatched_types,
-                m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
+        if (m_op->GetType() & BITWISE) {
+            // no bitwise operators on floats allowed.
+            // do not allow right-hand side to be 'Any', because it might change the data type.
+            visitor->Assert((left_type  == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any) &&
+                            (right_type == ObjectType::type_builtin_int),
+                CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int, m_left->GetLocation(),
+                    left_type.ToString(), right_type.ToString()));
+        }
+
+        if (!ObjectType::TypeCompatible(left_type, right_type, true)) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_mismatched_types,
+                    m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
+        }
 
         AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get());
         if (left_as_var != nullptr) {
             if (left_as_var->GetIdentifier() != nullptr) {
                 // make sure we are not modifying a const
-                visitor->Assert(!(left_as_var->GetIdentifier()->GetFlags() & FLAG_CONST),
-                    CompilerError(Level_fatal, Msg_const_modified,
-                        m_left->GetLocation(), left_as_var->GetName()));
+                if (left_as_var->GetIdentifier()->GetFlags() & FLAG_CONST) {
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_const_modified,
+                            m_left->GetLocation(), left_as_var->GetName()));
+                }
             }
         } else {
             // cannot modify an rvalue
@@ -99,11 +112,25 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                     m_left->GetLocation()));
         }
     } else {
-        // types still matter, but Any will be allowed.
-        visitor->Assert(right_type.ToString() == ObjectType::type_builtin_any.ToString() ||
-                        ObjectType::TypeCompatible(left_type, right_type, false),
-            CompilerError(Level_fatal, Msg_mismatched_types,
-                m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
+
+        // allow 'Any' on right-hand side because we're not modifying value
+        if (m_op->GetType() & BITWISE) {
+            // no bitwise operators on floats allowed.
+            if (!((left_type  == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any) &&
+                  (right_type == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any))) {
+                visitor->GetCompilationUnit()->GetErrorList().AddError(
+                    CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int,
+                        m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
+            }
+        }
+
+        // compare both sides because assignment does not matter in this case
+        if (!(ObjectType::TypeCompatible(left_type,  right_type, false) ||
+              ObjectType::TypeCompatible(right_type, left_type,  false))) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_mismatched_types,
+                    m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
+        }
     }
 }
 
@@ -159,6 +186,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
             }
         }
+    } else if (m_op->GetType() == BITWISE) {
+
     } else if (m_op->GetType() == LOGICAL) {
         std::shared_ptr<AstExpression> first = nullptr;
         std::shared_ptr<AstExpression> second = nullptr;
@@ -497,7 +526,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 m_left->Build(visitor, mod);
             }
         }
-    } else if (m_op->GetType() == ASSIGNMENT) {
+    } else if (m_op->GetType() & ASSIGNMENT) {
         if (m_op == &Operator::operator_assign) {
             // load right-hand side into register 0
             m_right->Build(visitor, mod);
@@ -508,7 +537,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
             // get stack offset of left-hand side
             AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get());
-            if (left_as_var != nullptr) {
+            if (left_as_var != nullptr && left_as_var->GetIdentifier() != nullptr) {
                 int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
                 int stack_location = left_as_var->GetIdentifier()->GetStackLocation();
                 int offset = stack_size - stack_location;
@@ -547,7 +576,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
             // now move the result into the left hand side
             auto left_as_var = std::dynamic_pointer_cast<AstVariable>(m_left);
-            if (left_as_var != nullptr) {
+            if (left_as_var != nullptr && left_as_var->GetIdentifier() != nullptr) {
                 int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
                 int stack_location = left_as_var->GetIdentifier()->GetStackLocation();
                 int offset = stack_size - stack_location;

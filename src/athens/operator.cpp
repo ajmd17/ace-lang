@@ -31,22 +31,22 @@ const Operator
 
     // Assignment operators
     Operator::operator_assign("=", 2, ASSIGNMENT, true),
-    Operator::operator_add_assign("+=", 2, ASSIGNMENT, true),
-    Operator::operator_subtract_assign("-=", 2, ASSIGNMENT, true),
-    Operator::operator_multiply_assign("*=", 2, ASSIGNMENT, true),
-    Operator::operator_divide_assign("/=", 2, ASSIGNMENT, true),
-    Operator::operator_modulus_assign("%=", 2, ASSIGNMENT, true),
-    Operator::operator_bitwise_xor_assign("^=", 2, ASSIGNMENT, true),
-    Operator::operator_bitwise_and_assign("&=", 2, ASSIGNMENT, true),
-    Operator::operator_bitwise_or_assign("|=", 2, ASSIGNMENT, true),
+    Operator::operator_add_assign("+=", 2, ASSIGNMENT | ARITHMETIC, true),
+    Operator::operator_subtract_assign("-=", 2, ASSIGNMENT | ARITHMETIC, true),
+    Operator::operator_multiply_assign("*=", 2, ASSIGNMENT | ARITHMETIC, true),
+    Operator::operator_divide_assign("/=", 2, ASSIGNMENT | ARITHMETIC, true),
+    Operator::operator_modulus_assign("%=", 2, ASSIGNMENT | ARITHMETIC, true),
+    Operator::operator_bitwise_xor_assign("^=", 2, ASSIGNMENT | BITWISE, true),
+    Operator::operator_bitwise_and_assign("&=", 2, ASSIGNMENT | BITWISE, true),
+    Operator::operator_bitwise_or_assign("|=", 2, ASSIGNMENT | BITWISE, true),
 
     // Unary operators
     Operator::operator_logical_not("!", 0, LOGICAL),
     Operator::operator_negative("-", 0, ARITHMETIC),
     Operator::operator_positive("+", 0, ARITHMETIC),
     Operator::operator_bitwise_complement("~", 0, BITWISE),
-    Operator::operator_increment("++", 0, ASSIGNMENT, true),
-    Operator::operator_decrement("--", 0, ASSIGNMENT, true);
+    Operator::operator_increment("++", 0, ASSIGNMENT | ARITHMETIC, true),
+    Operator::operator_decrement("--", 0, ASSIGNMENT | ARITHMETIC, true);
 
 bool Operator::IsOperator(const std::string &str)
 {
@@ -141,7 +141,7 @@ bool Operator::IsUnaryOperator(const std::string &str, const Operator *&out)
 }
 
 Operator::Operator(const std::string &str,
-    int precedence, OperatorType type, bool modifies_value)
+    int precedence, int type, bool modifies_value)
     : m_str(str),
       m_precedence(precedence),
       m_type(type),

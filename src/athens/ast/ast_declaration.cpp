@@ -27,3 +27,11 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
         m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
     }
 }
+
+ObjectType AstDeclaration::GetObjectType() const
+{
+    if (m_identifier != nullptr) {
+        return m_identifier->GetObjectType();
+    }
+    return ObjectType::type_builtin_undefined;
+}

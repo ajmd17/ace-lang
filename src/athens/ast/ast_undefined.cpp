@@ -39,62 +39,62 @@ std::shared_ptr<AstConstant> AstUndefined::operator+(AstConstant *right) const
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator-(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator-(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator*(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator*(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator/(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator/(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator%(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator%(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator^(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator^(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator&(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator&(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator|(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator|(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator<<(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator<<(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator>>(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator>>(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator&&(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator&&(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator||(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::operator||(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }
 
-std::shared_ptr<AstConstant> AstVoid::Equals(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::Equals(AstConstant *right) const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
 }

@@ -41,36 +41,6 @@ const ObjectType *ObjectType::GetBuiltinType(const std::string &str)
     return nullptr;
 }
 
-ObjectType::ObjectType()
-    : m_str("Any"),
-      m_default_value(std::shared_ptr<AstNull>(
-          new AstNull(SourceLocation::eof)))
-{
-}
-
-ObjectType::ObjectType(const std::string &str,
-    std::shared_ptr<AstExpression> default_value)
-    : m_str(str),
-      m_default_value(default_value)
-{
-}
-
-ObjectType::ObjectType(const std::string &str,
-    std::shared_ptr<AstExpression> default_value,
-    const std::vector<DataMember_t> &data_members)
-    : m_str(str),
-      m_default_value(default_value),
-      m_data_members(data_members)
-{
-}
-
-ObjectType::ObjectType(const ObjectType &other)
-    : m_str(other.m_str),
-      m_default_value(other.m_default_value),
-      m_data_members(other.m_data_members)
-{
-}
-
 ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types)
 {
     std::string type_str = "Function (" + return_type.ToString() + ") ";
@@ -92,7 +62,7 @@ bool ObjectType::TypeCompatible(const ObjectType &left, const ObjectType &right,
     std::string left_str = left.ToString();
     std::string right_str = right.ToString();
 
-    if (left_str == type_builtin_undefined.ToString() || right_str == type_builtin_undefined.ToString()) {
+    if (right_str == type_builtin_undefined.ToString()) {
         // nothing is compatible with Undefined!
         return false;
     } else if (left_str == right_str || left_str == type_builtin_any.ToString()) {
@@ -145,4 +115,59 @@ ObjectType ObjectType::FindCompatibleType(const ObjectType &left, const ObjectTy
     }
 
     return type_builtin_undefined;
+}
+
+ObjectType::ObjectType()
+    : m_str("Any"),
+      m_default_value(std::shared_ptr<AstNull>(
+          new AstNull(SourceLocation::eof)))
+{
+}
+
+ObjectType::ObjectType(const std::string &str,
+    std::shared_ptr<AstExpression> default_value)
+    : m_str(str),
+      m_default_value(default_value)
+{
+}
+
+ObjectType::ObjectType(const std::string &str,
+    std::shared_ptr<AstExpression> default_value,
+    const std::vector<DataMember_t> &data_members)
+    : m_str(str),
+      m_default_value(default_value),
+      m_data_members(data_members)
+{
+}
+
+ObjectType::ObjectType(const ObjectType &other)
+    : m_str(other.m_str),
+      m_default_value(other.m_default_value),
+      m_data_members(other.m_data_members)
+{
+}
+
+bool ObjectType::HasDataMember(const std::string &name) const
+{
+    for (const DataMember_t &dm : m_data_members) {
+        if (dm.first == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+ObjectType ObjectType::GetDataMemberType(const std::string &name) const
+{
+    for (const DataMember_t &dm : m_data_members) {
+        if (dm.first == name) {
+            return dm.second;
+        }
+    }
+    return type_builtin_undefined;
+}
+
+void ObjectType::AddDataMember(const DataMember_t &data_member)
+{
+    m_data_members.push_back(data_member);
 }

@@ -49,13 +49,18 @@ if abc {
 type Customer {
     let id: Int;
     let name: String;
-    func tostring(self: Customer):String {
-        return self.name;
+
+    func tostring(self): String {
+        print("hello");
     }
 }
 
-let cust: Customer;
-customer.tostring();   //== Customer.tostring(p);
+func NewCustomer() : Customer {
+    print("Customer constructor")
+}
+
+let cust = NewCustomer();
+//cust.tostring();   //== Customer.tostring(p);
 
 let x = null
 print ("x == ", x)

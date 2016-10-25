@@ -30,6 +30,9 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
         } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
             label_offset += sizeof(uint32_t); // address
             label_offset += sizeof(uint8_t); // num args
+        } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
+            label_offset += sizeof(uint8_t); // type size
+            // ignore type name for now
         }
     }
 
@@ -53,6 +56,11 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
             Instruction<uint8_t, uint32_t, uint8_t> store_ins(STORE_STATIC_FUNCTION,
                 so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
 
+            for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
+                os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+            }
+        } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
+            Instruction<uint8_t, uint8_t> store_ins(STORE_STATIC_TYPE, so.m_value.type_info.m_size);
             for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
                 os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
             }

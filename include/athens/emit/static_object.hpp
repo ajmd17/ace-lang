@@ -8,6 +8,11 @@ struct StaticFunction {
     uint8_t m_nargs;
 };
 
+struct StaticTypeInfo {
+    uint8_t m_size;
+    char *m_name;
+};
+
 struct StaticObject {
     int m_id;
 
@@ -15,19 +20,22 @@ struct StaticObject {
         int lbl;
         char *str;
         StaticFunction func;
+        StaticTypeInfo type_info;
     } m_value;
 
     enum {
         TYPE_NONE = 0,
         TYPE_LABEL,
         TYPE_STRING,
-        TYPE_FUNCTION
+        TYPE_FUNCTION,
+        TYPE_TYPE_INFO
     } m_type;
 
     StaticObject();
     explicit StaticObject(int i);
     explicit StaticObject(const char *str);
-    explicit StaticObject(StaticFunction func);
+    explicit StaticObject(const StaticFunction &func);
+    explicit StaticObject(const StaticTypeInfo &type_info);
     StaticObject(const StaticObject &other);
     ~StaticObject();
 

@@ -45,12 +45,17 @@ public:
 
     inline std::shared_ptr<AstExpression> GetDefaultValue() const { return m_default_value; }
 
-    inline bool operator==(const ObjectType &other) const { return m_str == other.m_str; }
+    inline int GetStaticId() const { return m_static_id; }
+    // must be set during type definiton analyzing
+    inline void SetStaticId(int static_id) { m_static_id = static_id; }
+
+    inline bool operator==(const ObjectType &other) const { return m_str == other.m_str && m_static_id == other.m_static_id; }
 
 protected:
     std::string m_str;
     std::shared_ptr<AstExpression> m_default_value;
     std::vector<DataMember_t> m_data_members;
+    int m_static_id;
 };
 
 #endif

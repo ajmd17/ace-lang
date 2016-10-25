@@ -25,12 +25,6 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
 
 void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 {
-    if (mod->m_scopes.TopNode()->m_parent == nullptr) {
-        std::cout << "<" << m_name << "> at global scope\n";
-    } else {
-        std::cout << "<" << m_name << "> at local scope\n";
-    }
-
     ObjectType object_type;
     std::vector<ObjectType> param_types;
 

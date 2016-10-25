@@ -41,7 +41,6 @@ enum ErrorMessage {
     Msg_missing_type_and_assignment,
     Msg_function_missing_return_type,
     Msg_undefined_type,
-    Msg_redeclared_data_member,
     Msg_redefined_type,
     Msg_mismatched_types,
     Msg_bitwise_operands_must_be_int,

@@ -37,7 +37,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
             m_bs.Read(&len);
 
             char *str = new char[len + 1];
-            std::memset(str, 0, len + 1);
+            str[len] = '\0';
             m_bs.Read(str, len);
 
             if (os != nullptr) {
@@ -98,6 +98,36 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
             }
 
             is << Instruction<uint8_t, uint32_t, uint8_t>(code, addr, nargs);
+
+            break;
+        }
+        case STORE_STATIC_TYPE:
+        {
+            uint8_t size;
+            m_bs.Read(&size);
+
+            /*uint32_t namelen;
+            m_bs.Read(&namelen);
+
+            char *name = new char[namelen + 1];
+            name[namelen] = '\0';
+            m_bs.Read(name, namelen);*/
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "type ["
+                        << "u8(" << (int)size << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, size);
+
+            //delete[] name;
 
             break;
         }

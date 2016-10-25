@@ -25,9 +25,10 @@ enum Instructions : char {
     NOP = 0x00, // nop
 
     /* Store values in static memory */
-    STORE_STATIC_STRING,   // static_str  [u32 len, i8[] str]
-    STORE_STATIC_ADDRESS,  // static_addr [@ addr]
-    STORE_STATIC_FUNCTION, // static_func [@ addr, u8 nargs]
+    STORE_STATIC_STRING,   // str  [u32 len, i8[] str]
+    STORE_STATIC_ADDRESS,  // addr [@ addr]
+    STORE_STATIC_FUNCTION, // func [@ addr, u8 nargs]
+    STORE_STATIC_TYPE,     // type [u8 size]
 
     /* Load a value into a register */
     LOAD_I32,    // load_i32    [% reg, i32 val]

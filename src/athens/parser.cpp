@@ -190,6 +190,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
             return ParseVariableDeclaration();
         } else if (MatchKeyword(Keyword_func, false)) {
             return ParseFunctionDefinition();
+        } else if (MatchKeyword(Keyword_type, false)) {
+            return ParseTypeDefinition();
         } else if (MatchKeyword(Keyword_if, false)) {
             return ParseIfStatement();
         } else if (MatchKeyword(Keyword_print, false)) {
@@ -643,7 +645,42 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition()
         return std::shared_ptr<AstFunctionDefinition>(
             new AstFunctionDefinition(identifier->GetValue(),
                 parameters, type_spec, block, token->GetLocation()));
+    }
 
+    return nullptr;
+}
+
+std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
+{
+    const Token *token = ExpectKeyword(Keyword_type, true);
+    const Token *identifier = Expect(Token_identifier, true);
+
+    if (token != nullptr && identifier != nullptr) {
+        std::vector<std::shared_ptr<AstDeclaration>> members;
+
+        if (Expect(Token_open_brace, true)) {
+            while (!Match(Token_close_brace, true)) {
+                // read past semicolons
+                while (Match(Token_semicolon, true));
+                
+                if (MatchKeyword(Keyword_let, false)) {
+                    members.push_back(ParseVariableDeclaration());
+                } else if (MatchKeyword(Keyword_func, false)) {
+                    members.push_back(ParseFunctionDefinition());
+                } else {
+                    // error; unexpected token
+                    CompilerError error(Level_fatal, Msg_unexpected_token,
+                        m_token_stream->Peek()->GetLocation(),
+                        m_token_stream->Peek()->GetValue());
+                    m_compilation_unit->GetErrorList().AddError(error);
+
+                    m_token_stream->Next();
+                }
+            }
+        }
+
+        return std::shared_ptr<AstTypeDefinition>(
+            new AstTypeDefinition(identifier->GetValue(), members, token->GetLocation()));
     }
 
     return nullptr;

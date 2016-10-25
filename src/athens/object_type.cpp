@@ -120,14 +120,16 @@ ObjectType ObjectType::FindCompatibleType(const ObjectType &left, const ObjectTy
 ObjectType::ObjectType()
     : m_str("Any"),
       m_default_value(std::shared_ptr<AstNull>(
-          new AstNull(SourceLocation::eof)))
+          new AstNull(SourceLocation::eof))),
+      m_static_id(0)
 {
 }
 
 ObjectType::ObjectType(const std::string &str,
     std::shared_ptr<AstExpression> default_value)
     : m_str(str),
-      m_default_value(default_value)
+      m_default_value(default_value),
+      m_static_id(0)
 {
 }
 
@@ -136,14 +138,16 @@ ObjectType::ObjectType(const std::string &str,
     const std::vector<DataMember_t> &data_members)
     : m_str(str),
       m_default_value(default_value),
-      m_data_members(data_members)
+      m_data_members(data_members),
+      m_static_id(0)
 {
 }
 
 ObjectType::ObjectType(const ObjectType &other)
     : m_str(other.m_str),
       m_default_value(other.m_default_value),
-      m_data_members(other.m_data_members)
+      m_data_members(other.m_data_members),
+      m_static_id(other.m_static_id)
 {
 }
 

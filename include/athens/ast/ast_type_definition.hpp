@@ -25,6 +25,7 @@ public:
 protected:
     std::string m_name;
     std::vector<std::shared_ptr<AstDeclaration>> m_members;
+    int m_num_members;
 };
 
 #endif

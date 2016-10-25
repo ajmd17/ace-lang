@@ -6,6 +6,8 @@
 
 #include <common/instructions.hpp>
 
+#include <cassert>
+
 AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
     const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstExpression> &assignment,
@@ -54,7 +56,8 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
     }
 
     AstDeclaration::Visit(visitor, mod);
-
+    
+    assert(m_identifier != nullptr);
     m_identifier->SetObjectType(object_type);
 }
 
@@ -78,6 +81,12 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 
             // increment stack size
             visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+        }
+    } else {
+        // if assignment has side effects but variable is unused,
+        // compile the assignment in anyway.
+        if (m_assignment != nullptr && m_assignment->MayHaveSideEffects()) {
+            m_assignment->Build(visitor, mod);
         }
     }
 }

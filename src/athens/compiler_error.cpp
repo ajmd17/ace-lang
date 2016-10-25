@@ -28,7 +28,6 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_missing_type_and_assignment, "no type or assignment has been provided for '%'" },
     { Msg_function_missing_return_type, "function '%' is missing return type" },
     { Msg_undefined_type, "'%' is not a built-in or user-defined type" },
-    { Msg_redeclared_data_member, "redeclaration of data member '%' for type '%'" },
     { Msg_redefined_type, "type '%' has already been defined in this module" },
     { Msg_mismatched_types, "mismatched types '%' and '%'" },
     { Msg_bitwise_operands_must_be_int, "bitwise operands must both be 'Int', got '%' and '%'" },

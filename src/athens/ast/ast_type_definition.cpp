@@ -2,13 +2,15 @@
 #include <athens/ast/ast_null.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/module.hpp>
+#include <athens/emit/static_object.hpp>
 
 AstTypeDefinition::AstTypeDefinition(const std::string &name,
     const std::vector<std::shared_ptr<AstDeclaration>> &members,
     const SourceLocation &location)
     : AstStatement(location),
       m_name(name),
-      m_members(members)
+      m_members(members),
+      m_num_members(0)
 {
 }
 
@@ -22,20 +24,46 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             CompilerError(Level_fatal, Msg_redefined_type,
                 m_location, m_name));
     } else {
-        // add all members
+        // open the scope for data members
+        mod->m_scopes.Open(Scope());
+
         for (const auto &mem : m_members) {
             if (mem != nullptr) {
+                mem->Visit(visitor, mod);
+
                 if (!object_type.HasDataMember(mem->GetName())) {
                     DataMember_t dm(mem->GetName(), mem->GetObjectType());
                     object_type.AddDataMember(dm);
-                } else {
-                    // error; redeclaration of data member
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_redeclared_data_member,
-                            mem->GetLocation(), mem->GetName(), m_name));
+                    m_num_members++;
                 }
             }
         }
+
+        // close the scope for data members
+        mod->m_scopes.Close();
+
+        // mangle the type name
+        std::string type_name = mod->GetName() + "." + m_name;
+        size_t len = type_name.length();
+
+        // create static object
+        StaticTypeInfo st;
+        st.m_size = m_num_members;
+        st.m_name = new char[len + 1];
+        st.m_name[len] = '\0';
+        std::strcpy(st.m_name, type_name.c_str());
+
+        StaticObject so(st);
+        int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
+        if (found_id == -1) {
+            so.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
+            object_type.SetStaticId(so.m_id);
+        } else {
+            object_type.SetStaticId(found_id);
+        }
+
+        delete[] st.m_name;
 
         mod->AddUserType(object_type);
     }

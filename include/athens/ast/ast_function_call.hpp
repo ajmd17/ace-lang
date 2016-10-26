@@ -9,13 +9,16 @@
 
 class AstFunctionCall : public AstIdentifier {
 public:
-    AstFunctionCall(const std::string &name, const std::vector<std::shared_ptr<AstExpression>> &args,
+    AstFunctionCall(const std::string &name,
+        const std::vector<std::shared_ptr<AstExpression>> &args,
         const SourceLocation &location);
     virtual ~AstFunctionCall() = default;
 
-    inline void AddArgument(const std::shared_ptr<AstExpression> &arg) { m_args.push_back(arg); }
-    inline const std::vector<std::shared_ptr<AstExpression>>
-        &GetArguments() const { return m_args; }
+    inline void AddArgumentToFront(const std::shared_ptr<AstExpression> &arg)
+        { m_args.insert(m_args.begin(), arg); }
+    inline void AddArgument(const std::shared_ptr<AstExpression> &arg)
+        { m_args.push_back(arg); }
+    inline const std::vector<std::shared_ptr<AstExpression>> &GetArguments() const { return m_args; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;

@@ -1,5 +1,5 @@
-module ExampleProgram
-import "mod2.ace"
+module program;
+import "mod2.ace";
 
 let teststr = "sup"
 let num: Int = 4 // legal
@@ -7,19 +7,19 @@ let num: Int = 4 // legal
 print("num = ", num)
 print("num * 23 = ", num * 23)
 
-Mod2.printstr(teststr)
-teststr.Mod2.printstr()
+testmodule.printstr(teststr)
+teststr.testmodule.printstr()
 
-"hi, this is a test of calling a function on a string literal".Mod2.printstr()
+"hi, this is a test of calling a function on a string literal".testmodule.printstr()
 
 func println(obj) : Any {
     print (obj);
 }
 
-let float_bitwise = 3
+let float_bitwise = 3;
 float_bitwise.println()
 
-print("Mod2.y = ", Mod2.y)
+print("testmodule.y = ", testmodule.y)
 
 func blah (arg1) : String {
     print ("arg1 = ", arg1)
@@ -49,17 +49,14 @@ if abc {
 type Customer {
     let id: Int;
     let name: String;
-
-    func tostring(self): String {
-        print("hello");
-    }
 }
 
-func NewCustomer() : Customer {
-    print("Customer constructor")
-}
+let cust: Customer;
+cust.id;
+let cust2: Customer;
+cust2;
+let otherType: testmodule.othertype;
 
-let cust = NewCustomer();
 //cust.tostring();   //== Customer.tostring(p);
 
 let x = null

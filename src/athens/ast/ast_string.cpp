@@ -31,8 +31,7 @@ void AstString::Build(AstVisitor *visitor, Module *mod)
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load static object into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(
-            LOAD_STATIC, rp, m_static_id);
+        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);
 }
 
 int AstString::IsTrue() const

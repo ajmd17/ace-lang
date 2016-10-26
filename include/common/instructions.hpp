@@ -17,6 +17,7 @@
 // f64 = 64-bit float (8 bytes)
 // []  = array
 // $   = stack offset (2 bytes)
+// #   = static object index (2 bytes)
 // %   = register (1 byte)
 // @   = address (4 bytes)
 
@@ -36,7 +37,7 @@ enum Instructions : char {
     LOAD_F32,    // load_f32    [% reg, f32 val]
     LOAD_F64,    // load_f64    [% reg, f64 val]
     LOAD_LOCAL,  // load_local  [% reg, $ idx]
-    LOAD_STATIC, // load_static [% reg, u16 idx]
+    LOAD_STATIC, // load_static [% reg, # idx]
     LOAD_NULL,   // load_null   [% reg]
     LOAD_TRUE,   // load_true   [% reg]
     LOAD_FALSE,  // load_false  [% reg]
@@ -62,6 +63,8 @@ enum Instructions : char {
 
     BEGIN_TRY, // begin_try [% catch_addr]
     END_TRY,
+
+    NEW, // new [% dst, # type_idx]
 
     /* Compare to register values */
     CMP,  // cmp [% lhs, % rhs]

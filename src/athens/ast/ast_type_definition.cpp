@@ -1,5 +1,6 @@
 #include <athens/ast/ast_type_definition.hpp>
 #include <athens/ast/ast_null.hpp>
+#include <athens/ast/ast_object.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/module.hpp>
 #include <athens/emit/static_object.hpp>
@@ -16,7 +17,7 @@ AstTypeDefinition::AstTypeDefinition(const std::string &name,
 
 void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 {
-    ObjectType object_type(m_name, std::shared_ptr<AstNull>(new AstNull(SourceLocation::eof)));
+    ObjectType object_type(m_name, nullptr);
 
     if (mod->LookUpUserType(m_name, object_type)) {
         // error; redeclaration of type in module
@@ -65,6 +66,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
         delete[] st.m_name;
 
+        object_type.SetDefaultValue(std::shared_ptr<AstObject>(new AstObject(object_type, SourceLocation::eof)));
         mod->AddUserType(object_type);
     }
 }

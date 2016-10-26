@@ -44,6 +44,8 @@ public:
     void AddDataMember(const DataMember_t &data_member);
 
     inline std::shared_ptr<AstExpression> GetDefaultValue() const { return m_default_value; }
+    inline void SetDefaultValue(const std::shared_ptr<AstExpression> &default_value)
+        { m_default_value = default_value; }
 
     inline int GetStaticId() const { return m_static_id; }
     // must be set during type definiton analyzing

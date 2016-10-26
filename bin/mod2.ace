@@ -1,8 +1,12 @@
-module Mod2
+module testmodule;
 
 let y = 7;
 print ("(Mod2) y = ", y)
 
 func printstr (obj) : Any {
     print("obj = ", obj);
+}
+
+type othertype {
+    let age:String;
 }

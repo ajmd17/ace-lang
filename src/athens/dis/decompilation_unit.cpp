@@ -624,6 +624,27 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case NEW:
+        {
+            uint16_t idx;
+            m_bs.Read(&idx);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "new ["
+                        << "#" << (int)idx
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint16_t>(code, idx);
+
+            break;
+        }
         case CMP:
         {
             uint8_t lhs;

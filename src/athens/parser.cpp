@@ -660,9 +660,6 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
 
         if (Expect(Token_open_brace, true)) {
             while (!Match(Token_close_brace, true)) {
-                // read past semicolons
-                while (Match(Token_semicolon, true));
-                
                 if (MatchKeyword(Keyword_let, false)) {
                     members.push_back(ParseVariableDeclaration());
                 } else if (MatchKeyword(Keyword_func, false)) {
@@ -676,6 +673,9 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
 
                     m_token_stream->Next();
                 }
+
+                // read past semicolons
+                while (Match(Token_semicolon, true));
             }
         }
 

@@ -21,34 +21,22 @@ public:
     virtual a_float FloatValue() const = 0;
 
     // Arithmetic operators
-    virtual std::shared_ptr<AstConstant> operator+(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator-(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator*(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator/(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator%(
-        AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator+(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator-(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator*(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator/(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator%(AstConstant *right) const = 0;
 
     // Bitwise operators
-    virtual std::shared_ptr<AstConstant> operator^(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator&(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator|(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator<<(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator>>(
-        AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator^(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator&(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator|(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator<<(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator>>(AstConstant *right) const = 0;
 
     // Logical operators
-    virtual std::shared_ptr<AstConstant> operator&&(
-        AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator||(
-        AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator&&(AstConstant *right) const = 0;
+    virtual std::shared_ptr<AstConstant> operator||(AstConstant *right) const = 0;
 
     virtual std::shared_ptr<AstConstant> Equals(AstConstant *right) const = 0;
 };

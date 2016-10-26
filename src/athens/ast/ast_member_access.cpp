@@ -37,10 +37,39 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
     }
 
     if (m_lhs_mod == nullptr) {
-        // TODO: object member access
+        // first check for object member access
         m_left->Visit(visitor, mod);
-        // accept the right-hand side
-        m_right->Visit(visitor, mod);
+
+        ObjectType left_type = m_left->GetObjectType();
+
+        AstIdentifier *right_as_identifier = dynamic_cast<AstIdentifier*>(m_right.get());
+        // try to cast right as member access as well,
+        // and set right_as_identifier to be the left-hand side of the next member access
+        if (right_as_identifier == nullptr) {
+            AstMemberAccess *right_as_mem = dynamic_cast<AstMemberAccess*>(m_right.get());
+            if (right_as_mem != nullptr) {
+                right_as_identifier = dynamic_cast<AstIdentifier*>(right_as_mem->GetLeft().get());
+            }
+        }
+
+        if (right_as_identifier != nullptr) {
+            if (!left_type.HasDataMember(right_as_identifier->GetName())) {
+                AstFunctionCall *right_as_function_call = dynamic_cast<AstFunctionCall*>(right_as_identifier);
+                if (right_as_identifier != nullptr) {
+                    // accept the right-hand side, for uniform call syntax
+                    m_right->Visit(visitor, mod);
+                } else {
+                    // error; data member undefined.
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_not_a_data_member, m_right->GetLocation(),
+                            right_as_identifier->GetName(), left_type.ToString()));
+                }
+            }
+        } else {
+            // error; right side must be an identifier.
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_expected_identifier, m_right->GetLocation()));
+        }
     }
 }
 
@@ -67,7 +96,7 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
         if (rightmost_as_function_call != nullptr) {
             // it is function call on an object
             // add the left hand side to the parameters
-            rightmost_as_function_call->AddArgument(m_left);
+            rightmost_as_function_call->AddArgumentToFront(m_left);
         } else {
             // TODO: object member access
         }

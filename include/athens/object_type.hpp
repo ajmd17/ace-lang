@@ -41,7 +41,7 @@ public:
     inline const std::vector<DataMember_t> &GetDataMembers() const { return m_data_members; }
     bool HasDataMember(const std::string &name) const;
     ObjectType GetDataMemberType(const std::string &name) const;
-    void AddDataMember(const DataMember_t &data_member);
+    inline void AddDataMember(const DataMember_t &data_member) { m_data_members.push_back(data_member); }
 
     inline std::shared_ptr<AstExpression> GetDefaultValue() const { return m_default_value; }
     inline void SetDefaultValue(const std::shared_ptr<AstExpression> &default_value)

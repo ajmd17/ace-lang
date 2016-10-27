@@ -7,13 +7,16 @@
 
 #include <common/instructions.hpp>
 
+#include <cassert>
+
 AstMemberAccess::AstMemberAccess(std::shared_ptr<AstExpression> left,
     std::shared_ptr<AstExpression> right,
     const SourceLocation &location)
     : AstExpression(location),
       m_left(left),
       m_right(right),
-      m_lhs_mod(nullptr)
+      m_lhs_mod(nullptr),
+      m_is_free_call(false)
 {
 }
 
@@ -55,9 +58,11 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
         if (right_as_identifier != nullptr) {
             if (!left_type.HasDataMember(right_as_identifier->GetName())) {
                 AstFunctionCall *right_as_function_call = dynamic_cast<AstFunctionCall*>(right_as_identifier);
-                if (right_as_identifier != nullptr) {
+                if (right_as_function_call != nullptr) {
                     // accept the right-hand side, for uniform call syntax
                     m_right->Visit(visitor, mod);
+                    // free function call
+                    m_is_free_call = true;
                 } else {
                     // error; data member undefined.
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
@@ -77,33 +82,22 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 {
     if (m_lhs_mod != nullptr) {
         // simple module access such as SomeModule.dosomething()
-
         // module index has already been set while analyzing
         mod = m_lhs_mod;
+        m_right->Build(visitor, mod);
     } else {
-        // check to see if it is a function call on an object
-        // such as: myobject.dosomething()
-
-        AstExpression *rightmost = m_right.get();
-        AstMemberAccess *rightmost_as_mem = dynamic_cast<AstMemberAccess*>(rightmost);
-        while (rightmost_as_mem != nullptr) {
-            rightmost = rightmost_as_mem->GetRight().get();
-            rightmost_as_mem = dynamic_cast<AstMemberAccess*>(rightmost);
-        }
-
-        // check if right-hand side is a function call
-        AstFunctionCall *rightmost_as_function_call = dynamic_cast<AstFunctionCall*>(rightmost);
-        if (rightmost_as_function_call != nullptr) {
-            // it is function call on an object
-            // add the left hand side to the parameters
-            rightmost_as_function_call->AddArgumentToFront(m_left);
+        if (m_is_free_call) {
+            // free function call on an object
+            // such as: myobject.dosomething()
+            AstFunctionCall *right_as_function_call = dynamic_cast<AstFunctionCall*>(m_right.get());
+            assert(right_as_function_call != nullptr && "There was an error in analysis");
+            right_as_function_call->AddArgumentToFront(m_left);
+            m_right->Build(visitor, mod);
         } else {
-            // TODO: object member access
+            // object member access TODO
+            assert(0 && "member access not implemented yet");
         }
     }
-
-    // accept the next part of this member access
-    m_right->Build(visitor, mod);
 }
 
 void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)

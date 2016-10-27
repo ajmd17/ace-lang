@@ -8,13 +8,13 @@ print("num = ", num)
 print("num * 23 = ", num * 23)
 
 testmodule.printstr(teststr)
-teststr.testmodule.printstr()
-
-"hi, this is a test of calling a function on a string literal".testmodule.printstr()
+//teststr.testmodule.printstr() // invalid; no member named 'testmodule'. add 'use testmodule'
 
 func println(obj) : Any {
     print (obj);
 }
+
+"hi, this is a test of calling a function on a string literal".println()
 
 let float_bitwise = 3;
 float_bitwise.println()

@@ -33,6 +33,8 @@ private:
 
     // is m_left a module name
     Module *m_lhs_mod;
+    // is it a free function call in object style
+    bool m_is_free_call;
 };
 
 #endif

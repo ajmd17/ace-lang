@@ -170,8 +170,3 @@ ObjectType ObjectType::GetDataMemberType(const std::string &name) const
     }
     return type_builtin_undefined;
 }
-
-void ObjectType::AddDataMember(const DataMember_t &data_member)
-{
-    m_data_members.push_back(data_member);
-}

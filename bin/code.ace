@@ -52,7 +52,7 @@ type Customer {
 }
 
 let cust: Customer;
-cust.id;
+cust;
 let cust2: Customer;
 cust2;
 let otherType: testmodule.othertype;

@@ -16,7 +16,8 @@ AstMemberAccess::AstMemberAccess(std::shared_ptr<AstExpression> left,
       m_left(left),
       m_right(right),
       m_lhs_mod(nullptr),
-      m_is_free_call(false)
+      m_is_free_call(false),
+      m_is_mem_chain(false)
 {
 }
 
@@ -51,6 +52,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
         if (right_as_identifier == nullptr) {
             AstMemberAccess *right_as_mem = dynamic_cast<AstMemberAccess*>(m_right.get());
             if (right_as_mem != nullptr) {
+                m_is_mem_chain = true;
                 right_as_identifier = dynamic_cast<AstIdentifier*>(right_as_mem->GetLeft().get());
             }
         }
@@ -81,10 +83,8 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 {
     if (m_lhs_mod != nullptr) {
-        // simple module access such as SomeModule.dosomething()
-        // module index has already been set while analyzing
-        mod = m_lhs_mod;
-        m_right->Build(visitor, mod);
+        // simple module access
+        m_right->Build(visitor, m_lhs_mod);
     } else {
         if (m_is_free_call) {
             // free function call on an object
@@ -92,6 +92,8 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
             AstFunctionCall *right_as_function_call = dynamic_cast<AstFunctionCall*>(m_right.get());
             assert(right_as_function_call != nullptr && "There was an error in analysis");
             right_as_function_call->AddArgumentToFront(m_left);
+            m_right->Build(visitor, mod);
+        } else if (m_is_mem_chain) {
             m_right->Build(visitor, mod);
         } else {
             // object member access TODO

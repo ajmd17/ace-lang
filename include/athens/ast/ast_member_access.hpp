@@ -35,6 +35,8 @@ private:
     Module *m_lhs_mod;
     // is it a free function call in object style
     bool m_is_free_call;
+    // is the right-hand side also a member access
+    bool m_is_mem_chain;
 };
 
 #endif

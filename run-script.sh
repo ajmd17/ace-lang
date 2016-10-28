@@ -2,11 +2,11 @@
 #go to the bin directory here
 cd bin
 #compile the source
-./athens code.ace
+./athens test2.ace
 #copy the bytecode file
-cp out.bin ../../AceVM/bin/out.bin
+cp out.bin ../../acevm/bin/out.bin
 #go to the vm directory
-cd ../../AceVM/bin/
+cd ../../acevm/bin/
 #run the vm
 ./acevm out.bin
 #go back

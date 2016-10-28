@@ -333,18 +333,18 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
             new AstFunctionCall(token->GetValue(), args, token->GetLocation()));
 }
 
-std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstExpression> left)
+std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstExpression> target)
 {
     Expect(Token_dot, true);
 
-    std::shared_ptr<AstExpression> right(ParseIdentifier());
+    std::vector<std::shared_ptr<AstIdentifier>> parts;
 
-    if (Match(Token_dot, false)) {
-        right = ParseMemberAccess(right);
-    }
+    do {
+        parts.push_back(ParseIdentifier());
+    } while (Match(Token_dot, true));
 
     return std::shared_ptr<AstMemberAccess>(
-        new AstMemberAccess(left, right, left->GetLocation()));
+        new AstMemberAccess(target, parts, target->GetLocation()));
 }
 
 std::shared_ptr<AstTrue> Parser::ParseTrue()

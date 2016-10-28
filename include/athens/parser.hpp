@@ -64,7 +64,7 @@ private:
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier();
     std::shared_ptr<AstFunctionCall> ParseFunctionCall();
-    std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> left);
+    std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
     std::shared_ptr<AstNull> ParseNull();

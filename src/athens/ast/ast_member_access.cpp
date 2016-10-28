@@ -1,6 +1,7 @@
 #include <athens/ast/ast_member_access.hpp>
 #include <athens/emit/instruction.hpp>
 #include <athens/emit/static_object.hpp>
+#include <athens/ast/ast_variable.hpp>
 #include <athens/ast/ast_function_call.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/module.hpp>
@@ -9,97 +10,78 @@
 
 #include <cassert>
 
-AstMemberAccess::AstMemberAccess(std::shared_ptr<AstExpression> left,
-    std::shared_ptr<AstExpression> right,
+AstMemberAccess::AstMemberAccess(const std::shared_ptr<AstExpression> &target,
+    const std::vector<std::shared_ptr<AstIdentifier>> &parts,
     const SourceLocation &location)
     : AstExpression(location),
-      m_left(left),
-      m_right(right),
-      m_lhs_mod(nullptr),
-      m_is_free_call(false),
-      m_is_mem_chain(false)
+      m_target(target),
+      m_parts(parts),
+      m_mod_access(nullptr)
 {
 }
 
 void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 {
-    AstIdentifier *left_as_identifier = dynamic_cast<AstIdentifier*>(m_left.get());
-    if (left_as_identifier != nullptr) {
-        // check if left-hand side is a module
+    std::shared_ptr<AstExpression> real_target;
+    int pos = 0;
+
+    // check if first item is a module name
+    // it should be an instance of AstVariable
+    AstVariable *first_as_var = dynamic_cast<AstVariable*>(m_target.get());
+    if (first_as_var != nullptr) {
+        // check all modules for one with the same name
         for (int i = 0; i < visitor->GetCompilationUnit()->m_modules.size(); i++) {
-            auto &found_mod = visitor->GetCompilationUnit()->m_modules[i];
-            if (found_mod != nullptr && found_mod->GetName() == left_as_identifier->GetName()) {
-
-                // module with name found, change module index
-                m_lhs_mod = found_mod.get();
-                // accept the right-hand side
-                m_right->Visit(visitor, m_lhs_mod);
-
-                return;
+            auto &current = visitor->GetCompilationUnit()->m_modules[i];
+            if (current != nullptr && current->GetName() == first_as_var->GetName()) {
+                // module with name found
+                m_mod_access = current.get();
+                break;
             }
         }
     }
 
-    if (m_lhs_mod == nullptr) {
-        // first check for object member access
-        m_left->Visit(visitor, mod);
+    assert(pos < m_parts.size());
 
-        ObjectType left_type = m_left->GetObjectType();
+    if (m_mod_access != nullptr) {
+        real_target = m_parts[pos++];
+    } else {
+        real_target = m_target;
+    }
 
-        AstIdentifier *right_as_identifier = dynamic_cast<AstIdentifier*>(m_right.get());
-        // try to cast right as member access as well,
-        // and set right_as_identifier to be the left-hand side of the next member access
-        if (right_as_identifier == nullptr) {
-            AstMemberAccess *right_as_mem = dynamic_cast<AstMemberAccess*>(m_right.get());
-            if (right_as_mem != nullptr) {
-                m_is_mem_chain = true;
-                right_as_identifier = dynamic_cast<AstIdentifier*>(right_as_mem->GetLeft().get());
-            }
-        }
+    // accept target
+    real_target->Visit(visitor, (m_mod_access != nullptr) ? m_mod_access : mod);
 
-        if (right_as_identifier != nullptr) {
-            if (!left_type.HasDataMember(right_as_identifier->GetName())) {
-                AstFunctionCall *right_as_function_call = dynamic_cast<AstFunctionCall*>(right_as_identifier);
-                if (right_as_function_call != nullptr) {
-                    // accept the right-hand side, for uniform call syntax
-                    m_right->Visit(visitor, mod);
-                    // free function call
-                    m_is_free_call = true;
-                } else {
-                    // error; data member undefined.
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_not_a_data_member, m_right->GetLocation(),
-                            right_as_identifier->GetName(), left_type.ToString()));
-                }
-            }
+    for (; pos < m_parts.size(); pos++) {
+        auto &field = m_parts[pos];
+        assert(field != nullptr);
+
+        // first check if the target's has the field
+        ObjectType target_type = real_target->GetObjectType();
+
+        if (target_type.HasDataMember(field->GetName())) {
+            real_target = field;
         } else {
-            // error; right side must be an identifier.
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_expected_identifier, m_right->GetLocation()));
+            // allows functions to be used like they are
+            // members (uniform call syntax)
+            if (dynamic_cast<AstFunctionCall*>(field.get()) == nullptr) {
+                // error; undefined data member.
+                CompilerError err(Level_fatal, Msg_not_a_data_member, field->GetLocation(),
+                    field->GetName(), target_type.ToString());
+                visitor->GetCompilationUnit()->GetErrorList().AddError(err);
+                break;
+            } else {
+                // in this case it would be usage of uniform call syntax.
+                field->Visit(visitor, mod);
+                real_target = field;
+            }
         }
     }
+
 }
 
 void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 {
-    if (m_lhs_mod != nullptr) {
-        // simple module access
-        m_right->Build(visitor, m_lhs_mod);
-    } else {
-        if (m_is_free_call) {
-            // free function call on an object
-            // such as: myobject.dosomething()
-            AstFunctionCall *right_as_function_call = dynamic_cast<AstFunctionCall*>(m_right.get());
-            assert(right_as_function_call != nullptr && "There was an error in analysis");
-            right_as_function_call->AddArgumentToFront(m_left);
-            m_right->Build(visitor, mod);
-        } else if (m_is_mem_chain) {
-            m_right->Build(visitor, mod);
-        } else {
-            // object member access TODO
-            assert(0 && "member access not implemented yet");
-        }
-    }
+
 }
 
 void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
@@ -120,11 +102,7 @@ bool AstMemberAccess::MayHaveSideEffects() const
 
 ObjectType AstMemberAccess::GetObjectType() const
 {
-    const AstExpression *rightmost = m_right.get();
-    const AstMemberAccess *rightmost_as_mem = dynamic_cast<const AstMemberAccess*>(rightmost);
-    while (rightmost_as_mem != nullptr) {
-        rightmost = rightmost_as_mem->GetRight().get();
-        rightmost_as_mem = dynamic_cast<const AstMemberAccess*>(rightmost);
-    }
-    return rightmost->GetObjectType();
+    return (m_parts.back() != nullptr)
+        ? m_parts.back()->GetObjectType()
+        : ObjectType::type_builtin_undefined;
 }

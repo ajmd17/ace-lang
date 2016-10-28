@@ -9,15 +9,10 @@
 
 class AstMemberAccess : public AstExpression {
 public:
-    AstMemberAccess(std::shared_ptr<AstExpression> left,
-        std::shared_ptr<AstExpression> right,
+    AstMemberAccess(const std::shared_ptr<AstExpression> &target,
+        const std::vector<std::shared_ptr<AstIdentifier>> &parts,
         const SourceLocation &location);
     virtual ~AstMemberAccess() = default;
-
-    std::shared_ptr<AstExpression> &GetLeft() { return m_left; }
-    const std::shared_ptr<AstExpression> &GetLeft() const { return m_left; }
-    std::shared_ptr<AstExpression> &GetRight() { return m_right; }
-    const std::shared_ptr<AstExpression> &GetRight() const { return m_right; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
@@ -28,15 +23,9 @@ public:
     virtual ObjectType GetObjectType() const override;
 
 private:
-    std::shared_ptr<AstExpression> m_left;
-    std::shared_ptr<AstExpression> m_right;
-
-    // is m_left a module name
-    Module *m_lhs_mod;
-    // is it a free function call in object style
-    bool m_is_free_call;
-    // is the right-hand side also a member access
-    bool m_is_mem_chain;
+    std::shared_ptr<AstExpression> m_target;
+    std::vector<std::shared_ptr<AstIdentifier>> m_parts;
+    Module *m_mod_access;
 };
 
 #endif

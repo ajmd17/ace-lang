@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include <cassert>
+
 AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &location)
     : AstExpression(location),
       m_name(name),
@@ -32,4 +34,10 @@ ObjectType AstIdentifier::GetObjectType() const
         return m_identifier->GetObjectType();
     }
     return ObjectType::type_builtin_undefined;
+}
+
+int AstIdentifier::GetStackOffset(int stack_size) const
+{
+    assert(m_identifier != nullptr);
+    return stack_size - m_identifier->GetStackLocation();
 }

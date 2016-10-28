@@ -31,9 +31,6 @@ void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
 {
     assert(m_identifier != nullptr);
 
-    int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-    int stack_location = m_identifier->GetStackLocation();
-    int offset = stack_size - stack_location;
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -56,11 +53,12 @@ void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
             // increment stack size
             visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 
-            offset++;
-
             num_arguments++;
         }
     }
+
+    int offset = GetStackOffset(
+        visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize());
 
     // the reason we decrement the compiler's record of the stack size directly after
     // is because the function body will actually handle the management of the stack size,

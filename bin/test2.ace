@@ -1,11 +1,15 @@
 module Test2
 
+func DoSomething(obj) : Void {
+    print("DoSomething(", obj, ")");
+}
+
 type Customer {
     let id: Int;
     let name: String;
 }
 
 let cust: Customer;
-cust.dm.x;
+cust.DoSomething();
 
 print("hello world")

@@ -25,6 +25,8 @@ public:
 protected:
     std::string m_name;
     Identifier *m_identifier;
+
+    int GetStackOffset(int stack_size) const;
 };
 
 #endif

@@ -17,7 +17,8 @@ AstMemberAccess::AstMemberAccess(const std::shared_ptr<AstExpression> &target,
     : AstExpression(location),
       m_target(target),
       m_parts(parts),
-      m_mod_access(nullptr)
+      m_mod_access(nullptr),
+      m_access_mode(ACCESS_MODE_LOAD)
 {
 }
 
@@ -140,9 +141,17 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
             } else {
-                // just load the data member.
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(LOAD_MEM, rp, rp, (uint8_t)dm_index);
+                // get current register index
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                if (m_access_mode == ACCESS_MODE_LOAD || pos != m_parts.size() - 1) {
+                    // just load the data member.
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(LOAD_MEM, rp, rp, (uint8_t)dm_index);
+                } else if (m_access_mode == ACCESS_MODE_STORE) {
+                    // we are in storing mode, so store the LAST item in the member expr.
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, rp, (uint8_t)dm_index, rp - 1);
+                }
             }
 
             target_type = target_type.GetDataMemberType(field->GetName());

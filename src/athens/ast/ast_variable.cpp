@@ -27,9 +27,16 @@ void AstVariable::Build(AstVisitor *visitor, Module *mod)
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    // load stack value at offset value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
+
+    if (m_access_mode == ACCESS_MODE_LOAD) {
+        // load stack value at offset value into register
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
+    } else if (m_access_mode == ACCESS_MODE_STORE) {
+        // store the value at (rp - 1) into this local variable
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint16_t, uint8_t>(MOV, (uint16_t)offset, rp - 1);
+    }
 }
 
 void AstVariable::Optimize(AstVisitor *visitor, Module *mod)

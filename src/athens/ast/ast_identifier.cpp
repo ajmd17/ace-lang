@@ -9,7 +9,8 @@
 AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &location)
     : AstExpression(location),
       m_name(name),
-      m_identifier(nullptr)
+      m_identifier(nullptr),
+      m_access_mode(ACCESS_MODE_LOAD)
 {
 }
 

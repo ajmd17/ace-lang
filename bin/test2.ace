@@ -1,10 +1,10 @@
 module Test2
 
-func DoSomething(obj) : Void {
+func DoSomething(obj): Void {
     print("DoSomething(", obj, ")");
 }
 
-func DoSomething2(obj) : Void {
+func DoSomething2(obj): Void {
     print("DoSomething2(", obj, ")");
 }
 
@@ -14,9 +14,12 @@ type Customer {
 }
 
 let cust: Customer;
+cust.name = "Ethan";
+cust.id = 12345;
+
 cust.DoSomething2();
 cust.id.DoSomething2();
 cust.name.DoSomething2();
-cust.id += 3;
-
-print("hello world")
+cust.id += 23;
+cust.id.DoSomething2();
+print("hello world");

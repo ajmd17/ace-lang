@@ -281,6 +281,35 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case LOAD_MEM:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            uint8_t idx;
+            m_bs.Read(&idx);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_mem ["
+                        << "%" << (int)reg << ", "
+                        << "%" << (int)src << ", "
+                        << "u8(" << (int)idx << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, reg, src, idx);
+
+            break;
+        }
         case LOAD_NULL:
         {
             uint8_t reg;
@@ -366,6 +395,35 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
             }
 
             is << Instruction<uint8_t, uint16_t, uint8_t>(code, dst, src);
+
+            break;
+        }
+        case MOV_MEM:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint8_t idx;
+            m_bs.Read(&idx);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "mov_mem ["
+                        << "%" << (int)reg << ", "
+                        << "u8(" << (int)idx << "), "
+                        << "%" << (int)src << ""
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, reg, idx, src);
 
             break;
         }
@@ -626,6 +684,9 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
         }
         case NEW:
         {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
             uint16_t idx;
             m_bs.Read(&idx);
 
@@ -636,12 +697,13 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
                 (*os)
                     << "new ["
+                        << "%" << (int)reg << ", "
                         << "#" << (int)idx
                     << "]"
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint16_t>(code, idx);
+            is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, idx);
 
             break;
         }

@@ -6,7 +6,7 @@
 #include <athens/emit/static_object.hpp>
 
 AstTypeDefinition::AstTypeDefinition(const std::string &name,
-    const std::vector<std::shared_ptr<AstDeclaration>> &members,
+    const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
     const SourceLocation &location)
     : AstStatement(location),
       m_name(name),
@@ -33,7 +33,10 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                 mem->Visit(visitor, mod);
 
                 if (!object_type.HasDataMember(mem->GetName())) {
-                    DataMember_t dm(mem->GetName(), mem->GetObjectType());
+                    ObjectType mem_type = mem->GetObjectType();
+                    mem_type.SetDefaultValue(mem->GetAssignment());
+
+                    DataMember_t dm(mem->GetName(), mem_type);
                     object_type.AddDataMember(dm);
                     m_num_members++;
                 }

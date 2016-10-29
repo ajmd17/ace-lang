@@ -4,22 +4,21 @@ func DoSomething(obj): Void {
     print("DoSomething(", obj, ")");
 }
 
-func DoSomething2(obj): Void {
-    print("DoSomething2(", obj, ")");
+func ChangeData(obj, val): Void {
+    obj += 4;
 }
 
 type Customer {
-    let id: Int;
-    let name: String;
+    let id = 2.0;
+    let name = "nm";
 }
 
 let cust: Customer;
-cust.name = "Ethan";
-cust.id = 12345;
 
-cust.DoSomething2();
-cust.id.DoSomething2();
-cust.name.DoSomething2();
-cust.id += 23;
-cust.id.DoSomething2();
+cust.DoSomething();
+cust.id.DoSomething();
+cust.name.DoSomething();
+cust.id += .3;
+cust.ChangeData(3);
+cust.id.DoSomething();
 print("hello world");

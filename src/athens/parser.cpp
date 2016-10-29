@@ -656,14 +656,12 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
     const Token *identifier = Expect(Token_identifier, true);
 
     if (token != nullptr && identifier != nullptr) {
-        std::vector<std::shared_ptr<AstDeclaration>> members;
+        std::vector<std::shared_ptr<AstVariableDeclaration>> members;
 
         if (Expect(Token_open_brace, true)) {
             while (!Match(Token_close_brace, true)) {
                 if (MatchKeyword(Keyword_let, false)) {
                     members.push_back(ParseVariableDeclaration());
-                } else if (MatchKeyword(Keyword_func, false)) {
-                    members.push_back(ParseFunctionDefinition());
                 } else {
                     // error; unexpected token
                     CompilerError error(Level_fatal, Msg_unexpected_token,

@@ -32,6 +32,7 @@ private:
     Module *m_mod_access;
     std::vector<ObjectType> m_part_object_types;
     AccessMode m_access_mode;
+    bool m_side_effects;
 };
 
 #endif

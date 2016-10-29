@@ -18,7 +18,8 @@ AstMemberAccess::AstMemberAccess(const std::shared_ptr<AstExpression> &target,
       m_target(target),
       m_parts(parts),
       m_mod_access(nullptr),
-      m_access_mode(ACCESS_MODE_LOAD)
+      m_access_mode(ACCESS_MODE_LOAD),
+      m_side_effects(true)
 {
 }
 
@@ -27,6 +28,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
     std::shared_ptr<AstExpression> real_target;
     ObjectType target_type;
     int pos = 0;
+    bool has_side_effects = false;
 
     // check if first item is a module name
     // it should be an instance of AstVariable
@@ -65,11 +67,13 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
         // first check if the target has the field
         if (target_type.HasDataMember(field->GetName())) {
             if (field_as_call != nullptr) {
+                has_side_effects = true;
                 // visit all args even though this is not a free function
                 // still have to make sure each argument is valid
                 for (auto &arg : field_as_call->GetArguments()) {
                     if (arg != nullptr) {
-                        arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
+                        arg->Visit(visitor,
+                            visitor->GetCompilationUnit()->GetCurrentModule().get());
                     }
                 }
             }
@@ -81,6 +85,9 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
             // allows functions to be used like they are
             // members (uniform call syntax)
             if (field_as_call == nullptr) {
+                if (field_as_call->MayHaveSideEffects()) {
+                    has_side_effects = true;
+                }
                 // error; undefined data member.
                 CompilerError err(Level_fatal, Msg_not_a_data_member, field->GetLocation(),
                     field->GetName(), target_type.ToString());
@@ -95,6 +102,8 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
             }
         }
     }
+
+    m_side_effects = has_side_effects;
 }
 
 void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
@@ -195,19 +204,63 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 
 void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
 {
-    // TODO: optimize function args
+    std::shared_ptr<AstExpression> real_target;
+    ObjectType target_type;
+    int pos = 0;
+
+    assert(pos < m_parts.size());
+
+    if (m_mod_access != nullptr) {
+        real_target = m_parts[pos++];
+    } else {
+        real_target = m_target;
+    }
+
+    // accept target
+    real_target->Optimize(visitor, (m_mod_access != nullptr) ? m_mod_access : mod);
+    target_type = real_target->GetObjectType();
+
+    for (; pos < m_parts.size(); pos++) {
+        auto &field = m_parts[pos];
+        assert(field != nullptr);
+
+        AstFunctionCall *field_as_call = dynamic_cast<AstFunctionCall*>(field.get());
+
+        // first check if the target has the field
+        if (target_type.HasDataMember(field->GetName())) {
+            if (field_as_call != nullptr) {
+                // optimize all args
+                for (auto &arg : field_as_call->GetArguments()) {
+                    if (arg != nullptr) {
+                        arg->Optimize(visitor,
+                            visitor->GetCompilationUnit()->GetCurrentModule().get());
+                    }
+                }
+            }
+
+            target_type = target_type.GetDataMemberType(field->GetName());
+            real_target = field;
+        } else {
+            if (field_as_call == nullptr) {
+                break;
+            } else {
+                // in this case it would be usage of uniform call syntax.
+                field->Optimize(visitor, mod);
+                target_type = field->GetObjectType();
+                real_target = field;
+            }
+        }
+    }
 }
 
 int AstMemberAccess::IsTrue() const
 {
-    // TODO
     return -1;
 }
 
 bool AstMemberAccess::MayHaveSideEffects() const
 {
-    // TODO
-    return true;
+    return m_side_effects;
 }
 
 ObjectType AstMemberAccess::GetObjectType() const

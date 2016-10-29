@@ -31,8 +31,8 @@ public:
 
 public:
     ObjectType();
-    ObjectType(const std::string &str, std::shared_ptr<AstExpression> default_value);
-    ObjectType(const std::string &str, std::shared_ptr<AstExpression> default_value,
+    ObjectType(const std::string &str, const std::shared_ptr<AstExpression> &default_value);
+    ObjectType(const std::string &str, const std::shared_ptr<AstExpression> &default_value,
         const std::vector<DataMember_t> &data_members);
     ObjectType(const ObjectType &other);
 
@@ -40,6 +40,7 @@ public:
 
     inline const std::vector<DataMember_t> &GetDataMembers() const { return m_data_members; }
     bool HasDataMember(const std::string &name) const;
+    int GetDataMemberIndex(const std::string &name) const;
     ObjectType GetDataMemberType(const std::string &name) const;
     inline void AddDataMember(const DataMember_t &data_member) { m_data_members.push_back(data_member); }
 

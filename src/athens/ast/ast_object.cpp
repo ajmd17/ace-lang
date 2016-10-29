@@ -4,6 +4,9 @@
 
 #include <common/instructions.hpp>
 
+#include <iostream>
+#include <cassert>
+
 AstObject::AstObject(const ObjectType &object_type,
     const SourceLocation &location)
     : AstExpression(location),
@@ -24,6 +27,34 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     // store newly allocated object in register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(NEW, rp, static_id);
+
+    // store object's register location
+    const uint8_t obj_reg = rp;
+
+    // claim register
+    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+    // get active register
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // for each data member, load the default value
+    // TODO: allow the user to assign values to items
+    int i = 0;
+    for (const DataMember_t &dm : m_object_type.GetDataMembers()) {
+        assert(dm.second.GetDefaultValue() != nullptr && "default value was nullptr");
+
+        // load the data member's default value.
+        dm.second.GetDefaultValue()->Build(visitor, mod);
+        // get active register
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        // store data member
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, obj_reg, (uint8_t)i, rp);
+
+        i++;
+    }
+
+    //unclaim register
+    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
 }
 
 void AstObject::Optimize(AstVisitor *visitor, Module *mod)

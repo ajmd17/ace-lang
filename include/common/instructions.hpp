@@ -38,12 +38,15 @@ enum Instructions : char {
     LOAD_F64,    // load_f64    [% reg, f64 val]
     LOAD_LOCAL,  // load_local  [% reg, $ idx]
     LOAD_STATIC, // load_static [% reg, # idx]
+    LOAD_MEM,    // load_mem    [% reg, % src, u8 idx]
     LOAD_NULL,   // load_null   [% reg]
     LOAD_TRUE,   // load_true   [% reg]
     LOAD_FALSE,  // load_false  [% reg]
 
     /* Copy register value to stack location */
-    MOV,  // mov [$ dst, % src]
+    MOV,     // mov     [$ dst, % src]
+    /* Copy register value to object member */
+    MOV_MEM, // mov_mem [% dst_obj, u8 dst_idx, % src]
     /* Push a value from register to the stack */
     PUSH, // push [% src]
     POP,  // pop

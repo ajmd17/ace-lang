@@ -126,7 +126,7 @@ ObjectType::ObjectType()
 }
 
 ObjectType::ObjectType(const std::string &str,
-    std::shared_ptr<AstExpression> default_value)
+    const std::shared_ptr<AstExpression> &default_value)
     : m_str(str),
       m_default_value(default_value),
       m_static_id(0)
@@ -134,7 +134,7 @@ ObjectType::ObjectType(const std::string &str,
 }
 
 ObjectType::ObjectType(const std::string &str,
-    std::shared_ptr<AstExpression> default_value,
+    const std::shared_ptr<AstExpression> &default_value,
     const std::vector<DataMember_t> &data_members)
     : m_str(str),
       m_default_value(default_value),
@@ -159,6 +159,16 @@ bool ObjectType::HasDataMember(const std::string &name) const
         }
     }
     return false;
+}
+
+int ObjectType::GetDataMemberIndex(const std::string &name) const
+{
+    for (int i = 0; i < m_data_members.size(); i++) {
+        if (m_data_members[i].first == name) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 ObjectType ObjectType::GetDataMemberType(const std::string &name) const

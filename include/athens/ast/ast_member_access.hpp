@@ -26,6 +26,7 @@ private:
     std::shared_ptr<AstExpression> m_target;
     std::vector<std::shared_ptr<AstIdentifier>> m_parts;
     Module *m_mod_access;
+    std::vector<ObjectType> m_part_object_types;
 };
 
 #endif

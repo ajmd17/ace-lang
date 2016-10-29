@@ -4,12 +4,19 @@ func DoSomething(obj) : Void {
     print("DoSomething(", obj, ")");
 }
 
+func DoSomething2(obj) : Void {
+    print("DoSomething2(", obj, ")");
+}
+
 type Customer {
     let id: Int;
     let name: String;
 }
 
 let cust: Customer;
-cust.DoSomething();
+cust.DoSomething2();
+cust.id.DoSomething2();
+cust.name.DoSomething2();
+cust.id += 3;
 
 print("hello world")

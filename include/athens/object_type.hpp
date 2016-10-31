@@ -27,7 +27,7 @@ public:
     static const ObjectType *GetBuiltinType(const std::string &str);
     static ObjectType MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types);
     static bool TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers = false);
-    static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right);
+    static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right, bool use_number = false);
 
 public:
     ObjectType();
@@ -52,7 +52,9 @@ public:
     // must be set during type definiton analyzing
     inline void SetStaticId(int static_id) { m_static_id = static_id; }
 
-    inline bool operator==(const ObjectType &other) const { return m_str == other.m_str && m_static_id == other.m_static_id; }
+    inline bool operator==(const ObjectType &other) const
+        { return m_str == other.m_str && m_static_id == other.m_static_id; }
+    inline bool operator!=(const ObjectType &other) const { return !operator==(other); }
 
 protected:
     std::string m_str;

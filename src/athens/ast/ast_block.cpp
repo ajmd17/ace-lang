@@ -23,7 +23,7 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
 
     // store number of locals, so we can pop them from the stack later
     Scope &this_scope = mod->m_scopes.Top();
-    m_num_locals = this_scope.GetIdentifierTable().GetIdentifierIndex();
+    m_num_locals = this_scope.GetIdentifierTable().CountUsedVariables();
 
     // go down to previous scope
     mod->m_scopes.Close();

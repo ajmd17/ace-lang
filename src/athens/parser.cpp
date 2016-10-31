@@ -198,6 +198,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
             return ParsePrintStatement();
         } else if (MatchKeyword(Keyword_try, false)) {
             return ParseTryCatchStatement();
+        } else if (MatchKeyword(Keyword_return, false)) {
+            return ParseReturnStatement();
         }
     } else if (Match(Token_open_brace, false)) {
         return ParseBlock();
@@ -707,6 +709,19 @@ std::shared_ptr<AstLocalImport> Parser::ParseLocalImport()
             new AstLocalImport(file->GetValue(), location));
 
         return result;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstReturnStatement> Parser::ParseReturnStatement()
+{
+    SourceLocation location(CurrentLocation());
+
+    const Token *token = ExpectKeyword(Keyword_return, true);
+    if (token != nullptr) {
+        return std::shared_ptr<AstReturnStatement>(
+            new AstReturnStatement(ParseExpression(), location));
     }
 
     return nullptr;

@@ -8,6 +8,7 @@
 #include <common/instructions.hpp>
 
 #include <iostream>
+#include <vector>
 #include <cassert>
 
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
@@ -25,11 +26,10 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
 
 void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 {
-    ObjectType object_type;
     std::vector<ObjectType> param_types;
 
     // open the new scope for parameters
-    mod->m_scopes.Open(Scope());
+    mod->m_scopes.Open(Scope(SCOPE_TYPE_FUNCTION));
 
     for (auto &param : m_parameters) {
         if (param != nullptr) {
@@ -46,19 +46,50 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    // TODO: Make it deduce return type
-    if (m_type_specification == nullptr) {
-        visitor->GetCompilationUnit()->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_function_missing_return_type, m_location, m_name));
-    } else {
-        m_type_specification->Visit(visitor, mod);
-        object_type = ObjectType::MakeFunctionType(m_type_specification->GetObjectType(), param_types);
-    }
-
     // function body
     if (m_block != nullptr) {
         // visit the function body
         m_block->Visit(visitor, mod);
+    }
+
+    ObjectType return_type = ObjectType::type_builtin_undefined;
+    const Scope &function_scope = mod->m_scopes.Top();
+
+    if (m_type_specification == nullptr) {
+        // deduce return type.
+        if (!function_scope.GetReturnTypes().empty()) {
+            // search through return types for ambiguities
+            for (const auto &it : function_scope.GetReturnTypes()) {
+                if (it.first == ObjectType::type_builtin_any) {
+                    // error; functions must be explicitly marked to return 'Any'
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_must_be_explicitly_marked_any, it.second, m_name));
+                } else if (return_type == ObjectType::type_builtin_undefined) {
+                    return_type = it.first;
+                } else if (ObjectType::TypeCompatible(return_type, it.first)) {
+                    return_type = ObjectType::FindCompatibleType(return_type, it.first, true);
+                } else {
+                    // error; more than one possible return type.
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_multiple_return_types, it.second, m_name));
+                }
+            }
+        } else {
+            // return Void.
+            return_type = ObjectType::type_builtin_void;
+        }
+    } else {
+        m_type_specification->Visit(visitor, mod);
+        return_type = m_type_specification->GetObjectType();
+
+        for (const auto &it : function_scope.GetReturnTypes()) {
+            if (!ObjectType::TypeCompatible(return_type, it.first, true)) {
+                // error; more than one possible return type.
+                visitor->GetCompilationUnit()->GetErrorList().AddError(
+                    CompilerError(Level_fatal, Msg_mismatched_return_type, it.second,
+                        m_name, return_type.ToString(), it.first.ToString()));
+            }
+        }
     }
 
     // close parameter scope
@@ -70,7 +101,7 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 
     // functions are implicitly const
     m_identifier->SetFlags(FLAG_CONST);
-    m_identifier->SetObjectType(object_type);
+    m_identifier->SetObjectType(ObjectType::MakeFunctionType(return_type, param_types));
 }
 
 void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)

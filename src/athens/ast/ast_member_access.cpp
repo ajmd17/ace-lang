@@ -85,15 +85,15 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
             // allows functions to be used like they are
             // members (uniform call syntax)
             if (field_as_call == nullptr) {
-                if (field_as_call->MayHaveSideEffects()) {
-                    has_side_effects = true;
-                }
                 // error; undefined data member.
                 CompilerError err(Level_fatal, Msg_not_a_data_member, field->GetLocation(),
                     field->GetName(), target_type.ToString());
                 visitor->GetCompilationUnit()->GetErrorList().AddError(err);
                 break;
             } else {
+                if (field_as_call->MayHaveSideEffects()) {
+                    has_side_effects = true;
+                }
                 // in this case it would be usage of uniform call syntax.
                 field->Visit(visitor, mod);
                 target_type = field->GetObjectType();

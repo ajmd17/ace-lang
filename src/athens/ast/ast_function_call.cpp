@@ -1,4 +1,5 @@
 #include <athens/ast/ast_function_call.hpp>
+#include <athens/ast/ast_function_definition.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/ast/ast_constant.hpp>
 #include <athens/emit/instruction.hpp>
@@ -24,6 +25,22 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
     for (auto &arg : m_args) {
         assert(arg != nullptr);
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
+    }
+
+    if (m_identifier != nullptr) {
+        // make sure there are the right amount of arguments!
+        auto value_sp = m_identifier->GetCurrentValue().lock();
+        // allow 'Any' to be called.
+        // the error will be resolved at runtime.
+        if (value_sp != nullptr && value_sp->GetObjectType() != ObjectType::type_builtin_any) {
+            // TODO: This currently doesn't work, because AstFunctionDefinition does
+            // not store it's value.
+            AstFunctionDefinition *def_sp = dynamic_cast<AstFunctionDefinition*>(value_sp.get());
+            if (def_sp == nullptr) {
+                visitor->GetCompilationUnit()->GetErrorList().AddError(
+                    CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
+            }
+        }
     }
 }
 

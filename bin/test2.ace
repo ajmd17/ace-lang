@@ -1,21 +1,28 @@
 module Test2
 
-func DoSomething(obj): Void {
-    print("DoSomething(", obj, ")");
-}
-
-func ChangeData(obj, v): Void {
-    obj += 4;
-}
-
 type Customer {
     let id = 0;
     let name = "";
 }
+
+func ret_cust() : Customer {
+    let cust = "hi";
+    let cust2: Customer;
+    cust2.name = "derp";
+    return cust2;
+}
+
+let v = ret_cust();
+v.name;
+print(v);
+
+/*let vv = ret_cust(23);
 
 let cust: Customer;
 
 cust.id = 3231;
 cust.id.DoSomething();
 
-print("hello world");
+print(ChangeData(4));
+
+print("hello world");*/

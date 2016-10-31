@@ -30,6 +30,7 @@
 #include <athens/ast/ast_print_statement.hpp>
 #include <athens/ast/ast_try_catch.hpp>
 #include <athens/ast/ast_type_specification.hpp>
+#include <athens/ast/ast_return_statement.hpp>
 
 #include <string>
 
@@ -81,6 +82,7 @@ private:
     std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstLocalImport> ParseLocalImport();
+    std::shared_ptr<AstReturnStatement> ParseReturnStatement();
 };
 
 #endif

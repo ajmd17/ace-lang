@@ -8,7 +8,8 @@
 #include <memory>
 
 enum IdentifierFlags {
-   FLAG_CONST = 0x01
+   FLAG_CONST = 0x01,
+   FLAG_ALIAS = 0x02
 };
 
 class Identifier {
@@ -26,14 +27,11 @@ public:
     inline int GetFlags() const { return m_flags; }
     inline void SetFlags(int flags) { m_flags = flags; }
     inline std::weak_ptr<AstExpression> GetCurrentValue() const { return m_current_value; }
-    inline void SetCurrentValue(std::shared_ptr<AstExpression> expr) { m_current_value = expr; }
+    inline void SetCurrentValue(const std::shared_ptr<AstExpression> &expr) { m_current_value = expr; }
     inline const ObjectType &GetObjectType() const { return m_object_type; }
     inline void SetObjectType(const ObjectType &object_type) { m_object_type = object_type; }
-
     inline bool TypeCompatible(const ObjectType &other_type) const
-    {
-        return ObjectType::TypeCompatible(m_object_type, other_type);
-    }
+        { return ObjectType::TypeCompatible(m_object_type, other_type); }
 
 private:
     std::string m_name;

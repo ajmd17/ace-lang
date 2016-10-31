@@ -122,8 +122,8 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                     m_left->GetLocation()));
         }
     } else {
-
         // allow 'Any' on right-hand side because we're not modifying value
+
         if (m_op->GetType() & BITWISE) {
             // no bitwise operators on floats allowed.
             if (!((left_type  == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any) &&
@@ -135,8 +135,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         }
 
         // compare both sides because assignment does not matter in this case
-        if (!(ObjectType::TypeCompatible(left_type,  right_type, false) ||
-              ObjectType::TypeCompatible(right_type, left_type,  false))) {
+        if (!(ObjectType::TypeCompatible(left_type,  right_type, false))) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_mismatched_types,
                     m_left->GetLocation(), left_type.ToString(), right_type.ToString()));

@@ -1,5 +1,8 @@
 #include <athens/identifier_table.hpp>
 
+#include <unordered_set>
+#include <cassert>
+
 IdentifierTable::IdentifierTable()
     : m_identifier_index(0)
 {
@@ -11,31 +14,39 @@ IdentifierTable::IdentifierTable(const IdentifierTable &other)
 {
 }
 
-Identifier *IdentifierTable::AddAlias(const std::string &name, const Identifier &aliasee)
+int IdentifierTable::CountUsedVariables() const
 {
-    m_identifiers.push_back(Identifier(name,
-        aliasee.GetIndex(), aliasee.GetFlags()));
-    return &m_identifiers.back();
+    std::unordered_set<int> used_variables;
+    for (auto &ident : m_identifiers) {
+        if (ident->GetUseCount() > 0) {
+            if (used_variables.find(ident->GetIndex()) == used_variables.end()) {
+                used_variables.insert(ident->GetIndex());
+            }
+        }
+    }
+    return used_variables.size();
+}
+
+Identifier *IdentifierTable::AddAlias(const std::string &name, Identifier *aliasee)
+{
+    assert(aliasee != nullptr);
+    m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(name,
+        aliasee->GetIndex(), aliasee->GetFlags() | FLAG_ALIAS)));
+    return m_identifiers.back().get();
 }
 
 Identifier *IdentifierTable::AddIdentifier(const std::string &name, int flags)
 {
-    m_identifiers.push_back(Identifier(name,
-        m_identifier_index++, flags));
-    return &m_identifiers.back();
-}
-
-Identifier *IdentifierTable::AddIdentifier(const Identifier &identifier)
-{
-    m_identifiers.push_back(identifier);
-    return &m_identifiers.back();
+    m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(name,
+        m_identifier_index++, flags)));
+    return m_identifiers.back().get();
 }
 
 Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
 {
-    for (Identifier &ident : m_identifiers) {
-        if (ident.GetName() == name) {
-            return &ident;
+    for (auto &ident : m_identifiers) {
+        if (ident->GetName() == name) {
+            return ident.get();
         }
     }
     return nullptr;

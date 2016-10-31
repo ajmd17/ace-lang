@@ -58,30 +58,29 @@ ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std
     return ObjectType(type_str, std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
 }
 
-bool ObjectType::TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers) {
-    std::string left_str = left.ToString();
-    std::string right_str = right.ToString();
-
-    if (right_str == type_builtin_undefined.ToString()) {
+bool ObjectType::TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers)
+{
+    if (right == type_builtin_undefined) {
         // nothing is compatible with Undefined!
         return false;
-    } else if (left_str == right_str || left_str == type_builtin_any.ToString()) {
+    } else if (left == right || left == type_builtin_any) {
         return true;
-    } else if (left_str == type_builtin_number.ToString()) {
+    } else if (left == type_builtin_number) {
         // if the type Number is specified, it could be either Int or Float.
-        return right_str == type_builtin_int.ToString() ||
-               right_str == type_builtin_float.ToString();
-    } else if (!strict_numbers && (left_str == type_builtin_int.ToString() ||
-                                   left_str == type_builtin_float.ToString())) {
+        return right == type_builtin_int ||
+               right == type_builtin_float;
+    } else if ((!strict_numbers) && (left == type_builtin_int ||
+                                     left == type_builtin_float)) {
 
-        return right_str == type_builtin_number.ToString() ||
-               right_str == type_builtin_float.ToString();
+        return right == type_builtin_number ||
+               right == type_builtin_float  ||
+               right == type_builtin_int;
     }
 
     return false;
 }
 
-ObjectType ObjectType::FindCompatibleType(const ObjectType &left, const ObjectType &right)
+ObjectType ObjectType::FindCompatibleType(const ObjectType &left, const ObjectType &right, bool use_number)
 {
     std::string left_str = left.ToString();
     std::string right_str = right.ToString();
@@ -96,22 +95,22 @@ ObjectType ObjectType::FindCompatibleType(const ObjectType &left, const ObjectTy
         return type_builtin_any;
     } else if (left_str == type_builtin_number.ToString()) {
         return (right_str == type_builtin_int.ToString() ||
-                right_str == type_builtin_float.ToString()) ? left : type_builtin_undefined;
+                right_str == type_builtin_float.ToString()) ? (use_number ? type_builtin_number : left) : type_builtin_undefined;
     } else if (left_str == type_builtin_int.ToString()) {
         return (right_str == type_builtin_number.ToString() ||
-                right_str == type_builtin_float.ToString()) ? right : type_builtin_undefined;
+                right_str == type_builtin_float.ToString()) ? (use_number ? type_builtin_number : right) : type_builtin_undefined;
     } else if (left_str == type_builtin_float.ToString()) {
         return (right_str == type_builtin_number.ToString() ||
-                right_str == type_builtin_int.ToString()) ? left : type_builtin_undefined;
+                right_str == type_builtin_int.ToString()) ? (use_number ? type_builtin_number : left) : type_builtin_undefined;
     } else if (right_str == type_builtin_number.ToString()) {
         return (left_str == type_builtin_int.ToString() ||
-                left_str == type_builtin_float.ToString()) ? right : type_builtin_undefined;
+                left_str == type_builtin_float.ToString()) ? (use_number ? type_builtin_number : right) : type_builtin_undefined;
     } else if (right_str == type_builtin_int.ToString()) {
         return (left_str == type_builtin_number.ToString() ||
-                left_str == type_builtin_float.ToString()) ? left : type_builtin_undefined;
+                left_str == type_builtin_float.ToString()) ? (use_number ? type_builtin_number : left) : type_builtin_undefined;
     } else if (right_str == type_builtin_float.ToString()) {
         return (left_str == type_builtin_number.ToString() ||
-                left_str == type_builtin_int.ToString()) ? right : type_builtin_undefined;
+                left_str == type_builtin_int.ToString()) ? (use_number ? type_builtin_number : right) : type_builtin_undefined;
     }
 
     return type_builtin_undefined;

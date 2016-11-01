@@ -1,5 +1,5 @@
 #include <athens/ast/ast_function_call.hpp>
-#include <athens/ast/ast_function_definition.hpp>
+#include <athens/ast/ast_function_expression.hpp>
 #include <athens/ast_visitor.hpp>
 #include <athens/ast/ast_constant.hpp>
 #include <athens/emit/instruction.hpp>
@@ -10,9 +10,11 @@
 #include <cassert>
 
 AstFunctionCall::AstFunctionCall(const std::string &name,
-        const std::vector<std::shared_ptr<AstExpression>> &args, const SourceLocation &location)
+    const std::vector<std::shared_ptr<AstExpression>> &args,
+    const SourceLocation &location)
     : AstIdentifier(name, location),
       m_args(args),
+      m_return_type(ObjectType::type_builtin_undefined),
       m_has_self_object(false)
 {
 }
@@ -27,18 +29,17 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
     }
 
-    if (m_identifier != nullptr) {
+    if (m_identifier != nullptr && m_identifier->GetObjectType() != ObjectType::type_builtin_any) {
         // make sure there are the right amount of arguments!
         auto value_sp = m_identifier->GetCurrentValue().lock();
-        // allow 'Any' to be called.
-        // the error will be resolved at runtime.
-        if (value_sp != nullptr && value_sp->GetObjectType() != ObjectType::type_builtin_any) {
-            // TODO: This currently doesn't work, because AstFunctionDefinition does
-            // not store it's value.
-            AstFunctionDefinition *def_sp = dynamic_cast<AstFunctionDefinition*>(value_sp.get());
+        if (value_sp != nullptr) {
+            AstFunctionExpression *def_sp = dynamic_cast<AstFunctionExpression*>(value_sp.get());
             if (def_sp == nullptr) {
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
                     CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
+            } else {
+                // set return type.
+                m_return_type = def_sp->GetReturnType();
             }
         }
     }
@@ -132,4 +133,9 @@ bool AstFunctionCall::MayHaveSideEffects() const
     // assume a function call has side effects
     // maybe we could detect this later
     return true;
+}
+
+ObjectType AstFunctionCall::GetObjectType() const
+{
+    return m_return_type;
 }

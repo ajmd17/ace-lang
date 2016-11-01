@@ -1,28 +1,15 @@
-module Test2
+module test;
 
 type Customer {
-    let id = 0;
-    let name = "";
+    let id: Int;
+    let name: String;
 }
 
-func ret_cust() : Customer {
-    let cust = "hi";
+func test_function() {
     let cust2: Customer;
     cust2.name = "derp";
     return cust2;
 }
 
-let v = ret_cust();
-v.name;
-print(v);
-
-/*let vv = ret_cust(23);
-
-let cust: Customer;
-
-cust.id = 3231;
-cust.id.DoSomething();
-
-print(ChangeData(4));
-
-print("hello world");*/
+let v = test_function();
+print(v.name);

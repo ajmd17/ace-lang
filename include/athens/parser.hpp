@@ -10,6 +10,7 @@
 #include <athens/ast/ast_module_declaration.hpp>
 #include <athens/ast/ast_variable_declaration.hpp>
 #include <athens/ast/ast_function_definition.hpp>
+#include <athens/ast/ast_function_expression.hpp>
 #include <athens/ast/ast_type_definition.hpp>
 #include <athens/ast/ast_statement.hpp>
 #include <athens/ast/ast_expression.hpp>

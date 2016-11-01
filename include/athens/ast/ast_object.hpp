@@ -2,9 +2,7 @@
 #define AST_OBJECT_HPP
 
 #include <athens/ast/ast_expression.hpp>
-#include <athens/ast/ast_declaration.hpp>
-
-#include <memory>
+#include <athens/object_type.hpp>
 
 class AstObject : public AstExpression {
 public:

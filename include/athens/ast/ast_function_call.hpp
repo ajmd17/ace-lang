@@ -31,9 +31,11 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
+    virtual ObjectType GetObjectType() const override;
 
 protected:
     std::vector<std::shared_ptr<AstExpression>> m_args;
+    ObjectType m_return_type;
     bool m_has_self_object;
 };
 

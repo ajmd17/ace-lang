@@ -40,12 +40,12 @@ inline char *get_option_value(char **begin, char **end, const std::string &opt)
     return nullptr;
 }
 
-void build_source_file(const Utf8String &filename, const Utf8String &out_filename)
+void build_source_file(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
 {
     std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
 
     if (!in_file.is_open()) {
-        ucout << "Could not open file: " << filename << "\n";
+        utf::cout << "Could not open file: " << filename << "\n";
     } else {
         // get number of bytes
         size_t max = in_file.tellg();
@@ -73,11 +73,11 @@ void build_source_file(const Utf8String &filename, const Utf8String &out_filenam
 
         compilation_unit.GetErrorList().SortErrors();
         for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
-            ucout
-                << Utf8String(error.GetLocation().GetFileName().c_str()) << " "
+            utf::cout
+                << utf::Utf8String(error.GetLocation().GetFileName().c_str()) << " "
                 << "(" << (error.GetLocation().GetLine() + 1)
                 << ", " << (error.GetLocation().GetColumn() + 1)
-                << "): " << Utf8String(error.GetText().c_str()) << "\n";
+                << "): " << utf::Utf8String(error.GetText().c_str()) << "\n";
         }
 
         if (!compilation_unit.GetErrorList().HasFatalErrors()) {
@@ -95,7 +95,7 @@ void build_source_file(const Utf8String &filename, const Utf8String &out_filenam
             // emit bytecode instructions to file
             std::ofstream out_file(out_filename.GetData(), std::ios::out | std::ios::binary);
             if (!out_file.is_open()) {
-                ucout << "Could not open file for writing: " << out_filename << "\n";
+                utf::cout << "Could not open file for writing: " << out_filename << "\n";
             } else {
                 out_file << compilation_unit.GetInstructionStream();
             }
@@ -104,12 +104,12 @@ void build_source_file(const Utf8String &filename, const Utf8String &out_filenam
     }
 }
 
-void decompile_bytecode_file(const Utf8String &filename, const Utf8String &out_filename)
+void decompile_bytecode_file(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
 {
     std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
 
     if (!in_file.is_open()) {
-        ucout << "Could not open file: " << filename << "\n";
+        utf::cout << "Could not open file: " << filename << "\n";
     } else {
         // get number of bytes
         size_t max = in_file.tellg();
@@ -127,7 +127,7 @@ void decompile_bytecode_file(const Utf8String &filename, const Utf8String &out_f
         bool write_to_file = false;
         std::ostream *os = nullptr;
         if (out_filename == "") {
-            os = &ucout;
+            os = &utf::cout;
         } else {
             write_to_file = true;
             os = new std::ofstream(out_filename.GetData(), std::ios::out | std::ios::binary);
@@ -143,10 +143,10 @@ void decompile_bytecode_file(const Utf8String &filename, const Utf8String &out_f
 
 int main(int argc, char *argv[])
 {
-    utf8_init();
+    utf::utf8_init();
 
     if (argc == 1) {
-        ucout << "\tUsage: " << argv[0] << " <file>\n";
+        utf::cout << "\tUsage: " << argv[0] << " <file>\n";
 
     } else if (argc >= 2) {
         enum {
@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
             DECOMPILE_BYTECODE,
         } mode = COMPILE_SOURCE;
 
-        Utf8String filename;
-        Utf8String out_filename;
+        utf::Utf8String filename;
+        utf::Utf8String out_filename;
 
         if (has_option(argv, argv + argc, "-d")) {
             // disassembly mode

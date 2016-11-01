@@ -1,4 +1,5 @@
 import os
+import sys
 
 compiler = ""
 if os.name == "nt":
@@ -6,22 +7,31 @@ if os.name == "nt":
 else:
     compiler = "clang++"
 
-options = "-g"
+options = ""
 
-src_dir = "./src"
-bin_dir = "./bin"
+def build_project(project_name):
+    src_dir = "./src/{}".format(project_name)
+    bin_dir = "./bin"
 
-if not os.path.exists(bin_dir):
-    os.makedirs(bin_dir)
+    sys.stdout.write("Building project {}...".format(project_name))
+    sys.stdout.flush()
 
-command = "{} {} -o {}/ace-c -std=c++11 -O2 -Iinclude/".format(compiler, options, bin_dir)
+    if not os.path.exists(bin_dir):
+        os.makedirs(bin_dir)
 
-for dirpath, dirnames, filenames in os.walk(src_dir):
-    for file in [f for f in filenames]:
-        if file.endswith(".cpp"):
-            print("{}/{}...".format(dirpath, file))
-            command = "{} {}/{} ".format(command, dirpath, file)
+    command = "{} {} -o {}/{} -std=c++11 -O2 -Iinclude/".format(compiler, options, bin_dir, project_name)
 
-os.system("{}".format(command))
+    for dirpath, dirnames, filenames in os.walk(src_dir):
+        for filename in [f for f in filenames]:
+            if filename.endswith(".cpp"):
+                command += " {}/{} ".format(dirpath, filename)
 
-print("Build complete")
+    os.system("{}".format(command))
+    print("complete")
+
+
+projects = ["ace-c", "ace-vm"]
+for project in projects:
+    answer = raw_input("Build project '{}'? (Y/n) ".format(project))
+    if answer.lower().startswith("y"):
+        build_project(project)

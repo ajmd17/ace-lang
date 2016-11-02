@@ -12,8 +12,8 @@
 #include <cstdint>
 #include <cstdio>
 
-#define GC_THRESHOLD_STEP 50
-#define GC_THRESHOLD_MIN 50
+#define GC_THRESHOLD_MUL 2
+#define GC_THRESHOLD_MIN 20
 #define GC_THRESHOLD_MAX 1000
 
 #define THROW_COMPARISON_ERROR(lhs, rhs) \
@@ -97,10 +97,7 @@ struct Registers {
     StackValue m_reg[8];
     int m_flags = 0;
 
-    inline StackValue &operator[](uint8_t index)
-    {
-        return m_reg[index];
-    }
+    inline StackValue &operator[](uint8_t index) { return m_reg[index]; }
 };
 
 struct ExceptionState {

@@ -634,8 +634,8 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition()
         }
 
         std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
-        if (Match(Token_colon, true)) {
-            // read object type
+        if (Match(Token_right_arrow, true)) {
+            // read return type after right arrow for functions
             type_spec = ParseTypeSpecification();
         }
 

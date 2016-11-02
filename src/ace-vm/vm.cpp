@@ -27,22 +27,23 @@ HeapValue *VM::HeapAlloc()
     if (heap_size >= GC_THRESHOLD_MAX) {
         // heap overflow.
         char buffer[256];
-        std::sprintf(buffer, "heap overflow, GC_THRESHOLD_MAX is %d", (int)GC_THRESHOLD_MAX);
+        std::sprintf(buffer, "heap overflow, heap size is %d", heap_size);
         ThrowException(Exception(buffer));
         return nullptr;
     } else if (heap_size >= m_max_heap_objects) {
         // run the gc
         MarkObjects(&m_exec_thread);
         m_heap.Sweep();
-        utf::cout << "Garbage collection ran.\n";
-        utf::cout << "\tm_heap.Size() = " << m_heap.Size() << "\n";
+        /*utf::cout << "Garbage collection ran.\n";
+        utf::cout << "\theap size before = " << heap_size << "\n";
+        utf::cout << "\theap size now = " << m_heap.Size() << "\n";*/
 
         // check if size is still over the maximum,
         // and resize the maximum if necessary.
         if (m_heap.Size() >= m_max_heap_objects) {
             // resize max number of objects
             m_max_heap_objects = std::min(
-                m_max_heap_objects + GC_THRESHOLD_STEP, GC_THRESHOLD_MAX);
+                m_max_heap_objects * GC_THRESHOLD_MUL, GC_THRESHOLD_MAX);
         }
     }
 

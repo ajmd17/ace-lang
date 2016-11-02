@@ -71,6 +71,13 @@ Token Lexer::NextToken()
         }
     } else if (ch[0] == '_' || utf32_isalpha(ch[0])) {
         return ReadIdentifier();
+    } else if (ch[0] == '-' && ch[1] == '>') {
+        for (int i = 0; i < 2; i++) {
+            int pos_change = 0;
+            m_source_stream.Next(pos_change);
+            m_source_location.GetColumn() += pos_change;
+        }
+        return Token(Token_right_arrow, "->", location);
     } else if (ch[0] == '+' || ch[0] == '-' ||
         ch[0] == '*' || ch[0] == '/' ||
         ch[0] == '%' || ch[0] == '^' ||

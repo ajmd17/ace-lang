@@ -1,5 +1,6 @@
 #include <ace-c/ace-c.hpp>
 #include <common/cli_args.hpp>
+#include <common/str_util.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
             }
 
             if (out_filename == "") {
-                out_filename = "out.bin";
+                out_filename = (str_util::strip_extension(filename.GetData()) + ".aex").c_str();
             }
         }
 

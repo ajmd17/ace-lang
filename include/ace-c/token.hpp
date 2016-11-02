@@ -18,6 +18,7 @@ enum TokenType {
     Token_colon,
     Token_dot,
     Token_ellipsis,
+    Token_right_arrow,
     Token_open_parenthesis,
     Token_close_parenthesis,
     Token_open_bracket,

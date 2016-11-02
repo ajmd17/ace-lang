@@ -27,6 +27,8 @@ std::string Token::TokenTypeToString(TokenType type)
         return ".";
     case Token_ellipsis:
         return "...";
+    case Token_right_arrow:
+        return "->";
     case Token_open_parenthesis:
         return "(";
     case Token_close_parenthesis:

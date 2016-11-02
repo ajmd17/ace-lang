@@ -5,11 +5,14 @@ type Customer {
     let name: String;
 }
 
+let cust: Customer;
+
 func test_function() {
-    let cust2: Customer;
-    cust2.name = "Test";
-    return cust2;
+    let res: Customer;
+    res.name = "Test";
+    return res;
 }
 
-let v = test_function();
-print(v.name);
+cust = test_function();
+print("cust.name = ", cust.name);
+cust.blah();

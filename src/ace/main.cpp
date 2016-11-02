@@ -4,7 +4,8 @@
 
 #include <string>
 
-std::string strip_extension(const std::string &filename) {
+std::string strip_extension(const std::string &filename)
+{
     auto pos = filename.find_last_of(".");
     if (pos == std::string::npos) {
         return filename;

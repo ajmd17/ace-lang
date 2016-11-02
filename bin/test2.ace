@@ -7,7 +7,7 @@ type Customer {
 
 func test_function() {
     let cust2: Customer;
-    cust2.name = "derp";
+    cust2.name = "Test";
     return cust2;
 }
 

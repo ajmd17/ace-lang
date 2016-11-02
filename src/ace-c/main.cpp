@@ -1,153 +1,12 @@
-#include <ace-c/module.hpp>
-#include <ace-c/semantic_analyzer.hpp>
-#include <ace-c/optimizer.hpp>
-#include <ace-c/compilation_unit.hpp>
-#include <ace-c/ast/ast_module_declaration.hpp>
-#include <ace-c/ast/ast_variable_declaration.hpp>
-#include <ace-c/ast/ast_variable.hpp>
-#include <ace-c/ast/ast_binary_expression.hpp>
-#include <ace-c/ast/ast_if_statement.hpp>
-#include <ace-c/ast/ast_true.hpp>
-#include <ace-c/ast/ast_null.hpp>
-#include <ace-c/ast/ast_block.hpp>
-#include <ace-c/emit/instruction.hpp>
-#include <ace-c/lexer.hpp>
-#include <ace-c/parser.hpp>
-#include <ace-c/compiler.hpp>
-#include <ace-c/dis/decompilation_unit.hpp>
-#include <ace-c/dis/byte_stream.hpp>
-
-#include <common/utf8.hpp>
-
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <algorithm>
-
-/** check if the option is set */
-inline bool has_option(char **begin, char **end, const std::string &opt)
-{
-    return std::find(begin, end, opt) != end;
-}
-
-/** retrieve the value that is found after an option */
-inline char *get_option_value(char **begin, char **end, const std::string &opt)
-{
-    char **it = std::find(begin, end, opt);
-    if (it != end && ++it != end) {
-        return *it;
-    }
-    return nullptr;
-}
-
-void build_source_file(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
-{
-    std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
-
-    if (!in_file.is_open()) {
-        utf::cout << "Could not open file: " << filename << "\n";
-    } else {
-        // get number of bytes
-        size_t max = in_file.tellg();
-        // seek to beginning
-        in_file.seekg(0, std::ios::beg);
-        // load stream into file buffer
-        SourceFile source_file(filename.GetData(), max);
-        in_file.read(source_file.GetBuffer(), max);
-        in_file.close();
-
-        SourceStream source_stream(&source_file);
-
-        CompilationUnit compilation_unit;
-        TokenStream token_stream;
-
-        Lexer lex(source_stream, &token_stream, &compilation_unit);
-        lex.Analyze();
-
-        AstIterator ast_iterator;
-        Parser parser(&ast_iterator, &token_stream, &compilation_unit);
-        parser.Parse();
-
-        SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
-        semantic_analyzer.Analyze();
-
-        compilation_unit.GetErrorList().SortErrors();
-        for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
-            utf::cout
-                << utf::Utf8String(error.GetLocation().GetFileName().c_str()) << " "
-                << "(" << (error.GetLocation().GetLine() + 1)
-                << ", " << (error.GetLocation().GetColumn() + 1)
-                << "): " << utf::Utf8String(error.GetText().c_str()) << "\n";
-        }
-
-        if (!compilation_unit.GetErrorList().HasFatalErrors()) {
-            // only optimize if there were no errors
-            // before this point
-            ast_iterator.ResetPosition();
-            Optimizer optimizer(&ast_iterator, &compilation_unit);
-            optimizer.Optimize();
-
-            // compile into bytecode instructions
-            ast_iterator.ResetPosition();
-            Compiler compiler(&ast_iterator, &compilation_unit);
-            compiler.Compile();
-
-            // emit bytecode instructions to file
-            std::ofstream out_file(out_filename.GetData(), std::ios::out | std::ios::binary);
-            if (!out_file.is_open()) {
-                utf::cout << "Could not open file for writing: " << out_filename << "\n";
-            } else {
-                out_file << compilation_unit.GetInstructionStream();
-            }
-            out_file.close();
-        }
-    }
-}
-
-void decompile_bytecode_file(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
-{
-    std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
-
-    if (!in_file.is_open()) {
-        utf::cout << "Could not open file: " << filename << "\n";
-    } else {
-        // get number of bytes
-        size_t max = in_file.tellg();
-        // seek to beginning
-        in_file.seekg(0, std::ios::beg);
-        // load stream into file buffer
-        SourceFile source_file(filename.GetData(), max);
-        in_file.read(source_file.GetBuffer(), max);
-        in_file.close();
-
-        ByteStream bs(&source_file);
-
-        DecompilationUnit decompilation_unit(bs);
-
-        bool write_to_file = false;
-        std::ostream *os = nullptr;
-        if (out_filename == "") {
-            os = &utf::cout;
-        } else {
-            write_to_file = true;
-            os = new std::ofstream(out_filename.GetData(), std::ios::out | std::ios::binary);
-        }
-
-        InstructionStream instruction_stream = decompilation_unit.Decompile(os);
-
-        if (write_to_file) {
-            delete os;
-        }
-    }
-}
+#include <ace-c/ace-c.hpp>
+#include <common/cli_args.hpp>
 
 int main(int argc, char *argv[])
 {
-    utf::utf8_init();
+    utf::init();
 
     if (argc == 1) {
         utf::cout << "\tUsage: " << argv[0] << " <file>\n";
-
     } else if (argc >= 2) {
         enum {
             COMPILE_SOURCE,
@@ -157,27 +16,27 @@ int main(int argc, char *argv[])
         utf::Utf8String filename;
         utf::Utf8String out_filename;
 
-        if (has_option(argv, argv + argc, "-d")) {
+        if (CLI::HasOption(argv, argv + argc, "-d")) {
             // disassembly mode
             mode = DECOMPILE_BYTECODE;
-            filename = get_option_value(argv, argv + argc, "-d");
+            filename = CLI::GetOptionValue(argv, argv + argc, "-d");
 
-            if (has_option(argv, argv + argc, "-o")) {
-                out_filename = get_option_value(argv, argv + argc, "-o");
+            if (CLI::HasOption(argv, argv + argc, "-o")) {
+                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
             }
         } else {
             mode = COMPILE_SOURCE;
 
-            if (has_option(argv, argv + argc, "-c")) {
-                filename = get_option_value(argv, argv + argc, "-c");
+            if (CLI::HasOption(argv, argv + argc, "-c")) {
+                filename = CLI::GetOptionValue(argv, argv + argc, "-c");
             }
 
             if (filename == "") {
                 filename = argv[1];
             }
 
-            if (has_option(argv, argv + argc, "-o")) {
-                out_filename = get_option_value(argv, argv + argc, "-o");
+            if (CLI::HasOption(argv, argv + argc, "-o")) {
+                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
             }
 
             if (out_filename == "") {
@@ -186,9 +45,9 @@ int main(int argc, char *argv[])
         }
 
         if (mode == COMPILE_SOURCE) {
-            build_source_file(filename, out_filename);
+            ace_compiler::BuildSourceFile(filename, out_filename);
         } else if (mode == DECOMPILE_BYTECODE) {
-            decompile_bytecode_file(filename, out_filename);
+            ace_compiler::DecompileBytecodeFile(filename, out_filename);
         }
     }
 

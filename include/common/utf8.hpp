@@ -24,22 +24,24 @@ namespace utf {
 
 #ifdef _WIN32
 typedef std::wostream utf8_ostream;
+typedef std::wistream utf8_istream;
 static utf8_ostream &cout = std::wcout;
+static utf8_istream &cin = std::wcin;
 #else
 typedef std::ostream utf8_ostream;
+typedef std::istream utf8_istream;
 static utf8_ostream &cout = std::cout;
+static utf8_istream &cin = std::cin;
 #endif
 
 typedef uint32_t u32char;
 
-inline void utf8_init()
+inline void init()
 {
 #ifdef _WIN32
     _setmode(_fileno(stdout), _O_U16TEXT);
 #endif
 }
-
-inline char *utf32_get_bytes(u32char &ch) { return reinterpret_cast<char*>(&ch); }
 
 inline bool utf32_isspace(u32char ch)
 {
@@ -279,6 +281,8 @@ inline void char32to8(u32char src, char *dst)
         dst[i] = src_bytes[i];
     }
 }
+
+inline char *get_bytes(u32char &ch) { return reinterpret_cast<char*>(&ch); }
 
 inline void utf8to32(const char *src, u32char *dst, int size)
 {

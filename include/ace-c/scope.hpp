@@ -11,6 +11,7 @@
 enum ScopeType {
     SCOPE_TYPE_NORMAL,
     SCOPE_TYPE_FUNCTION,
+    SCOPE_TYPE_LOOP,
 };
 
 class Scope {

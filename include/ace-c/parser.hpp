@@ -28,6 +28,7 @@
 #include <ace-c/ast/ast_null.hpp>
 #include <ace-c/ast/ast_block.hpp>
 #include <ace-c/ast/ast_if_statement.hpp>
+#include <ace-c/ast/ast_while_loop.hpp>
 #include <ace-c/ast/ast_print_statement.hpp>
 #include <ace-c/ast/ast_try_catch.hpp>
 #include <ace-c/ast/ast_type_specification.hpp>
@@ -72,6 +73,7 @@ private:
     std::shared_ptr<AstNull> ParseNull();
     std::shared_ptr<AstBlock> ParseBlock();
     std::shared_ptr<AstIfStatement> ParseIfStatement();
+    std::shared_ptr<AstWhileLoop> ParseWhileLoop();
     std::shared_ptr<AstPrintStatement> ParsePrintStatement();
     std::shared_ptr<AstTryCatch> ParseTryCatchStatement();
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,

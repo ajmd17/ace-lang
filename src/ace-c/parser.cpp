@@ -196,6 +196,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
             return ParseTypeDefinition();
         } else if (MatchKeyword(Keyword_if, false)) {
             return ParseIfStatement();
+        } else if (MatchKeyword(Keyword_while, false)) {
+            return ParseWhileLoop();
         } else if (MatchKeyword(Keyword_print, false)) {
             return ParsePrintStatement();
         } else if (MatchKeyword(Keyword_try, false)) {
@@ -423,6 +425,24 @@ std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
         return std::shared_ptr<AstIfStatement>(
             new AstIfStatement(conditional, block, else_block,
                 token->GetLocation()));
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstWhileLoop> Parser::ParseWhileLoop()
+{
+    const Token *token = ExpectKeyword(Keyword_while, true);
+    if (token != nullptr) {
+        std::shared_ptr<AstExpression> conditional = ParseExpression();
+        std::shared_ptr<AstBlock> block = ParseBlock();
+
+        if (conditional == nullptr || block == nullptr) {
+            return nullptr;
+        }
+
+        return std::shared_ptr<AstWhileLoop>(
+            new AstWhileLoop(conditional, block, token->GetLocation()));
     }
 
     return nullptr;

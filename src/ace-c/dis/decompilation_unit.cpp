@@ -281,6 +281,123 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case LOAD_STRING:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            // get string length
+            uint32_t len;
+            m_bs.Read(&len);
+
+            // read string based on length
+            char *str = new char[len + 1];
+            m_bs.Read(str, len);
+            str[len] = '\0';
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_str ["
+                        << "%" << (int)reg << ", "
+                        << "u32(" << len << "), "
+                        << "\"" << str << "\""
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint32_t, const char*>(code, reg, len, str);
+
+            delete[] str;
+
+            break;
+        }
+        case LOAD_ADDR:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint32_t val;
+            m_bs.Read(&val);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << "load_addr [%" << (int)reg << ", @(" << val << ")]" << std::endl;
+                os->unsetf(std::ios::hex);
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint32_t>(code, reg, val);
+
+            break;
+        }
+        case LOAD_FUNC:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint32_t addr;
+            m_bs.Read(&addr);
+
+            uint8_t nargs;
+            m_bs.Read(&nargs);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << "load_func [%" << (int)reg
+                      << ", @(" << addr << "), "
+                      << "u8(" << (int)nargs << ")]" << std::endl;
+                os->unsetf(std::ios::hex);
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(code, reg, addr, nargs);
+
+            break;
+        }
+        case LOAD_TYPE:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint8_t size;
+            m_bs.Read(&size);
+
+            /*uint32_t namelen;
+            m_bs.Read(&namelen);
+
+            char *name = new char[namelen + 1];
+            name[namelen] = '\0';
+            m_bs.Read(name, namelen);*/
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_type ["
+                        << "%" << (int)reg << ", "
+                        << "u8(" << (int)size << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t>(code, reg, size);
+
+            //delete[] name;
+
+            break;
+        }
         case LOAD_MEM:
         {
             uint8_t reg;

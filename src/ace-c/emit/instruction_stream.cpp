@@ -1,14 +1,14 @@
 #include <ace-c/emit/instruction_stream.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
 #include <algorithm>
 #include <cstring>
+#include <iostream>
 
 std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
 {
-    // create instructions to store static objects
-
     // sort all static objects by their id
     std::sort(instruction_stream.m_static_objects.begin(), instruction_stream.m_static_objects.end(),
         [](const StaticObject &a, const StaticObject &b)
@@ -36,33 +36,68 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
         }
     }
 
-    for (const StaticObject &so : instruction_stream.m_static_objects) {
-        if (so.m_type == StaticObject::TYPE_LABEL) {
-            Instruction<uint8_t, uint32_t> store_ins(STORE_STATIC_ADDRESS,
-                so.m_value.lbl + label_offset);
+    if (ace::compiler::Config::use_static_objects) {
+        // create instructions to store static objects
+        for (const StaticObject &so : instruction_stream.m_static_objects) {
+            if (so.m_type == StaticObject::TYPE_LABEL) {
+                Instruction<uint8_t, uint32_t> store_ins(STORE_STATIC_ADDRESS,
+                    so.m_value.lbl + label_offset);
 
-            for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
-                os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+                for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
+                    os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+                }
+
+            } else if (so.m_type == StaticObject::TYPE_STRING) {
+                Instruction<uint8_t, uint32_t, const char*> store_ins(STORE_STATIC_STRING,
+                    std::strlen(so.m_value.str), so.m_value.str);
+
+                for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
+                    os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+                }
+            } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
+                Instruction<uint8_t, uint32_t, uint8_t> store_ins(STORE_STATIC_FUNCTION,
+                    so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
+
+                for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
+                    os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+                }
+            } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
+                Instruction<uint8_t, uint8_t> store_ins(STORE_STATIC_TYPE, so.m_value.type_info.m_size);
+                for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
+                    os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+                }
             }
+        }
+    } else {
+        // static objects are turned off.
+        // convert all LOAD_STATIC instructions.
+        for (Instruction<> &ins : instruction_stream.m_data) {
+            if (ins.GetOpcode() == LOAD_STATIC) {
+                std::vector<char> idx_data = ins.m_data.at(0);
+                std::vector<char> reg_data = ins.m_data.at(1);
 
-        } else if (so.m_type == StaticObject::TYPE_STRING) {
-            Instruction<uint8_t, uint32_t, const char*> store_ins(STORE_STATIC_STRING,
-                std::strlen(so.m_value.str), so.m_value.str);
+                uint16_t idx = *reinterpret_cast<uint16_t*>(idx_data.data());
+                uint8_t reg = *reinterpret_cast<uint8_t*>(reg_data.data());
 
-            for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
-                os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
-            }
-        } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
-            Instruction<uint8_t, uint32_t, uint8_t> store_ins(STORE_STATIC_FUNCTION,
-                so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
+                const StaticObject &so = instruction_stream.m_static_objects.at(idx);
 
-            for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
-                os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
-            }
-        } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-            Instruction<uint8_t, uint8_t> store_ins(STORE_STATIC_TYPE, so.m_value.type_info.m_size);
-            for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
-                os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
+                if (so.m_type == StaticObject::TYPE_LABEL) {
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint32_t>(
+                        LOAD_ADDR, reg, so.m_value.lbl + label_offset);
+                    ins = tmp;
+                } else if (so.m_type == StaticObject::TYPE_STRING) {
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint32_t, const char*>(
+                        LOAD_STRING, reg, std::strlen(so.m_value.str), so.m_value.str);
+                    ins = tmp;
+                } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(
+                        LOAD_FUNC, reg, so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
+                    ins = tmp;
+                } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint8_t>(
+                        LOAD_TYPE, reg, so.m_value.type_info.m_size);
+                    ins = tmp;
+                }
             }
         }
     }

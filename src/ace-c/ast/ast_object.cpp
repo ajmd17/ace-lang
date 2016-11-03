@@ -24,6 +24,9 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // TODO: Make 'NEW' load the type into a register first.
+
     // store newly allocated object in register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(NEW, rp, static_id);

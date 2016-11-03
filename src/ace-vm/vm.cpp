@@ -324,6 +324,81 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
+    case LOAD_STRING:
+    {
+        uint8_t reg;
+        m_bs->Read(&reg);
+
+        // get string length
+        uint32_t len;
+        m_bs->Read(&len);
+
+        // read string based on length
+        char *str = new char[len + 1];
+        m_bs->Read(str, len);
+        str[len] = '\0';
+
+        // allocate heap value
+        HeapValue *hv = HeapAlloc();
+        if (hv != nullptr) {
+            hv->Assign(utf::Utf8String(str));
+
+            // assign register value to the allocated object
+            StackValue &sv = m_exec_thread.m_regs[reg];
+            sv.m_type = StackValue::HEAP_POINTER;
+            sv.m_value.ptr = hv;
+        }
+
+        delete[] str;
+
+        break;
+    }
+    case LOAD_ADDR:
+    {
+        uint8_t reg;
+        m_bs->Read(&reg);
+
+        uint32_t value;
+        m_bs->Read(&value);
+
+        StackValue &sv = m_exec_thread.m_regs[reg];
+        sv.m_type = StackValue::ADDRESS;
+        sv.m_value.addr = value;
+
+        break;
+    }
+    case LOAD_FUNC:
+    {
+        uint8_t reg;
+        m_bs->Read(&reg);
+
+        uint32_t addr;
+        m_bs->Read(&addr);
+
+        uint8_t nargs;
+        m_bs->Read(&nargs);
+
+        StackValue &sv = m_exec_thread.m_regs[reg];
+        sv.m_type = StackValue::FUNCTION;
+        sv.m_value.func.m_addr = addr;
+        sv.m_value.func.m_nargs = nargs;
+
+        break;
+    }
+    case LOAD_TYPE:
+    {
+        uint8_t reg;
+        m_bs->Read(&reg);
+
+        uint8_t size;
+        m_bs->Read(&size);
+
+        StackValue &sv = m_exec_thread.m_regs[reg];
+        sv.m_type = StackValue::TYPE_INFO;
+        sv.m_value.type_info.m_size = size;
+
+        break;
+    }
     case LOAD_MEM:
     {
         uint8_t dst;

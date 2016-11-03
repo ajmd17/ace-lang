@@ -3,7 +3,6 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/ast/ast_constant.hpp>
 #include <ace-c/emit/instruction.hpp>
-#include <ace-c/emit/static_object.hpp>
 
 #include <common/instructions.hpp>
 

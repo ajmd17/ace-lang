@@ -342,7 +342,12 @@ std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstEx
     std::vector<std::shared_ptr<AstIdentifier>> parts;
 
     do {
-        parts.push_back(ParseIdentifier());
+        auto ident = ParseIdentifier();
+        if (ident == nullptr) {
+            return nullptr;
+        }
+
+        parts.push_back(ident);
     } while (Match(Token_dot, true));
 
     return std::shared_ptr<AstMemberAccess>(

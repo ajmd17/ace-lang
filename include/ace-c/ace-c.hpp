@@ -10,6 +10,6 @@ bool BuildSourceString(const utf::Utf8String &code,
     const utf::Utf8String &out_filename);
 void DecompileBytecodeFile(const utf::Utf8String &filename,
     const utf::Utf8String &out_filename);
-} // namespace ace_compiler
+} // ace_compiler
 
 #endif

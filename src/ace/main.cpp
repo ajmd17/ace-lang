@@ -1,4 +1,6 @@
 #include <ace-c/ace-c.hpp>
+#include <ace-c/configuration.hpp>
+
 #include <ace-vm/ace-vm.hpp>
 
 #include <common/utf8.hpp>
@@ -9,6 +11,9 @@ int main(int argc, char *argv[])
     utf::init();
 
     if (argc == 1) {
+        // disable static objects, so we can append the bytecode files.
+        ace::compiler::Config::use_static_objects = false;
+
         utf::Utf8String temp_filename = "tmp.aex";
 
         int block_counter = 0;

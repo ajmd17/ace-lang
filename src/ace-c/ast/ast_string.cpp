@@ -16,6 +16,9 @@ AstString::AstString(const std::string &value, const SourceLocation &location)
 
 void AstString::Build(AstVisitor *visitor, Module *mod)
 {
+    // get active register
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
     StaticObject so(m_value.c_str());
 
     int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
@@ -26,9 +29,6 @@ void AstString::Build(AstVisitor *visitor, Module *mod)
     } else {
         m_static_id = found_id;
     }
-
-    // get active register
-    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // load static object into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);

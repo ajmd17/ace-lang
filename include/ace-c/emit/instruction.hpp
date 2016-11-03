@@ -17,6 +17,8 @@ public:
     {
     }
 
+    inline char GetOpcode() const { return m_data.back().back(); }
+
     std::vector<std::vector<char>> m_data;
 
 protected:

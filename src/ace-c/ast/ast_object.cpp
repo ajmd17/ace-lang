@@ -1,6 +1,7 @@
 #include <ace-c/ast/ast_object.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/module.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -25,9 +26,14 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
+
     // load the type into a register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, static_id);
+
+    if (!ace::compiler::Config::use_static_objects) {
+        // no padding fill (same size instructions)
+    }
 
     // store newly allocated object in same register
     visitor->GetCompilationUnit()->GetInstructionStream() <<

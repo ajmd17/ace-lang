@@ -17,7 +17,10 @@ public:
     Optimizer(AstIterator *ast_iterator, CompilationUnit *compilation_unit);
     Optimizer(const Optimizer &other);
 
-    void Optimize();
+    void Optimize(bool expect_module_decl = true);
+
+private:
+    void OptimizeInner();
 };
 
 #endif

@@ -9,7 +9,10 @@ public:
     SemanticAnalyzer(const SemanticAnalyzer &other);
 
     /** Generates the compilation unit structure from the given statement iterator */
-    void Analyze();
+    void Analyze(bool expect_module_decl = true);
+
+private:
+    void AnalyzerInner();
 };
 
 #endif

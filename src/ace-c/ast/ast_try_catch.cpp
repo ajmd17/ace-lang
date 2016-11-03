@@ -2,6 +2,7 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/emit/static_object.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -42,6 +43,11 @@ void AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, catch_label.m_id);
 
+    if (!ace::compiler::Config::use_static_objects) {
+        // fill with padding, for LOAD_ADDR instruction.
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+    }
+
     // send the instruction to enter the try-block
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(BEGIN_TRY, rp);
@@ -59,6 +65,11 @@ void AstTryCatch::Build(AstVisitor *visitor, Module *mod)
 
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+    if (!ace::compiler::Config::use_static_objects) {
+        // fill with padding, for LOAD_ADDR instruction.
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+    }
 
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(JMP, rp);

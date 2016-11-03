@@ -29,7 +29,7 @@ enum Instructions : char {
     STORE_STATIC_STRING,   // str  [u32 len, i8[] str]
     STORE_STATIC_ADDRESS,  // addr [@ addr]
     STORE_STATIC_FUNCTION, // func [@ addr, u8 nargs]
-    STORE_STATIC_TYPE,     // type [u8 size]
+    STORE_STATIC_TYPE,     // type [u16 size]
 
     /* Load a value into a register */
     LOAD_I32,    // load_i32    [% reg, i32 val]
@@ -41,7 +41,7 @@ enum Instructions : char {
     LOAD_STRING, // load_str    [% reg, u32 len, i8[] str]
     LOAD_ADDR,   // load_addr   [% reg, @ addr]
     LOAD_FUNC,   // load_func   [% reg, @ addr, u8 nargs]
-    LOAD_TYPE,   // load_type   [% reg, u8 size]
+    LOAD_TYPE,   // load_type   [% reg, u16 size]
     LOAD_MEM,    // load_mem    [% reg, % src, u8 idx]
     LOAD_NULL,   // load_null   [% reg]
     LOAD_TRUE,   // load_true   [% reg]

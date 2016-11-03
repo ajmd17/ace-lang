@@ -46,6 +46,7 @@ enum ErrorMessage {
     Msg_not_a_function,
     Msg_undefined_type,
     Msg_redefined_type,
+    Msg_redefined_builtin_type,
     Msg_mismatched_types,
     Msg_not_a_data_member,
     Msg_bitwise_operands_must_be_int,

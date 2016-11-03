@@ -42,7 +42,7 @@ public:
     Parser(const Parser &other);
 
     /** Generate an AST structure from the token stream */
-    void Parse();
+    void Parse(bool expect_module_decl = true);
 
 private:
     AstIterator *m_ast_iterator;
@@ -80,6 +80,8 @@ private:
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration();
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition();
+    std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool func_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});
+    std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstLocalImport> ParseLocalImport();

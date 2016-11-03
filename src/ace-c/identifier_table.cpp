@@ -1,4 +1,5 @@
 #include <ace-c/identifier_table.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <unordered_set>
 #include <cassert>
@@ -18,7 +19,7 @@ int IdentifierTable::CountUsedVariables() const
 {
     std::unordered_set<int> used_variables;
     for (auto &ident : m_identifiers) {
-        if (ident->GetUseCount() > 0) {
+        if (!ace::compiler::Config::cull_unused_objects || ident->GetUseCount() > 0) {
             if (used_variables.find(ident->GetIndex()) == used_variables.end()) {
                 used_variables.insert(ident->GetIndex());
             }

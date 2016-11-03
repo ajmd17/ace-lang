@@ -33,6 +33,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_not_a_function, "'%' is not a function" },
     { Msg_undefined_type, "'%' is not a built-in or user-defined type" },
     { Msg_redefined_type, "type '%' has already been defined in this module" },
+    { Msg_redefined_builtin_type, "cannot create a type called '%', it is a built-in type" },
     { Msg_mismatched_types, "mismatched types '%' and '%'" },
     { Msg_not_a_data_member, "'%' is not a member of type '%'" },
     { Msg_bitwise_operands_must_be_int, "bitwise operands must both be 'Int', got '%' and '%'" },

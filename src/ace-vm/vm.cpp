@@ -228,7 +228,7 @@ void VM::HandleInstruction(uint8_t code)
     }
     case STORE_STATIC_TYPE:
     {
-        uint8_t size;
+        uint16_t size;
         m_bs->Read(&size);
 
         StackValue sv;
@@ -390,7 +390,7 @@ void VM::HandleInstruction(uint8_t code)
         uint8_t reg;
         m_bs->Read(&reg);
 
-        uint8_t size;
+        uint16_t size;
         m_bs->Read(&size);
 
         StackValue &sv = m_exec_thread.m_regs[reg];

@@ -1,6 +1,17 @@
 module test;
 
-type Customer {
+
+func X(y) {
+    y();
+}
+
+func Y() {
+    print("hello from Y()")
+}
+
+X(Y);
+
+/*type Customer {
     let id: Int;
     let name: String;
 }
@@ -15,3 +26,7 @@ func test_function() {
 
 cust = test_function();
 print("cust.name = ", cust.name);
+
+let x = 74 * 4747374 + 4848;
+print("x = ", x);
+*/

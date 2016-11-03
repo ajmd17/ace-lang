@@ -3,6 +3,7 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/module.hpp>
 #include <ace-c/object_type.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -35,7 +36,7 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 
 void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)
 {
-    if (m_identifier->GetUseCount() > 0) {
+    if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
         // get current stack size
         int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         // set identifier stack location

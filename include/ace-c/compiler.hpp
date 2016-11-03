@@ -8,7 +8,10 @@ public:
     Compiler(AstIterator *ast_iterator, CompilationUnit *compilation_unit);
     Compiler(const Compiler &other);
 
-    void Compile();
+    void Compile(bool expect_module_decl = true);
+
+private:
+    void CompileInner();
 };
 
 #endif

@@ -118,12 +118,14 @@ struct ExecutionThread {
 
 class VM {
 public:
-    VM(BytecodeStream *bs);
+    VM(BytecodeStream *bs = nullptr);
     VM(const VM &other) = delete;
     ~VM();
 
     inline Heap &GetHeap() { return m_heap; }
     inline ExecutionThread &GetExecutionThread() { return m_exec_thread; }
+    inline BytecodeStream *GetBytecodeStream() const { return m_bs; }
+    inline void SetBytecodeStream(BytecodeStream *bs) { m_bs = bs; }
 
     HeapValue *HeapAlloc();
     void MarkObject(StackValue &object);

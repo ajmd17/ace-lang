@@ -4,6 +4,7 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/module.hpp>
 #include <ace-c/object_type.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -112,9 +113,16 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     // jump to end as to not execute the function body
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    // load the label address from static memory into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+        // load the label address from static memory into register
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+    if (!ace::compiler::Config::use_static_objects) {
+        // fill with padding, for LOAD_ADDR instruction.
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+    }
+
     // jump if they are equal: i.e the value is false
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(JMP, rp);
@@ -165,6 +173,11 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     // load the static object into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);
+
+    if (!ace::compiler::Config::use_static_objects) {
+        // fill with padding, for LOAD_FUNC instruction.
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 3;
+    }
 }
 
 void AstFunctionExpression::Optimize(AstVisitor *visitor, Module *mod)

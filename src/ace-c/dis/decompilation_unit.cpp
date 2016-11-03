@@ -103,7 +103,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
         }
         case STORE_STATIC_TYPE:
         {
-            uint8_t size;
+            uint16_t size;
             m_bs.Read(&size);
 
             /*uint32_t namelen;
@@ -120,7 +120,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
                 (*os)
                     << "type ["
-                        << "u8(" << (int)size << ")"
+                        << "u16(" << (int)size << ")"
                     << "]"
                     << std::endl;
             }
@@ -369,7 +369,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
             uint8_t reg;
             m_bs.Read(&reg);
 
-            uint8_t size;
+            uint16_t size;
             m_bs.Read(&size);
 
             /*uint32_t namelen;
@@ -387,7 +387,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 (*os)
                     << "load_type ["
                         << "%" << (int)reg << ", "
-                        << "u8(" << (int)size << ")"
+                        << "u16(" << (int)size << ")"
                     << "]"
                     << std::endl;
             }

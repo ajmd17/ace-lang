@@ -6,7 +6,7 @@
 
 class BytecodeStream {
 public:
-    BytecodeStream(char *buffer, size_t size);
+    BytecodeStream(char *buffer, size_t size, size_t position = 0);
     BytecodeStream(const BytecodeStream &other) = delete;
 
     inline void ReadBytes(char *ptr, size_t num_bytes)

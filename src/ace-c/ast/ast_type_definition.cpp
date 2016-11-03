@@ -24,6 +24,11 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_redefined_type,
                 m_location, m_name));
+    } else if (ObjectType::GetBuiltinType(m_name)) {
+        // error; already a built-in type
+        visitor->GetCompilationUnit()->GetErrorList().AddError(
+            CompilerError(Level_fatal, Msg_redefined_builtin_type,
+                m_location, m_name));
     } else {
         // open the scope for data members
         mod->m_scopes.Open(Scope());

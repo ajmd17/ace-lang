@@ -4,6 +4,7 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/emit/static_object.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -29,9 +30,15 @@ void AstString::Build(AstVisitor *visitor, Module *mod)
     } else {
         m_static_id = found_id;
     }
+
     // load static object into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);
+
+    if (!ace::compiler::Config::use_static_objects) {
+        // fill with padding for LOAD_STRING instruction
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2 + std::strlen(so.m_value.str);
+    }
 }
 
 int AstString::IsTrue() const

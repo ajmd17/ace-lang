@@ -14,7 +14,10 @@ public:
     InstructionStream();
     InstructionStream(const InstructionStream &other);
 
+    inline void ClearInstructions() { m_position = 0; m_data.clear(); }
+
     inline size_t GetPosition() const { return m_position; }
+    inline size_t &GetPosition() { return m_position; }
 
     inline const std::vector<Instruction<>> &GetData() const { return m_data; }
 
@@ -29,7 +32,8 @@ public:
     inline int NewStaticId() { return m_static_id++; }
 
     inline void AddStaticObject(const StaticObject &static_object) { m_static_objects.push_back(static_object); }
-    inline int FindStaticObject(const StaticObject &static_object)
+
+    inline int FindStaticObject(const StaticObject &static_object) const
     {
         for (const StaticObject &so : m_static_objects) {
             if (so == static_object) {

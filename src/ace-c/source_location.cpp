@@ -1,6 +1,6 @@
 #include <ace-c/source_location.hpp>
 
-const SourceLocation SourceLocation::eof(-1, -1, "eof");
+const SourceLocation SourceLocation::eof(-1, -1, "<eof>");
 
 SourceLocation::SourceLocation(int line, int column, const std::string &filename)
     : m_line(line),

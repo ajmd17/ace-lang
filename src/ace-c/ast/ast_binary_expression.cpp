@@ -11,6 +11,7 @@
 #include <ace-c/optimizer.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/module.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -237,6 +238,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                         // load the label address from static memory into register 0
                         visitor->GetCompilationUnit()->GetInstructionStream() <<
                             Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                        if (!ace::compiler::Config::use_static_objects) {
+                            // fill with padding, for LOAD_ADDR instruction.
+                            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                        }
+
                         // jump to end, the value is false
                         visitor->GetCompilationUnit()->GetInstructionStream() <<
                             Instruction<uint8_t, uint8_t>(JMP, rp);
@@ -257,6 +264,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     // load the label address from static memory into register 0
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                    if (!ace::compiler::Config::use_static_objects) {
+                        // fill with padding, for LOAD_ADDR instruction.
+                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                    }
+
                     // jump if they are equal: i.e the value is false
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(JE, rp);
@@ -274,10 +287,15 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     folded = folded_value == 1 || folded_value == 0;
 
                     if (folded_value == 1) {
-                        // value is equal to 0, therefor it is false.
+                        // value is equal to 0, therefore it is false.
                         // load the label address from static memory into register 0
                         visitor->GetCompilationUnit()->GetInstructionStream() <<
                             Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                        if (!ace::compiler::Config::use_static_objects) {
+                            // fill with padding, for LOAD_ADDR instruction.
+                            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                        }
                         // jump to end, the value is false
                         visitor->GetCompilationUnit()->GetInstructionStream() <<
                             Instruction<uint8_t, uint8_t>(JMP, rp);
@@ -294,9 +312,16 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     // compare rhs to 0 (false)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(CMPZ, rp);
-                    // load the label address from static memory into register 0
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                        // load the label address from static memory into register 0
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                    if (!ace::compiler::Config::use_static_objects) {
+                        // fill with padding, for LOAD_ADDR instruction.
+                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                    }
+
                     // jump if they are equal: i.e the value is false
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(JE, rp);
@@ -314,9 +339,15 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             // get register position
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-            // load the label address from static memory into register 1
+                // load the label address from static memory into register 1
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+            if (!ace::compiler::Config::use_static_objects) {
+                // fill with padding, for LOAD_ADDR instruction.
+                visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+            }
+
             // jump
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t>(JMP, rp);
@@ -363,9 +394,15 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     } else if (folded_value == 0) {
 
                         // value is equal to 1
-                        // load the label address from static memory into register 0
+                            // load the label address from static memory into register 0
                         visitor->GetCompilationUnit()->GetInstructionStream() <<
                             Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+                        if (!ace::compiler::Config::use_static_objects) {
+                            // fill with padding, for LOAD_ADDR instruction.
+                            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                        }
+
                         // jump to end, the value is true and we don't have to check the second half
                         visitor->GetCompilationUnit()->GetInstructionStream() <<
                             Instruction<uint8_t, uint8_t>(JMP, rp);
@@ -380,9 +417,16 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     // compare lhs to 0 (false)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(CMPZ, rp);
-                    // load the label address from static memory into register 0
+
+                        // load the label address from static memory into register 0
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+                    if (!ace::compiler::Config::use_static_objects) {
+                        // fill with padding, for LOAD_ADDR instruction.
+                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                    }
+
                     // jump if they are not equal: i.e the value is true
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(JNE, rp);
@@ -402,9 +446,15 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                         if (folded_value == 1) {
                             // value is equal to 0
                         } else if (folded_value == 0) {
-                            // value is equal to 1 so jump to end
+                                // value is equal to 1 so jump to end
                             visitor->GetCompilationUnit()->GetInstructionStream() <<
                                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+                            if (!ace::compiler::Config::use_static_objects) {
+                                // fill with padding, for LOAD_ADDR instruction.
+                                visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                            }
+
                             visitor->GetCompilationUnit()->GetInstructionStream() <<
                                 Instruction<uint8_t, uint8_t>(JMP, rp);
                         }
@@ -419,9 +469,16 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     // compare rhs to 0 (false)
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(CMPZ, rp);
-                    // load the label address from static memory into register 0
+
+                        // load the label address from static memory into register 0
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+                    if (!ace::compiler::Config::use_static_objects) {
+                        // fill with padding, for LOAD_ADDR instruction.
+                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                    }
+
                     // jump if they are equal: i.e the value is true
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t>(JNE, rp);
@@ -441,6 +498,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             // load the label address from static memory into register 1
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+            if (!ace::compiler::Config::use_static_objects) {
+                // fill with padding, for LOAD_ADDR instruction.
+                visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+            }
+
             // jump if they are equal: i.e the value is false
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t>(JMP, rp);
@@ -493,6 +556,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 // load the label address from static memory into register 0
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+                if (!ace::compiler::Config::use_static_objects) {
+                    // fill with padding, for LOAD_ADDR instruction.
+                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                }
+
                 // jump if they are equal
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t>(JE, rp);
@@ -506,9 +575,16 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
                 // get register position
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
                 // load the label address from static memory into register 1
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                if (!ace::compiler::Config::use_static_objects) {
+                    // fill with padding, for LOAD_ADDR instruction.
+                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                }
+
                 // jump if they are equal: i.e the value is false
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t>(JMP, rp);

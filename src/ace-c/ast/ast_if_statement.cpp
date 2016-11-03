@@ -2,6 +2,7 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/emit/static_object.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -59,9 +60,19 @@ void AstIfStatement::Build(AstVisitor *visitor, Module *mod)
         if (m_else_block != nullptr) {
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, else_label.m_id);
+
+            if (!ace::compiler::Config::use_static_objects) {
+                // fill with padding, for LOAD_ADDR instruction.
+                visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+            }
         } else {
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+            if (!ace::compiler::Config::use_static_objects) {
+                // fill with padding, for LOAD_ADDR instruction.
+                visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+            }
         }
 
         // jump if they are equal: i.e the value is false
@@ -74,9 +85,16 @@ void AstIfStatement::Build(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
         // get current register index
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
         // load the label address from static memory into register 1
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        }
+
         // jump if they are equal: i.e the value is false
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(JMP, rp);

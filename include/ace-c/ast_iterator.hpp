@@ -12,7 +12,10 @@ public:
     AstIterator(const AstIterator &other);
 
     inline void Push(const std::shared_ptr<AstStatement> &statement) { m_list.push_back(statement); }
+    inline void Pop() { m_list.pop_back(); }
+    inline int GetPosition() const { return m_position; }
     inline void ResetPosition() { m_position = 0; }
+    inline void SetPosition(int position) { m_position = position; }
     inline std::shared_ptr<AstStatement> &Peek() { return m_list[m_position]; }
     inline const std::shared_ptr<AstStatement> &Peek() const { return m_list[m_position]; }
     inline std::shared_ptr<AstStatement> Next() { return m_list[m_position++]; }

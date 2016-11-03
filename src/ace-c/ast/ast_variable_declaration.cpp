@@ -3,6 +3,7 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/object_type.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 
@@ -57,7 +58,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
     AstDeclaration::Visit(visitor, mod);
 
     assert(m_identifier != nullptr);
-    
+
     m_identifier->SetObjectType(object_type);
     m_identifier->SetCurrentValue(m_assignment);
 }
@@ -65,7 +66,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
     assert(m_assignment != nullptr);
-    if (m_identifier->GetUseCount() > 0) {
+    if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
         // get current stack size
         int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         // set identifier stack location

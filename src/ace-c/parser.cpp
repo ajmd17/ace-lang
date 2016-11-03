@@ -118,19 +118,21 @@ const SourceLocation &Parser::CurrentLocation() const
     return peek != nullptr ? peek->GetLocation() : SourceLocation::eof;
 }
 
-void Parser::Parse()
+void Parser::Parse(bool expect_module_decl)
 {
-    std::shared_ptr<AstModuleDeclaration> module_ast(nullptr);
+    if (expect_module_decl) {
+        std::shared_ptr<AstModuleDeclaration> module_ast(nullptr);
 
-    // all source code files must start with module declaration
-    const Token *module_decl = ExpectKeyword(Keyword_module, true);
-    if (module_decl != nullptr) {
-        const Token *module_name = Expect(Token_identifier, true);
-        if (module_name != nullptr) {
-            module_ast.reset(new AstModuleDeclaration(
-                module_name->GetValue(), module_decl->GetLocation()));
+        // all source code files must start with module declaration
+        const Token *module_decl = ExpectKeyword(Keyword_module, true);
+        if (module_decl != nullptr) {
+            const Token *module_name = Expect(Token_identifier, true);
+            if (module_name != nullptr) {
+                module_ast.reset(new AstModuleDeclaration(
+                    module_name->GetValue(), module_decl->GetLocation()));
 
-            m_ast_iterator->Push(module_ast);
+                m_ast_iterator->Push(module_ast);
+            }
         }
     }
 
@@ -601,58 +603,85 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition()
     const Token *identifier = Expect(Token_identifier, true);
 
     if (token != nullptr && identifier != nullptr) {
-        std::vector<std::shared_ptr<AstParameter>> parameters;
-        std::shared_ptr<AstBlock> block;
 
-        if (Match(Token_open_parenthesis, true)) {
-            bool found_variadic = false;
+        auto expr = ParseFunctionExpression(false, ParseFunctionParameters());
+        if (expr != nullptr) {
+            return std::shared_ptr<AstFunctionDefinition>(
+                new AstFunctionDefinition(identifier->GetValue(), expr, token->GetLocation()));
+        }
+    }
 
-            while (true) {
-                const Token *tok = Match(Token_identifier, true);
-                if (tok != nullptr) {
-                    if (found_variadic) {
-                        // found another parameter after variadic
-                        CompilerError error(Level_fatal,
-                            Msg_argument_after_varargs, tok->GetLocation());
+    return nullptr;
+}
 
-                        m_compilation_unit->GetErrorList().AddError(error);
-                    }
-
-                    bool is_variadic = false;
-                    if (Match(Token_ellipsis, true)) {
-                        is_variadic = true;
-                        found_variadic = true;
-                    }
-
-                    parameters.push_back(std::shared_ptr<AstParameter>(
-                        new AstParameter(tok->GetValue(), is_variadic, tok->GetLocation())));
-
-                    if (!Match(Token_comma, true)) {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            Expect(Token_close_parenthesis, true);
+std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool func_keyword,
+    std::vector<std::shared_ptr<AstParameter>> params)
+{
+    const Token *token = func_keyword ? ExpectKeyword(Keyword_func, true) : nullptr;
+    SourceLocation location = token != nullptr ? token->GetLocation() : CurrentLocation();
+    if (!func_keyword || token != nullptr) {
+        if (func_keyword) {
+            // read params
+            params = ParseFunctionParameters();
         }
 
-        std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
+        std::shared_ptr<AstTypeSpecification> type_spec;
+
         if (Match(Token_right_arrow, true)) {
             // read return type after right arrow for functions
             type_spec = ParseTypeSpecification();
         }
 
         // parse function block
-        block = ParseBlock();
-
-        return std::shared_ptr<AstFunctionDefinition>(new AstFunctionDefinition(identifier->GetValue(),
-                std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression(
-                    parameters, type_spec, block, token->GetLocation())), token->GetLocation()));
+        auto block = ParseBlock();
+        if (block != nullptr) {
+            return std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression(
+                params, type_spec, block, location));
+        }
     }
 
     return nullptr;
+}
+
+std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
+{
+    std::vector<std::shared_ptr<AstParameter>> parameters;
+
+    if (Match(Token_open_parenthesis, true)) {
+        bool found_variadic = false;
+
+        while (true) {
+            const Token *tok = Match(Token_identifier, true);
+            if (tok != nullptr) {
+                if (found_variadic) {
+                    // found another parameter after variadic
+                    CompilerError error(Level_fatal,
+                        Msg_argument_after_varargs, tok->GetLocation());
+
+                    m_compilation_unit->GetErrorList().AddError(error);
+                }
+
+                bool is_variadic = false;
+                if (Match(Token_ellipsis, true)) {
+                    is_variadic = true;
+                    found_variadic = true;
+                }
+
+                parameters.push_back(std::shared_ptr<AstParameter>(
+                    new AstParameter(tok->GetValue(), is_variadic, tok->GetLocation())));
+
+                if (!Match(Token_comma, true)) {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        Expect(Token_close_parenthesis, true);
+    }
+
+    return parameters;
 }
 
 std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()

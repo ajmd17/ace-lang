@@ -16,16 +16,14 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
             return a.m_id < b.m_id;
         });
 
-    // calculate label offset
-    // for each label, it increases by the size of the opcode,
-    // plus the size of the address
-    uint32_t label_offset = (uint32_t)os.tellp();
-    for (const StaticObject &so : instruction_stream.m_static_objects) {
-        label_offset += sizeof(uint8_t);  // opcode
-        if (!ace::compiler::Config::use_static_objects) {
-            // have to make room for register in instruction
-            label_offset += sizeof(uint8_t);
-        } else {
+    int label_offset = (int)os.tellp();
+
+    if (ace::compiler::Config::use_static_objects) {
+        // calculate label offset
+        // for each label, it increases by the size of the opcode,
+        // plus the size of the address
+        for (const StaticObject &so : instruction_stream.m_static_objects) {
+            label_offset += sizeof(uint8_t);  // opcode
             if (so.m_type == StaticObject::TYPE_LABEL) {
                 label_offset += sizeof(uint32_t); // address
             } else if (so.m_type == StaticObject::TYPE_STRING) {
@@ -35,13 +33,11 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                 label_offset += sizeof(uint32_t); // address
                 label_offset += sizeof(uint8_t); // num args
             } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-                label_offset += sizeof(uint8_t); // type size
+                label_offset += sizeof(uint16_t); // type size
                 // ignore type name for now
             }
         }
-    }
 
-    if (ace::compiler::Config::use_static_objects) {
         // create instructions to store static objects
         for (const StaticObject &so : instruction_stream.m_static_objects) {
             if (so.m_type == StaticObject::TYPE_LABEL) {
@@ -67,13 +63,59 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                     os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
                 }
             } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-                Instruction<uint8_t, uint8_t> store_ins(STORE_STATIC_TYPE, so.m_value.type_info.m_size);
+                Instruction<uint8_t, uint16_t> store_ins(STORE_STATIC_TYPE, so.m_value.type_info.m_size);
                 for (int i = store_ins.m_data.size() - 1; i >= 0; i--) {
                     os.write(&store_ins.m_data[i][0], store_ins.m_data[i].size());
                 }
             }
         }
     } else {
+        // accumulate label offset
+        /*for (const Instruction<> &ins : instruction_stream.m_data) {
+            if (ins.GetOpcode() == LOAD_STATIC) {
+                std::vector<char> idx_data = ins.m_data.at(0);
+                std::vector<char> reg_data = ins.m_data.at(1);
+
+                uint16_t idx = *reinterpret_cast<uint16_t*>(idx_data.data());
+                uint8_t reg = *reinterpret_cast<uint8_t*>(reg_data.data());
+
+                const StaticObject &so = instruction_stream.m_static_objects.at(idx);
+
+                size_t size_before = 0;
+                for (const auto &vec : ins.m_data) {
+                    size_before += vec.size();
+                }
+
+                size_t size_after = 0;
+                if (so.m_type == StaticObject::TYPE_LABEL) {
+                    // LOAD_ADDR size
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint32_t);
+                } else if (so.m_type == StaticObject::TYPE_STRING) {
+                    // LOAD_STRING size
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint32_t);
+                    size_after += std::strlen(so.m_value.str);
+                } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
+                    // LOAD_FUNC size
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint32_t);
+                    size_after += sizeof(uint8_t);
+                } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
+                    // LOAD_TYPE size
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint8_t);
+                    size_after += sizeof(uint8_t);
+                }
+
+                int diff = size_after - size_before;
+                label_offset += diff;
+            }
+        }*/
+
         // static objects are turned off.
         // convert all LOAD_STATIC instructions.
         for (Instruction<> &ins : instruction_stream.m_data) {
@@ -99,7 +141,7 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                         LOAD_FUNC, reg, so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
                     ins = tmp;
                 } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint8_t>(
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint16_t>(
                         LOAD_TYPE, reg, so.m_value.type_info.m_size);
                     ins = tmp;
                 }

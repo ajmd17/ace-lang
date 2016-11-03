@@ -1,7 +1,7 @@
 import os
 import sys
 
-compiler = "g++"
+compiler = "clang++"
 dyn_ext = "so"
 
 if os.name == "nt":
@@ -62,6 +62,7 @@ def build_executable(src_dir, bin_file, linkfiles):
             if filename.endswith(".cpp"):
                 command += " {}/{} ".format(dirpath, filename)
 
+    linkstr += " -Wl,-rpath='$ORIGIN'"
     command += " {}".format(linkstr)
 
     os.system("{}".format(command))
@@ -80,5 +81,5 @@ def build_dynamic(src_dir, bin_file):
 
 # 0 - Build executable ace-c and ace-vm.
 # 1 - Build ace-c and ace-vm as dynamic libs, and build ace as executable.
-build_mode = 0
+build_mode = 1
 build_all(build_mode)

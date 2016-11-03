@@ -15,4 +15,3 @@ func test_function() {
 
 cust = test_function();
 print("cust.name = ", cust.name);
-cust.blah();

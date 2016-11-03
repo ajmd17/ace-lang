@@ -86,6 +86,60 @@ void BuildSourceFile(const utf::Utf8String &filename, const utf::Utf8String &out
     }
 }
 
+bool BuildSourceString(const utf::Utf8String &code, const utf::Utf8String &out_filename)
+{
+    SourceFile source_file("<cli>", code.GetBufferSize());
+    std::memcpy(source_file.GetBuffer(), code.GetData(), code.GetBufferSize());
+
+    SourceStream source_stream(&source_file);
+
+    CompilationUnit compilation_unit;
+    TokenStream token_stream;
+
+    Lexer lex(source_stream, &token_stream, &compilation_unit);
+    lex.Analyze();
+
+    AstIterator ast_iterator;
+    Parser parser(&ast_iterator, &token_stream, &compilation_unit);
+    parser.Parse();
+
+    SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
+    semantic_analyzer.Analyze();
+
+    compilation_unit.GetErrorList().SortErrors();
+    for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
+        utf::cout
+            << utf::Utf8String(error.GetLocation().GetFileName().c_str()) << " "
+            << "(" << (error.GetLocation().GetLine() + 1)
+            << ", " << (error.GetLocation().GetColumn() + 1)
+            << "): " << utf::Utf8String(error.GetText().c_str()) << "\n";
+    }
+
+    if (!compilation_unit.GetErrorList().HasFatalErrors()) {
+        // only optimize if there were no errors
+        // before this point
+        ast_iterator.ResetPosition();
+        Optimizer optimizer(&ast_iterator, &compilation_unit);
+        optimizer.Optimize();
+
+        // compile into bytecode instructions
+        ast_iterator.ResetPosition();
+        Compiler compiler(&ast_iterator, &compilation_unit);
+        compiler.Compile();
+
+        // emit bytecode instructions to file
+        std::ofstream out_file(out_filename.GetData(), std::ios::out | std::ios::binary);
+        if (!out_file.is_open()) {
+            utf::cout << "Could not open file for writing: " << out_filename << "\n";
+        } else {
+            out_file << compilation_unit.GetInstructionStream();
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
 {
     std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);

@@ -668,14 +668,14 @@ void VM::HandleInstruction(uint8_t code)
     }
     case NEW:
     {
-        uint8_t reg;
-        m_bs->Read(&reg);
+        uint8_t dst;
+        m_bs->Read(&dst);
 
-        uint16_t index;
-        m_bs->Read(&index);
+        uint8_t src;
+        m_bs->Read(&src);
 
-        // read value from static memory
-        StackValue &type_sv = m_static_memory[index];
+        // read value from register
+        StackValue &type_sv = m_exec_thread.m_regs[src];
         assert(type_sv.m_type == StackValue::TYPE_INFO && "object must be type info");
 
         // get number of data members
@@ -687,7 +687,7 @@ void VM::HandleInstruction(uint8_t code)
             hv->Assign(Object(size));
 
             // assign register value to the allocated object
-            StackValue &sv = m_exec_thread.m_regs[reg];
+            StackValue &sv = m_exec_thread.m_regs[dst];
             sv.m_type = StackValue::HEAP_POINTER;
             sv.m_value.ptr = hv;
         }

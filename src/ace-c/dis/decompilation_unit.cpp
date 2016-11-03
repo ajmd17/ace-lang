@@ -801,11 +801,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
         }
         case NEW:
         {
-            uint8_t reg;
-            m_bs.Read(&reg);
+            uint8_t src;
+            m_bs.Read(&src);
 
-            uint16_t idx;
-            m_bs.Read(&idx);
+            uint8_t dst;
+            m_bs.Read(&dst);
 
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
@@ -814,13 +814,13 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
                 (*os)
                     << "new ["
-                        << "%" << (int)reg << ", "
-                        << "#" << (int)idx
+                        << "%" << (int)src << ", "
+                        << "%" << (int)dst
                     << "]"
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, idx);
+            is << Instruction<uint8_t, uint8_t, uint8_t>(code, src, dst);
 
             break;
         }

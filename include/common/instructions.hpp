@@ -71,7 +71,7 @@ enum Instructions : char {
     BEGIN_TRY, // begin_try [% catch_addr]
     END_TRY,
 
-    NEW, // new [% dst, # type_idx]
+    NEW, // new [% dst, % type]
 
     /* Compare to register values */
     CMP,  // cmp [% lhs, % rhs]

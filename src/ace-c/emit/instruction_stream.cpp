@@ -22,17 +22,22 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
     uint32_t label_offset = (uint32_t)os.tellp();
     for (const StaticObject &so : instruction_stream.m_static_objects) {
         label_offset += sizeof(uint8_t);  // opcode
-        if (so.m_type == StaticObject::TYPE_LABEL) {
-            label_offset += sizeof(uint32_t); // address
-        } else if (so.m_type == StaticObject::TYPE_STRING) {
-            label_offset += sizeof(uint32_t); // string length
-            label_offset += std::strlen(so.m_value.str);
-        } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
-            label_offset += sizeof(uint32_t); // address
-            label_offset += sizeof(uint8_t); // num args
-        } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-            label_offset += sizeof(uint8_t); // type size
-            // ignore type name for now
+        if (!ace::compiler::Config::use_static_objects) {
+            // have to make room for register in instruction
+            label_offset += sizeof(uint8_t);
+        } else {
+            if (so.m_type == StaticObject::TYPE_LABEL) {
+                label_offset += sizeof(uint32_t); // address
+            } else if (so.m_type == StaticObject::TYPE_STRING) {
+                label_offset += sizeof(uint32_t); // string length
+                label_offset += std::strlen(so.m_value.str);
+            } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
+                label_offset += sizeof(uint32_t); // address
+                label_offset += sizeof(uint8_t); // num args
+            } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
+                label_offset += sizeof(uint8_t); // type size
+                // ignore type name for now
+            }
         }
     }
 

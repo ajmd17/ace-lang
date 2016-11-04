@@ -1,0 +1,6 @@
+module mx;
+
+func SayHi() -> Int {
+	print("hi");
+	return 73;
+}

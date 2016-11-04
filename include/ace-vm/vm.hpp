@@ -122,6 +122,8 @@ public:
     VM(const VM &other) = delete;
     ~VM();
 
+    void PushNativeFunctionPtr(NativeFunctionPtr_t ptr);
+
     inline Heap &GetHeap() { return m_heap; }
     inline ExecutionThread &GetExecutionThread() { return m_exec_thread; }
     inline BytecodeStream *GetBytecodeStream() const { return m_bs; }
@@ -132,6 +134,7 @@ public:
     void MarkObjects(ExecutionThread *thread);
     void Echo(StackValue &value);
     void InvokeFunction(StackValue &value, uint8_t num_args);
+    void InvokeNativeFunction(StackValue &value, ExecutionThread *thread);
     void HandleInstruction(uint8_t code);
     void Execute();
 

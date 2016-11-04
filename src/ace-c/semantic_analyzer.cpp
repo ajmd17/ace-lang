@@ -36,6 +36,11 @@ void SemanticAnalyzer::AnalyzerInner()
 
     Module *mod = m_compilation_unit->m_modules[m_compilation_unit->m_module_index].get();
 
+    // visit all built-in objects defined
+    for (auto &decl : m_decls) {
+        decl->Visit(this, mod);
+    }
+
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Visit(this, mod);
     }

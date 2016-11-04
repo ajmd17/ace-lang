@@ -6,6 +6,12 @@
 #include <stdexcept>
 #include <cstdint>
 
+// forward declarations
+struct StackValue;
+struct ExecutionThread;
+
+typedef void(*NativeFunctionPtr_t)(ExecutionThread*);
+
 struct Function {
     uint32_t m_addr;
     uint8_t m_nargs;
@@ -24,6 +30,7 @@ struct StackValue {
         BOOLEAN,
         HEAP_POINTER,
         FUNCTION,
+        NATIVE_FUNCTION,
         ADDRESS,
         TYPE_INFO,
     } m_type;
@@ -36,6 +43,7 @@ struct StackValue {
         bool b;
         HeapValue *ptr;
         Function func;
+        NativeFunctionPtr_t native_func;
         uint32_t addr;
         TypeInfo type_info;
     } m_value;
@@ -47,21 +55,23 @@ struct StackValue {
     {
         switch (m_type) {
         case INT32:
-            return "int32";
+            return "Int32";
         case INT64:
-            return "int64";
+            return "Int64";
         case FLOAT:
-            return "float";
+            return "Float32";
         case DOUBLE:
-            return "double";
+            return "Float64";
         case BOOLEAN:
-            return "boolean";
+            return "Bool";
         case HEAP_POINTER:
-            return "reference";
+            return "Object";
         case FUNCTION:
-            return "function";
+            return "Function";
+        case NATIVE_FUNCTION:
+            return "NativeFunction";
         default:
-            return "undefined";
+            return "Undefined";
         }
     }
 };

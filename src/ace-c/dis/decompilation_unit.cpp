@@ -544,6 +544,31 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case MOV_REG:
+        {
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "mov_mem ["
+                        << "%" << (int)dst << ", "
+                        << "%" << (int)src << ""
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t>(code, dst, src);
+
+            break;
+        }
         case PUSH:
         {
             uint8_t src;

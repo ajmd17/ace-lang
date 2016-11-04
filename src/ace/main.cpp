@@ -12,8 +12,98 @@
 #include <common/utf8.hpp>
 #include <common/str_util.hpp>
 
+#include <string>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
+
+struct NativeFunctionDefine {
+    std::string function_name;
+    std::string module_name;
+    ObjectType return_type;
+    std::vector<ObjectType> param_types;
+    NativeFunctionPtr_t ptr;
+
+    NativeFunctionDefine(const std::string &function_name,
+        const std::string &module_name,
+        const ObjectType &return_type,
+        const std::vector<ObjectType> &param_types,
+        NativeFunctionPtr_t ptr)
+        : function_name(function_name),
+          module_name(module_name),
+          return_type(return_type),
+          param_types(param_types),
+          ptr(ptr)
+    {
+    }
+
+    NativeFunctionDefine(const NativeFunctionDefine &other)
+        : function_name(other.function_name),
+          module_name(other.module_name),
+          return_type(other.return_type),
+          param_types(other.param_types),
+          ptr(other.ptr)
+    {
+    }
+};
+
+void AddNativeFunction(const NativeFunctionDefine &def,
+    VM *vm, CompilationUnit *compilation_unit)
+{
+    assert(vm != nullptr);
+
+    Module *mod = nullptr;
+
+    for (std::unique_ptr<Module> &it : compilation_unit->m_modules) {
+        if (it->GetName() == def.module_name) {
+            mod = it.get();
+            break;
+        }
+    }
+
+    if (mod == nullptr) {
+        // add this module to the compilation unit
+        std::unique_ptr<Module> this_module(new Module(def.module_name, SourceLocation::eof));
+        compilation_unit->m_modules.push_back(std::move(this_module));
+        compilation_unit->m_module_index++;
+        mod = compilation_unit->m_modules.back().get();
+    }
+
+    assert(mod != nullptr);
+
+    // get global scope
+    Scope &scope = mod->m_scopes.Top();
+
+    // look up variable to make sure it doesn't already exist
+    // only this scope matters, variables with the same name outside
+    // of this scope are fine
+    Identifier *ident = mod->LookUpIdentifier(def.function_name, true);
+    assert(ident == nullptr &&
+        "cannot create multiple objects with the same name");
+    // add identifier
+    ident = scope.GetIdentifierTable().AddIdentifier(def.function_name);
+    assert(ident != nullptr);
+
+    // create value
+    std::vector<std::shared_ptr<AstParameter>> parameters; // TODO
+    std::shared_ptr<AstBlock> block(new AstBlock(SourceLocation::eof));
+    std::shared_ptr<AstFunctionExpression> value(
+        new AstFunctionExpression(parameters, nullptr, block, SourceLocation::eof));
+
+    // set identifier info
+    ident->SetFlags(FLAG_CONST);
+    ident->SetObjectType(ObjectType::MakeFunctionType(def.return_type, def.param_types));
+    ident->SetCurrentValue(value);
+    compilation_unit->GetInstructionStream().IncStackSize();
+
+    // finally, push to VM
+    vm->PushNativeFunctionPtr(def.ptr);
+}
+
+void Dummy(ExecutionThread *execution_thread)
+{
+    utf::cout << "DUMMY\n";
+}
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +121,15 @@ int main(int argc, char *argv[])
 
         // REPL VM
         VM *vm = new VM;
+
+        /*// bind native function library
+        std::vector<NativeFunctionDefine> native_functions = {
+            NativeFunctionDefine("dummy", "Dummy", ObjectType::type_builtin_void, {}, Dummy)
+        };
+
+        for (auto &def : native_functions) {
+            AddNativeFunction(def, vm, &compilation_unit);
+        }*/
 
         utf::Utf8String out_filename = "tmp.aex";
         std::ofstream out_file(out_filename.GetData(),

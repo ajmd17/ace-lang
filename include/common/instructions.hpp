@@ -51,6 +51,9 @@ enum Instructions : char {
     MOV,     // mov     [$ dst, % src]
     /* Copy register value to object member */
     MOV_MEM, // mov_mem [% dst_obj, u8 dst_idx, % src]
+    /* Copy register value to another register */
+    MOV_REG, // mov_reg [% dst, % src]
+
     /* Push a value from register to the stack */
     PUSH, // push [% src]
     POP,  // pop

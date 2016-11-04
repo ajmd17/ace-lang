@@ -52,6 +52,8 @@ public:
     // must be set during type definiton analyzing
     inline void SetStaticId(int static_id) { m_static_id = static_id; }
 
+    inline bool IsFunctionType() const { return m_is_function; }
+
     inline bool operator==(const ObjectType &other) const
         { return m_str == other.m_str && m_static_id == other.m_static_id; }
     inline bool operator!=(const ObjectType &other) const { return !operator==(other); }
@@ -61,6 +63,7 @@ protected:
     std::shared_ptr<AstExpression> m_default_value;
     std::vector<DataMember_t> m_data_members;
     int m_static_id;
+    bool m_is_function;
 };
 
 #endif

@@ -21,6 +21,14 @@ VM::~VM()
 {
 }
 
+void VM::PushNativeFunctionPtr(NativeFunctionPtr_t ptr)
+{
+    StackValue sv;
+    sv.m_type = StackValue::NATIVE_FUNCTION;
+    sv.m_value.native_func = ptr;
+    m_exec_thread.m_stack.Push(sv);
+}
+
 HeapValue *VM::HeapAlloc()
 {
     int heap_size = m_heap.Size();
@@ -100,22 +108,26 @@ void VM::Echo(StackValue &value)
             // print string value
             utf::cout << value.m_value.ptr->Get<utf::Utf8String>();
         } else {
-            std::sprintf(str, "object<%p>", (void*)value.m_value.ptr);
+            std::sprintf(str, "Object<%p>", (void*)value.m_value.ptr);
             utf::cout << str;
         }
 
         break;
     case StackValue::FUNCTION:
-        std::sprintf(str, "function<%du, %du>",
+        std::sprintf(str, "Function<%du, %du>",
             value.m_value.func.m_addr, value.m_value.func.m_nargs);
         utf::cout << str;
         break;
+    case StackValue::NATIVE_FUNCTION:
+        std::sprintf(str, "NativeFunction<%p>", (void*)value.m_value.native_func);
+        utf::cout << str;
+        break;
     case StackValue::ADDRESS:
-        std::sprintf(str, "address<%du>", value.m_value.addr);
+        std::sprintf(str, "Address<%du>", value.m_value.addr);
         utf::cout << str;
         break;
     case StackValue::TYPE_INFO:
-        std::sprintf(str, "type<%du>", value.m_value.type_info.m_size);
+        std::sprintf(str, "Type<%du>", value.m_value.type_info.m_size);
         utf::cout << str;
         break;
     }
@@ -124,10 +136,14 @@ void VM::Echo(StackValue &value)
 void VM::InvokeFunction(StackValue &value, uint8_t num_args)
 {
     if (value.m_type != StackValue::FUNCTION) {
-        char buffer[256];
-        std::sprintf(buffer, "cannot invoke type '%s' as a function",
-            value.GetTypeString());
-        ThrowException(Exception(buffer));
+        if (value.m_type == StackValue::NATIVE_FUNCTION) {
+            InvokeNativeFunction(value, &m_exec_thread);
+        } else {
+            char buffer[256];
+            std::sprintf(buffer, "cannot invoke type '%s' as a function",
+                value.GetTypeString());
+            ThrowException(Exception(buffer));
+        }
     } else if (value.m_value.func.m_nargs != num_args) {
         char buffer[256];
         std::sprintf(buffer, "expected %d parameters, received %d",
@@ -151,6 +167,18 @@ void VM::InvokeFunction(StackValue &value, uint8_t num_args)
                 break;
             }
         }
+    }
+}
+
+void VM::InvokeNativeFunction(StackValue &value, ExecutionThread *thread)
+{
+    if (value.m_type != StackValue::NATIVE_FUNCTION) {
+        char buffer[256];
+        std::sprintf(buffer, "cannot invoke type '%s' as a native function",
+            value.GetTypeString());
+        ThrowException(Exception(buffer));
+    } else {
+        value.m_value.native_func(thread);
     }
 }
 
@@ -503,6 +531,18 @@ void VM::HandleInstruction(uint8_t code)
                 ThrowException(Exception("not a standard object"));
             }
         }
+
+        break;
+    }
+    case MOV_REG:
+    {
+        uint8_t dst;
+        m_bs->Read(&dst);
+
+        uint8_t src;
+        m_bs->Read(&src);
+
+        m_exec_thread.m_regs[dst] = m_exec_thread.m_regs[src];
 
         break;
     }

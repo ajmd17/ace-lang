@@ -55,7 +55,9 @@ ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std
         type_str += "(Void)";
     }
 
-    return ObjectType(type_str, std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
+    ObjectType res(type_str, std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
+    res.m_is_function = true;
+    return res;
 }
 
 bool ObjectType::TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers)
@@ -120,7 +122,8 @@ ObjectType::ObjectType()
     : m_str("Any"),
       m_default_value(std::shared_ptr<AstNull>(
           new AstNull(SourceLocation::eof))),
-      m_static_id(0)
+      m_static_id(0),
+      m_is_function(false)
 {
 }
 
@@ -128,7 +131,8 @@ ObjectType::ObjectType(const std::string &str,
     const std::shared_ptr<AstExpression> &default_value)
     : m_str(str),
       m_default_value(default_value),
-      m_static_id(0)
+      m_static_id(0),
+      m_is_function(false)
 {
 }
 
@@ -138,7 +142,8 @@ ObjectType::ObjectType(const std::string &str,
     : m_str(str),
       m_default_value(default_value),
       m_data_members(data_members),
-      m_static_id(0)
+      m_static_id(0),
+      m_is_function(false)
 {
 }
 
@@ -146,7 +151,8 @@ ObjectType::ObjectType(const ObjectType &other)
     : m_str(other.m_str),
       m_default_value(other.m_default_value),
       m_data_members(other.m_data_members),
-      m_static_id(other.m_static_id)
+      m_static_id(other.m_static_id),
+      m_is_function(other.m_is_function)
 {
 }
 

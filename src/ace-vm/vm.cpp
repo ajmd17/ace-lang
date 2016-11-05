@@ -338,6 +338,19 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
+    case LOAD_GLOBAL:
+    {
+        uint8_t reg;
+        m_bs->Read(&reg);
+
+        uint16_t idx;
+        m_bs->Read(&idx);
+
+        // read value from stack at the index into the the register
+        m_exec_thread.m_regs[reg] = m_exec_thread.m_stack[idx];
+
+        break;
+    }
     case LOAD_STATIC:
     {
         uint8_t reg;
@@ -490,7 +503,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case MOV:
+    case MOV_LOCAL:
     {
         uint16_t offset;
         m_bs->Read(&offset);
@@ -501,6 +514,19 @@ void VM::HandleInstruction(uint8_t code)
         // copy value from register to stack value at (sp - offset)
         m_exec_thread.m_stack[m_exec_thread.m_stack.GetStackPointer() - offset] =
             m_exec_thread.m_regs[reg];
+
+        break;
+    }
+    case MOV_GLOBAL:
+    {
+        uint16_t idx;
+        m_bs->Read(&idx);
+
+        uint8_t reg;
+        m_bs->Read(&reg);
+
+        // copy value from register to stack value at index
+        m_exec_thread.m_stack[idx] = m_exec_thread.m_regs[reg];
 
         break;
     }

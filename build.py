@@ -4,13 +4,18 @@ import sys
 compiler = "clang++"
 dyn_ext = "so"
 
+lib_options = "-std=c++11 -fPIC"
+exec_options = "-std=c++11"
+
 if os.name == "nt":
-    dy_ext = "dll"
+    compiler = "g++"
+    dyn_ext = "dll"
+    exec_options = "-std=gnu++11"
+    lib_options = "-std=gnu++11"
 elif sys.platform == "darwin":
     compiler = "clang++"
-    dy_ext = "dylib"
+    dyn_ext = "dylib"
 
-options = "-g"
 
 def build_all(build_mode):
     if build_mode == 0:
@@ -55,7 +60,7 @@ def build_executable(src_dir, bin_file, linkfiles):
         for f in linkfiles:
             linkstr += " -l{}".format(f)
 
-    command = "{} {} -o {} -std=c++11 -O2 -Iinclude/".format(compiler, options, bin_file)
+    command = "{} {} -o {} -O2 -Iinclude/".format(compiler, exec_options, bin_file)
 
     for dirpath, dirnames, filenames in os.walk(src_dir):
         for filename in [f for f in filenames]:
@@ -69,7 +74,7 @@ def build_executable(src_dir, bin_file, linkfiles):
 
 
 def build_dynamic(src_dir, bin_file):
-    command = "{} -shared -fPIC {} -o {} -std=c++11 -O2 -Iinclude/".format(compiler, options, bin_file)
+    command = "{} -shared {} -o {} -O2 -Iinclude/".format(compiler, lib_options, bin_file)
 
     for dirpath, dirnames, filenames in os.walk(src_dir):
         for filename in [f for f in filenames]:

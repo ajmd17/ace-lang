@@ -10,7 +10,8 @@ AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &loca
     : AstExpression(location),
       m_name(name),
       m_identifier(nullptr),
-      m_access_mode(ACCESS_MODE_LOAD)
+      m_access_mode(ACCESS_MODE_LOAD),
+      m_in_function(false)
 {
 }
 
@@ -26,6 +27,15 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
             CompilerError(Level_fatal, Msg_undeclared_identifier, m_location, m_name));
     } else {
         m_identifier->IncUseCount();
+    }
+
+    TreeNode<Scope> *top = mod->m_scopes.TopNode();
+    while (top != nullptr) {
+        if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
+            m_in_function = true;
+            break;
+        }
+        top = top->m_parent;
     }
 }
 

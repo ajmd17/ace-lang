@@ -89,15 +89,24 @@ void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
     assert(m_identifier != nullptr);
 
     BuildArgumentsStart(visitor, mod);
-    int offset = GetStackOffset(
-        visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize()) + m_args.size();
+
+    int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+    int stack_location = m_identifier->GetStackLocation();
+    int offset = stack_size - stack_location + m_args.size();
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    // load stack value at offset value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
+    if (m_in_function && !(m_identifier->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
+        // we must load globally, rather than from offset.
+        // we are within a function right now, but loading a variable not declared in a function
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_GLOBAL, rp, (uint16_t)stack_location);
+    } else {
+        // load stack value at offset value into register
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
+    }
 
     // invoke the function
     int argc = m_args.size();

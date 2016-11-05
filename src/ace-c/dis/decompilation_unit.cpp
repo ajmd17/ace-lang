@@ -256,6 +256,31 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case LOAD_GLOBAL:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint16_t idx;
+            m_bs.Read(&idx);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_global ["
+                        << "%" << (int)reg << ", "
+                        "u16(" << idx << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, idx);
+
+            break;
+        }
         case LOAD_STATIC:
         {
             uint8_t reg;
@@ -490,7 +515,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case MOV:
+        case MOV_LOCAL:
         {
             uint16_t dst;
             m_bs.Read(&dst);
@@ -504,8 +529,33 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "mov ["
+                    << "mov_local ["
                         << "$(sp-" << dst << "), "
+                        << "%" << (int)src
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint16_t, uint8_t>(code, dst, src);
+
+            break;
+        }
+        case MOV_GLOBAL:
+        {
+            uint16_t dst;
+            m_bs.Read(&dst);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "mov_global ["
+                        << "u16(" << dst << "), "
                         << "%" << (int)src
                     << "]"
                     << std::endl;

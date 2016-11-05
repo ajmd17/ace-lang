@@ -9,7 +9,8 @@
 
 enum IdentifierFlags {
    FLAG_CONST = 0x01,
-   FLAG_ALIAS = 0x02
+   FLAG_ALIAS = 0x02,
+   FLAG_DECLARED_IN_FUNCTION = 0x04,
 };
 
 class Identifier {
@@ -25,6 +26,7 @@ public:
     inline void SetStackLocation(int stack_location) { m_stack_location = stack_location; }
     inline int GetUseCount() const { return m_usecount; }
     inline int GetFlags() const { return m_flags; }
+    inline int &GetFlags() { return m_flags; }
     inline void SetFlags(int flags) { m_flags = flags; }
     inline std::weak_ptr<AstExpression> GetCurrentValue() const { return m_current_value; }
     inline void SetCurrentValue(const std::shared_ptr<AstExpression> &expr) { m_current_value = expr; }

@@ -6,6 +6,7 @@
 #include <common/instructions.hpp>
 
 #include <cassert>
+#include <iostream>
 
 AstVariable::AstVariable(const std::string &name, const SourceLocation &location)
     : AstIdentifier(name, location)
@@ -28,14 +29,28 @@ void AstVariable::Build(AstVisitor *visitor, Module *mod)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    if (m_access_mode == ACCESS_MODE_LOAD) {
-        // load stack value at offset value into register
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
-    } else if (m_access_mode == ACCESS_MODE_STORE) {
-        // store the value at (rp - 1) into this local variable
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint16_t, uint8_t>(MOV, (uint16_t)offset, rp - 1);
+    if (m_in_function && !(m_identifier->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
+        // we must load globally, rather than from offset.
+        // we are within a function right now, but loading a variable not declared in a function
+        if (m_access_mode == ACCESS_MODE_LOAD) {
+            // load stack value at index into register
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint8_t, uint16_t>(LOAD_GLOBAL, rp, (uint16_t)stack_location);
+        } else if (m_access_mode == ACCESS_MODE_STORE) {
+            // store the value at the index into this local variable
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint16_t, uint8_t>(MOV_GLOBAL, (uint16_t)stack_location, rp - 1);
+        }
+    } else {
+        if (m_access_mode == ACCESS_MODE_LOAD) {
+            // load stack value at offset value into register
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
+        } else if (m_access_mode == ACCESS_MODE_STORE) {
+            // store the value at (rp - 1) into this local variable
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint16_t, uint8_t>(MOV_LOCAL, (uint16_t)offset, rp - 1);
+        }
     }
 }
 

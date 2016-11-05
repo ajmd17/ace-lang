@@ -33,6 +33,7 @@ protected:
     std::string m_name;
     Identifier *m_identifier;
     AccessMode m_access_mode;
+    bool m_in_function;
 
     int GetStackOffset(int stack_size) const;
 };

@@ -29,7 +29,7 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
     assert(m_identifier != nullptr);
 
     // functions are implicitly const
-    m_identifier->SetFlags(FLAG_CONST);
+    m_identifier->GetFlags() |= FLAG_CONST;
     m_identifier->SetObjectType(m_expr->GetObjectType());
     m_identifier->SetCurrentValue(m_expr);
 }
@@ -42,6 +42,9 @@ void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)
         // set identifier stack location
         m_identifier->SetStackLocation(stack_location);
 
+        // increment stack size before we build the expression
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
         // build function expression
         m_expr->Build(visitor, mod);
 
@@ -50,9 +53,6 @@ void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)
         // store on stack
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(PUSH, rp);
-
-        // increment stack size
-        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
     }
 }
 

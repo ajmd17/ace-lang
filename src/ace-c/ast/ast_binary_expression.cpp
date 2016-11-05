@@ -62,7 +62,7 @@ static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ArithExprInfo inf
     // load from stack
     int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int diff = stack_size_after - stack_size_before;
-    
+
     assert(diff == 1);
 
     visitor->GetCompilationUnit()->GetInstructionStream() <<

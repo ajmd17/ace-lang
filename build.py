@@ -10,7 +10,7 @@ elif sys.platform == "darwin":
     compiler = "clang++"
     dy_ext = "dylib"
 
-options = ""
+options = "-g"
 
 def build_all(build_mode):
     if build_mode == 0:

@@ -7,6 +7,7 @@ namespace compiler {
 struct Config {
     static bool use_static_objects;
     static bool cull_unused_objects;
+    static int max_registers;
 };
 
 } // compiler

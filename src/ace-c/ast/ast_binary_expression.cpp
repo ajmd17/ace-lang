@@ -1,5 +1,6 @@
 #include <ace-c/ast/ast_binary_expression.hpp>
 #include <ace-c/ast/ast_variable.hpp>
+#include <ace-c/ast/ast_function_call.hpp>
 #include <ace-c/ast/ast_constant.hpp>
 #include <ace-c/ast/ast_integer.hpp>
 #include <ace-c/ast/ast_true.hpp>
@@ -16,6 +17,67 @@
 #include <common/instructions.hpp>
 
 #include <iostream>
+#include <cassert>
+
+struct ArithExprInfo {
+    AstExpression *left;
+    AstBinaryExpression *left_as_binop;
+    AstFunctionCall *left_as_call;
+
+    AstExpression *right;
+    AstBinaryExpression *right_as_binop;
+    AstFunctionCall *right_as_call;
+
+    uint8_t opcode;
+};
+
+/** Loads the left hand side and stores it on the stack.
+    Then, the right hand side is loaded into a register,
+    and the result is computed.
+ */
+static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ArithExprInfo info)
+{
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // load left-hand side into register 0
+    info.left->Build(visitor, mod);
+    // get register position
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    // store value of lhs on the stack
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(PUSH, rp);
+    int stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+    // increment stack size
+    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
+    // do NOT increase register usage (yet)
+    // load right-hand side into register 0, overwriting previous lhs
+    info.right->Build(visitor, mod);
+
+    // now, we increase register usage to load lhs from the stack into register 1.
+    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+    // get register position
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // load from stack
+    int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+    int diff = stack_size_after - stack_size_before;
+    
+    assert(diff == 1);
+
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)diff);
+    // pop from stack
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t>(POP);
+    // decrement stack size
+    visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(info.opcode, rp - 1, rp, rp - 1);
+
+    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+}
 
 /** Attemps to evaluate the optimized expression at compile-time. */
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left,
@@ -148,6 +210,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 {
     AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
     AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
+    AstFunctionCall *left_as_call = dynamic_cast<AstFunctionCall*>(m_left.get());
+    AstFunctionCall *right_as_call = dynamic_cast<AstFunctionCall*>(m_right.get());
 
     if (m_op->GetType() == ARITHMETIC) {
         uint8_t opcode;
@@ -162,24 +226,77 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
         }
         // TODO: handle more operators
 
+        ArithExprInfo info {
+            m_left.get(), left_as_binop, left_as_call,
+            m_right.get(), right_as_binop, right_as_call,
+            opcode
+        };
+
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // if the right hand side is a binary operation,
+        // we should build in the rhs first in order to
+        // transverse the parse tree.
         if (left_as_binop == nullptr && right_as_binop != nullptr) {
             // load right-hand side into register 0
             m_right->Build(visitor, mod);
-            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+            bool left_side_effects = m_left->MayHaveSideEffects();
+
+            // if left is a function call, we have to move rhs to the stack!
+            // otherwise, the function call will overwrite what's in register 0.
+            int stack_size_before;
+            if (/*left_as_call != nullptr*/left_side_effects) {
+                // store value of the right hand side on the stack
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(PUSH, rp);
+                stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+                // increment stack size
+                visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+            } else {
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+            }
 
             // load left-hand side into register 1
             m_left->Build(visitor, mod);
 
+            if (/*left_as_call != nullptr*/left_side_effects) {
+                // now, we increase register usage to load rhs from the stack into register 1.
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                // get register position
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                // load from stack
+                int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+                int diff = stack_size_after - stack_size_before;
+                assert(diff == 1);
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)diff);
+                // pop from stack
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t>(POP);
+                // decrement stack size
+                visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+            }
+
             // perform operation
-            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
 
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        } else if (m_right->MayHaveSideEffects()) {
+
+            // lhs must be temporary stored on the stack,
+            // to avoid the rhs overwriting it.
+            LoadLeftAndStore(visitor, mod, info);
         } else {
             // load left-hand side into register 0
             m_left->Build(visitor, mod);
+
+            // get register position
+            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             if (m_right != nullptr) {
                 // right side has not been optimized away
@@ -188,7 +305,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 m_right->Build(visitor, mod);
 
                 // perform operation
-                uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);

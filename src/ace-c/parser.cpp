@@ -59,7 +59,7 @@ const Token *Parser::Expect(TokenType type, bool read)
 {
     const Token *token = Match(type, read);
     if (token == nullptr) {
-        SourceLocation location(CurrentLocation());
+        SourceLocation location = CurrentLocation();
 
         ErrorMessage error_msg;
         std::string error_str;
@@ -86,7 +86,7 @@ const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
 {
     const Token *token = MatchKeyword(keyword, read);
     if (token == nullptr) {
-        SourceLocation location(CurrentLocation());
+        SourceLocation location = CurrentLocation();
         if (read) {
             m_token_stream->Next();
         }
@@ -137,7 +137,7 @@ void Parser::Parse(bool expect_module_decl)
     }
 
     while (m_token_stream->HasNext()) {
-        SourceLocation location(CurrentLocation());
+        SourceLocation location = CurrentLocation();
 
         // read semicolon tokens
         if (Match(Token_semicolon, true)) {
@@ -216,6 +216,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 {
     const Token *token = m_token_stream->Peek();
     if (token == nullptr) {
+        CompilerError error(Level_fatal, Msg_unexpected_eof, CurrentLocation());
+        m_compilation_unit->GetErrorList().AddError(error);
         m_token_stream->Next();
         return nullptr;
     }
@@ -264,7 +266,12 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 std::shared_ptr<AstExpression> Parser::ParseParentheses()
 {
     Expect(Token_open_parenthesis, true);
-    std::shared_ptr<AstExpression> expr(ParseExpression());
+    SourceLocation expr_location = CurrentLocation();
+    std::shared_ptr<AstExpression> expr = ParseExpression();
+    if (expr == nullptr) {
+        CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
+        m_compilation_unit->GetErrorList().AddError(error);
+    }
     Expect(Token_close_parenthesis, true);
     return expr;
 }
@@ -320,8 +327,11 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
     std::vector<std::shared_ptr<AstExpression>> args;
 
     while (!Match(Token_close_parenthesis, false)) {
+        SourceLocation expr_location = CurrentLocation();
         std::shared_ptr<AstExpression> expr = ParseExpression();
         if (expr == nullptr) {
+            CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
+            m_compilation_unit->GetErrorList().AddError(error);
             return nullptr;
         }
 
@@ -401,10 +411,16 @@ std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
 {
     const Token *token = ExpectKeyword(Keyword_if, true);
     if (token != nullptr) {
+        SourceLocation cond_location = CurrentLocation();
         std::shared_ptr<AstExpression> conditional = ParseExpression();
         std::shared_ptr<AstBlock> block = ParseBlock();
 
-        if (conditional == nullptr || block == nullptr) {
+        if (conditional == nullptr) {
+            CompilerError error(Level_fatal, Msg_illegal_expression, cond_location);
+            m_compilation_unit->GetErrorList().AddError(error);
+            return nullptr;
+        }
+        if (block == nullptr) {
             return nullptr;
         }
 
@@ -434,10 +450,16 @@ std::shared_ptr<AstWhileLoop> Parser::ParseWhileLoop()
 {
     const Token *token = ExpectKeyword(Keyword_while, true);
     if (token != nullptr) {
+        SourceLocation cond_location = CurrentLocation();
         std::shared_ptr<AstExpression> conditional = ParseExpression();
         std::shared_ptr<AstBlock> block = ParseBlock();
 
-        if (conditional == nullptr || block == nullptr) {
+        if (conditional == nullptr) {
+            CompilerError error(Level_fatal, Msg_illegal_expression, cond_location);
+            m_compilation_unit->GetErrorList().AddError(error);
+            return nullptr;
+        }
+        if (block == nullptr) {
             return nullptr;
         }
 
@@ -457,14 +479,12 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
         // print statement now requires parentheses
         if (Expect(Token_open_parenthesis, true)) {
             while (true) {
-                SourceLocation loc(CurrentLocation());
+                SourceLocation loc = CurrentLocation();
                 auto expr = ParseExpression();
-
                 if (expr == nullptr) {
                     // expression or statement could not be evaluated
                     CompilerError error(Level_fatal, Msg_illegal_expression, loc);
                     m_compilation_unit->GetErrorList().AddError(error);
-
                 } else {
                     arguments.push_back(expr);
                 }
@@ -558,8 +578,8 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
         }
         term = bin_expr;
     }
-
     term->m_is_standalone = standalone;
+
     return term;
 }
 
@@ -599,7 +619,12 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
         if (op != nullptr) {
             if (op->GetValue() == Operator::operator_assign.ToString()) {
                 // read assignment expression
+                SourceLocation expr_location = CurrentLocation();
                 assignment = ParseExpression();
+                if (assignment == nullptr) {
+                    CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
+                    m_compilation_unit->GetErrorList().AddError(error);
+                }
             } else {
                 // unexpected operator
                 CompilerError error(Level_fatal,
@@ -753,7 +778,7 @@ std::shared_ptr<AstImport> Parser::ParseImport()
 
 std::shared_ptr<AstLocalImport> Parser::ParseLocalImport()
 {
-    SourceLocation location(CurrentLocation());
+    SourceLocation location = CurrentLocation();
 
     const Token *file = Expect(Token_string_literal, true);
     if (file != nullptr) {
@@ -768,12 +793,17 @@ std::shared_ptr<AstLocalImport> Parser::ParseLocalImport()
 
 std::shared_ptr<AstReturnStatement> Parser::ParseReturnStatement()
 {
-    SourceLocation location(CurrentLocation());
+    SourceLocation location = CurrentLocation();
 
     const Token *token = ExpectKeyword(Keyword_return, true);
     if (token != nullptr) {
-        return std::shared_ptr<AstReturnStatement>(
-            new AstReturnStatement(ParseExpression(), location));
+        SourceLocation expr_location = CurrentLocation();
+        auto expr = ParseExpression();
+        if (expr == nullptr) {
+            CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
+            m_compilation_unit->GetErrorList().AddError(error);
+        }
+        return std::shared_ptr<AstReturnStatement>(new AstReturnStatement(expr, location));
     }
 
     return nullptr;

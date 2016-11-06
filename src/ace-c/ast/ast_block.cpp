@@ -40,14 +40,14 @@ void AstBlock::Build(AstVisitor *visitor, Module *mod)
         stmt->Build(visitor, mod);
     }
 
-    if (!m_last_is_return) {
-        // pop all local variables off the stack
-        for (int i = 0; i < m_num_locals; i++) {
+    // pop all local variables off the stack
+    for (int i = 0; i < m_num_locals; i++) {
+        if (!m_last_is_return) {
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t>(POP);
-
-            visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
         }
+
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
     }
 }
 

@@ -851,6 +851,7 @@ void VM::HandleInstruction(uint8_t code)
         result.m_type = MATCH_TYPES(lhs, rhs);
 
         if (lhs.m_type == StackValue::HEAP_POINTER) {
+            
         } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
             int64_t left = GetValueInt64(lhs);
             int64_t right = GetValueInt64(rhs);

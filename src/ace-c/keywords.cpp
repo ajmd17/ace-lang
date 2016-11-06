@@ -12,6 +12,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "val", Keyword_val },
     { "func", Keyword_func },
     { "type", Keyword_type },
+    { "as", Keyword_as },
     { "print", Keyword_print },
     { "if", Keyword_if },
     { "else", Keyword_else },

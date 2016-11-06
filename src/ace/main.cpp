@@ -122,14 +122,14 @@ int main(int argc, char *argv[])
         // REPL VM
         VM *vm = new VM;
 
-        /*// bind native function library
+        // bind native function library
         std::vector<NativeFunctionDefine> native_functions = {
             NativeFunctionDefine("dummy", "Dummy", ObjectType::type_builtin_void, {}, Dummy)
         };
 
         for (auto &def : native_functions) {
             AddNativeFunction(def, vm, &compilation_unit);
-        }*/
+        }
 
         utf::Utf8String out_filename = "tmp.aex";
         std::ofstream out_file(out_filename.GetData(),

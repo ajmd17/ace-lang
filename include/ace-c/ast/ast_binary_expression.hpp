@@ -2,6 +2,7 @@
 #define AST_BINARY_EXPRESSION_HPP
 
 #include <ace-c/ast/ast_expression.hpp>
+#include <ace-c/ast/ast_member_access.hpp>
 #include <ace-c/operator.hpp>
 
 class AstBinaryExpression : public AstExpression {
@@ -13,6 +14,8 @@ public:
 
     inline const std::shared_ptr<AstExpression> &GetLeft() const { return m_left; }
     inline const std::shared_ptr<AstExpression> &GetRight() const { return m_right; }
+
+    bool VisitOperatorOverload(const ObjectType &left_type, const ObjectType &right_type);
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
@@ -26,6 +29,9 @@ private:
     std::shared_ptr<AstExpression> m_left;
     std::shared_ptr<AstExpression> m_right;
     const Operator *m_op;
+
+    // if the operator is overloaded and it is actually a function call
+    std::shared_ptr<AstMemberAccess> m_member_access;
 };
 
 #endif

@@ -476,25 +476,20 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
     if (token != nullptr) {
         std::vector<std::shared_ptr<AstExpression>> arguments;
 
-        // print statement now requires parentheses
-        if (Expect(Token_open_parenthesis, true)) {
-            while (true) {
-                SourceLocation loc = CurrentLocation();
-                auto expr = ParseExpression();
-                if (expr == nullptr) {
-                    // expression or statement could not be evaluated
-                    CompilerError error(Level_fatal, Msg_illegal_expression, loc);
-                    m_compilation_unit->GetErrorList().AddError(error);
-                } else {
-                    arguments.push_back(expr);
-                }
-
-                if (!Match(Token_comma, true)) {
-                    break;
-                }
+        while (true) {
+            SourceLocation loc = CurrentLocation();
+            auto expr = ParseExpression();
+            if (expr == nullptr) {
+                // expression or statement could not be evaluated
+                CompilerError error(Level_fatal, Msg_illegal_expression, loc);
+                m_compilation_unit->GetErrorList().AddError(error);
+            } else {
+                arguments.push_back(expr);
             }
 
-            Expect(Token_close_parenthesis, true);
+            if (!Match(Token_comma, true)) {
+                break;
+            }
         }
 
         return std::shared_ptr<AstPrintStatement>(
@@ -672,7 +667,7 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool func
 
         std::shared_ptr<AstTypeSpecification> type_spec;
 
-        if (Match(Token_right_arrow, true)) {
+        if (Match(Token_colon, true)) {
             // read return type after right arrow for functions
             type_spec = ParseTypeSpecification();
         }

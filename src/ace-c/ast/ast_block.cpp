@@ -2,12 +2,14 @@
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/module.hpp>
+#include <ace-c/ast/ast_return_statement.hpp>
 
 #include <common/instructions.hpp>
 
 AstBlock::AstBlock(const SourceLocation &location)
     : AstStatement(location),
-      m_num_locals(0)
+      m_num_locals(0),
+      m_last_is_return(false)
 {
 }
 
@@ -20,6 +22,9 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
     for (auto &child : m_children) {
         child->Visit(visitor, mod);
     }
+
+    m_last_is_return =  (!m_children.empty()) &&
+        (dynamic_cast<AstReturnStatement*>(m_children.back().get()) != nullptr);
 
     // store number of locals, so we can pop them from the stack later
     Scope &this_scope = mod->m_scopes.Top();
@@ -35,12 +40,14 @@ void AstBlock::Build(AstVisitor *visitor, Module *mod)
         stmt->Build(visitor, mod);
     }
 
-    // pop all local variables off the stack
-    for (int i = 0; i < m_num_locals; i++) {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
+    if (!m_last_is_return) {
+        // pop all local variables off the stack
+        for (int i = 0; i < m_num_locals; i++) {
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t>(POP);
 
-        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+            visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+        }
     }
 }
 

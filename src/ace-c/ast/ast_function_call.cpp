@@ -101,11 +101,11 @@ void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
         // we must load globally, rather than from offset.
         // we are within a function right now, but loading a variable not declared in a function
         visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_GLOBAL, rp, (uint16_t)stack_location);
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_INDEX, rp, (uint16_t)stack_location);
     } else {
         // load stack value at offset value into register
         visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)offset);
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)offset);
     }
 
     // invoke the function

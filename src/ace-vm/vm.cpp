@@ -323,7 +323,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_LOCAL:
+    case LOAD_OFFSET:
     {
         uint8_t reg;
         m_bs->Read(&reg);
@@ -338,7 +338,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_GLOBAL:
+    case LOAD_INDEX:
     {
         uint8_t reg;
         m_bs->Read(&reg);
@@ -503,7 +503,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case MOV_LOCAL:
+    case MOV_OFFSET:
     {
         uint16_t offset;
         m_bs->Read(&offset);
@@ -517,7 +517,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case MOV_GLOBAL:
+    case MOV_INDEX:
     {
         uint16_t idx;
         m_bs->Read(&idx);

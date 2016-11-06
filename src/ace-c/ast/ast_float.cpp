@@ -198,6 +198,9 @@ std::shared_ptr<AstConstant> AstFloat::Equals(AstConstant *right) const
     if (!right->IsNumber()) {
         return nullptr;
     }
-    return std::shared_ptr<AstFloat>(
-        new AstFloat(FloatValue() == right->FloatValue(), m_location));
+    if (FloatValue() == right->FloatValue()) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    }
 }

@@ -98,6 +98,8 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
 void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 {
+    assert(m_block != nullptr);
+
     // the properties of this function
     StaticFunction sf;
     sf.m_nargs = (uint8_t)m_parameters.size();
@@ -139,13 +141,13 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         }
     }
 
-    if (m_block != nullptr) {
-        // build the function body
-        m_block->Build(visitor, mod);
-    }
+    // build the function body
+    m_block->Build(visitor, mod);
 
-    // add RET instruction
-    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+    if (!m_block->IsLastStatementReturn()) {
+        // add RET instruction
+        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+    }
 
     for (int i = 0; i < param_stack_size; i++) {
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();

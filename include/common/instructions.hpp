@@ -36,8 +36,8 @@ enum Instructions : char {
     LOAD_I64,    // load_i64    [% reg, i64 val]
     LOAD_F32,    // load_f32    [% reg, f32 val]
     LOAD_F64,    // load_f64    [% reg, f64 val]
-    LOAD_LOCAL,  // load_local  [% reg, $ offset]
-    LOAD_GLOBAL, // load_global [% reg, u16 idx]
+    LOAD_OFFSET, // load_offset [% reg, $ offset]
+    LOAD_INDEX,  // load_index  [% reg, u16 idx]
     LOAD_STATIC, // load_static [% reg, # idx]
     LOAD_STRING, // load_str    [% reg, u32 len, i8[] str]
     LOAD_ADDR,   // load_addr   [% reg, @ addr]
@@ -49,13 +49,13 @@ enum Instructions : char {
     LOAD_FALSE,  // load_false  [% reg]
 
     /* Copy register value to stack offset */
-    MOV_LOCAL,     // mov_local  [$ dst, % src]
+    MOV_OFFSET,     // mov_offset  [$ dst, % src]
     /* Copy register value to stack index */
-    MOV_GLOBAL,    // mov_global [u16 dst, % src]
+    MOV_INDEX,      // mov_index [u16 dst, % src]
     /* Copy register value to object member */
-    MOV_MEM, // mov_mem [% dst_obj, u8 dst_idx, % src]
+    MOV_MEM,        // mov_mem [% dst_obj, u8 dst_idx, % src]
     /* Copy register value to another register */
-    MOV_REG, // mov_reg [% dst, % src]
+    MOV_REG,        // mov_reg [% dst, % src]
 
     /* Push a value from register to the stack */
     PUSH, // push [% src]

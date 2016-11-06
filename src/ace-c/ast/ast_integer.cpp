@@ -281,6 +281,9 @@ std::shared_ptr<AstConstant> AstInteger::Equals(AstConstant *right) const
     if (!right->IsNumber()) {
         return nullptr;
     }
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() == right->IntValue(), m_location));
+    if (IntValue() == right->IntValue()) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    }
 }

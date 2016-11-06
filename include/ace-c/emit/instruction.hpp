@@ -8,15 +8,10 @@
 template <class...Ts>
 struct Instruction {
 public:
-    Instruction()
-    {
-    }
+    Instruction() {}
+    Instruction(const Instruction &other) : m_data(other.m_data) {}
 
-    Instruction(const Instruction &other)
-        : m_data(other.m_data)
-    {
-    }
-
+    inline bool Empty() const { return !(m_data.empty()) && !(m_data.back().empty()); }
     inline char GetOpcode() const { return m_data.back().back(); }
 
     std::vector<std::vector<char>> m_data;
@@ -36,7 +31,6 @@ protected:
     {
         std::vector<char> operand;
         operand.resize(sizeof(t));
-
         std::memcpy(&operand[0], &t, sizeof(t));
         m_data.push_back(operand);
     }
@@ -47,10 +41,7 @@ private:
 
 template <class T, class... Ts>
 struct Instruction<T, Ts...> : Instruction<Ts...> {
-    Instruction(T t, Ts...ts) : Instruction<Ts...>(ts...)
-    {
-        this->Accept(t);
-    }
+    Instruction(T t, Ts...ts) : Instruction<Ts...>(ts...) { this->Accept(t); }
 };
 
 #endif

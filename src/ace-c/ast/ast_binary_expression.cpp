@@ -19,7 +19,7 @@
 #include <iostream>
 #include <cassert>
 
-struct ArithExprInfo {
+struct ExprInfo {
     AstExpression *left;
     AstBinaryExpression *left_as_binop;
     AstFunctionCall *left_as_call;
@@ -27,15 +27,78 @@ struct ArithExprInfo {
     AstExpression *right;
     AstBinaryExpression *right_as_binop;
     AstFunctionCall *right_as_call;
-
-    uint8_t opcode;
 };
+
+static void LoadLeftThenRight(AstVisitor *visitor, Module *mod, ExprInfo info)
+{
+    // load left-hand side into register 0
+    info.left->Build(visitor, mod);
+
+    // right side has not been optimized away
+    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+    if (info.right != nullptr) {
+        // load right-hand side into register 1
+        info.right->Build(visitor, mod);
+    }
+}
+
+/** Handles the right side before the left side. Used in the case that the
+    right hand side is an expression, but the left hand side is just a value.
+    If the left hand side is a function call, the right hand side will have to
+    be temporarily stored on the stack.
+*/
+static void LoadRightThenLeft(AstVisitor *visitor, Module *mod, ExprInfo info)
+{
+    uint8_t rp;
+
+    // load right-hand side into register 0
+    info.right->Build(visitor, mod);
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    bool left_side_effects = info.left->MayHaveSideEffects();
+
+    // if left is a function call, we have to move rhs to the stack!
+    // otherwise, the function call will overwrite what's in register 0.
+    int stack_size_before;
+    if (left_side_effects) {
+        // store value of the right hand side on the stack
+        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(PUSH, rp);
+        stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+    } else {
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+    }
+
+    // load left-hand side into register 1
+    info.left->Build(visitor, mod);
+
+    if (left_side_effects) {
+        // now, we increase register usage to load rhs from the stack into register 1.
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        // get register position
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        // load from stack
+        int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        int diff = stack_size_after - stack_size_before;
+        assert(diff == 1);
+
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
+        // pop from stack
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t>(POP);
+        // decrement stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+    }
+}
 
 /** Loads the left hand side and stores it on the stack.
     Then, the right hand side is loaded into a register,
     and the result is computed.
  */
-static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ArithExprInfo info)
+static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ExprInfo info)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
@@ -44,8 +107,8 @@ static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ArithExprInfo inf
     // get register position
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // store value of lhs on the stack
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(PUSH, rp);
+    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(PUSH, rp);
+
     int stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     // increment stack size
     visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
@@ -66,17 +129,11 @@ static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ArithExprInfo inf
     assert(diff == 1);
 
     visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)diff);
+        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
     // pop from stack
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t>(POP);
+    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
     // decrement stack size
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(info.opcode, rp - 1, rp, rp - 1);
-
-    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
 }
 
 /** Attemps to evaluate the optimized expression at compile-time. */
@@ -213,6 +270,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
     AstFunctionCall *left_as_call = dynamic_cast<AstFunctionCall*>(m_left.get());
     AstFunctionCall *right_as_call = dynamic_cast<AstFunctionCall*>(m_right.get());
 
+    ExprInfo info {
+        m_left.get(), left_as_binop, left_as_call,
+        m_right.get(), right_as_binop, right_as_call
+    };
+
     if (m_op->GetType() == ARITHMETIC) {
         uint8_t opcode;
         if (m_op == &Operator::operator_add) {
@@ -224,95 +286,46 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
         } else if (m_op == &Operator::operator_divide) {
             opcode = DIV;
         }
-        // TODO: handle more operators
-
-        ArithExprInfo info {
-            m_left.get(), left_as_binop, left_as_call,
-            m_right.get(), right_as_binop, right_as_call,
-            opcode
-        };
 
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        // if the right hand side is a binary operation,
-        // we should build in the rhs first in order to
-        // transverse the parse tree.
         if (left_as_binop == nullptr && right_as_binop != nullptr) {
-            // load right-hand side into register 0
-            m_right->Build(visitor, mod);
+            // if the right hand side is a binary operation,
+            // we should build in the rhs first in order to
+            // transverse the parse tree.
+            LoadRightThenLeft(visitor, mod, info);
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-            bool left_side_effects = m_left->MayHaveSideEffects();
-
-            // if left is a function call, we have to move rhs to the stack!
-            // otherwise, the function call will overwrite what's in register 0.
-            int stack_size_before;
-            if (/*left_as_call != nullptr*/left_side_effects) {
-                // store value of the right hand side on the stack
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t>(PUSH, rp);
-                stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-                // increment stack size
-                visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
-            } else {
-                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-            }
-
-            // load left-hand side into register 1
-            m_left->Build(visitor, mod);
-
-            if (/*left_as_call != nullptr*/left_side_effects) {
-                // now, we increase register usage to load rhs from the stack into register 1.
-                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-                // get register position
-                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-                // load from stack
-                int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-                int diff = stack_size_after - stack_size_before;
-                assert(diff == 1);
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_LOCAL, rp, (uint16_t)diff);
-                // pop from stack
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t>(POP);
-                // decrement stack size
-                visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-            }
-
-            // perform operation
-            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
-
-            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-        } else if (m_right->MayHaveSideEffects()) {
-
+        } else if (m_right != nullptr && m_right->MayHaveSideEffects()) {
             // lhs must be temporary stored on the stack,
             // to avoid the rhs overwriting it.
-            LoadLeftAndStore(visitor, mod, info);
-        } else {
-            // load left-hand side into register 0
-            m_left->Build(visitor, mod);
-
-            // get register position
-            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-            if (m_right != nullptr) {
-                // right side has not been optimized away
-                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-                // load right-hand side into register 1
-                m_right->Build(visitor, mod);
-
-                // perform operation
+            if (m_left->MayHaveSideEffects()) {
+                LoadLeftAndStore(visitor, mod, info);
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
-
-                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+            } else {
+                // left  doesn't have side effects,
+                // so just evaluate right without storing the lhs.
+                LoadRightThenLeft(visitor, mod, info);
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+            }
+        } else {
+            // normal usage, load left into register 0,
+            // then load right into register 1.
+            // rinse and repeat.
+            LoadLeftThenRight(visitor, mod, info);
+            if (m_right != nullptr) {
+                // perform operation
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
             }
         }
+        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
     } else if (m_op->GetType() == BITWISE) {
 
     } else if (m_op->GetType() == LOGICAL) {
@@ -388,8 +401,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     }
 
                     // jump if they are equal: i.e the value is false
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t>(JE, rp);
+                    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(JE, rp);
                 }
             }
 
@@ -456,7 +468,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             // get register position
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-                // load the label address from static memory into register 1
+            // load the label address from static memory into register 1
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
 
@@ -474,15 +486,14 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
             // here is where the value is false
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
 
             // if true, skip to here to avoid loading 'false' into the register
             true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
-            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
         } else if (m_op == &Operator::operator_logical_or) {
             uint8_t rp;
 
@@ -653,7 +664,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 false_label.m_type = StaticObject::TYPE_LABEL;
                 false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
 
-                // load left-hand side into register 0
+
+                /*// load left-hand side into register 0
                 m_left->Build(visitor, mod);
 
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
@@ -664,10 +676,46 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
+                    Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);*/
+
+                if (left_as_binop == nullptr && right_as_binop != nullptr) {
+                    // if the right hand side is a binary operation,
+                    // we should build in the rhs first in order to
+                    // transverse the parse tree.
+                    LoadRightThenLeft(visitor, mod, info);
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp, rp - 1);
+                } else if (m_right != nullptr && m_right->MayHaveSideEffects()) {
+                    // lhs must be temporary stored on the stack,
+                    // to avoid the rhs overwriting it.
+                    if (m_left->MayHaveSideEffects()) {
+                        LoadLeftAndStore(visitor, mod, info);
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
+                    } else {
+                        // left  doesn't have side effects,
+                        // so just evaluate right without storing the lhs.
+                        LoadRightThenLeft(visitor, mod, info);
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp, rp - 1);
+                    }
+                } else {
+                    // normal usage, load left into register 0,
+                    // then load right into register 1.
+                    // rinse and repeat.
+                    LoadLeftThenRight(visitor, mod, info);
+                    if (m_right != nullptr) {
+                        // perform operation
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                        visitor->GetCompilationUnit()->GetInstructionStream() <<
+                            Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
+                    }
+                }
 
                 visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
                 // load the label address from static memory into register 0
@@ -702,7 +750,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
                 }
 
-                // jump if they are equal: i.e the value is false
+                // jump to the false label, the value is false at this point
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
                     Instruction<uint8_t, uint8_t>(JMP, rp);
 
@@ -718,7 +766,6 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
 
                 false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-
                 visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
             } else {
                 // load left-hand side into register

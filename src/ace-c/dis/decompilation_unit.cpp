@@ -231,7 +231,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case LOAD_LOCAL:
+        case LOAD_OFFSET:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -245,7 +245,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "load_local ["
+                    << "load_offset ["
                         << "%" << (int)reg << ", "
                         "$(sp-" << offset << ")"
                     << "]"
@@ -256,7 +256,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case LOAD_GLOBAL:
+        case LOAD_INDEX:
         {
             uint8_t reg;
             m_bs.Read(&reg);
@@ -270,7 +270,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "load_global ["
+                    << "load_index ["
                         << "%" << (int)reg << ", "
                         "u16(" << idx << ")"
                     << "]"
@@ -515,7 +515,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case MOV_LOCAL:
+        case MOV_OFFSET:
         {
             uint16_t dst;
             m_bs.Read(&dst);
@@ -529,7 +529,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "mov_local ["
+                    << "mov_offset ["
                         << "$(sp-" << dst << "), "
                         << "%" << (int)src
                     << "]"
@@ -540,7 +540,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
-        case MOV_GLOBAL:
+        case MOV_INDEX:
         {
             uint16_t dst;
             m_bs.Read(&dst);
@@ -554,7 +554,7 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "mov_global ["
+                    << "mov_index ["
                         << "u16(" << dst << "), "
                         << "%" << (int)src
                     << "]"

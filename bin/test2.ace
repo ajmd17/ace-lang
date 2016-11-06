@@ -1,12 +1,17 @@
 module test;
 
+func Z() {
+    print("hello from Z()")
+}
 
 func X(y) {
-    y();
+    print("hello from X()")
+    y()
 }
 
 func Y() {
     print("hello from Y()")
+    X(Z)
 }
 
 X(Y);

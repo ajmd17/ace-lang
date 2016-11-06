@@ -43,7 +43,7 @@ void Lexer::Analyze()
 
 Token Lexer::NextToken()
 {
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     std::array<u32char, 3> ch;
     int total_pos_change = 0;
@@ -79,11 +79,11 @@ Token Lexer::NextToken()
         }
         return Token(Token_right_arrow, "->", location);
     } else if (ch[0] == '+' || ch[0] == '-' ||
-        ch[0] == '*' || ch[0] == '/' ||
-        ch[0] == '%' || ch[0] == '^' ||
-        ch[0] == '&' || ch[0] == '|' ||
-        ch[0] == '<' || ch[0] == '>' ||
-        ch[0] == '=' || ch[0] == '!') {
+               ch[0] == '*' || ch[0] == '/' ||
+               ch[0] == '%' || ch[0] == '^' ||
+               ch[0] == '&' || ch[0] == '|' ||
+               ch[0] == '<' || ch[0] == '>' ||
+               ch[0] == '=' || ch[0] == '!') {
         return ReadOperator();
     } else if (ch[0] == ',') {
         int pos_change = 0;
@@ -146,8 +146,8 @@ Token Lexer::NextToken()
         return Token(Token_close_brace, "}", location);
     } else {
         int pos_change = 0;
-        CompilerError error(Level_fatal,
-            Msg_unexpected_token, location, m_source_stream.Next(pos_change));
+        CompilerError error(Level_fatal, Msg_unexpected_token,
+            location, m_source_stream.Next(pos_change));
 
         m_compilation_unit->GetErrorList().AddError(error);
         m_source_location.GetColumn() += pos_change;
@@ -159,7 +159,7 @@ Token Lexer::NextToken()
 u32char Lexer::ReadEscapeCode()
 {
     // location of the start of the escape code
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     u32char esc;
 
@@ -199,7 +199,7 @@ u32char Lexer::ReadEscapeCode()
 Token Lexer::ReadStringLiteral()
 {
     // the location for the start of the string
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     std::string value;
 
@@ -250,7 +250,7 @@ Token Lexer::ReadStringLiteral()
 
 Token Lexer::ReadNumberLiteral()
 {
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     // store the value in a string
     std::string value;
@@ -294,7 +294,7 @@ Token Lexer::ReadNumberLiteral()
 Token Lexer::ReadHexNumberLiteral()
 {
     // location of the start of the hex number
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     // store the value in a string
     std::string value;
@@ -325,7 +325,7 @@ Token Lexer::ReadHexNumberLiteral()
 
 Token Lexer::ReadLineComment()
 {
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     // read '//'
     for (int i = 0; i < 2; i++) {
@@ -346,7 +346,7 @@ Token Lexer::ReadLineComment()
 
 Token Lexer::ReadBlockComment()
 {
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     // read '/*'
     for (int i = 0; i < 2; i++) {
@@ -377,7 +377,7 @@ Token Lexer::ReadBlockComment()
 
 Token Lexer::ReadDocumentation()
 {
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     std::string value;
 
@@ -407,7 +407,7 @@ Token Lexer::ReadDocumentation()
 Token Lexer::ReadOperator()
 {
     // location of the start of the hex number
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     std::array<u32char, 2> ch;
     int total_pos_change = 0;
@@ -440,7 +440,7 @@ Token Lexer::ReadOperator()
 
 Token Lexer::ReadIdentifier()
 {
-    SourceLocation location(m_source_location);
+    SourceLocation location = m_source_location;
 
     // store the name in this string
     std::string value;

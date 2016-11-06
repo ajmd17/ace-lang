@@ -91,26 +91,29 @@ void VM::Echo(StackValue &value)
         utf::printf(UTF8_CSTR("%" PRId32), value.m_value.i64);
         break;
     case StackValue::FLOAT:
-        utf::printf(UTF8_CSTR("%f"), (double)value.m_value.f);
+        utf::printf(UTF8_CSTR("%g"), value.m_value.f);
         break;
     case StackValue::DOUBLE:
-        utf::printf(UTF8_CSTR("%f"), value.m_value.d);
+        utf::printf(UTF8_CSTR("%g"), value.m_value.d);
         break;
     case StackValue::BOOLEAN:
         utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
         break;
     case StackValue::HEAP_POINTER:
+    {
+        utf::Utf8String *str = nullptr;
         if (value.m_value.ptr == nullptr) {
             // special case for null pointers
             utf::fputs(UTF8_CSTR("null"), stdout);
-        } else if (value.m_value.ptr->TypeCompatible<utf::Utf8String>()) {
+        } else if ((str = value.m_value.ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // print string value
-            utf::fputs(UTF8_TOWIDE(value.m_value.ptr->Get<utf::Utf8String>().GetData()), stdout);
+            utf::fputs(UTF8_TOWIDE(str->GetData()), stdout);
         } else {
             utf::printf(UTF8_CSTR("Object<%p>"), (void*)value.m_value.ptr);
         }
 
         break;
+    }
     case StackValue::FUNCTION:
         utf::printf(UTF8_CSTR("Function<%du>"), value.m_value.func.m_addr);
         break;
@@ -169,7 +172,7 @@ void VM::InvokeNativeFunction(StackValue &value, ExecutionThread *thread)
         char buffer[256];
         std::sprintf(buffer, "cannot invoke type '%s' as a native function",
             value.GetTypeString());
-        ThrowException(Exception(buffer));
+        ThrowException(Exception(utf::Utf8String(buffer)));
     } else {
         value.m_value.native_func(thread);
     }
@@ -181,8 +184,9 @@ void VM::ThrowException(const Exception &exception)
         // exception can be handled
         m_exec_thread.m_exception_state.m_exception_occured = true;
     } else {
-        // unhandled exception
-        std::printf("unhandled exception: %s\n", exception.ToString().c_str());
+        // unhandled exception error
+        utf::printf("unhandled exception: %" PRIutf8s "\n",
+            UTF8_TOWIDE(exception.ToString().GetData()));
         // seek to end of bytecode stream
         m_bs->Seek(m_bs->Size());
     }
@@ -191,8 +195,7 @@ void VM::ThrowException(const Exception &exception)
 void VM::HandleInstruction(uint8_t code)
 {
     switch (code) {
-    case STORE_STATIC_STRING:
-    {
+    case STORE_STATIC_STRING: {
         // get string length
         uint32_t len;
         m_bs->Read(&len);
@@ -217,8 +220,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case STORE_STATIC_ADDRESS:
-    {
+    case STORE_STATIC_ADDRESS: {
         uint32_t value;
         m_bs->Read(&value);
 
@@ -230,8 +232,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case STORE_STATIC_FUNCTION:
-    {
+    case STORE_STATIC_FUNCTION: {
         uint32_t addr;
         m_bs->Read(&addr);
 
@@ -247,8 +248,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case STORE_STATIC_TYPE:
-    {
+    case STORE_STATIC_TYPE: {
         uint16_t size;
         m_bs->Read(&size);
 
@@ -260,8 +260,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_I32:
-    {
+    case LOAD_I32: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -274,8 +273,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_I64:
-    {
+    case LOAD_I64: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -288,8 +286,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_F32:
-    {
+    case LOAD_F32: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -302,8 +299,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_F64:
-    {
+    case LOAD_F64: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -316,8 +312,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_OFFSET:
-    {
+    case LOAD_OFFSET: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -331,8 +326,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_INDEX:
-    {
+    case LOAD_INDEX: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -344,8 +338,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_STATIC:
-    {
+    case LOAD_STATIC: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -358,8 +351,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_STRING:
-    {
+    case LOAD_STRING: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -387,8 +379,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_ADDR:
-    {
+    case LOAD_ADDR: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -401,8 +392,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_FUNC:
-    {
+    case LOAD_FUNC: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -419,8 +409,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_TYPE:
-    {
+    case LOAD_TYPE: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -433,8 +422,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_MEM:
-    {
+    case LOAD_MEM: {
         uint8_t dst;
         m_bs->Read(&dst);
 
@@ -450,21 +438,20 @@ void VM::HandleInstruction(uint8_t code)
         HeapValue *hv = sv.m_value.ptr;
         if (hv == nullptr) {
             // null reference exception.
-            ThrowException(Exception("attempted to access a member of a null object"));
+            ThrowException(Exception(utf::Utf8String("attempted to access a member of a null object")));
         } else {
             Object *objptr = nullptr;
             if ((objptr = hv->GetPointer<Object>()) != nullptr) {
                 assert(idx < objptr->GetSize() && "member index out of bounds");
                 m_exec_thread.m_regs[dst] = objptr->GetMember(idx);
             } else {
-                ThrowException(Exception("not a standard object"));
+                ThrowException(Exception(utf::Utf8String("not a standard object")));
             }
         }
 
         break;
     }
-    case LOAD_NULL:
-    {
+    case LOAD_NULL: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -474,8 +461,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_TRUE:
-    {
+    case LOAD_TRUE: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -485,8 +471,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case LOAD_FALSE:
-    {
+    case LOAD_FALSE: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -496,8 +481,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case MOV_OFFSET:
-    {
+    case MOV_OFFSET: {
         uint16_t offset;
         m_bs->Read(&offset);
 
@@ -510,8 +494,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case MOV_INDEX:
-    {
+    case MOV_INDEX: {
         uint16_t idx;
         m_bs->Read(&idx);
 
@@ -523,8 +506,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case MOV_MEM:
-    {
+    case MOV_MEM: {
         uint8_t dst;
         m_bs->Read(&dst);
 
@@ -540,21 +522,20 @@ void VM::HandleInstruction(uint8_t code)
         HeapValue *hv = sv.m_value.ptr;
         if (hv == nullptr) {
             // null reference exception.
-            ThrowException(Exception("attempted to store a member to a null object"));
+            ThrowException(Exception(utf::Utf8String("attempted to store a member to a null object")));
         } else {
             Object *objptr = nullptr;
             if ((objptr = hv->GetPointer<Object>()) != nullptr) {
                 assert(idx < objptr->GetSize() && "member index out of bounds");
                 objptr->GetMember(idx) = m_exec_thread.m_regs[src];
             } else {
-                ThrowException(Exception("not a standard object"));
+                ThrowException(Exception(utf::Utf8String("not a standard object")));
             }
         }
 
         break;
     }
-    case MOV_REG:
-    {
+    case MOV_REG: {
         uint8_t dst;
         m_bs->Read(&dst);
 
@@ -565,24 +546,19 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case PUSH:
-    {
+    case PUSH: {
         uint8_t reg;
         m_bs->Read(&reg);
 
         // push a copy of the register value to the top of the stack
         m_exec_thread.m_stack.Push(m_exec_thread.m_regs[reg]);
-
         break;
     }
-    case POP:
-    {
+    case POP: {
         m_exec_thread.m_stack.Pop();
-
         break;
     }
-    case ECHO:
-    {
+    case ECHO: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -591,14 +567,11 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case ECHO_NEWLINE:
-    {
+    case ECHO_NEWLINE: {
         utf::fputs(UTF8_CSTR("\n"), stdout);
-
         break;
     }
-    case JMP:
-    {
+    case JMP: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -609,8 +582,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case JE:
-    {
+    case JE: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -623,8 +595,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case JNE:
-    {
+    case JNE: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -637,8 +608,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case JG:
-    {
+    case JG: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -651,8 +621,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case JGE:
-    {
+    case JGE: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -665,8 +634,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case CALL:
-    {
+    case CALL: {
         uint8_t reg;
         m_bs->Read(&reg);
 
@@ -677,8 +645,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case BEGIN_TRY:
-    {
+    case BEGIN_TRY: {
         // register that holds address of catch block
         uint8_t reg;
         m_bs->Read(&reg);
@@ -720,13 +687,11 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case END_TRY:
-    {
+    case END_TRY: {
         m_exec_thread.m_exception_state.m_try_counter--;
         break;
     }
-    case NEW:
-    {
+    case NEW: {
         uint8_t dst;
         m_bs->Read(&dst);
 
@@ -753,8 +718,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case CMP:
-    {
+    case CMP: {
         uint8_t lhs_reg;
         m_bs->Read(&lhs_reg);
 
@@ -814,8 +778,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case CMPZ:
-    {
+    case CMPZ: {
         uint8_t lhs_reg;
         m_bs->Read(&lhs_reg);
 
@@ -865,14 +828,12 @@ void VM::HandleInstruction(uint8_t code)
             char buffer[256];
             std::sprintf(buffer, "cannot determine if type '%s' is nonzero",
                 lhs.GetTypeString());
-
-            ThrowException(Exception(buffer));
+            ThrowException(Exception(utf::Utf8String(buffer)));
         }
 
         break;
     }
-    case ADD:
-    {
+    case ADD: {
         uint8_t lhs_reg;
         m_bs->Read(&lhs_reg);
 
@@ -890,7 +851,6 @@ void VM::HandleInstruction(uint8_t code)
         result.m_type = MATCH_TYPES(lhs, rhs);
 
         if (lhs.m_type == StackValue::HEAP_POINTER) {
-            // TODO: Check for '__OPR_ADD__' function and call it
         } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
             int64_t left = GetValueInt64(lhs);
             int64_t right = GetValueInt64(rhs);
@@ -915,8 +875,7 @@ void VM::HandleInstruction(uint8_t code)
             char buffer[256];
             std::sprintf(buffer, "cannot add types '%s' and '%s'",
                 lhs.GetTypeString(), rhs.GetTypeString());
-
-            ThrowException(Exception(buffer));
+            ThrowException(Exception(utf::Utf8String(buffer)));
         }
 
         // set the desination register to be the result
@@ -924,8 +883,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case SUB:
-    {
+    case SUB: {
         uint8_t lhs_reg;
         m_bs->Read(&lhs_reg);
 
@@ -943,7 +901,6 @@ void VM::HandleInstruction(uint8_t code)
         result.m_type = MATCH_TYPES(lhs, rhs);
 
         if (lhs.m_type == StackValue::HEAP_POINTER) {
-            // TODO: Check for '__OPR_SUB__' function and call it
         } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
             int64_t left = GetValueInt64(lhs);
             int64_t right = GetValueInt64(rhs);
@@ -968,8 +925,7 @@ void VM::HandleInstruction(uint8_t code)
             char buffer[256];
             std::sprintf(buffer, "cannot subtract types '%s' and '%s'",
                 lhs.GetTypeString(), rhs.GetTypeString());
-
-            ThrowException(Exception(buffer));
+            ThrowException(Exception(utf::Utf8String(buffer)));
         }
 
         // set the desination register to be the result
@@ -977,8 +933,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case MUL:
-    {
+    case MUL: {
         uint8_t lhs_reg;
         m_bs->Read(&lhs_reg);
 
@@ -996,7 +951,6 @@ void VM::HandleInstruction(uint8_t code)
         result.m_type = MATCH_TYPES(lhs, rhs);
 
         if (lhs.m_type == StackValue::HEAP_POINTER) {
-            // TODO: Check for '__OPR_MUL__' function and call it
         } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
             int64_t left = GetValueInt64(lhs);
             int64_t right = GetValueInt64(rhs);
@@ -1021,8 +975,7 @@ void VM::HandleInstruction(uint8_t code)
             char buffer[256];
             std::sprintf(buffer, "cannot multiply types '%s' and '%s'",
                 lhs.GetTypeString(), rhs.GetTypeString());
-
-            ThrowException(Exception(buffer));
+            ThrowException(Exception(utf::Utf8String(buffer)));
         }
 
         // set the desination register to be the result
@@ -1030,8 +983,7 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
-    case DIV:
-    {
+    case DIV: {
         uint8_t lhs_reg;
         m_bs->Read(&lhs_reg);
 
@@ -1049,7 +1001,6 @@ void VM::HandleInstruction(uint8_t code)
         result.m_type = MATCH_TYPES(lhs, rhs);
 
         if (lhs.m_type == StackValue::HEAP_POINTER) {
-            // TODO: Check for '__OPR_DIV__' function and call it
         } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
             int64_t left = GetValueInt64(lhs);
             int64_t right = GetValueInt64(rhs);
@@ -1058,7 +1009,7 @@ void VM::HandleInstruction(uint8_t code)
                 // division by zero
                 char buffer[256];
                 std::sprintf(buffer, "attempted to divide '%d' by zero", (int)left);
-                ThrowException(Exception(buffer));
+                ThrowException(Exception(utf::Utf8String(buffer)));
             } else {
                 int64_t result_value = left / right;
 
@@ -1076,7 +1027,7 @@ void VM::HandleInstruction(uint8_t code)
                 // division by zero
                 char buffer[256];
                 std::sprintf(buffer, "attempted to divide '%f' by zero", left);
-                ThrowException(Exception(buffer));
+                ThrowException(Exception(utf::Utf8String(buffer)));
             } else {
                 double result_value = left / right;
 
@@ -1090,8 +1041,7 @@ void VM::HandleInstruction(uint8_t code)
             char buffer[256];
             std::sprintf(buffer, "cannot divide types '%s' and '%s'",
                 lhs.GetTypeString(), rhs.GetTypeString());
-
-            ThrowException(Exception(buffer));
+            ThrowException(Exception(utf::Utf8String(buffer)));
         }
 
         // set the desination register to be the result
@@ -1100,9 +1050,8 @@ void VM::HandleInstruction(uint8_t code)
         break;
     }
     default:
-        std::printf("unknown instruction '%d' referenced at location: 0x%08x\n",
+        utf::printf(UTF8_CSTR("unknown instruction '%d' referenced at location: 0x%08x\n"),
             (int)code, (int)m_bs->Position());
-
         // seek to end of bytecode stream
         m_bs->Seek(m_bs->Size());
     }

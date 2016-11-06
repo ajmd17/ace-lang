@@ -23,7 +23,6 @@ public:
         if (!((intptr_t)m_holder ^ (intptr_t)other.m_holder) && m_holder != nullptr) {
             return (*m_holder) == (*other.m_holder);
         }
-
         return false;
     }
 
@@ -39,9 +38,8 @@ public:
     template <typename T>
     inline void Assign(const T &value)
     {
-        typedef typename std::decay<T>::type U;
         if (m_holder != nullptr) { delete m_holder; }
-        auto holder = new DerivedHolder<U>(value);
+        auto holder = new DerivedHolder<typename std::decay<T>::type>(value);
         m_ptr = reinterpret_cast<void*>(&holder->m_value);
         m_holder = holder;
     }
@@ -49,30 +47,27 @@ public:
     template <typename T>
     inline T &Get()
     {
-        typedef typename std::decay<T>::type U;
         if (!TypeCompatible<T>()) { throw std::bad_cast(); }
-        return *reinterpret_cast<U*>(m_ptr);
+        return *reinterpret_cast<typename std::decay<T>::type*>(m_ptr);
     }
 
     template <typename T>
     inline const T &Get() const
     {
-        typedef typename std::decay<T>::type U;
         if (!TypeCompatible<T>()) { throw std::bad_cast(); }
-        return *reinterpret_cast<const U*>(m_ptr);
+        return *reinterpret_cast<const typename std::decay<T>::type*>(m_ptr);
     }
 
     template <typename T>
     inline auto GetPointer() -> typename std::decay<T>::type*
     {
-        typedef typename std::decay<T>::type U;
-        if (!TypeCompatible<T>()) { return nullptr; }
-        return reinterpret_cast<U*>(m_ptr);
+        return TypeCompatible<T>() ? reinterpret_cast<typename std::decay<T>::type*>(m_ptr) : nullptr;
     }
 
 private:
     // base class for an 'any' holder with pure virtual functions
     struct BaseHolder {
+        BaseHolder(size_t type_id) : m_type_id(type_id) {}
         virtual ~BaseHolder() = default;
         virtual bool operator==(const BaseHolder &other) const = 0;
         size_t m_type_id;
@@ -80,11 +75,7 @@ private:
 
     // derived class that can hold any time
     template <typename T> struct DerivedHolder : public BaseHolder {
-        explicit DerivedHolder(const T &value)
-            : m_value(value)
-        {
-            m_type_id = GetTypeId<T>();
-        }
+        explicit DerivedHolder(const T &value) : BaseHolder(GetTypeId<T>()), m_value(value) {}
 
         virtual bool operator==(const BaseHolder &other) const override
         {

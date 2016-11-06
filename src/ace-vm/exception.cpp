@@ -1,6 +1,6 @@
 #include <ace-vm/exception.hpp>
 
-Exception::Exception(const std::string &str)
+Exception::Exception(const utf::Utf8String &str)
     : m_str(str)
 {
 }

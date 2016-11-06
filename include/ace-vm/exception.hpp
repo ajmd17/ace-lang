@@ -1,17 +1,17 @@
 #ifndef EXCEPTION_HPP
 #define EXCEPTION_HPP
 
-#include <string>
+#include <common/utf8.hpp>
 
 class Exception {
 public:
-    Exception(const std::string &str);
+    Exception(const utf::Utf8String &str);
     Exception(const Exception &other);
 
-    inline const std::string &ToString() const { return m_str; }
+    inline const utf::Utf8String &ToString() const { return m_str; }
 
 private:
-    std::string m_str;
+    const utf::Utf8String m_str;
 };
 
 #endif

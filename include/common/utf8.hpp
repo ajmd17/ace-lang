@@ -27,11 +27,31 @@ typedef std::wostream utf8_ostream;
 typedef std::wistream utf8_istream;
 static utf8_ostream &cout = std::wcout;
 static utf8_istream &cin = std::wcin;
+static auto &printf = std::wprintf;
+static auto &fputs = std::fputws;
+#define PRIutf8s "ls"
+#define UTF8_CSTR(str) L##str
+
+inline std::vector<wchar_t> ToWide(const char *str)
+{
+    std::vector<wchar_t> buffer;
+    buffer.resize(MultiByteToWideChar(CP_UTF8, 0, str, -1, 0, 0));
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, &buffer[0], buffer.size());
+    return buffer;
+}
+
+#define UTF8_TOWIDE(str) ToWide(str).data()
+
 #else
 typedef std::ostream utf8_ostream;
 typedef std::istream utf8_istream;
 static utf8_ostream &cout = std::cout;
 static utf8_istream &cin = std::cin;
+static auto &printf = std::printf;
+static auto &fputs = std::fputs;
+#define PRIutf8s "s"
+#define UTF8_CSTR(str) str
+#define UTF8_TOWIDE(str) str
 #endif
 
 typedef uint32_t u32char;

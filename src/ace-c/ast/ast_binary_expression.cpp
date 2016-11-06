@@ -23,7 +23,6 @@ struct ExprInfo {
     AstExpression *left;
     AstBinaryExpression *left_as_binop;
     AstFunctionCall *left_as_call;
-
     AstExpression *right;
     AstBinaryExpression *right_as_binop;
     AstFunctionCall *right_as_call;
@@ -140,10 +139,10 @@ static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ExprInfo info)
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left,
     std::shared_ptr<AstExpression> &right, const Operator *oper, AstVisitor *visitor)
 {
-    AstConstant *left_as_constant = dynamic_cast<AstConstant*>(left.get());
+    AstConstant *left_as_constant  = dynamic_cast<AstConstant*>(left.get());
     AstConstant *right_as_constant = dynamic_cast<AstConstant*>(right.get());
 
-    std::shared_ptr<AstConstant> result(nullptr);
+    std::shared_ptr<AstConstant> result;
 
     if (left_as_constant != nullptr && right_as_constant != nullptr) {
         // perform operations on these constants
@@ -181,9 +180,9 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
 }
 
 AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &left,
-        const std::shared_ptr<AstExpression> &right,
-        const Operator *op,
-        const SourceLocation &location)
+    const std::shared_ptr<AstExpression> &right,
+    const Operator *op,
+    const SourceLocation &location)
     : AstExpression(location),
       m_left(left),
       m_right(right),
@@ -243,7 +242,6 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         }
     } else {
         // allow 'Any' on right-hand side because we're not modifying value
-
         if (m_op->GetType() & BITWISE) {
             // no bitwise operators on floats allowed.
             if (!((left_type  == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any) &&
@@ -277,6 +275,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
     if (m_op->GetType() == ARITHMETIC) {
         uint8_t opcode;
+
         if (m_op == &Operator::operator_add) {
             opcode = ADD;
         } else if (m_op == &Operator::operator_subtract) {
@@ -663,20 +662,6 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 StaticObject false_label;
                 false_label.m_type = StaticObject::TYPE_LABEL;
                 false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-
-                /*// load left-hand side into register 0
-                m_left->Build(visitor, mod);
-
-                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-
-                // load right-hand side into register 1
-                m_right->Build(visitor, mod);
-
-                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);*/
 
                 if (left_as_binop == nullptr && right_as_binop != nullptr) {
                     // if the right hand side is a binary operation,

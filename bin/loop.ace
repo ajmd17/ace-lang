@@ -1,0 +1,9 @@
+module loop;
+
+let counter = 100000;
+while counter {
+  print(counter);
+  counter -= 1;
+}
+
+print("done!");

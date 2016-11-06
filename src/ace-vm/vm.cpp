@@ -6,10 +6,10 @@
 #include <common/instructions.hpp>
 #include <common/utf8.hpp>
 
-#include <iostream>
 #include <algorithm>
 #include <cstdio>
 #include <cassert>
+#include <cinttypes>
 
 VM::VM(BytecodeStream *bs)
     : m_bs(bs),
@@ -83,52 +83,45 @@ void VM::Echo(StackValue &value)
 {
     // string buffer for printing datatype
     char str[256];
-
     switch (value.m_type) {
     case StackValue::INT32:
-        utf::cout << value.m_value.i32;
+        utf::printf(UTF8_CSTR("%d"), value.m_value.i32);
         break;
     case StackValue::INT64:
-        utf::cout << value.m_value.i64;
+        utf::printf(UTF8_CSTR("%" PRId32), value.m_value.i64);
         break;
     case StackValue::FLOAT:
-        utf::cout << value.m_value.f;
+        utf::printf(UTF8_CSTR("%f"), (double)value.m_value.f);
         break;
     case StackValue::DOUBLE:
-        utf::cout << value.m_value.d;
+        utf::printf(UTF8_CSTR("%f"), value.m_value.d);
         break;
     case StackValue::BOOLEAN:
-        utf::cout << (value.m_value.b ? "true" : "false");
+        utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
         break;
     case StackValue::HEAP_POINTER:
         if (value.m_value.ptr == nullptr) {
             // special case for null pointers
-            utf::cout << "null";
+            utf::fputs(UTF8_CSTR("null"), stdout);
         } else if (value.m_value.ptr->TypeCompatible<utf::Utf8String>()) {
             // print string value
-            utf::cout << value.m_value.ptr->Get<utf::Utf8String>();
+            utf::fputs(UTF8_TOWIDE(value.m_value.ptr->Get<utf::Utf8String>().GetData()), stdout);
         } else {
-            std::sprintf(str, "Object<%p>", (void*)value.m_value.ptr);
-            utf::cout << str;
+            utf::printf(UTF8_CSTR("Object<%p>"), (void*)value.m_value.ptr);
         }
 
         break;
     case StackValue::FUNCTION:
-        std::sprintf(str, "Function<%du, %du>",
-            value.m_value.func.m_addr, value.m_value.func.m_nargs);
-        utf::cout << str;
+        utf::printf(UTF8_CSTR("Function<%du>"), value.m_value.func.m_addr);
         break;
     case StackValue::NATIVE_FUNCTION:
-        std::sprintf(str, "NativeFunction<%p>", (void*)value.m_value.native_func);
-        utf::cout << str;
+        utf::printf(UTF8_CSTR("NativeFunction<%p>"), (void*)value.m_value.native_func);
         break;
     case StackValue::ADDRESS:
-        std::sprintf(str, "Address<%du>", value.m_value.addr);
-        utf::cout << str;
+        utf::printf(UTF8_CSTR("Address<%du>"), value.m_value.addr);
         break;
     case StackValue::TYPE_INFO:
-        std::sprintf(str, "Type<%du>", value.m_value.type_info.m_size);
-        utf::cout << str;
+        utf::printf(UTF8_CSTR("Type<%du>"), value.m_value.type_info.m_size);
         break;
     }
 }
@@ -600,7 +593,7 @@ void VM::HandleInstruction(uint8_t code)
     }
     case ECHO_NEWLINE:
     {
-        utf::cout << "\n";
+        utf::fputs(UTF8_CSTR("\n"), stdout);
 
         break;
     }

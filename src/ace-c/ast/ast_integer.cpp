@@ -114,7 +114,7 @@ std::shared_ptr<AstConstant> AstInteger::operator/(AstConstant *right) const
         a_float right_float = right->FloatValue();
         if (right_float == 0.0) {
             // division by zero, return Undefined
-            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+            return nullptr;
         } else {
             result = FloatValue() / right_float;
         }
@@ -124,7 +124,7 @@ std::shared_ptr<AstConstant> AstInteger::operator/(AstConstant *right) const
         a_int right_int = right->IntValue();
         if (right_int == 0) {
             // division by zero, return Undefined
-            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+            return nullptr;
         } else {
             return std::shared_ptr<AstInteger>(
                 new AstInteger(IntValue() / right_int, m_location));
@@ -144,7 +144,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
         a_float right_float = right->FloatValue();
         if (right_float == 0.0) {
             // division by zero, return Undefined
-            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+            return nullptr;
         } else {
             result = std::fmod(FloatValue(), right_float);
         }
@@ -154,7 +154,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
         a_int right_int = right->IntValue();
         if (right_int == 0) {
             // division by zero, return Undefined
-            return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+            return nullptr;
         } else {
             return std::shared_ptr<AstInteger>(
                 new AstInteger(IntValue() % right_int, m_location));
@@ -282,6 +282,25 @@ std::shared_ptr<AstConstant> AstInteger::Equals(AstConstant *right) const
         return nullptr;
     }
     if (IntValue() == right->IntValue()) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    }
+}
+
+std::shared_ptr<AstConstant> AstInteger::operator-() const
+{
+    return std::shared_ptr<AstInteger>(new AstInteger(-IntValue(), m_location));
+}
+
+std::shared_ptr<AstConstant> AstInteger::operator~() const
+{
+    return std::shared_ptr<AstInteger>(new AstInteger(~IntValue(), m_location));
+}
+
+std::shared_ptr<AstConstant> AstInteger::operator!() const
+{
+    if (IntValue() == 0) {
         return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     } else {
         return std::shared_ptr<AstFalse>(new AstFalse(m_location));

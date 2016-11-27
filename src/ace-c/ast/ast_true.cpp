@@ -131,3 +131,18 @@ std::shared_ptr<AstConstant> AstTrue::Equals(AstConstant *right) const
     }
     return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }
+
+std::shared_ptr<AstConstant> AstTrue::operator-() const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstTrue::operator~() const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstTrue::operator!() const
+{
+    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+}

@@ -1,6 +1,21 @@
 module test;
 
-func Z() {
+type MyType {
+    let member1: Int
+    let member2: Number
+}
+
+let x: MyType
+x.member1 = 92
+print "x: ", x.member1, ", ", x.member2
+
+func X(y) {
+    print y
+}
+X();
+print "bye";
+
+/*func Z() {
     print("hello from Z()")
 }
 
@@ -14,7 +29,7 @@ func Y() {
     X(Z)
 }
 
-X(Y);
+X(Y);*/
 
 /*type Customer {
     let id: Int;

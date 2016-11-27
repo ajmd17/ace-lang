@@ -106,13 +106,6 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
             uint16_t size;
             m_bs.Read(&size);
 
-            /*uint32_t namelen;
-            m_bs.Read(&namelen);
-
-            char *name = new char[namelen + 1];
-            name[namelen] = '\0';
-            m_bs.Read(name, namelen);*/
-
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
@@ -452,6 +445,35 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case LOAD_ARRAYIDX:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            uint32_t idx;
+            m_bs.Read(&idx);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_arrayidx ["
+                        << "%" << (int)reg << ", "
+                        << "%" << (int)src << ", "
+                        << "u32(" << (int)idx << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(code, reg, src, idx);
+
+            break;
+        }
         case LOAD_NULL:
         {
             uint8_t reg;
@@ -594,6 +616,35 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
             break;
         }
+        case MOV_ARRAYIDX:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint32_t idx;
+            m_bs.Read(&idx);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "mov_arrayidx ["
+                        << "%" << (int)reg << ", "
+                        << "u32(" << (int)idx << "), "
+                        << "%" << (int)src << ""
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(code, reg, idx, src);
+
+            break;
+        }
         case MOV_REG:
         {
             uint8_t dst;
@@ -653,6 +704,30 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
             }
 
             is << Instruction<uint8_t>(code);
+
+            break;
+        }
+        case PUSH_ARRAY:
+        {
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "push_array ["
+                    << "% " << (int)dst << ", "
+                    << "% " << (int)src
+                    << "]" << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t>(code, dst, src);
 
             break;
         }
@@ -876,11 +951,11 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
         }
         case NEW:
         {
-            uint8_t src;
-            m_bs.Read(&src);
-
             uint8_t dst;
             m_bs.Read(&dst);
+
+            uint8_t type;
+            m_bs.Read(&type);
 
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
@@ -889,13 +964,38 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
 
                 (*os)
                     << "new ["
-                        << "%" << (int)src << ", "
-                        << "%" << (int)dst
+                        << "%" << (int)dst << ", "
+                        << "%" << (int)type
                     << "]"
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint8_t, uint8_t>(code, src, dst);
+            is << Instruction<uint8_t, uint8_t, uint8_t>(code, dst, type);
+
+            break;
+        }
+        case NEW_ARRAY:
+        {
+            uint8_t dst;
+            m_bs.Read(&dst);
+
+            uint32_t size;
+            m_bs.Read(&size);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "new_array ["
+                        << "%"    << (int)dst << ", "
+                        << "u32(" << (int)size << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint32_t>(code, dst, size);
 
             break;
         }
@@ -1087,6 +1187,27 @@ InstructionStream DecompilationUnit::Decompile(std::ostream *os)
             }
 
             is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+            break;
+        }
+        case NEG:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "neg ["
+                        << "%" << (int)reg
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t>(code, reg);
 
             break;
         }

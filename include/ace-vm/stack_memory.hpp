@@ -15,7 +15,11 @@ public:
     Stack(const Stack &other) = delete;
     ~Stack();
 
+    inline StackValue *GetData() { return m_data; }
+    inline const StackValue *GetData() const { return m_data; }
     inline size_t GetStackPointer() const { return m_sp; }
+    
+    void MarkAll();
 
     inline StackValue &operator[](size_t index)
     {

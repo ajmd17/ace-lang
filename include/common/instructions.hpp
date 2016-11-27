@@ -32,34 +32,40 @@ enum Instructions : char {
     STORE_STATIC_TYPE,     // type [u16 size]
 
     /* Load a value into a register */
-    LOAD_I32,    // load_i32    [% reg, i32 val]
-    LOAD_I64,    // load_i64    [% reg, i64 val]
-    LOAD_F32,    // load_f32    [% reg, f32 val]
-    LOAD_F64,    // load_f64    [% reg, f64 val]
-    LOAD_OFFSET, // load_offset [% reg, $ offset]
-    LOAD_INDEX,  // load_index  [% reg, u16 idx]
-    LOAD_STATIC, // load_static [% reg, # idx]
-    LOAD_STRING, // load_str    [% reg, u32 len, i8[] str]
-    LOAD_ADDR,   // load_addr   [% reg, @ addr]
-    LOAD_FUNC,   // load_func   [% reg, @ addr, u8 nargs]
-    LOAD_TYPE,   // load_type   [% reg, u16 size]
-    LOAD_MEM,    // load_mem    [% reg, % src, u8 idx]
-    LOAD_NULL,   // load_null   [% reg]
-    LOAD_TRUE,   // load_true   [% reg]
-    LOAD_FALSE,  // load_false  [% reg]
+    LOAD_I32,      // load_i32      [% reg, i32 val]
+    LOAD_I64,      // load_i64      [% reg, i64 val]
+    LOAD_F32,      // load_f32      [% reg, f32 val]
+    LOAD_F64,      // load_f64      [% reg, f64 val]
+    LOAD_OFFSET,   // load_offset   [% reg, $ offset]
+    LOAD_INDEX,    // load_index    [% reg, u16 idx]
+    LOAD_STATIC,   // load_static   [% reg, # idx]
+    LOAD_STRING,   // load_str      [% reg, u32 len, i8[] str]
+    LOAD_ADDR,     // load_addr     [% reg, @ addr]
+    LOAD_FUNC,     // load_func     [% reg, @ addr, u8 nargs]
+    LOAD_TYPE,     // load_type     [% reg, u16 size]
+    LOAD_MEM,      // load_mem      [% reg, % src, u8 idx]
+    LOAD_ARRAYIDX, // load_arrayidx [% reg, % src, u32 idx]
+    LOAD_NULL,     // load_null     [% reg]
+    LOAD_TRUE,     // load_true     [% reg]
+    LOAD_FALSE,    // load_false    [% reg]
 
     /* Copy register value to stack offset */
-    MOV_OFFSET,     // mov_offset  [$ dst, % src]
+    MOV_OFFSET,     // mov_offset   [$ dst, % src]
     /* Copy register value to stack index */
-    MOV_INDEX,      // mov_index [u16 dst, % src]
+    MOV_INDEX,      // mov_index    [u16 dst, % src]
     /* Copy register value to object member */
-    MOV_MEM,        // mov_mem [% dst_obj, u8 dst_idx, % src]
+    MOV_MEM,        // mov_mem      [% dst_obj, u8 dst_idx, % src]
+    /* Copy register value to array index */
+    MOV_ARRAYIDX,   // mov_arrayidx [% dst_array, u32 dst_idx, %src]
     /* Copy register value to another register */
-    MOV_REG,        // mov_reg [% dst, % src]
+    MOV_REG,        // mov_reg      [% dst, % src]
 
     /* Push a value from register to the stack */
     PUSH, // push [% src]
     POP,  // pop
+
+    /* Push a value to the array in %dst_array */
+    PUSH_ARRAY, // push_array [% dst_array, % src]
 
     ECHO,         // echo [% reg]
     ECHO_NEWLINE, // echo_nl
@@ -77,7 +83,8 @@ enum Instructions : char {
     BEGIN_TRY, // begin_try [% catch_addr]
     END_TRY,
 
-    NEW, // new [% dst, % type]
+    NEW,       // new [% dst, % type]
+    NEW_ARRAY, // new_array [% dst, u32 size]
 
     /* Compare to register values */
     CMP,  // cmp [% lhs, % rhs]
@@ -89,6 +96,10 @@ enum Instructions : char {
     MUL,
     DIV,
     MOD,
+
+    /* Unary operations */
+    NEG, // neg [% src] - mathematical negation
+    NOT, // not [% src] - bitwise complement
 
     /* Signifies the end of the stream */
     EXIT,

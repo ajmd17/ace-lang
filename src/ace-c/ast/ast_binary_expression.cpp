@@ -196,7 +196,7 @@ AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &l
 
 bool AstBinaryExpression::VisitOperatorOverload(const ObjectType &left_type, const ObjectType &right_type)
 {
-    /*// TODO operator overloading
+    // TODO operator overloading
     if (left_type == ObjectType::type_builtin_string && m_op == &Operator::operator_add) {
         // 'concat' function in module 'str' handles concatenation
         std::shared_ptr<AstVariable> target(new AstVariable("str", m_left->GetLocation()));
@@ -209,7 +209,7 @@ bool AstBinaryExpression::VisitOperatorOverload(const ObjectType &left_type, con
             new AstMemberAccess(target, parts, target->GetLocation()));
 
         return true;
-    }*/
+    }
 
     return false;
 }
@@ -678,111 +678,139 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
             }
         } else if (m_op->GetType() == COMPARISON) {
+            uint8_t rp;
+            uint8_t opcode;
+            bool swapped = false;
+
             if (m_op == &Operator::operator_equals) {
-                uint8_t rp;
+                opcode = JNE;
+            } else if (m_op == &Operator::operator_not_eql) {
+                opcode = JE;
+            } else if (m_op == &Operator::operator_less) {
+                opcode = JGE;
+            } else if (m_op == &Operator::operator_less_eql) {
+                opcode = JG;
+            } else if (m_op == &Operator::operator_greater) {
+                opcode = JGE;
+                swapped = true;
+            } else if (m_op == &Operator::operator_greater_eql) {
+                opcode = JG;
+                swapped = true;
+            }
 
-                if (m_right != nullptr) {
-                    StaticObject true_label;
-                    true_label.m_type = StaticObject::TYPE_LABEL;
-                    true_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+            if (m_right != nullptr) {
+                uint8_t r0, r1;
 
-                    StaticObject false_label;
-                    false_label.m_type = StaticObject::TYPE_LABEL;
-                    false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+                StaticObject true_label;
+                true_label.m_type = StaticObject::TYPE_LABEL;
+                true_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
 
-                    if (left_as_binop == nullptr && right_as_binop != nullptr) {
-                        // if the right hand side is a binary operation,
-                        // we should build in the rhs first in order to
-                        // transverse the parse tree.
+                StaticObject false_label;
+                false_label.m_type = StaticObject::TYPE_LABEL;
+                false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                if (left_as_binop == nullptr && right_as_binop != nullptr) {
+                    // if the right hand side is a binary operation,
+                    // we should build in the rhs first in order to
+                    // transverse the parse tree.
+                    LoadRightThenLeft(visitor, mod, info);
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                    r0 = rp;
+                    r1 = rp - 1;
+                } else if (m_right != nullptr && m_right->MayHaveSideEffects()) {
+                    // lhs must be temporary stored on the stack,
+                    // to avoid the rhs overwriting it.
+                    if (m_left->MayHaveSideEffects()) {
+                        LoadLeftAndStore(visitor, mod, info);
+                        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                        r0 = rp - 1;
+                        r1 = rp;
+                    } else {
+                        // left  doesn't have side effects,
+                        // so just evaluate right without storing the lhs.
                         LoadRightThenLeft(visitor, mod, info);
                         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-                        visitor->GetCompilationUnit()->GetInstructionStream() <<
-                            Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp, rp - 1);
-                    } else if (m_right != nullptr && m_right->MayHaveSideEffects()) {
-                        // lhs must be temporary stored on the stack,
-                        // to avoid the rhs overwriting it.
-                        if (m_left->MayHaveSideEffects()) {
-                            LoadLeftAndStore(visitor, mod, info);
-                            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-                            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                                Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
-                        } else {
-                            // left  doesn't have side effects,
-                            // so just evaluate right without storing the lhs.
-                            LoadRightThenLeft(visitor, mod, info);
-                            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-                            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                                Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp, rp - 1);
-                        }
-                    } else {
-                        // normal usage, load left into register 0,
-                        // then load right into register 1.
-                        // rinse and repeat.
-                        LoadLeftThenRight(visitor, mod, info);
-                        if (m_right != nullptr) {
-                            // perform operation
-                            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-                            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                                Instruction<uint8_t, uint8_t, uint8_t>(CMP, rp - 1, rp);
-                        }
+
+                        r0 = rp;
+                        r1 = rp - 1;
                     }
-
-                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                    // load the label address from static memory into register 0
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
-
-                    if (!ace::compiler::Config::use_static_objects) {
-                        // fill with padding, for LOAD_ADDR instruction.
-                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-                    }
-
-                    // jump if they are equal
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t>(JE, rp);
-
-                    // values are not equal at this point
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
-
-                    // jump to the VERY end (so we don't load 'true' value)
-                    // increment register usage
-                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-                    // get register position
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                    // load the label address from static memory into register 1
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
-
-                    if (!ace::compiler::Config::use_static_objects) {
-                        // fill with padding, for LOAD_ADDR instruction.
-                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-                    }
-
-                    // jump to the false label, the value is false at this point
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t>(JMP, rp);
-
-                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                    // get current register index
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                    true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-                    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
-
-                    // values are equal
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
-
-                    false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-                    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
                 } else {
-                    // load left-hand side into register
-                    m_left->Build(visitor, mod);
+                    // normal usage, load left into register 0,
+                    // then load right into register 1.
+                    // rinse and repeat.
+                    LoadLeftThenRight(visitor, mod, info);
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                    r0 = rp - 1;
+                    r1 = rp;
                 }
+
+                if (swapped) {
+                    std::swap(r0, r1);
+                }
+
+                // perform operation
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint8_t>(CMP, r0, r1);
+
+                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                // load the label address from static memory into register 0
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+                if (!ace::compiler::Config::use_static_objects) {
+                    // fill with padding, for LOAD_ADDR instruction.
+                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                }
+
+                // jump if they are equal
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(opcode, rp);
+
+                // values are not equal at this point
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
+
+                // jump to the VERY end (so we don't load 'true' value)
+                // increment register usage
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                // get register position
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                // load the label address from static memory into register 1
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                if (!ace::compiler::Config::use_static_objects) {
+                    // fill with padding, for LOAD_ADDR instruction.
+                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                }
+
+                // jump to the false label, the value is false at this point
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(JMP, rp);
+
+                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                // get current register index
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
+
+                // values are equal
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
+
+                false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
+            } else {
+                // load left-hand side into register
+                // right-hand side has been optimized away
+                m_left->Build(visitor, mod);
             }
         } else if (m_op->GetType() & ASSIGNMENT) {
             uint8_t rp;
@@ -905,13 +933,13 @@ ObjectType AstBinaryExpression::GetObjectType() const
         ObjectType left_type = m_left->GetObjectType();
         ObjectType right_type = m_right->GetObjectType();
 
-        if (m_op->ModifiesValue() &&
+        /*if (m_op->ModifiesValue() &&
             (left_type.ToString() != ObjectType::type_builtin_any.ToString() &&
             right_type.ToString() == ObjectType::type_builtin_any.ToString())) {
             // special case for assignment operators.
             // cannot set a strict type to 'Any'.
            return ObjectType::type_builtin_undefined;
-        }
+        }*/
 
         return ObjectType::FindCompatibleType(left_type, right_type);
     }

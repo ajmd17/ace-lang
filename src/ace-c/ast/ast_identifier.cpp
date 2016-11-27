@@ -23,8 +23,23 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
     // the variable must exist in the active scope or a parent scope
     m_identifier = mod->LookUpIdentifier(m_name, false);
     if (m_identifier == nullptr) {
-        visitor->GetCompilationUnit()->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_undeclared_identifier, m_location, m_name));
+        bool found_module = false;
+        // check all modules for one with the same name
+        for (const auto &it : visitor->GetCompilationUnit()->m_modules) {
+            if (it != nullptr && it->GetName() == m_name) {
+                // module with name found
+                found_module = true;
+                break;
+            }
+        }
+
+        if (found_module) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_identifier_is_module, m_location, m_name));
+        } else {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_undeclared_identifier, m_location, m_name));
+        }
     } else {
         m_identifier->IncUseCount();
     }

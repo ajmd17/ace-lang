@@ -7,8 +7,6 @@
 
 #include <common/instructions.hpp>
 
-#include <iostream>
-#include <vector>
 #include <cassert>
 
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
@@ -26,12 +24,12 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
-    assert(m_identifier != nullptr);
-
-    // functions are implicitly const
-    m_identifier->GetFlags() |= FLAG_CONST;
-    m_identifier->SetObjectType(m_expr->GetObjectType());
-    m_identifier->SetCurrentValue(m_expr);
+    if (m_identifier != nullptr) {
+        // functions are implicitly const
+        m_identifier->GetFlags() |= FLAG_CONST;
+        m_identifier->SetObjectType(m_expr->GetObjectType());
+        m_identifier->SetCurrentValue(m_expr);
+    }
 }
 
 void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)

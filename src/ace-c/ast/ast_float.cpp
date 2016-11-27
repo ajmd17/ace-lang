@@ -89,7 +89,7 @@ std::shared_ptr<AstConstant> AstFloat::operator/(AstConstant *right) const
     a_float right_float = right->FloatValue();
     if (right_float == 0.0) {
         // division by zero
-        return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+        return nullptr;
     }
     return std::shared_ptr<AstFloat>(new AstFloat(FloatValue() / right_float, m_location));
 }
@@ -103,7 +103,7 @@ std::shared_ptr<AstConstant> AstFloat::operator%(AstConstant *right) const
     a_float right_float = right->FloatValue();
     if (right_float == 0.0) {
         // division by zero
-        return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+        return nullptr;
     }
 
     return std::shared_ptr<AstFloat>(new AstFloat(std::fmod(FloatValue(), right_float), m_location));
@@ -199,6 +199,26 @@ std::shared_ptr<AstConstant> AstFloat::Equals(AstConstant *right) const
         return nullptr;
     }
     if (FloatValue() == right->FloatValue()) {
+        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+    } else {
+        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+    }
+}
+
+std::shared_ptr<AstConstant> AstFloat::operator-() const
+{
+    return std::shared_ptr<AstFloat>(new AstFloat(-FloatValue(), m_location));
+}
+
+std::shared_ptr<AstConstant> AstFloat::operator~() const
+{
+    // invalid operator on floats
+    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+}
+
+std::shared_ptr<AstConstant> AstFloat::operator!() const
+{
+    if (FloatValue() == 0.0) {
         return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     } else {
         return std::shared_ptr<AstFalse>(new AstFalse(m_location));

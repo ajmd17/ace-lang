@@ -191,7 +191,11 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
         } else if (MatchKeyword(Keyword_let, false)) {
             return ParseVariableDeclaration();
         } else if (MatchKeyword(Keyword_func, false)) {
-            return ParseFunctionDefinition();
+            if (MatchAhead(Token_identifier, 1)) {
+                return ParseFunctionDefinition();
+            } else {
+                return ParseFunctionExpression();
+            }
         } else if (MatchKeyword(Keyword_type, false)) {
             return ParseTypeDefinition();
         } else if (MatchKeyword(Keyword_if, false)) {
@@ -226,6 +230,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 
     if (Match(Token_open_parenthesis)) {
         expr = ParseParentheses();
+    } else if (Match(Token_open_bracket)) {
+        expr = ParseArrayExpression();
     } else if (Match(Token_integer_literal)) {
         expr = ParseIntegerLiteral();
     } else if (Match(Token_float_literal)) {
@@ -241,9 +247,9 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     } else if (MatchKeyword(Keyword_null)) {
         expr = ParseNull();
     } else if (MatchKeyword(Keyword_func)) {
-        expr = nullptr;//ParseFunctionExpression();
+        expr = ParseFunctionExpression();
     } else if (Match(Token_operator)) {
-        expr = nullptr;//ParseUnaryExpression();
+        expr = ParseUnaryExpression();
     } else {
         CompilerError error(Level_fatal, Msg_unexpected_token,
             token->GetLocation(), token->GetValue());
@@ -559,6 +565,29 @@ std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
     return nullptr;
 }
 
+std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
+{
+    // read the operator token
+    const Token *token = Expect(Token_operator, true);
+
+    if (token != nullptr) {
+        const Operator *op = nullptr;
+        if (!Operator::IsUnaryOperator(token->GetValue(), op)) {
+            // internal error: operator not defined
+            CompilerError error(Level_fatal,
+                Msg_internal_error, token->GetLocation());
+            m_compilation_unit->GetErrorList().AddError(error);
+        }
+
+        auto term = ParseTerm();
+
+        return std::shared_ptr<AstUnaryExpression>(
+            new AstUnaryExpression(term, op, token->GetLocation()));
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
 {
     std::shared_ptr<AstExpression> term = ParseTerm();
@@ -678,6 +707,36 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool func
             return std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression(
                 params, type_spec, block, location));
         }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
+{
+    const Token *token = Expect(Token_open_bracket, true);
+
+    if (token != nullptr) {
+        std::vector<std::shared_ptr<AstExpression>> members;
+
+        while (true) {
+            if (Match(Token_close_bracket, false)) {
+                break;
+            }
+
+            auto expr = ParseExpression();
+            if (expr != nullptr) {
+                members.push_back(expr);
+            }
+            if (!Match(Token_comma, true)) {
+                break;
+            }
+        }
+
+        Expect(Token_close_bracket, true);
+
+        return std::shared_ptr<AstArrayExpression>(
+            new AstArrayExpression(members, token->GetLocation()));
     }
 
     return nullptr;

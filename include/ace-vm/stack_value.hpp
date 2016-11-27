@@ -8,9 +8,9 @@
 
 // forward declarations
 struct StackValue;
-struct ExecutionThread;
+struct VMState;
 
-typedef void(*NativeFunctionPtr_t)(ExecutionThread*);
+typedef void(*NativeFunctionPtr_t)(VMState*, StackValue*, int);
 
 struct Function {
     uint32_t m_addr;
@@ -50,6 +50,8 @@ struct StackValue {
 
     StackValue();
     explicit StackValue(const StackValue &other);
+
+    void Mark();
 
     inline const char *GetTypeString() const
     {

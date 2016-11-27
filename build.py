@@ -30,7 +30,9 @@ def build_all(build_mode):
         print("Unknown build mode '{}'".format(build_mode))
 
 def build_project(project_name, build_mode, linkfiles=[]):
-    answer = raw_input("Build project '{}'? (Y/n) ".format(project_name))
+    sys.stdout.write("Build project '{}'? (Y/n) ".format(project_name))
+    sys.stdout.flush()
+    answer = raw_input()
     if not answer.lower().startswith("y"):
         print("Cancelled")
         return

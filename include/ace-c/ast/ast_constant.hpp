@@ -39,6 +39,11 @@ public:
     virtual std::shared_ptr<AstConstant> operator||(AstConstant *right) const = 0;
 
     virtual std::shared_ptr<AstConstant> Equals(AstConstant *right) const = 0;
+
+    // Unary operators
+    virtual std::shared_ptr<AstConstant> operator-() const = 0;
+    virtual std::shared_ptr<AstConstant> operator~() const = 0;
+    virtual std::shared_ptr<AstConstant> operator!() const = 0;
 };
 
 #endif

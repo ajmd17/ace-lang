@@ -111,3 +111,18 @@ std::shared_ptr<AstConstant> AstVoid::Equals(
 {
     return nullptr;
 }
+
+std::shared_ptr<AstConstant> AstVoid::operator-() const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstVoid::operator~() const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstVoid::operator!() const
+{
+    return nullptr;
+}

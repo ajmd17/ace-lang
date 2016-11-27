@@ -2,10 +2,8 @@
 #define VM_HPP
 
 #include <ace-vm/bytecode_stream.hpp>
-#include <ace-vm/stack_memory.hpp>
-#include <ace-vm/static_memory.hpp>
-#include <ace-vm/heap_memory.hpp>
 #include <ace-vm/exception.hpp>
+#include <ace-vm/vm_state.hpp>
 
 #include <array>
 #include <limits>
@@ -21,6 +19,15 @@
         char buffer[256]; \
         std::sprintf(buffer, "cannot compare '%s' with '%s'", \
             lhs.GetTypeString(), rhs.GetTypeString()); \
+        ThrowException(Exception(buffer)); \
+    } while (0)
+
+#define THROW_NULL_REFERENCE_EXCEPTION ThrowException(Exception(utf::Utf8String("null reference exception")))
+#define THROW_INVALID_ARGS_EXCEPTION(expected, received) \
+    do { \
+        char buffer[256]; \
+        std::sprintf(buffer, "invalid arguments: expected %d, received %d", \
+            (int)expected, (int)received); \
         ThrowException(Exception(buffer)); \
     } while (0)
 
@@ -41,11 +48,11 @@
             double left = GetValueDouble(lhs); \
             double right = GetValueDouble(rhs); \
             if (left > right) { \
-                m_exec_thread.m_regs.m_flags = GREATER; \
+                m_state.m_exec_thread.m_regs.m_flags = GREATER; \
             } else if (left == right) { \
-                m_exec_thread.m_regs.m_flags = EQUAL; \
+                m_state.m_exec_thread.m_regs.m_flags = EQUAL; \
             } else { \
-                m_exec_thread.m_regs.m_flags = NONE; \
+                m_state.m_exec_thread.m_regs.m_flags = NONE; \
             } \
         } else { \
             THROW_COMPARISON_ERROR(lhs, rhs); \
@@ -56,11 +63,11 @@
     do { \
         if (rhs.m_type == StackValue::HEAP_POINTER) { \
             if (lhs.m_value.ptr > rhs.m_value.ptr) { \
-                m_exec_thread.m_regs.m_flags = GREATER; \
+                m_state.m_exec_thread.m_regs.m_flags = GREATER; \
             } else if (lhs.m_value.ptr == rhs.m_value.ptr) { \
-                m_exec_thread.m_regs.m_flags = EQUAL; \
+                m_state.m_exec_thread.m_regs.m_flags = EQUAL; \
             } else { \
-                m_exec_thread.m_regs.m_flags = NONE; \
+                m_state.m_exec_thread.m_regs.m_flags = NONE; \
             } \
         } else { \
             THROW_COMPARISON_ERROR(lhs, rhs); \
@@ -71,12 +78,12 @@
     do { \
         if (rhs.m_type == StackValue::FUNCTION) { \
             if (lhs.m_value.func.m_addr > rhs.m_value.func.m_addr) { \
-                m_exec_thread.m_regs.m_flags = GREATER; \
+                m_state.m_exec_thread.m_regs.m_flags = GREATER; \
             } else if (lhs.m_value.func.m_addr == rhs.m_value.func.m_addr && \
                 rhs.m_value.func.m_nargs == lhs.m_value.func.m_nargs) { \
-                m_exec_thread.m_regs.m_flags = EQUAL; \
+                m_state.m_exec_thread.m_regs.m_flags = EQUAL; \
             } else { \
-                m_exec_thread.m_regs.m_flags = NONE; \
+                m_state.m_exec_thread.m_regs.m_flags = NONE; \
             } \
         } else { \
             THROW_COMPARISON_ERROR(lhs, rhs); \
@@ -93,29 +100,6 @@ enum CompareFlags : int {
     // use only the GREATER or EQUAL flags.
 };
 
-struct Registers {
-    StackValue m_reg[8];
-    int m_flags = 0;
-
-    inline StackValue &operator[](uint8_t index) { return m_reg[index]; }
-};
-
-struct ExceptionState {
-    // incremented each time BEGIN_TRY is encountered,
-    // decremented each time END_TRY is encountered
-    int m_try_counter = 0;
-
-    // set to true when an exception occurs,
-    // set to false when handled in BEGIN_TRY
-    bool m_exception_occured = false;
-};
-
-struct ExecutionThread {
-    Stack m_stack;
-    ExceptionState m_exception_state;
-    Registers m_regs;
-};
-
 class VM {
 public:
     VM(BytecodeStream *bs = nullptr);
@@ -124,24 +108,22 @@ public:
 
     void PushNativeFunctionPtr(NativeFunctionPtr_t ptr);
 
-    inline Heap &GetHeap() { return m_heap; }
-    inline ExecutionThread &GetExecutionThread() { return m_exec_thread; }
+    inline Heap &GetHeap() { return m_state.m_heap; }
+    inline ExecutionThread &GetExecutionThread() { return m_state.m_exec_thread; }
     inline BytecodeStream *GetBytecodeStream() const { return m_bs; }
     inline void SetBytecodeStream(BytecodeStream *bs) { m_bs = bs; }
 
     HeapValue *HeapAlloc();
-    void MarkObject(StackValue &object);
-    void MarkObjects(ExecutionThread *thread);
     void Echo(StackValue &value);
     void InvokeFunction(StackValue &value, uint8_t num_args);
-    void InvokeNativeFunction(StackValue &value, ExecutionThread *thread);
     void HandleInstruction(uint8_t code);
     void Execute();
 
 private:
-    StaticMemory m_static_memory;
+    /*StaticMemory m_static_memory;
     Heap m_heap;
-    ExecutionThread m_exec_thread;
+    ExecutionThread m_exec_thread;*/
+    VMState m_state;
     int m_max_heap_objects;
 
     BytecodeStream *m_bs;

@@ -13,24 +13,26 @@
 #include <common/str_util.hpp>
 
 #include <string>
+#include <sstream>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 
 struct NativeFunctionDefine {
-    std::string function_name;
     std::string module_name;
+    std::string function_name;
     ObjectType return_type;
     std::vector<ObjectType> param_types;
     NativeFunctionPtr_t ptr;
 
-    NativeFunctionDefine(const std::string &function_name,
+    NativeFunctionDefine(
         const std::string &module_name,
+        const std::string &function_name,
         const ObjectType &return_type,
         const std::vector<ObjectType> &param_types,
         NativeFunctionPtr_t ptr)
-        : function_name(function_name),
-          module_name(module_name),
+        : module_name(module_name),
+          function_name(function_name),
           return_type(return_type),
           param_types(param_types),
           ptr(ptr)
@@ -38,8 +40,8 @@ struct NativeFunctionDefine {
     }
 
     NativeFunctionDefine(const NativeFunctionDefine &other)
-        : function_name(other.function_name),
-          module_name(other.module_name),
+        : module_name(other.module_name),
+          function_name(other.function_name),
           return_type(other.return_type),
           param_types(other.param_types),
           ptr(other.ptr)
@@ -100,9 +102,22 @@ void AddNativeFunction(const NativeFunctionDefine &def,
     vm->PushNativeFunctionPtr(def.ptr);
 }
 
-void Dummy(ExecutionThread *execution_thread)
+void Runtime_gc(VMState *state, StackValue *args, int nargs)
 {
-    utf::cout << "DUMMY\n";
+    /*std::stringstream ss;
+    // dump heap to stringstream
+    ss << "Before:\n" << state->m_heap << "\n\n";
+    utf::cout << utf::Utf8String(ss.str().c_str());
+    // clear stringstream
+    ss.str("");*/
+
+    // run the gc
+    state->m_exec_thread.m_stack.MarkAll();
+    state->m_heap.Sweep();
+
+    /*// dump heap to stringstream, after GC
+    ss << "After:\n" << state->m_heap << "\n\n";
+    utf::cout << utf::Utf8String(ss.str().c_str());*/
 }
 
 int main(int argc, char *argv[])
@@ -124,7 +139,7 @@ int main(int argc, char *argv[])
 
         // bind native function library
         std::vector<NativeFunctionDefine> native_functions = {
-            NativeFunctionDefine("dummy", "Dummy", ObjectType::type_builtin_void, {}, Dummy)
+            NativeFunctionDefine("Runtime", "gc", ObjectType::type_builtin_void, {}, Runtime_gc)
         };
 
         for (auto &def : native_functions) {

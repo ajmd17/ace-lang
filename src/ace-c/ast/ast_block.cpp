@@ -6,6 +6,8 @@
 
 #include <common/instructions.hpp>
 
+#include <iostream>
+
 AstBlock::AstBlock(const SourceLocation &location)
     : AstStatement(location),
       m_num_locals(0),
@@ -23,12 +25,14 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
         child->Visit(visitor, mod);
     }
 
-    m_last_is_return =  (!m_children.empty()) &&
+    m_last_is_return = (!m_children.empty()) &&
         (dynamic_cast<AstReturnStatement*>(m_children.back().get()) != nullptr);
 
     // store number of locals, so we can pop them from the stack later
     Scope &this_scope = mod->m_scopes.Top();
     m_num_locals = this_scope.GetIdentifierTable().CountUsedVariables();
+
+    std::cout << "m_num_locals = " << m_num_locals << "\n";
 
     // go down to previous scope
     mod->m_scopes.Close();

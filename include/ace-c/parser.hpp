@@ -11,6 +11,7 @@
 #include <ace-c/ast/ast_variable_declaration.hpp>
 #include <ace-c/ast/ast_function_definition.hpp>
 #include <ace-c/ast/ast_function_expression.hpp>
+#include <ace-c/ast/ast_array_expression.hpp>
 #include <ace-c/ast/ast_type_definition.hpp>
 #include <ace-c/ast/ast_statement.hpp>
 #include <ace-c/ast/ast_expression.hpp>
@@ -20,6 +21,7 @@
 #include <ace-c/ast/ast_float.hpp>
 #include <ace-c/ast/ast_string.hpp>
 #include <ace-c/ast/ast_binary_expression.hpp>
+#include <ace-c/ast/ast_unary_expression.hpp>
 #include <ace-c/ast/ast_function_call.hpp>
 #include <ace-c/ast/ast_variable.hpp>
 #include <ace-c/ast/ast_member_access.hpp>
@@ -78,11 +80,13 @@ private:
     std::shared_ptr<AstTryCatch> ParseTryCatchStatement();
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
+    std::shared_ptr<AstExpression> ParseUnaryExpression();
     std::shared_ptr<AstExpression> ParseExpression(bool standalone = false);
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration();
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition();
     std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool func_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});
+    std::shared_ptr<AstArrayExpression> ParseArrayExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();

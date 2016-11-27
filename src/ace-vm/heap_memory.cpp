@@ -4,9 +4,9 @@ std::ostream &operator<<(std::ostream &os, const Heap &heap)
 {
     HeapNode *tmp_head = heap.m_head;
     while (tmp_head != nullptr) {
-        os  << tmp_head->value.GetId() << "\t"
-            << tmp_head->value.GetFlags() << "\t"
-            << "\n";
+        os  << tmp_head->value.GetId() << '\t'
+            << tmp_head->value.GetFlags() << '\t'
+            << '\n';
 
         tmp_head = tmp_head->before;
     }

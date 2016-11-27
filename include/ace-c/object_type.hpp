@@ -26,6 +26,7 @@ public:
 
     static const ObjectType *GetBuiltinType(const std::string &str);
     static ObjectType MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types);
+    static ObjectType MakeArrayType(const ObjectType &array_member_type);
     static bool TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers = false);
     static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right, bool use_number = false);
 

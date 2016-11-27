@@ -8,6 +8,7 @@
 #include <common/instructions.hpp>
 
 #include <cassert>
+#include <iostream>
 
 AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
     const std::shared_ptr<AstTypeSpecification> &type_specification,
@@ -57,10 +58,10 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
-    assert(m_identifier != nullptr);
-
-    m_identifier->SetObjectType(object_type);
-    m_identifier->SetCurrentValue(m_assignment);
+    if (m_identifier != nullptr) {
+        m_identifier->SetObjectType(object_type);
+        m_identifier->SetCurrentValue(m_assignment);
+    }
 }
 
 void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)

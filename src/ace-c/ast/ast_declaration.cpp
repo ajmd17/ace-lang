@@ -23,23 +23,38 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
         compilation_unit->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_redeclared_identifier, m_location, m_name));
     } else {
-        // add identifier
-        m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
-
-        bool in_function = false;
-
-        TreeNode<Scope> *top = mod->m_scopes.TopNode();
-        while (top != nullptr) {
-            if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
-                in_function = true;
+        bool found_module = false;
+        // check all modules for one with the same name
+        for (const auto &it : visitor->GetCompilationUnit()->m_modules) {
+            if (it != nullptr && it->GetName() == m_name) {
+                // module with name found
+                found_module = true;
                 break;
             }
-            top = top->m_parent;
         }
 
-        if (in_function) {
-            // set declared in function flag
-            m_identifier->GetFlags() |= FLAG_DECLARED_IN_FUNCTION;
+        if (found_module) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_redeclared_identifier_module, m_location, m_name));
+        } else {
+            // add identifier
+            m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
+
+            bool in_function = false;
+
+            TreeNode<Scope> *top = mod->m_scopes.TopNode();
+            while (top != nullptr) {
+                if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
+                    in_function = true;
+                    break;
+                }
+                top = top->m_parent;
+            }
+
+            if (in_function) {
+                // set declared in function flag
+                m_identifier->GetFlags() |= FLAG_DECLARED_IN_FUNCTION;
+            }
         }
     }
 }

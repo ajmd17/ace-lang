@@ -25,8 +25,6 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
         // perform operations on these constants
         if (oper == &Operator::operator_negative) {
             result = -(*target_as_constant);
-        } else if (oper == &Operator::operator_positive) {
-            result.reset(target_as_constant);
         }
     }
 
@@ -50,17 +48,19 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
 
     ObjectType type = m_target->GetObjectType();
     
-    visitor->Assert(type == ObjectType::type_builtin_int || 
-        type == ObjectType::type_builtin_float || 
-        type == ObjectType::type_builtin_number || 
-        type == ObjectType::type_builtin_any,
-        CompilerError(Level_fatal, Msg_invalid_operator_for_type, m_target->GetLocation(), m_op->ToString(), type.ToString()));
-    
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
         // do not allow right-hand side to be 'Any', because it might change the data type.
-        visitor->Assert((type == ObjectType::type_builtin_int || type == ObjectType::type_builtin_number || type == ObjectType::type_builtin_any),
+        visitor->Assert((type == ObjectType::type_builtin_int || 
+            type == ObjectType::type_builtin_number || 
+            type == ObjectType::type_builtin_any),
             CompilerError(Level_fatal, Msg_bitwise_operand_must_be_int, m_target->GetLocation(), type.ToString()));
+    } else if (m_op->GetType() & ARITHMETIC) {
+        visitor->Assert(type == ObjectType::type_builtin_int || 
+            type == ObjectType::type_builtin_float || 
+            type == ObjectType::type_builtin_number || 
+            type == ObjectType::type_builtin_any,
+            CompilerError(Level_fatal, Msg_invalid_operator_for_type, m_target->GetLocation(), m_op->ToString(), type.ToString()));
     }
 
     if (m_op->ModifiesValue()) {
@@ -94,16 +94,105 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
 
 void AstUnaryExpression::Build(AstVisitor *visitor, Module *mod)
 {
-    // TODO
+    m_target->Build(visitor, mod);
+
+    if (!m_folded) {
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        if (m_op->GetType() == ARITHMETIC) {
+            uint8_t opcode;
+
+            if (m_op == &Operator::operator_negative) {
+                opcode = NEG;
+            }
+
+            // load the label address from static memory into register 1
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint8_t>(opcode, rp);
+
+        } else if (m_op->GetType() == LOGICAL) {
+            if (m_op == &Operator::operator_logical_not) {
+                
+                // the label to jump to the very end, and set the result to false
+                StaticObject false_label;
+                false_label.m_type = StaticObject::TYPE_LABEL;
+                false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                StaticObject true_label;
+                true_label.m_type = StaticObject::TYPE_LABEL;
+                true_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                // compare lhs to 0 (false)
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(CMPZ, rp);
+
+                    // load the label address from static memory into register 0
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
+
+                if (!ace::compiler::Config::use_static_objects) {
+                    // fill with padding, for LOAD_ADDR instruction.
+                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                }
+
+                // jump if they are not equal: i.e the value is true
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(JE, rp);
+
+                    // no values were true at this point so load the value 'false'
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
+
+                // jump to the VERY end (so we don't load 'true' value)
+                // increment register usage
+                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                // get register position
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                // load the label address from static memory into register 1
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
+
+                if (!ace::compiler::Config::use_static_objects) {
+                    // fill with padding, for LOAD_ADDR instruction.
+                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                }
+
+                // jump if they are equal: i.e the value is false
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(JMP, rp);
+
+                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                // get current register index
+                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
+
+                // here is where the value is true
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
+
+                // skip to here to avoid loading 'true' into the register
+                false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
+            }
+        }
+    }
 }
 
 void AstUnaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     m_target->Optimize(visitor, mod);
-    auto constant_value = ConstantFold(m_target, m_op, visitor);
-    if (constant_value != nullptr) {
-        m_target = constant_value;
+
+    if (m_op == &Operator::operator_positive) {
         m_folded = true;
+    } else {
+        auto constant_value = ConstantFold(m_target, m_op, visitor);
+        if (constant_value != nullptr) {
+            m_target = constant_value;
+            m_folded = true;
+        }
     }
 }
 

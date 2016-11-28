@@ -427,7 +427,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                         }
 
                         // jump if they are equal: i.e the value is false
-                        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(JE, rp);
+                        visitor->GetCompilationUnit()->GetInstructionStream() << 
+                            Instruction<uint8_t, uint8_t>(JE, rp);
                     }
                 }
 

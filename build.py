@@ -4,14 +4,14 @@ import sys
 compiler = "clang++"
 dyn_ext = "so"
 
-lib_options = "-std=c++11 -fPIC"
-exec_options = "-std=c++11"
+lib_options = "-g -std=c++11 -fPIC"
+exec_options = "-g -std=c++11"
 
 if os.name == "nt":
     compiler = "g++"
     dyn_ext = "dll"
-    exec_options = "-std=gnu++11"
-    lib_options = "-std=gnu++11"
+    exec_options = "-g -std=gnu++11"
+    lib_options = "-g -std=gnu++11"
 elif sys.platform == "darwin":
     compiler = "clang++"
     dyn_ext = "dylib"

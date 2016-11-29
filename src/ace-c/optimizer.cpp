@@ -4,8 +4,12 @@
 #include <ace-c/ast/ast_variable.hpp>
 #include <ace-c/ast/ast_constant.hpp>
 
+#include <cassert>
+
 void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor, Module *mod)
 {
+    assert(expr != nullptr);
+
     expr->Optimize(visitor, mod);
 
     AstVariable *expr_as_var = nullptr;
@@ -17,7 +21,7 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
             if (expr_as_var->GetIdentifier()->GetFlags() & FLAG_CONST) {
                 // the variable is a const, now we make sure that the current
                 // value is a literal value
-                auto value_sp = expr_as_var->GetIdentifier()->GetCurrentValue().lock();
+                auto value_sp = expr_as_var->GetIdentifier()->GetCurrentValue();
                 AstConstant *constant_sp = dynamic_cast<AstConstant*>(value_sp.get());
                 if (constant_sp != nullptr) {
                     // yay! we were able to retrieve the value that

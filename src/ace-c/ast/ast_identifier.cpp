@@ -22,6 +22,13 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
 
     // the variable must exist in the active scope or a parent scope
     m_identifier = mod->LookUpIdentifier(m_name, false);
+    // if the identifier was not found, 
+    // look in the global module to see if it is a global function.
+    if (m_identifier == nullptr) {
+        m_identifier = visitor->GetCompilationUnit()->
+            GetGlobalModule()->LookUpIdentifier(m_name, false);
+    }
+
     if (m_identifier == nullptr) {
         bool found_module = false;
         // check all modules for one with the same name

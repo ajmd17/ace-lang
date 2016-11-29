@@ -212,8 +212,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
     } else if (Match(Token_open_brace, false)) {
         return ParseBlock();
     }
-
-    return ParseExpression(true);
+    return ParseExpression();
 }
 
 std::shared_ptr<AstExpression> Parser::ParseTerm()
@@ -572,23 +571,23 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
 
     if (token != nullptr) {
         const Operator *op = nullptr;
-        if (!Operator::IsUnaryOperator(token->GetValue(), op)) {
+        if (Operator::IsUnaryOperator(token->GetValue(), op)) {
+            auto term = ParseTerm();
+
+            return std::shared_ptr<AstUnaryExpression>(
+                new AstUnaryExpression(term, op, token->GetLocation()));
+        } else {
             // internal error: operator not defined
             CompilerError error(Level_fatal,
-                Msg_internal_error, token->GetLocation());
+                Msg_illegal_operator, token->GetLocation(), token->GetValue());
             m_compilation_unit->GetErrorList().AddError(error);
         }
-
-        auto term = ParseTerm();
-
-        return std::shared_ptr<AstUnaryExpression>(
-            new AstUnaryExpression(term, op, token->GetLocation()));
     }
 
     return nullptr;
 }
 
-std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
+std::shared_ptr<AstExpression> Parser::ParseExpression()
 {
     std::shared_ptr<AstExpression> term = ParseTerm();
     if (term == nullptr) {
@@ -602,7 +601,6 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool standalone)
         }
         term = bin_expr;
     }
-    term->m_is_standalone = standalone;
 
     return term;
 }
@@ -624,12 +622,22 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
     return nullptr;
 }
 
-std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
+std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool require_keyword)
 {
-    const Token *token = ExpectKeyword(Keyword_let, true);
+    SourceLocation location = CurrentLocation();
+
+    if (require_keyword) {
+        if (!ExpectKeyword(Keyword_let, true)) {
+            return nullptr;
+        }
+    } else {
+        // match and read in the case that it is found
+        MatchKeyword(Keyword_let, true);
+    }
+
     const Token *identifier = Expect(Token_identifier, true);
 
-    if (token != nullptr && identifier != nullptr) {
+    if (identifier != nullptr) {
         std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
 
         if (Match(Token_colon, true)) {
@@ -660,7 +668,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration()
 
         return std::shared_ptr<AstVariableDeclaration>(
             new AstVariableDeclaration(identifier->GetValue(),
-                type_spec, assignment, token->GetLocation()));
+                type_spec, assignment, location));
     }
 
     return nullptr;
@@ -793,8 +801,9 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
 
         if (Expect(Token_open_brace, true)) {
             while (!Match(Token_close_brace, true)) {
-                if (MatchKeyword(Keyword_let, false)) {
-                    members.push_back(ParseVariableDeclaration());
+                if (MatchKeyword(Keyword_let, false) || Match(Token_identifier, false)) {
+                    // do not require keyword for data members
+                    members.push_back(ParseVariableDeclaration(false));
                 } else {
                     // error; unexpected token
                     CompilerError error(Level_fatal, Msg_unexpected_token,

@@ -196,7 +196,7 @@ AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &l
 
 bool AstBinaryExpression::VisitOperatorOverload(const ObjectType &left_type, const ObjectType &right_type)
 {
-    // TODO operator overloading
+   /* // TODO operator overloading
     if (left_type == ObjectType::type_builtin_string && m_op == &Operator::operator_add) {
         // 'concat' function in module 'str' handles concatenation
         std::shared_ptr<AstVariable> target(new AstVariable("str", m_left->GetLocation()));
@@ -209,13 +209,20 @@ bool AstBinaryExpression::VisitOperatorOverload(const ObjectType &left_type, con
             new AstMemberAccess(target, parts, target->GetLocation()));
 
         return true;
-    }
+    }*/
 
     return false;
 }
 
 void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 {
+    // check for lazy declaration first
+    if ((m_variable_declaration = CheckLazyDeclaration(visitor, mod)) != nullptr) {
+        m_variable_declaration->Visit(visitor, mod);
+        // return, our work here is done
+        return;
+    }
+
     m_left->Visit(visitor, mod);
     m_right->Visit(visitor, mod);
 
@@ -292,6 +299,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 {
     if (m_member_access != nullptr) {
         m_member_access->Build(visitor, mod);
+    } else if (m_variable_declaration != nullptr) {
+        m_variable_declaration->Build(visitor, mod);
     } else {
         AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
         AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
@@ -873,6 +882,8 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     if (m_member_access != nullptr) {
         m_member_access->Optimize(visitor, mod);
+    } else if (m_variable_declaration != nullptr) {
+        m_variable_declaration->Optimize(visitor, mod);
     } else {
         Optimizer::OptimizeExpr(m_left, visitor, mod);
         Optimizer::OptimizeExpr(m_right, visitor, mod);
@@ -944,4 +955,37 @@ ObjectType AstBinaryExpression::GetObjectType() const
 
         return ObjectType::FindCompatibleType(left_type, right_type);
     }
+}
+
+std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaration(AstVisitor *visitor, Module *mod)
+{
+    if (ace::compiler::Config::lazy_declarations && m_op == &Operator::operator_assign) {
+        AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get());
+        if (left_as_var != nullptr) {
+            std::string var_name = left_as_var->GetName();
+            // lookup variable name
+            if (mod->LookUpIdentifier(var_name, false)) {
+                return nullptr;
+            }
+            // not found as variable name
+            // look up in the global module
+            if (visitor->GetCompilationUnit()->GetGlobalModule()->LookUpIdentifier(var_name, false)) {
+                return nullptr;
+            }
+
+            // check all modules for one with the same name
+            for (const auto &it : visitor->GetCompilationUnit()->m_modules) {
+                if (it != nullptr && it->GetName() == var_name) {
+                    // module with name found, return false.
+                    return nullptr;
+                }
+            }
+
+            return std::shared_ptr<AstVariableDeclaration>(
+                new AstVariableDeclaration(var_name,
+                    nullptr, m_right, m_left->GetLocation()));
+        }
+    }
+
+    return nullptr;
 }

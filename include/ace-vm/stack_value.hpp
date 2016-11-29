@@ -3,6 +3,8 @@
 
 #include <ace-vm/heap_value.hpp>
 
+#include <common/utf8.hpp>
+
 #include <stdexcept>
 #include <cstdint>
 
@@ -10,7 +12,7 @@
 struct StackValue;
 struct VMState;
 
-typedef void(*NativeFunctionPtr_t)(VMState*, StackValue*, int);
+typedef void(*NativeFunctionPtr_t)(VMState*, StackValue**, int);
 
 struct Function {
     uint32_t m_addr;
@@ -52,6 +54,7 @@ struct StackValue {
     explicit StackValue(const StackValue &other);
 
     void Mark();
+    utf::Utf8String ToString();
 
     inline const char *GetTypeString() const
     {

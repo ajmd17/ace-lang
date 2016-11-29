@@ -2,7 +2,6 @@
 #define VM_HPP
 
 #include <ace-vm/bytecode_stream.hpp>
-#include <ace-vm/exception.hpp>
 #include <ace-vm/vm_state.hpp>
 
 #include <array>
@@ -10,25 +9,12 @@
 #include <cstdint>
 #include <cstdio>
 
-#define GC_THRESHOLD_MUL 2
-#define GC_THRESHOLD_MIN 20
-#define GC_THRESHOLD_MAX 1000
-
 #define THROW_COMPARISON_ERROR(lhs, rhs) \
     do { \
         char buffer[256]; \
         std::sprintf(buffer, "cannot compare '%s' with '%s'", \
             lhs.GetTypeString(), rhs.GetTypeString()); \
-        ThrowException(Exception(buffer)); \
-    } while (0)
-
-#define THROW_NULL_REFERENCE_EXCEPTION ThrowException(Exception(utf::Utf8String("null reference exception")))
-#define THROW_INVALID_ARGS_EXCEPTION(expected, received) \
-    do { \
-        char buffer[256]; \
-        std::sprintf(buffer, "invalid arguments: expected %d, received %d", \
-            (int)expected, (int)received); \
-        ThrowException(Exception(buffer)); \
+        m_state.ThrowException(Exception(buffer)); \
     } while (0)
 
 #define IS_VALUE_INTEGER(stack_value) \
@@ -124,11 +110,8 @@ private:
     Heap m_heap;
     ExecutionThread m_exec_thread;*/
     VMState m_state;
-    int m_max_heap_objects;
 
     BytecodeStream *m_bs;
-
-    void ThrowException(const Exception &exception);
 
     inline bool HasNextInstruction() const { return m_bs->Position() < m_bs->Size(); }
 
@@ -150,7 +133,7 @@ private:
             char buffer[256];
             std::sprintf(buffer, "no conversion from '%s' to 'Int64'",
                 stack_value.GetTypeString());
-            ThrowException(Exception(buffer));
+            m_state.ThrowException(Exception(buffer));
 
             return 0;
         }
@@ -175,7 +158,7 @@ private:
             char buffer[256];
             std::sprintf(buffer, "no conversion from '%s' to 'Double'",
                 stack_value.GetTypeString());
-            ThrowException(Exception(buffer));
+            m_state.ThrowException(Exception(buffer));
 
             return std::numeric_limits<double>::quiet_NaN();
         }

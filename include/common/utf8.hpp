@@ -2,6 +2,7 @@
 #define UTF8_HPP
 
 #include <iostream>
+#include <algorithm>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -28,6 +29,7 @@ typedef std::wistream utf8_istream;
 static utf8_ostream &cout = std::wcout;
 static utf8_istream &cin = std::wcin;
 static auto &printf = std::wprintf;
+static auto &sprintf = std::wsprintf;
 static auto &fputs = std::fputws;
 #define PRIutf8s "ls"
 #define UTF8_CSTR(str) L##str
@@ -48,6 +50,7 @@ typedef std::istream utf8_istream;
 static utf8_ostream &cout = std::cout;
 static utf8_istream &cin = std::cin;
 static auto &printf = std::printf;
+static auto &sprintf = std::sprintf;
 static auto &fputs = std::fputs;
 #define PRIutf8s "s"
 #define UTF8_CSTR(str) str
@@ -415,6 +418,23 @@ public:
         }
     }
 
+    Utf8String(const char *str, size_t size)
+    {
+        if (str == nullptr) {
+            m_size = size;
+            m_data = new char[m_size];
+            m_data[0] = '\0';
+            m_length = 0;
+        } else {
+            // copy raw bytes
+            m_size = std::max(std::strlen(str), size) + 1;
+            m_data = new char[m_size];
+            std::strcpy(m_data, str);
+            // recalculate length
+            m_length = utf8_strlen(m_data);
+        }
+    }
+
     Utf8String(const Utf8String &other)
     {
         // copy raw bytes
@@ -431,13 +451,41 @@ public:
         }
     }
 
+    inline char *GetData() { return m_data; }
     inline char *GetData() const { return m_data; }
     inline size_t GetBufferSize() const { return m_size; }
     inline size_t GetLength() const { return m_length; }
 
     Utf8String &operator=(const char *str)
     {
-        if (m_data != nullptr) {
+        // check if there is enough space to not have to delete the data
+        int len = std::strlen(str) + 1;
+        if (m_data != nullptr && m_size >= len) {
+            std::strcpy(m_data, str);
+            m_length = utf8_strlen(m_data);
+        } else {
+            // must delete the data if not null
+            if (m_data != nullptr) {
+                delete[] m_data;
+            }
+
+            if (str == nullptr) {
+                m_size = 1;
+                m_data = new char[m_size];
+                m_data[0] = '\0';
+                m_length = 0;
+            } else {
+                // copy raw bytes
+                m_size = len;
+                m_data = new char[m_size];
+                std::strcpy(m_data, str);
+                // recalculate length
+                m_length = utf8_strlen(m_data);
+            }
+        }
+
+
+        /*if (m_data != nullptr) {
             delete[] m_data;
         }
 
@@ -453,14 +501,14 @@ public:
             std::strcpy(m_data, str);
             // recalculate length
             m_length = utf8_strlen(m_data);
-        }
+        }*/
 
         return *this;
     }
 
     Utf8String &operator=(const Utf8String &other)
     {
-        if (m_data != nullptr) {
+        /*if (m_data != nullptr) {
             delete[] m_data;
         }
 
@@ -470,7 +518,9 @@ public:
         std::strcpy(m_data, other.m_data);
         m_length = other.m_length;
 
-        return *this;
+        return *this;*/
+
+        return operator=(other.m_data);
     }
 
     inline bool operator==(const char *str) const

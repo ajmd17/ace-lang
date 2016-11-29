@@ -22,6 +22,8 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
 
+    bool m_assignment_already_visited;
+
 protected:
     std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstExpression> m_assignment;

@@ -64,10 +64,10 @@ int AstVariable::IsTrue() const
         // we can only check if this is true during
         // compile time if it is const literal
         if (m_identifier->GetFlags() & FLAG_CONST) {
-            auto value_sp = m_identifier->GetCurrentValue().lock();
-            auto constant_sp = std::dynamic_pointer_cast<AstConstant>(value_sp);
-            if (constant_sp != nullptr) {
-                return constant_sp->IsTrue();
+            auto value_sp = m_identifier->GetCurrentValue();
+            AstConstant *as_constant = dynamic_cast<AstConstant*>(value_sp.get());
+            if (as_constant != nullptr) {
+                return as_constant->IsTrue();
             }
         }
     }

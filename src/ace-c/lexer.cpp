@@ -57,10 +57,10 @@ Token Lexer::NextToken()
 
     if (ch[0] == '\"') {
         return ReadStringLiteral();
-    } else if (utf32_isdigit(ch[0]) || (ch[0] == '.' && utf32_isdigit(ch[1]))) {
-        return ReadNumberLiteral();
     } else if (ch[0] == '0' && (ch[1] == 'x' || ch[1] == 'X')) {
         return ReadHexNumberLiteral();
+    } else if (utf32_isdigit(ch[0]) || (ch[0] == '.' && utf32_isdigit(ch[1]))) {
+        return ReadNumberLiteral();
     } else if (ch[0] == '/' && ch[1] == '/') {
         return ReadLineComment();
     } else if (ch[0] == '/' && ch[1] == '*') {
@@ -275,16 +275,27 @@ Token Lexer::ReadNumberLiteral()
         m_source_location.GetColumn() += pos_change;
 
         if (type != Token_float_literal) {
-            if (m_source_stream.HasNext() && m_source_stream.Peek() == '.') {
-                // read float literal
-                type = Token_float_literal;
-                int pos_change = 0;
-                u32char next_ch = m_source_stream.Next(pos_change);
-                value.append(utf::get_bytes(next_ch));
-                m_source_location.GetColumn() += pos_change;
+            if (m_source_stream.HasNext()) {
+                // the character as a utf-32 character
+                u32char ch = m_source_stream.Peek();
+                if (ch == (u32char)'.') {
+                    // read next to check if after is a digit
+                    int pos_change = 0;
+                    m_source_stream.Next(pos_change);
+                    
+                    u32char next = m_source_stream.Peek();
+                    if (!utf::utf32_isalpha(next) && next != (u32char)'_') {
+                        // type is a float because of '.' and not an identifier after
+                        type = Token_float_literal;
+                        value.append(utf::get_bytes(ch));
+                        m_source_location.GetColumn() += pos_change;
+                    } else {
+                        // not a float literal, so go back on the '.'
+                        m_source_stream.GoBack(pos_change);
+                    }
+                }
             }
         }
-
         ch = m_source_stream.Peek();
     }
 

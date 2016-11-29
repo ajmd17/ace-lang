@@ -3,6 +3,7 @@
 
 #include <ace-c/ast/ast_expression.hpp>
 #include <ace-c/ast/ast_member_access.hpp>
+#include <ace-c/ast/ast_variable_declaration.hpp>
 #include <ace-c/operator.hpp>
 
 class AstBinaryExpression : public AstExpression {
@@ -32,6 +33,11 @@ private:
 
     // if the operator is overloaded and it is actually a function call
     std::shared_ptr<AstMemberAccess> m_member_access;
+
+    // if the expression is lazy declaration
+    std::shared_ptr<AstVariableDeclaration> m_variable_declaration;
+
+    std::shared_ptr<AstVariableDeclaration> CheckLazyDeclaration(AstVisitor *visitor, Module *mod);
 };
 
 #endif

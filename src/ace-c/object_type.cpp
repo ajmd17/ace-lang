@@ -58,12 +58,14 @@ ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std
 
     ObjectType res(type_str, std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
     res.m_is_function = true;
+    res.m_return_type.reset(new ObjectType(return_type));
+    res.m_param_types = param_types;
     return res;
 }
 
 ObjectType ObjectType::MakeArrayType(const ObjectType &array_member_type)
 {
-    std::string type_str = "Array (" + array_member_type.ToString() + ") ";
+    std::string type_str = "Array (" + array_member_type.ToString() + ")";
     return ObjectType(type_str, std::shared_ptr<AstArrayExpression>(new AstArrayExpression({}, SourceLocation::eof)));
 }
 
@@ -133,7 +135,8 @@ ObjectType::ObjectType()
       m_default_value(std::shared_ptr<AstNull>(
           new AstNull(SourceLocation::eof))),
       m_static_id(0),
-      m_is_function(false)
+      m_is_function(false),
+      m_return_type(nullptr)
 {
 }
 
@@ -142,7 +145,8 @@ ObjectType::ObjectType(const std::string &str,
     : m_str(str),
       m_default_value(default_value),
       m_static_id(0),
-      m_is_function(false)
+      m_is_function(false),
+      m_return_type(nullptr)
 {
 }
 
@@ -153,7 +157,8 @@ ObjectType::ObjectType(const std::string &str,
       m_default_value(default_value),
       m_data_members(data_members),
       m_static_id(0),
-      m_is_function(false)
+      m_is_function(false),
+      m_return_type(nullptr)
 {
 }
 
@@ -162,7 +167,15 @@ ObjectType::ObjectType(const ObjectType &other)
       m_default_value(other.m_default_value),
       m_data_members(other.m_data_members),
       m_static_id(other.m_static_id),
-      m_is_function(other.m_is_function)
+      m_is_function(other.m_is_function),
+      m_return_type(other.m_return_type != nullptr 
+        ? std::shared_ptr<ObjectType>(new ObjectType(*other.m_return_type.get()))
+        : nullptr),
+      m_param_types(other.m_param_types)
+{
+}
+
+ObjectType::~ObjectType()
 {
 }
 

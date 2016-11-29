@@ -32,8 +32,6 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
     Scope &this_scope = mod->m_scopes.Top();
     m_num_locals = this_scope.GetIdentifierTable().CountUsedVariables();
 
-    std::cout << "m_num_locals = " << m_num_locals << "\n";
-
     // go down to previous scope
     mod->m_scopes.Close();
 }

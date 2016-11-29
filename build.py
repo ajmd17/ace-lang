@@ -69,7 +69,7 @@ def build_executable(src_dir, bin_file, linkfiles):
             if filename.endswith(".cpp"):
                 command += " {}/{} ".format(dirpath, filename)
 
-    linkstr += " -Wl,-rpath='$ORIGIN'"
+    #linkstr += " -Wl,-rpath='$ORIGIN'"
     command += " {}".format(linkstr)
 
     os.system("{}".format(command))

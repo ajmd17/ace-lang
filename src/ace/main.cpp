@@ -92,17 +92,20 @@ void AddNativeFunction(const NativeFunctionDefine &def,
     std::shared_ptr<AstFunctionExpression> value(
         new AstFunctionExpression(parameters, nullptr, block, SourceLocation::eof));
 
+    value->SetReturnType(def.return_type);
+
     // set identifier info
     ident->SetFlags(FLAG_CONST);
     ident->SetObjectType(ObjectType::MakeFunctionType(def.return_type, def.param_types));
     ident->SetCurrentValue(value);
+    ident->SetStackLocation(compilation_unit->GetInstructionStream().GetStackSize());
     compilation_unit->GetInstructionStream().IncStackSize();
 
     // finally, push to VM
     vm->PushNativeFunctionPtr(def.ptr);
 }
 
-void Runtime_gc(VMState *state, StackValue *args, int nargs)
+void Runtime_gc(VMState *state, StackValue **args, int nargs)
 {
     /*std::stringstream ss;
     // dump heap to stringstream
@@ -111,13 +114,36 @@ void Runtime_gc(VMState *state, StackValue *args, int nargs)
     // clear stringstream
     ss.str("");*/
 
+    if (nargs != 0) {
+        state->ThrowException(Exception::InvalidArgsException(0, nargs));
+        return;
+    }
+    
     // run the gc
     state->m_exec_thread.m_stack.MarkAll();
     state->m_heap.Sweep();
 
-    /*// dump heap to stringstream, after GC
+  /*  // dump heap to stringstream, after GC
     ss << "After:\n" << state->m_heap << "\n\n";
     utf::cout << utf::Utf8String(ss.str().c_str());*/
+}
+
+void Global_to_string(VMState *state, StackValue **args, int nargs)
+{
+    if (nargs != 1) {
+        state->ThrowException(Exception::InvalidArgsException(1, nargs));
+        return;
+    }
+
+    // create heap value for string
+    HeapValue *ptr = state->HeapAlloc();
+    StackValue &res = state->GetExecutionThread().GetRegisters()[0];
+    if (ptr != nullptr) {
+        ptr->Assign(args[0]->ToString());
+        // assign register value to the allocated object
+        res.m_type = StackValue::HEAP_POINTER;
+        res.m_value.ptr = ptr;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -139,7 +165,8 @@ int main(int argc, char *argv[])
 
         // bind native function library
         std::vector<NativeFunctionDefine> native_functions = {
-            NativeFunctionDefine("Runtime", "gc", ObjectType::type_builtin_void, {}, Runtime_gc)
+            NativeFunctionDefine("Runtime", "gc", ObjectType::type_builtin_void, {}, Runtime_gc),
+            NativeFunctionDefine("__global__", "to_string", ObjectType::type_builtin_string, {}, Global_to_string)
         };
 
         for (auto &def : native_functions) {
@@ -157,7 +184,7 @@ int main(int argc, char *argv[])
 
         { // compile template code
             // send code to be compiled
-            SourceFile source_file("<cli>", code.length());
+            SourceFile source_file("<stdin>", code.length());
             std::memcpy(source_file.GetBuffer(), code.c_str(), code.length());
             SourceStream source_stream(&source_file);
 
@@ -192,7 +219,7 @@ int main(int argc, char *argv[])
                 int old_pos = ast_iterator.GetPosition();
 
                 // send code to be compiled
-                SourceFile source_file("<cli>", line.length());
+                SourceFile source_file("<stdin>", line.length());
                 std::memcpy(source_file.GetBuffer(), line.c_str(), line.length());
                 SourceStream source_stream(&source_file);
 

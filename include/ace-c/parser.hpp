@@ -81,9 +81,9 @@ private:
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseUnaryExpression();
-    std::shared_ptr<AstExpression> ParseExpression(bool standalone = false);
+    std::shared_ptr<AstExpression> ParseExpression();
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
-    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration();
+    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true);
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition();
     std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool func_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();

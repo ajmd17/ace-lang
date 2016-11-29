@@ -16,7 +16,8 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
     const SourceLocation &location)
     : AstDeclaration(name, location),
       m_type_specification(type_specification),
-      m_assignment(assignment)
+      m_assignment(assignment),
+      m_assignment_already_visited(false)
 {
 }
 
@@ -40,8 +41,11 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
 
         assert(m_assignment != nullptr);
-        // visit assignment
-        m_assignment->Visit(visitor, mod);
+
+        if (!m_assignment_already_visited) {
+            // visit assignment
+            m_assignment->Visit(visitor, mod);
+        }
 
         // make sure type is compatible with assignment
         ObjectType assignment_type = m_assignment->GetObjectType();

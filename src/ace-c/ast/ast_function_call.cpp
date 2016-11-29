@@ -27,18 +27,18 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
         assert(arg != nullptr);
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
     }
-
-    if (m_identifier != nullptr && m_identifier->GetObjectType() != ObjectType::type_builtin_any) {
-        // make sure there are the right amount of arguments!
-        auto value_sp = m_identifier->GetCurrentValue().lock();
-        if (value_sp != nullptr) {
-            AstFunctionExpression *def_sp = dynamic_cast<AstFunctionExpression*>(value_sp.get());
-            if (def_sp == nullptr) {
+    
+    if (m_identifier != nullptr) {
+        const ObjectType &identifier_type = m_identifier->GetObjectType();
+        if (identifier_type != ObjectType::type_builtin_any) {
+            if (!identifier_type.IsFunctionType()) {
+                // not a function type
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
                     CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
             } else {
-                // set return type.
-                m_return_type = def_sp->GetReturnType();
+                // TODO: check parameters
+                assert(identifier_type.GetReturnType() != nullptr);
+                m_return_type = *identifier_type.GetReturnType().get();
             }
         }
     }

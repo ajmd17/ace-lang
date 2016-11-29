@@ -36,6 +36,7 @@ public:
     ObjectType(const std::string &str, const std::shared_ptr<AstExpression> &default_value,
         const std::vector<DataMember_t> &data_members);
     ObjectType(const ObjectType &other);
+    ~ObjectType();
 
     inline const std::string &ToString() const { return m_str; }
 
@@ -53,7 +54,10 @@ public:
     // must be set during type definiton analyzing
     inline void SetStaticId(int static_id) { m_static_id = static_id; }
 
+    // if the objec type is a function type
     inline bool IsFunctionType() const { return m_is_function; }
+    inline const std::shared_ptr<ObjectType> &GetReturnType() const { return m_return_type; }
+    inline const std::vector<ObjectType> &GetParamTypes() const { return m_param_types; }
 
     inline bool operator==(const ObjectType &other) const
         { return m_str == other.m_str && m_static_id == other.m_static_id; }
@@ -64,7 +68,10 @@ protected:
     std::shared_ptr<AstExpression> m_default_value;
     std::vector<DataMember_t> m_data_members;
     int m_static_id;
+
     bool m_is_function;
+    std::shared_ptr<ObjectType> m_return_type;
+    std::vector<ObjectType> m_param_types;
 };
 
 #endif

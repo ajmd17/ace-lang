@@ -10,6 +10,10 @@ public:
 
     inline const utf::Utf8String &ToString() const { return m_str; }
 
+    static Exception InvalidArgsException(int expected, int received);
+    static Exception NullReferenceException();
+    static Exception DivisionByZeroException();
+
 private:
     const utf::Utf8String m_str;
 };

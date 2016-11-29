@@ -28,7 +28,7 @@ public:
     inline int GetFlags() const { return m_flags; }
     inline int &GetFlags() { return m_flags; }
     inline void SetFlags(int flags) { m_flags = flags; }
-    inline std::weak_ptr<AstExpression> GetCurrentValue() const { return m_current_value; }
+    inline std::shared_ptr<AstExpression> GetCurrentValue() const { return m_current_value; }
     inline void SetCurrentValue(const std::shared_ptr<AstExpression> &expr) { m_current_value = expr; }
     inline const ObjectType &GetObjectType() const { return m_object_type; }
     inline void SetObjectType(const ObjectType &object_type) { m_object_type = object_type; }
@@ -41,7 +41,7 @@ private:
     int m_stack_location;
     int m_usecount;
     int m_flags;
-    std::weak_ptr<AstExpression> m_current_value;
+    std::shared_ptr<AstExpression> m_current_value;
     ObjectType m_object_type;
 };
 

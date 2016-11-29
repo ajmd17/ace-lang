@@ -116,9 +116,9 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        // load the label address from static memory into register
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+    // load the label address from static memory into register
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
 
     if (!ace::compiler::Config::use_static_objects) {
         // fill with padding, for LOAD_ADDR instruction.

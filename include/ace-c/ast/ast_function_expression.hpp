@@ -20,12 +20,13 @@ public:
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
     virtual ObjectType GetObjectType() const override;
+    
+    inline const ObjectType &GetReturnType() const { return m_return_type; }
+    inline void SetReturnType(const ObjectType &return_type) { m_return_type = return_type; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
-
-    inline const ObjectType &GetReturnType() const { return m_return_type; }
 
 protected:
     std::vector<std::shared_ptr<AstParameter>> m_parameters;

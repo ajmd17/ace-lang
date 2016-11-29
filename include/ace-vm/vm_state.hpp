@@ -4,6 +4,11 @@
 #include <ace-vm/stack_memory.hpp>
 #include <ace-vm/static_memory.hpp>
 #include <ace-vm/heap_memory.hpp>
+#include <ace-vm/exception.hpp>
+
+#define GC_THRESHOLD_MUL 2
+#define GC_THRESHOLD_MIN 20
+#define GC_THRESHOLD_MAX 1000
 
 struct Registers {
     StackValue m_reg[8];
@@ -26,6 +31,10 @@ struct ExecutionThread {
     Stack m_stack;
     ExceptionState m_exception_state;
     Registers m_regs;
+
+    inline Stack &GetStack() { return m_stack; }
+    inline ExceptionState &GetExceptionState() { return m_exception_state; }
+    inline Registers &GetRegisters() { return m_regs; }
 };
 
 struct VMState {
@@ -34,6 +43,14 @@ struct VMState {
     StaticMemory m_static_memory;
 
     bool good = true;
+    int m_max_heap_objects = GC_THRESHOLD_MIN;
+
+    void ThrowException(const Exception &exception);
+    HeapValue *HeapAlloc();
+
+    inline ExecutionThread &GetExecutionThread() { return m_exec_thread; }
+    inline Heap &GetHeap() { return m_heap; }
+    inline StaticMemory &GetStaticMemory() { return m_static_memory; }
 };
 
 #endif

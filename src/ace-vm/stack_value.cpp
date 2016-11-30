@@ -2,7 +2,7 @@
 #include <ace-vm/object.hpp>
 #include <ace-vm/array.hpp>
 
-#include <cstdio>
+#include <stdio.h>
 #include <cinttypes>
 
 StackValue::StackValue()
@@ -48,10 +48,10 @@ utf::Utf8String StackValue::ToString()
 
     switch (m_type) {
     case StackValue::INT32: {
-        n = std::snprintf(buf, buf_size, "%d", m_value.i32);
+        n = snprintf(buf, buf_size, "%d", m_value.i32);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
-            std::snprintf(res.GetData(), n, "%d", m_value.i32);
+            snprintf(res.GetData(), n, "%d", m_value.i32);
             return res;
         } else {
             return utf::Utf8String(buf);
@@ -59,37 +59,37 @@ utf::Utf8String StackValue::ToString()
         break;
     }
     case StackValue::INT64:
-        n = std::snprintf(buf, buf_size, "%" PRId64, m_value.i64);
+        n = snprintf(buf, buf_size, "%" PRId64, m_value.i64);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
-            std::snprintf(res.GetData(), n, "%" PRId64, m_value.i64);
+            snprintf(res.GetData(), n, "%" PRId64, m_value.i64);
             return res;
         } else {
             return utf::Utf8String(buf);
         }
         break;
     case StackValue::FLOAT:
-        n = std::snprintf(buf, buf_size, "%g", m_value.f);
+        n = snprintf(buf, buf_size, "%g", m_value.f);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
-            std::snprintf(res.GetData(), n, "%g", m_value.f);
+            snprintf(res.GetData(), n, "%g", m_value.f);
             return res;
         } else {
             return utf::Utf8String(buf);
         }
         break;
     case StackValue::DOUBLE:
-        n = std::snprintf(buf, buf_size, "%g", m_value.d);
+        n = snprintf(buf, buf_size, "%g", m_value.d);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
-            std::snprintf(res.GetData(), n, "%g", m_value.d);
+            snprintf(res.GetData(), n, "%g", m_value.d);
             return res;
         } else {
             return utf::Utf8String(buf);
         }
         break;
     case StackValue::BOOLEAN:
-        n = std::snprintf(buf, buf_size, "%s", m_value.b ? "true" : "false");
+        n = snprintf(buf, buf_size, "%s", m_value.b ? "true" : "false");
         return utf::Utf8String(buf);
         break;
     case StackValue::HEAP_POINTER:
@@ -100,7 +100,7 @@ utf::Utf8String StackValue::ToString()
         
         if (m_value.ptr == nullptr) {
             // special case for null pointers
-            n = std::snprintf(buf, buf_size, "%s", "null");
+            n = snprintf(buf, buf_size, "%s", "null");
             return utf::Utf8String(buf);
         } else if ((str = m_value.ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // return the string directly
@@ -127,10 +127,10 @@ utf::Utf8String StackValue::ToString()
             return res;
         } else {
             // return memory address as string
-            n = std::snprintf(buf, buf_size, "%p", (void*)m_value.ptr);
+            n = snprintf(buf, buf_size, "%p", (void*)m_value.ptr);
             if (n >= buf_size) {
                 utf::Utf8String res((size_t)n);
-                std::snprintf(res.GetData(), n, "%p", (void*)m_value.ptr);
+                snprintf(res.GetData(), n, "%p", (void*)m_value.ptr);
                 return res;
             } else {
                 return utf::Utf8String(buf);
@@ -140,8 +140,7 @@ utf::Utf8String StackValue::ToString()
         break;
     }
     default:
-        std::strncpy(buf, GetTypeString(), buf_size);
-        return utf::Utf8String(buf);
+        return GetTypeString();
     }
 }
 
@@ -150,19 +149,19 @@ utf::Utf8String StackValue::ToString()
     int n = 0;
     switch (m_type) {
     case StackValue::INT32:
-        n = std::snprintf(dst, maxlength, "%d", m_value.i32);
+        n = snprintf(dst, maxlength, "%d", m_value.i32);
         break;
     case StackValue::INT64:
-        n = std::snprintf(dst, maxlength, "%" PRId64, m_value.i64);
+        n = snprintf(dst, maxlength, "%" PRId64, m_value.i64);
         break;
     case StackValue::FLOAT:
-        n = std::snprintf(dst, maxlength, "%g", m_value.f);
+        n = snprintf(dst, maxlength, "%g", m_value.f);
         break;
     case StackValue::DOUBLE:
-        n = std::snprintf(dst, maxlength, "%g", m_value.d);
+        n = snprintf(dst, maxlength, "%g", m_value.d);
         break;
     case StackValue::BOOLEAN:
-        n = std::snprintf(dst, maxlength, m_value.b ? "true" : "false");
+        n = snprintf(dst, maxlength, m_value.b ? "true" : "false");
         break;
     case StackValue::HEAP_POINTER:
     {
@@ -171,10 +170,10 @@ utf::Utf8String StackValue::ToString()
         Array *arrayptr = nullptr;
         if (m_value.ptr == nullptr) {
             // special case for null pointers
-            n = std::snprintf(dst, maxlength, "null");
+            n = snprintf(dst, maxlength, "null");
         } else if ((str = m_value.ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // print string value
-            n = std::snprintf(dst, maxlength, "%s", str->GetData());
+            n = snprintf(dst, maxlength, "%s", str->GetData());
         } else if ((arrayptr = m_value.ptr->GetPointer<Array>()) != nullptr) {
             const int buffer_size = 256;
             char buffer[buffer_size] = {'\0'};
@@ -209,24 +208,24 @@ utf::Utf8String StackValue::ToString()
 
             std::strcat(buffer, "]");
 
-            n = std::snprintf(dst, maxlength, "%s", buffer);
+            n = snprintf(dst, maxlength, "%s", buffer);
         } else {
-            n = std::snprintf(dst, maxlength, "Object<%p>", (void*)m_value.ptr);
+            n = snprintf(dst, maxlength, "Object<%p>", (void*)m_value.ptr);
         }
 
         break;
     }
     case StackValue::FUNCTION:
-        n = std::snprintf(dst, maxlength, "Function<%du>", m_value.func.m_addr);
+        n = snprintf(dst, maxlength, "Function<%du>", m_value.func.m_addr);
         break;
     case StackValue::NATIVE_FUNCTION:
-        n = std::snprintf(dst, maxlength, "NativeFunction<%p>", (void*)m_value.native_func);
+        n = snprintf(dst, maxlength, "NativeFunction<%p>", (void*)m_value.native_func);
         break;
     case StackValue::ADDRESS:
-        n = std::snprintf(dst, maxlength, "Address<%du>", m_value.addr);
+        n = snprintf(dst, maxlength, "Address<%du>", m_value.addr);
         break;
     case StackValue::TYPE_INFO:
-        n = std::snprintf(dst, maxlength, "Type<%du>", m_value.type_info.m_size);
+        n = snprintf(dst, maxlength, "Type<%du>", m_value.type_info.m_size);
         break;
     }
 }*/

@@ -10,7 +10,7 @@ void VMState::ThrowException(const Exception &exception)
     if (m_exec_thread.m_exception_state.m_try_counter <= 0) {
         // exception cannot be handled
         // unhandled exception error
-        utf::printf("unhandled exception: %" PRIutf8s "\n",
+        utf::printf(UTF8_CSTR("unhandled exception: %" PRIutf8s "\n"),
             UTF8_TOWIDE(exception.ToString().GetData()));
 
         good = false;

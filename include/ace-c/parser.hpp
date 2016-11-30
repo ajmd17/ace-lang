@@ -52,10 +52,10 @@ private:
     TokenStream *m_token_stream;
     CompilationUnit *m_compilation_unit;
 
-    const Token *MatchAhead(TokenType type, int n);
-    const Token *Match(TokenType type, bool read = false);
+    const Token *MatchAhead(Token::TokenType type, int n);
+    const Token *Match(Token::TokenType type, bool read = false);
     const Token *MatchKeyword(Keywords keyword, bool read = false);
-    const Token *Expect(TokenType type, bool read = false);
+    const Token *Expect(Token::TokenType type, bool read = false);
     const Token *ExpectKeyword(Keywords keyword, bool read = false);
     const SourceLocation &CurrentLocation() const;
 

@@ -52,12 +52,13 @@ void VM::Echo(StackValue &value)
         utf::Utf8String *str = nullptr;
         Object *objptr = nullptr;
         Array *arrayptr = nullptr;
+        utf::cout << "type id = " << value.m_value.ptr->GetTypeId() << "\n";
         if (value.m_value.ptr == nullptr) {
             // special case for null pointers
             utf::fputs(UTF8_CSTR("null"), stdout);
         } else if ((str = value.m_value.ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // print string value
-            utf::fputs(UTF8_TOWIDE(str->GetData()), stdout);
+            utf::cout << *str;
         } else if ((arrayptr = value.m_value.ptr->GetPointer<Array>()) != nullptr) {
             // print array list
             const char sep_str[] = ", ";

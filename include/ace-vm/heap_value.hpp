@@ -14,9 +14,8 @@ class HeapValue {
 public:
     HeapValue();
     HeapValue(const HeapValue &other) = delete;
-    ~HeapValue();
-
     HeapValue &operator=(const HeapValue &other) = delete;
+    ~HeapValue();
 
     inline bool operator==(const HeapValue &other) const
     {
@@ -33,7 +32,10 @@ public:
     inline int GetFlags() const { return m_flags; }
 
     template <typename T>
-    inline bool TypeCompatible() const { return GetTypeId() == GetTypeId<typename std::decay<T>::type>(); }
+    inline bool TypeCompatible() const 
+    { 
+        return GetTypeId() == GetTypeId<typename std::decay<T>::type>(); 
+    }
 
     template <typename T>
     inline void Assign(const T &value)
@@ -91,7 +93,7 @@ private:
     int m_flags;
 
     template <typename T> struct Type { static void id() {} };
-    template <typename T> static inline size_t GetTypeId() { return reinterpret_cast<size_t>(&Type<T>::id); }
+    template <typename T> static inline size_t GetTypeId() { /*return reinterpret_cast<size_t>(&Type<T>::id);*/ return typeid(T).hash_code(); }
 };
 
 #endif

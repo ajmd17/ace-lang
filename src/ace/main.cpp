@@ -138,12 +138,13 @@ void Global_to_string(VMState *state, StackValue **args, int nargs)
     // create heap value for string
     HeapValue *ptr = state->HeapAlloc();
     StackValue &res = state->GetExecutionThread().GetRegisters()[0];
-    if (ptr != nullptr) {
-        ptr->Assign(args[0]->ToString());
-        // assign register value to the allocated object
-        res.m_type = StackValue::HEAP_POINTER;
-        res.m_value.ptr = ptr;
-    }
+    
+    assert(ptr != nullptr);
+
+    ptr->Assign(args[0]->ToString());
+    // assign register value to the allocated object
+    res.m_type = StackValue::HEAP_POINTER;
+    res.m_value.ptr = ptr;
 }
 
 int main(int argc, char *argv[])
@@ -179,13 +180,13 @@ int main(int argc, char *argv[])
         out_file.close();
 
         int block_counter = 0;
-        std::string code = "// Ace REPL\nmodule repl;\n";
+        utf::Utf8String code = "// Ace REPL\nmodule repl;\n";
         utf::cout << code;
 
         { // compile template code
             // send code to be compiled
-            SourceFile source_file("<stdin>", code.length());
-            std::memcpy(source_file.GetBuffer(), code.c_str(), code.length());
+            SourceFile source_file("<stdin>", code.GetBufferSize());
+            std::memcpy(source_file.GetBuffer(), code.GetData(), code.GetBufferSize());
             SourceStream source_stream(&source_file);
 
             TokenStream token_stream;
@@ -199,11 +200,13 @@ int main(int argc, char *argv[])
             semantic_analyzer.Analyze(true);
         }
 
-        std::string line = "";
+        utf::Utf8String line;
         std::string tmp_line;
 
         utf::cout << "> ";
-        while (std::getline(utf::cin, tmp_line)) {
+        while (std::getline(std::cin, tmp_line)) {
+            utf::Utf8String current_line(tmp_line.c_str());
+
             for (char ch : tmp_line) {
                 if (ch == '{') {
                     block_counter++;
@@ -212,15 +215,16 @@ int main(int argc, char *argv[])
                 }
             }
 
-            line += tmp_line + '\n';
+            current_line += "\n";
+            line += current_line;
 
             if (block_counter <= 0) {
                 // so we can rewind upon errors
                 int old_pos = ast_iterator.GetPosition();
 
                 // send code to be compiled
-                SourceFile source_file("<stdin>", line.length());
-                std::memcpy(source_file.GetBuffer(), line.c_str(), line.length());
+                SourceFile source_file("<stdin>", line.GetBufferSize());
+                std::memcpy(source_file.GetBuffer(), line.GetData(), line.GetBufferSize());
                 SourceStream source_stream(&source_file);
 
                 TokenStream token_stream;
@@ -281,7 +285,7 @@ int main(int argc, char *argv[])
                     compilation_unit.GetErrorList().ClearErrors();
                 }
 
-                line.clear();
+                line = "";
 
                 utf::cout << "> ";
             } else {

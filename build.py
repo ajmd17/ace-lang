@@ -3,6 +3,7 @@ import sys
 
 compiler = "clang++"
 dyn_ext = "so"
+static_ext = "a"
 
 lib_options = "-g -std=c++11 -fPIC"
 exec_options = "-g -std=c++11"
@@ -23,12 +24,15 @@ def build_all(build_mode):
         build_project("ace-c", 0)
         build_project("ace-vm", 0)
     elif build_mode == 1:
-        build_project("ace-c", 1)
-        build_project("ace-vm", 1)
+        build_project("ace-c", 2)
+        build_project("ace-vm", 2)
         build_project("ace", 0, ["ace-c", "ace-vm"])
     else:
         print("Unknown build mode '{}'".format(build_mode))
 
+# build mode 0: build executable
+# build mode 1: build dynamic library
+# build mode 2: build static library
 def build_project(project_name, build_mode, linkfiles=[]):
     sys.stdout.write("Build project '{}'? (Y/n) ".format(project_name))
     sys.stdout.flush()
@@ -51,6 +55,9 @@ def build_project(project_name, build_mode, linkfiles=[]):
     elif build_mode == 1:
         bin_file = "./bin/lib{}.{}".format(project_name, dyn_ext)
         build_dynamic(src_dir, bin_file)
+    elif build_mode == 2:
+        bin_file = "./bin/lib{}.{}".format(project_name, static_ext)
+        build_static(src_dir, bin_file)
 
     print("complete")
 
@@ -58,9 +65,12 @@ def build_project(project_name, build_mode, linkfiles=[]):
 def build_executable(src_dir, bin_file, linkfiles):
     linkstr = ""
     if len(linkfiles) != 0:
-        linkstr = "-Lbin/"
+        #linkstr = "-Lbin/"
         for f in linkfiles:
-            linkstr += " -l{}".format(f)
+            linkstr += "bin/lib{}.a ".format(f)
+    #    linkstr = "-static -Lbin/"
+    #    for f in linkfiles:
+    #        linkstr += " -o -l{}".format(f)
 
     command = "{} {} -o {} -O2 -Iinclude/".format(compiler, exec_options, bin_file)
 
@@ -84,6 +94,14 @@ def build_dynamic(src_dir, bin_file):
                 command += " {}/{} ".format(dirpath, filename)
 
     os.system("{}".format(command))
+
+
+def build_static(src_dir, bin_file):
+    for dirpath, dirnames, filenames in os.walk(src_dir):
+        for filename in [f for f in filenames]:
+            if filename.endswith(".cpp") and filename != "main.cpp":
+                os.system("{} -c -o bin/obj/{}.o {}/{} {} -O2 -Iinclude/".format(compiler, filename, dirpath, filename, lib_options))
+                os.system("ar rcs {} bin/obj/{}.o".format(bin_file, filename))
 
 
 # 0 - Build executable ace-c and ace-vm.

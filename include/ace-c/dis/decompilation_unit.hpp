@@ -4,14 +4,14 @@
 #include <ace-c/dis/byte_stream.hpp>
 #include <ace-c/emit/instruction_stream.hpp>
 
-#include <ostream>
+#include <common/utf8.hpp>
 
 class DecompilationUnit {
 public:
     DecompilationUnit(const ByteStream &bs);
     DecompilationUnit(const DecompilationUnit &other) = delete;
 
-    InstructionStream Decompile(std::ostream *os = nullptr);
+    InstructionStream Decompile(utf::utf8_ostream *os = nullptr);
 
 private:
     ByteStream m_bs;

@@ -107,12 +107,12 @@ void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8Strin
         DecompilationUnit decompilation_unit(bs);
 
         bool write_to_file = false;
-        std::ostream *os = nullptr;
+        utf::utf8_ostream *os = nullptr;
         if (out_filename == "") {
             os = &utf::cout;
         } else {
             write_to_file = true;
-            os = new std::ofstream(out_filename.GetData(), std::ios::out | std::ios::binary);
+            os = new utf::utf8_ofstream(out_filename.GetData(), std::ios::out | std::ios::binary);
         }
 
         InstructionStream instruction_stream = decompilation_unit.Decompile(os);

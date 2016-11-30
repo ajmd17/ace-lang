@@ -1,4 +1,5 @@
 #include <ace-c/dis/decompilation_unit.hpp>
+
 #include <common/instructions.hpp>
 
 #include <sstream>
@@ -10,7 +11,7 @@ DecompilationUnit::DecompilationUnit(const ByteStream &bs)
 {
 }
 
-InstructionStream DecompilationUnit::Decompile(std::ostream *os)
+InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
 {
     InstructionStream is;
 

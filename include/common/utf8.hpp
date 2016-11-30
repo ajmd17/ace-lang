@@ -16,20 +16,25 @@
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX // do not allow windows.h to define 'max' and 'min'
 #include <windows.h>
 #include <fcntl.h>
 #include <io.h>
+#include <cwchar>
 #endif
 
 namespace utf {
 
 #ifdef _WIN32
+typedef std::wstring stdstring;
 typedef std::wostream utf8_ostream;
+typedef std::wofstream utf8_ofstream;
 typedef std::wistream utf8_istream;
+typedef std::wifstream utf8_ifstream;
 static utf8_ostream &cout = std::wcout;
 static utf8_istream &cin = std::wcin;
 static auto &printf = std::wprintf;
-static auto &sprintf = std::wsprintf;
+static auto &sprintf = wsprintf;
 static auto &fputs = std::fputws;
 #define PRIutf8s "ls"
 #define UTF8_CSTR(str) L##str
@@ -42,11 +47,14 @@ inline std::vector<wchar_t> ToWide(const char *str)
     return buffer;
 }
 
-#define UTF8_TOWIDE(str) ToWide(str).data()
+#define UTF8_TOWIDE(str) utf::ToWide(str).data()
 
 #else
+typedef std::string stdstring;
 typedef std::ostream utf8_ostream;
+typedef std::ofstream utf8_ofstream;
 typedef std::istream utf8_istream;
+typedef std::wifstream utf8_ifstream;
 static utf8_ostream &cout = std::cout;
 static utf8_istream &cin = std::cin;
 static auto &printf = std::printf;

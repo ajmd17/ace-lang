@@ -77,7 +77,7 @@ Token Lexer::NextToken()
             m_source_stream.Next(pos_change);
             m_source_location.GetColumn() += pos_change;
         }
-        return Token(Token_right_arrow, "->", location);
+        return Token(Token::TokenType::Token_right_arrow, "->", location);
     } else if (ch[0] == '+' || ch[0] == '-' ||
                ch[0] == '*' || ch[0] == '/' ||
                ch[0] == '%' || ch[0] == '^' ||
@@ -89,17 +89,17 @@ Token Lexer::NextToken()
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_comma, ",", location);
+        return Token(Token::TokenType::Token_comma, ",", location);
     } else if (ch[0] == ';') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_semicolon, ";", location);
+        return Token(Token::TokenType::Token_semicolon, ";", location);
     } else if (ch[0] == ':') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_colon, ":", location);
+        return Token(Token::TokenType::Token_colon, ":", location);
     } else if (ch[0] == '.') {
         if (ch[1] == '.' && ch[2] == '.') {
             for (int i = 0; i < 3; i++) {
@@ -107,43 +107,43 @@ Token Lexer::NextToken()
                 m_source_stream.Next(pos_change);
                 m_source_location.GetColumn() += pos_change;
             }
-            return Token(Token_ellipsis, "...", location);
+            return Token(Token::TokenType::Token_ellipsis, "...", location);
         } else {
             int pos_change = 0;
             m_source_stream.Next(pos_change);
             m_source_location.GetColumn() += pos_change;
-            return Token(Token_dot, ".", location);
+            return Token(Token::TokenType::Token_dot, ".", location);
         }
     } else if (ch[0] == '(') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_open_parenthesis, "(", location);
+        return Token(Token::TokenType::Token_open_parenthesis, "(", location);
     } else if (ch[0] == ')') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_close_parenthesis, ")", location);
+        return Token(Token::TokenType::Token_close_parenthesis, ")", location);
     } else if (ch[0] == '[') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_open_bracket, "[", location);
+        return Token(Token::TokenType::Token_open_bracket, "[", location);
     } else if (ch[0] == ']') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_close_bracket, "]", location);
+        return Token(Token::TokenType::Token_close_bracket, "]", location);
     } else if (ch[0] == '{') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_open_brace, "{", location);
+        return Token(Token::TokenType::Token_open_brace, "{", location);
     } else if (ch[0] == '}') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_close_brace, "}", location);
+        return Token(Token::TokenType::Token_close_brace, "}", location);
     } else {
         int pos_change = 0;
         CompilerError error(Level_fatal, Msg_unexpected_token,
@@ -152,7 +152,7 @@ Token Lexer::NextToken()
         m_compilation_unit->GetErrorList().AddError(error);
         m_source_location.GetColumn() += pos_change;
 
-        return Token(Token_empty, "", location);
+        return Token(Token::TokenType::Token_empty, "", location);
     }
 }
 
@@ -245,7 +245,7 @@ Token Lexer::ReadStringLiteral()
         ch = m_source_stream.Next(pos_change);
     }
 
-    return Token(Token_string_literal, value, location);
+    return Token(Token::TokenType::Token_string_literal, value, location);
 }
 
 Token Lexer::ReadNumberLiteral()
@@ -256,11 +256,11 @@ Token Lexer::ReadNumberLiteral()
     std::string value;
 
     // assume integer to start
-    TokenType type = Token_integer_literal;
+    Token::TokenType type = Token::TokenType::Token_integer_literal;
 
     // allows support for floats starting with '.'
     if (m_source_stream.Peek() == '.') {
-        type = Token_float_literal;
+        type = Token::TokenType::Token_float_literal;
         value = "0.";
         int pos_change = 0;
         m_source_stream.Next(pos_change);
@@ -274,7 +274,7 @@ Token Lexer::ReadNumberLiteral()
         value.append(utf::get_bytes(next_ch));
         m_source_location.GetColumn() += pos_change;
 
-        if (type != Token_float_literal) {
+        if (type != Token::TokenType::Token_float_literal) {
             if (m_source_stream.HasNext()) {
                 // the character as a utf-32 character
                 u32char ch = m_source_stream.Peek();
@@ -286,7 +286,7 @@ Token Lexer::ReadNumberLiteral()
                     u32char next = m_source_stream.Peek();
                     if (!utf::utf32_isalpha(next) && next != (u32char)'_') {
                         // type is a float because of '.' and not an identifier after
-                        type = Token_float_literal;
+                        type = Token::TokenType::Token_float_literal;
                         value.append(utf::get_bytes(ch));
                         m_source_location.GetColumn() += pos_change;
                     } else {
@@ -331,7 +331,7 @@ Token Lexer::ReadHexNumberLiteral()
     std::stringstream ss;
     ss << num;
 
-    return Token(Token_integer_literal, ss.str(), location);
+    return Token(Token::TokenType::Token_integer_literal, ss.str(), location);
 }
 
 Token Lexer::ReadLineComment()
@@ -352,7 +352,7 @@ Token Lexer::ReadLineComment()
         m_source_location.GetColumn() += pos_change;
     }
 
-    return Token(Token_empty, "", location);
+    return Token(Token::TokenType::Token_empty, "", location);
 }
 
 Token Lexer::ReadBlockComment()
@@ -383,7 +383,7 @@ Token Lexer::ReadBlockComment()
         m_source_location.GetColumn() += pos_change;
     }
 
-    return Token(Token_empty, "", location);
+    return Token(Token::TokenType::Token_empty, "", location);
 }
 
 Token Lexer::ReadDocumentation()
@@ -412,7 +412,7 @@ Token Lexer::ReadDocumentation()
         m_source_location.GetColumn() += pos_change;
     }
 
-    return Token(Token_documentation, value, location);
+    return Token(Token::TokenType::Token_documentation, value, location);
 }
 
 Token Lexer::ReadOperator()
@@ -438,14 +438,14 @@ Token Lexer::ReadOperator()
         m_source_stream.Next(pos_change_1);
         m_source_stream.Next(pos_change_2);
         m_source_location.GetColumn() += (pos_change_1 + pos_change_2);
-        return Token(Token_operator, op_2, location);
+        return Token(Token::TokenType::Token_operator, op_2, location);
     } else if (Operator::IsOperator(op_1)) {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
-        return Token(Token_operator, op_1, location);
+        return Token(Token::TokenType::Token_operator, op_1, location);
     } else {
-        return Token(Token_empty, "", location);
+        return Token(Token::TokenType::Token_empty, "", location);
     }
 }
 
@@ -469,10 +469,10 @@ Token Lexer::ReadIdentifier()
         ch = m_source_stream.Peek();
     }
 
-    TokenType type = Token_identifier;
+    Token::TokenType type = Token::TokenType::Token_identifier;
 
     if (Keyword::IsKeyword(value)) {
-        type = Token_keyword;
+        type = Token::TokenType::Token_keyword;
     }
 
     return Token(type, value, location);

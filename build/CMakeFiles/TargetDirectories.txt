@@ -1,5 +1,0 @@
-C:/Users/User/ace-lang/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/User/ace-lang/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/User/ace-lang/build/src/ace-c/CMakeFiles/ace-c.dir
-C:/Users/User/ace-lang/build/src/ace-vm/CMakeFiles/ace-vm.dir
-C:/Users/User/ace-lang/build/src/ace/CMakeFiles/ace.dir

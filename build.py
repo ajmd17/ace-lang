@@ -1,18 +1,24 @@
 import os
 import sys
 
-compiler = "clang++"
-dyn_ext = "so"
-static_ext = "a"
+if not os.path.exists('./build'):
+    os.makedirs('./build')
+    
+os.chdir('./build')
+os.system('cmake ../')
+os.chdir('../')
 
-lib_options = "-g -std=c++11 -fPIC"
-exec_options = "-g -std=c++11"
+"""compiler = "clang++"
+dyn_ext = "so"
+
+lib_options = "-std=c++11 -fPIC"
+exec_options = "-std=c++11"
 
 if os.name == "nt":
     compiler = "g++"
     dyn_ext = "dll"
-    exec_options = "-g -std=gnu++11"
-    lib_options = "-g -std=gnu++11"
+    exec_options = "-std=gnu++11"
+    lib_options = "-std=gnu++11"
 elif sys.platform == "darwin":
     compiler = "clang++"
     dyn_ext = "dylib"
@@ -24,15 +30,12 @@ def build_all(build_mode):
         build_project("ace-c", 0)
         build_project("ace-vm", 0)
     elif build_mode == 1:
-        build_project("ace-c", 2)
-        build_project("ace-vm", 2)
+        build_project("ace-c", 1)
+        build_project("ace-vm", 1)
         build_project("ace", 0, ["ace-c", "ace-vm"])
     else:
         print("Unknown build mode '{}'".format(build_mode))
 
-# build mode 0: build executable
-# build mode 1: build dynamic library
-# build mode 2: build static library
 def build_project(project_name, build_mode, linkfiles=[]):
     sys.stdout.write("Build project '{}'? (Y/n) ".format(project_name))
     sys.stdout.flush()
@@ -55,9 +58,6 @@ def build_project(project_name, build_mode, linkfiles=[]):
     elif build_mode == 1:
         bin_file = "./bin/lib{}.{}".format(project_name, dyn_ext)
         build_dynamic(src_dir, bin_file)
-    elif build_mode == 2:
-        bin_file = "./bin/lib{}.{}".format(project_name, static_ext)
-        build_static(src_dir, bin_file)
 
     print("complete")
 
@@ -65,12 +65,9 @@ def build_project(project_name, build_mode, linkfiles=[]):
 def build_executable(src_dir, bin_file, linkfiles):
     linkstr = ""
     if len(linkfiles) != 0:
-        #linkstr = "-Lbin/"
+        linkstr = "-Lbin/"
         for f in linkfiles:
-            linkstr += "bin/lib{}.a ".format(f)
-    #    linkstr = "-static -Lbin/"
-    #    for f in linkfiles:
-    #        linkstr += " -o -l{}".format(f)
+            linkstr += " -l{}".format(f)
 
     command = "{} {} -o {} -O2 -Iinclude/".format(compiler, exec_options, bin_file)
 
@@ -79,7 +76,7 @@ def build_executable(src_dir, bin_file, linkfiles):
             if filename.endswith(".cpp"):
                 command += " {}/{} ".format(dirpath, filename)
 
-    #linkstr += " -Wl,-rpath='$ORIGIN'"
+    linkstr += " -Wl,-rpath='$ORIGIN'"
     command += " {}".format(linkstr)
 
     os.system("{}".format(command))
@@ -96,15 +93,8 @@ def build_dynamic(src_dir, bin_file):
     os.system("{}".format(command))
 
 
-def build_static(src_dir, bin_file):
-    for dirpath, dirnames, filenames in os.walk(src_dir):
-        for filename in [f for f in filenames]:
-            if filename.endswith(".cpp") and filename != "main.cpp":
-                os.system("{} -c -o bin/obj/{}.o {}/{} {} -O2 -Iinclude/".format(compiler, filename, dirpath, filename, lib_options))
-                os.system("ar rcs {} bin/obj/{}.o".format(bin_file, filename))
-
-
 # 0 - Build executable ace-c and ace-vm.
 # 1 - Build ace-c and ace-vm as dynamic libs, and build ace as executable.
 build_mode = 1
 build_all(build_mode)
+"""

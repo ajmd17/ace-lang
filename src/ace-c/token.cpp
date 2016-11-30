@@ -3,8 +3,6 @@
 std::string Token::TokenTypeToString(TokenType type)
 {
     switch (type) {
-    case Token_empty:
-        return "empty";
     case Token_integer_literal:
         return "int";
     case Token_float_literal:
@@ -45,6 +43,8 @@ std::string Token::TokenTypeToString(TokenType type)
         return "#";
     case Token_documentation:
         return "/**";
+    default:
+        return "??";
     }
 }
 

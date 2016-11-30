@@ -6,6 +6,10 @@ include_directories(
   ${CMAKE_CURRENT_LIST_DIR}/include
 )
 
+if(MSVC)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 add_subdirectory(src)
 
 

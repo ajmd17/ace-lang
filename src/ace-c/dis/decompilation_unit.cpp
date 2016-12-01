@@ -660,7 +660,7 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                 os->unsetf(std::ios::hex);
 
                 (*os)
-                    << "mov_mem ["
+                    << "mov_reg ["
                         << "%" << (int)dst << ", "
                         << "%" << (int)src << ""
                     << "]"

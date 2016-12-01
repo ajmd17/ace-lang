@@ -16,6 +16,10 @@ AstParameter::AstParameter(const std::string &name, bool is_variadic,
 void AstParameter::Visit(AstVisitor *visitor, Module *mod)
 {
     AstDeclaration::Visit(visitor, mod);
+    
+    if (m_type_contract != nullptr) {
+        m_type_contract->Visit(visitor, mod);
+    }
 }
 
 void AstParameter::Build(AstVisitor *visitor, Module *mod)

@@ -1,0 +1,1 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -g -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/ace.dir/main.cpp.o  -o ace ../ace-c/libace-c.a ../ace-vm/libace-vm.a 

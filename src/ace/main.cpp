@@ -10,6 +10,7 @@
 #include <ace-vm/ace-vm.hpp>
 
 #include <common/utf8.hpp>
+#include <common/cli_args.hpp>
 #include <common/str_util.hpp>
 
 #include <string>
@@ -152,6 +153,7 @@ int main(int argc, char *argv[])
     utf::init();
 
     if (argc == 1) {
+        // trigger the REPL when no command line arguments have been provided
         // disable static objects, so we can append the bytecode files.
         ace::compiler::Config::use_static_objects = false;
         // do not cull unused objects
@@ -297,16 +299,50 @@ int main(int argc, char *argv[])
 
         delete vm;
 
-    } else if (argc == 2) {
-        utf::Utf8String src_filename = argv[1];
-        utf::Utf8String out_filename = (str_util::strip_extension(argv[1]) + ".aex").c_str();
+    } else if (argc >= 2) {
+        enum {
+            COMPILE_SOURCE,
+            DECOMPILE_BYTECODE,
+        } mode = COMPILE_SOURCE;
 
-        // compile source file
-        ace_compiler::BuildSourceFile(src_filename, out_filename);
-        // execute the bytecode file
-        ace_vm::RunBytecodeFile(out_filename);
-    } else {
-        utf::cout << "Invalid arguments";
+        utf::Utf8String src_filename;
+        utf::Utf8String out_filename;
+
+        if (CLI::HasOption(argv, argv + argc, "-d")) {
+            // disassembly mode
+            mode = DECOMPILE_BYTECODE;
+            src_filename = CLI::GetOptionValue(argv, argv + argc, "-d");
+
+            if (CLI::HasOption(argv, argv + argc, "-o")) {
+                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
+            }
+        } else {
+            mode = COMPILE_SOURCE;
+
+            if (CLI::HasOption(argv, argv + argc, "-c")) {
+                src_filename = CLI::GetOptionValue(argv, argv + argc, "-c");
+            }
+
+            if (src_filename == "") {
+                src_filename = argv[1];
+            }
+
+            if (CLI::HasOption(argv, argv + argc, "-o")) {
+                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
+            }
+
+            if (out_filename == "") {
+                out_filename = (str_util::strip_extension(src_filename.GetData()) + ".aex").c_str();
+            }
+        }
+
+        if (mode == COMPILE_SOURCE) {
+            ace_compiler::BuildSourceFile(src_filename, out_filename);
+            // execute the bytecode file
+            ace_vm::RunBytecodeFile(out_filename);
+        } else if (mode == DECOMPILE_BYTECODE) {
+            ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
+        }
     }
 
     return 0;

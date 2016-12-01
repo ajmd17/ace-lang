@@ -34,6 +34,7 @@
 #include <ace-c/ast/ast_print_statement.hpp>
 #include <ace-c/ast/ast_try_catch.hpp>
 #include <ace-c/ast/ast_type_specification.hpp>
+#include <ace-c/ast/ast_type_contract.hpp>
 #include <ace-c/ast/ast_return_statement.hpp>
 
 #include <string>
@@ -55,8 +56,10 @@ private:
     const Token *MatchAhead(Token::TokenType type, int n);
     const Token *Match(Token::TokenType type, bool read = false);
     const Token *MatchKeyword(Keywords keyword, bool read = false);
+    const Token *MatchOperator(const Operator *op, bool read = false);
     const Token *Expect(Token::TokenType type, bool read = false);
     const Token *ExpectKeyword(Keywords keyword, bool read = false);
+    const Token *ExpectOperator(const Operator *op, bool read = false);
     const SourceLocation &CurrentLocation() const;
 
     int OperatorPrecedence(const Operator *&out);
@@ -83,6 +86,11 @@ private:
     std::shared_ptr<AstExpression> ParseUnaryExpression();
     std::shared_ptr<AstExpression> ParseExpression();
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
+    std::shared_ptr<AstTypeContractExpression> ParseTypeContract();
+    std::shared_ptr<AstTypeContractExpression> ParseTypeContractExpression();
+    std::shared_ptr<AstTypeContractExpression> ParseTypeContractTerm();
+    std::shared_ptr<AstTypeContractExpression> ParseTypeContractBinaryExpression(int expr_prec,
+        std::shared_ptr<AstTypeContractExpression> left);
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true);
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition();
     std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool func_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});

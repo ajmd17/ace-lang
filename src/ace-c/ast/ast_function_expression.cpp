@@ -73,7 +73,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 }
             }
         } else {
-            // return Void.
+            // return None.
             m_return_type = ObjectType::type_builtin_void;
         }
     } else {

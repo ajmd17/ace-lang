@@ -56,6 +56,10 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_alias_missing_assignment, "alias '%' must have an assignment" },
     { Msg_alias_must_be_identifier, "alias '%' must reference an identifier" },
     { Msg_unrecognized_alias_type, "unrecognized alias type for '%'" },
+    { Msg_type_contract_outside_definition, "type contracts not allowed outside of function definitions" },
+    { Msg_unknown_type_contract, "unknown type contract '%'" },
+    { Msg_invalid_type_contract_operator, "invalid type contract operator '%'. Supported operators are '|' and '&'" },
+    { Msg_unsatisfied_type_contract, "'%' (of type '%') does not satisfy type contract" },
     { Msg_unsupported_feature, "unsupported feature" },
 
     /* Warnings */

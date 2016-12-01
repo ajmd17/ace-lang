@@ -22,7 +22,9 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
 
     // visit all children in the block
     for (auto &child : m_children) {
-        child->Visit(visitor, mod);
+        if (child != nullptr) {
+            child->Visit(visitor, mod);
+        }
     }
 
     m_last_is_return = (!m_children.empty()) &&

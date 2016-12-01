@@ -47,16 +47,22 @@ public:
     inline void AddDataMember(const DataMember_t &data_member) { m_data_members.push_back(data_member); }
 
     inline std::shared_ptr<AstExpression> GetDefaultValue() const { return m_default_value; }
-    inline void SetDefaultValue(const std::shared_ptr<AstExpression> &default_value)
-        { m_default_value = default_value; }
+    inline void SetDefaultValue(const std::shared_ptr<AstExpression> &default_value) { m_default_value = default_value; }
 
     inline int GetStaticId() const { return m_static_id; }
     // must be set during type definiton analyzing
     inline void SetStaticId(int static_id) { m_static_id = static_id; }
 
-    // if the objec type is a function type
+    /** Checks if the object type is a record type (no functions or nested objects with functions).Accept
+        Also, 'Any' type means that this cannot be determined therefore it will return false.
+    */
+    bool IsRecordType() const;
+
+    /** Checks if the object type is a function type **/
     inline bool IsFunctionType() const { return m_is_function; }
+    /** Gets the return type of this object type (if it is a function) */
     inline const std::shared_ptr<ObjectType> &GetReturnType() const { return m_return_type; }
+    /** Gets the parameter types of this object type (if it is a function) */
     inline const std::vector<ObjectType> &GetParamTypes() const { return m_param_types; }
 
     inline bool operator==(const ObjectType &other) const

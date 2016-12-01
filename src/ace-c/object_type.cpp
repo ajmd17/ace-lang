@@ -11,7 +11,7 @@
 
 const ObjectType
     ObjectType::type_builtin_undefined("Undefined", std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof))),
-    ObjectType::type_builtin_void("Void", std::shared_ptr<AstVoid>(new AstVoid(SourceLocation::eof))),
+    ObjectType::type_builtin_void("None", std::shared_ptr<AstVoid>(new AstVoid(SourceLocation::eof))),
     ObjectType::type_builtin_any("Any", std::shared_ptr<AstNull>(new AstNull(SourceLocation::eof))),
     ObjectType::type_builtin_bool("Bool", std::shared_ptr<AstFalse>(new AstFalse(SourceLocation::eof))),
     ObjectType::type_builtin_number("Number", std::shared_ptr<AstInteger>(new AstInteger(0, SourceLocation::eof))),
@@ -44,7 +44,7 @@ const ObjectType *ObjectType::GetBuiltinType(const std::string &str)
 
 ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types)
 {
-    std::string type_str = "Function (" + return_type.ToString() + ") ";
+    std::string type_str = "Function ";
     if (!param_types.empty()) {
         for (int i = 0; i < param_types.size(); i++) {
             type_str += "(" + param_types[i].ToString() + ")";
@@ -53,8 +53,9 @@ ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std
             }
         }
     } else {
-        type_str += "(Void)";
+        type_str += "(None)";
     }
+    type_str += " -> " + return_type.ToString();
 
     ObjectType res(type_str, std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
     res.m_is_function = true;
@@ -207,4 +208,19 @@ ObjectType ObjectType::GetDataMemberType(const std::string &name) const
         }
     }
     return type_builtin_undefined;
+}
+
+bool ObjectType::IsRecordType() const
+{
+    if (m_is_function || (*this == type_builtin_any)) {
+        return false;
+    }
+    
+    for (const DataMember_t &dm : m_data_members) {
+        if (!dm.second.IsRecordType()) {
+            return false;
+        }
+    }
+
+    return true;
 }

@@ -55,6 +55,21 @@ const Token *Parser::MatchKeyword(Keywords keyword, bool read)
     return nullptr;
 }
 
+const Token *Parser::MatchOperator(const Operator *op, bool read)
+{
+    const Token *peek = m_token_stream->Peek();
+    if (peek != nullptr && peek->GetType() == Token::TokenType::Token_operator) {
+        std::string str = op->ToString();
+        if (peek->GetValue() == str) {
+            if (read) {
+                m_token_stream->Next();
+            }
+            return peek;
+        }
+    }
+    return nullptr;
+}
+
 const Token *Parser::Expect(Token::TokenType type, bool read)
 {
     const Token *token = Match(type, read);
@@ -102,6 +117,27 @@ const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
             error_msg = Msg_expected_token;
             error_str = Keyword::ToString(keyword);
         }
+
+        CompilerError error(Level_fatal,
+            error_msg, location, error_str);
+
+        m_compilation_unit->GetErrorList().AddError(error);
+    }
+
+    return token;
+}
+
+const Token *Parser::ExpectOperator(const Operator *op, bool read)
+{
+    const Token *token = MatchOperator(op, read);
+    if (token == nullptr) {
+        SourceLocation location = CurrentLocation();
+        if (read) {
+            m_token_stream->Next();
+        }
+
+        ErrorMessage error_msg = Msg_expected_token;
+        std::string error_str = op->ToString();
 
         CompilerError error(Level_fatal,
             error_msg, location, error_str);
@@ -622,6 +658,130 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
     return nullptr;
 }
 
+std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContract()
+{
+    std::shared_ptr<AstTypeContractExpression> expr;
+
+    // we have to use ExpectOperator for angle brackets
+    const Token *token = ExpectOperator(&Operator::operator_less, true);
+    if (token != nullptr) {
+        expr = ParseTypeContractExpression();
+    }
+
+    ExpectOperator(&Operator::operator_greater, true);
+
+    return expr;
+}
+
+std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractExpression()
+{
+    auto term = ParseTypeContractTerm();
+    if (term == nullptr) {
+        return nullptr;
+    }
+
+    if (Match(Token::TokenType::Token_operator, false)) {
+        auto expr = ParseTypeContractBinaryExpression(0, term);
+        if (expr == nullptr) {
+            return nullptr;
+        }
+        term = expr;
+    }
+
+    return term;
+}
+
+
+std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractTerm()
+{
+    const Token *contract_prop = Expect(Token::TokenType::Token_identifier, true);
+    if (contract_prop != nullptr) {
+        // read the contract parameter here
+
+        // type contract properties include:
+        // has: does the object have a member
+        // is:  is the object of a type
+        // not: is the object /not/ of a type
+
+        auto term = std::shared_ptr<AstTypeContractTerm>(new AstTypeContractTerm(
+            contract_prop->GetValue(), ParseTypeSpecification(), contract_prop->GetLocation()));
+
+        /*if (contract_prop->GetValue() == "has") {
+            // parse 'has' contract
+        } else if (contract_prop->GetValue() == "is") {
+            // parse 'is' contract
+        } else if (contract_prop->GetValue() == "not") {
+            // parse 'not' contract
+        } else {
+            // allow user to define their own contracts?
+            // for now, error
+            CompilerError error(Level_fatal, Msg_unknown_type_contract, 
+                contract_prop->GetLocation(), contract_prop->GetValue());
+            m_compilation_unit->GetErrorList().AddError(error);
+
+            return nullptr;
+        }*/
+
+        return term;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractBinaryExpression(int expr_prec,
+    std::shared_ptr<AstTypeContractExpression> left)
+{
+    while (true) {
+        // check for end of contract
+        if (MatchOperator(&Operator::operator_greater, false)) {
+            return left;
+        }
+
+        // get precedence
+        const Operator *op = nullptr;
+        int precedence = OperatorPrecedence(op);
+        if (precedence < expr_prec) {
+            return left;
+        }
+
+        // read the operator token
+        const Token *token = Expect(Token::TokenType::Token_operator, false);
+        const Token *token_op = MatchOperator(&Operator::operator_bitwise_or, true);
+        if (token == nullptr) {
+            return nullptr;
+        }
+        if (token_op == nullptr) {
+            // try and operator
+            token_op = MatchOperator(&Operator::operator_bitwise_and, true);
+        }
+        if (token_op == nullptr) {
+            CompilerError error(Level_fatal, Msg_invalid_type_contract_operator, token->GetLocation(), token->GetValue());
+            m_compilation_unit->GetErrorList().AddError(error);
+            return nullptr;
+        }
+
+        auto right = ParseTypeContractTerm();
+        if (right == nullptr) {
+            return nullptr;
+        }
+
+        // next part of expression's precedence
+        const Operator *next_op = nullptr;
+        int next_prec = OperatorPrecedence(next_op);
+        if (precedence < next_prec) {
+            right = ParseTypeContractBinaryExpression(precedence + 1, right);
+            if (right == nullptr) {
+                return nullptr;
+            }
+        }
+
+        left = std::shared_ptr<AstTypeContractBinaryExpression>(
+            new AstTypeContractBinaryExpression(left, right, op, token->GetLocation()));
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool require_keyword)
 {
     SourceLocation location = CurrentLocation();
@@ -636,7 +796,6 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool re
     }
 
     const Token *identifier = Expect(Token::TokenType::Token_identifier, true);
-
     if (identifier != nullptr) {
         std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
 
@@ -705,7 +864,7 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool func
         std::shared_ptr<AstTypeSpecification> type_spec;
 
         if (Match(Token::TokenType::Token_colon, true)) {
-            // read return type after right arrow for functions
+            // read return type for functions
             type_spec = ParseTypeSpecification();
         }
 
@@ -760,6 +919,20 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
         while (true) {
             const Token *tok = Match(Token::TokenType::Token_identifier, true);
             if (tok != nullptr) {
+                // TODO make use of the type specification
+                std::shared_ptr<AstTypeSpecification> type_spec;
+                std::shared_ptr<AstTypeContractExpression> type_contract;
+                // check if parameter type has been declared
+                if (Match(Token::TokenType::Token_colon, true)) {
+                    //if (Match(Token::TokenType::Token_open_angle_bracket, false)) {
+                        // parse type contracts
+                        type_contract = ParseTypeContract();
+                    //} else {
+                    //    type_spec = ParseTypeSpecification();
+                    //}
+                }
+
+
                 if (found_variadic) {
                     // found another parameter after variadic
                     CompilerError error(Level_fatal,
@@ -774,8 +947,14 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
                     found_variadic = true;
                 }
 
-                parameters.push_back(std::shared_ptr<AstParameter>(
-                    new AstParameter(tok->GetValue(), is_variadic, tok->GetLocation())));
+                auto param = std::shared_ptr<AstParameter>(
+                    new AstParameter(tok->GetValue(), is_variadic, tok->GetLocation()));
+
+                if (type_contract != nullptr) {
+                    param->SetTypeContract(type_contract);
+                }
+
+                parameters.push_back(param);
 
                 if (!Match(Token::TokenType::Token_comma, true)) {
                     break;

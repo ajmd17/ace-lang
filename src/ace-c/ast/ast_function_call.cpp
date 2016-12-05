@@ -7,6 +7,7 @@
 #include <common/instructions.hpp>
 
 #include <cassert>
+#include <iostream>
 
 AstFunctionCall::AstFunctionCall(const std::string &name,
     const std::vector<std::shared_ptr<AstExpression>> &args,
@@ -37,6 +38,22 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
                     CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
             } else {
                 // TODO: check parameters
+                if (identifier_type.GetParamTypes().size() == m_args.size()) {
+                    for (int i = 0; i < m_args.size(); i++) {
+                        const ObjectType &param_type = identifier_type.GetParamTypes()[i];
+                        if (param_type.HasTypeContract()) {
+                            // make sure the argument of the function call satisfies the
+                            // function's required type contract.
+                            if (!param_type.GetTypeContract()->Satisfies(visitor, m_args[i]->GetObjectType())) {
+                                // error, unsatisfied type contract
+                                CompilerError error(Level_fatal, Msg_unsatisfied_type_contract, m_args[i]->GetLocation(), 
+                                    m_args[i]->GetObjectType().ToString());
+                                visitor->GetCompilationUnit()->GetErrorList().AddError(error);
+                            }
+                        }
+                    }
+                }
+
                 assert(identifier_type.GetReturnType() != nullptr);
                 m_return_type = *identifier_type.GetReturnType().get();
             }

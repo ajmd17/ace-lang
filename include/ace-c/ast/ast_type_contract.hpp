@@ -5,6 +5,8 @@
 #include <ace-c/ast/ast_type_specification.hpp>
 #include <ace-c/object_type.hpp>
 #include <ace-c/operator.hpp>
+#include <ace-c/ast_visitor.hpp>
+#include <ace-c/type_contract.hpp>
 
 #include <string>
 #include <memory>
@@ -18,7 +20,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override = 0;
 
-    // virtual bool Satisfies(const ObjectType &object_type) const = 0;
+    virtual bool Satisfies(AstVisitor *visitor, const ObjectType &object_type) const = 0;
 };
 
 class AstTypeContractTerm : public AstTypeContractExpression {
@@ -32,9 +34,13 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
 
+    virtual bool Satisfies(AstVisitor *visitor, const ObjectType &object_type) const override;
+
 private:
     std::string m_type_contract_operation;
     std::shared_ptr<AstTypeSpecification> m_type_spec;
+
+    TypeContract::Type m_type;
 };
 
 class AstTypeContractBinaryExpression: public AstTypeContractExpression {
@@ -48,6 +54,8 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+
+    virtual bool Satisfies(AstVisitor *visitor, const ObjectType &object_type) const override;
 
 private:
     std::shared_ptr<AstTypeContractExpression> m_left;

@@ -52,10 +52,10 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
     // for each data member, load the default value
     int i = 0;
-    for (const DataMember_t &dm : m_object_type.GetDataMembers()) {
-        assert(dm.second.GetDefaultValue() != nullptr && "default value was nullptr");
+    for (const DataMember &dm : m_object_type.GetDataMembers()) {
+        assert(dm.m_type.GetDefaultValue() != nullptr && "default value was nullptr");
 
-        if (dm.second.IsRecordType()) {
+        if (dm.m_type.IsRecordType()) {
             // the member is a record type, and there is no chance of the 
             // register being overwritten,  so just load the type from obj_reg
 
@@ -65,7 +65,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             // load the data member's default value.
-            dm.second.GetDefaultValue()->Build(visitor, mod);
+            dm.m_type.GetDefaultValue()->Build(visitor, mod);
 
             // get active register
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -78,7 +78,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             // data member.
 
             // build the data member
-            dm.second.GetDefaultValue()->Build(visitor, mod);
+            dm.m_type.GetDefaultValue()->Build(visitor, mod);
 
             // claim register for the data member
             visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();

@@ -1880,6 +1880,33 @@ token_stream.cpp.s:
 	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.s
 .PHONY : token_stream.cpp.s
 
+type_contract.o: type_contract.cpp.o
+
+.PHONY : type_contract.o
+
+# target to build an object file
+type_contract.cpp.o:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o
+.PHONY : type_contract.cpp.o
+
+type_contract.i: type_contract.cpp.i
+
+.PHONY : type_contract.i
+
+# target to preprocess a source file
+type_contract.cpp.i:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.i
+.PHONY : type_contract.cpp.i
+
+type_contract.s: type_contract.cpp.s
+
+.PHONY : type_contract.s
+
+# target to generate assembly for a file
+type_contract.cpp.s:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.s
+.PHONY : type_contract.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -2084,6 +2111,9 @@ help:
 	@echo "... token_stream.o"
 	@echo "... token_stream.i"
 	@echo "... token_stream.s"
+	@echo "... type_contract.o"
+	@echo "... type_contract.i"
+	@echo "... type_contract.s"
 .PHONY : help
 
 

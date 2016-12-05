@@ -70,7 +70,7 @@ enum ErrorMessage {
     Msg_alias_must_be_identifier,
     Msg_unrecognized_alias_type,
     Msg_type_contract_outside_definition,
-    Msg_unknown_type_contract,
+    Msg_unknown_type_contract_requirement,
     Msg_invalid_type_contract_operator,
     Msg_unsatisfied_type_contract,
     Msg_unsupported_feature,

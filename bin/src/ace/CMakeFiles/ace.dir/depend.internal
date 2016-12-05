@@ -63,6 +63,7 @@ src/ace/CMakeFiles/ace.dir/main.cpp.o
  ../include/ace-c/token.hpp
  ../include/ace-c/token_stream.hpp
  ../include/ace-c/tree.hpp
+ ../include/ace-c/type_contract.hpp
  ../include/ace-c/typedefs.hpp
  ../include/ace-vm/ace-vm.hpp
  ../include/ace-vm/bytecode_stream.hpp

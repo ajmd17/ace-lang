@@ -1617,6 +1617,30 @@ src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o.provides: src/ace-c/CMakeFiles
 src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o.provides.build: src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o
 
 
+src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o: src/ace-c/CMakeFiles/ace-c.dir/flags.make
+src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o: ../src/ace-c/type_contract.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=$(CMAKE_PROGRESS_66) "Building CXX object src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o"
+	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ace-c.dir/type_contract.cpp.o -c /Users/andrew/ace-lang/src/ace-c/type_contract.cpp
+
+src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ace-c.dir/type_contract.cpp.i"
+	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/andrew/ace-lang/src/ace-c/type_contract.cpp > CMakeFiles/ace-c.dir/type_contract.cpp.i
+
+src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ace-c.dir/type_contract.cpp.s"
+	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/andrew/ace-lang/src/ace-c/type_contract.cpp -o CMakeFiles/ace-c.dir/type_contract.cpp.s
+
+src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.requires:
+
+.PHONY : src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.requires
+
+src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.provides: src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.requires
+	$(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.provides.build
+.PHONY : src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.provides
+
+src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.provides.build: src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o
+
+
 # Object files for target ace-c
 ace__c_OBJECTS = \
 "CMakeFiles/ace-c.dir/ace-c.cpp.o" \
@@ -1683,7 +1707,8 @@ ace__c_OBJECTS = \
 "CMakeFiles/ace-c.dir/source_location.cpp.o" \
 "CMakeFiles/ace-c.dir/source_stream.cpp.o" \
 "CMakeFiles/ace-c.dir/token.cpp.o" \
-"CMakeFiles/ace-c.dir/token_stream.cpp.o"
+"CMakeFiles/ace-c.dir/token_stream.cpp.o" \
+"CMakeFiles/ace-c.dir/type_contract.cpp.o"
 
 # External object files for target ace-c
 ace__c_EXTERNAL_OBJECTS =
@@ -1753,9 +1778,10 @@ src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/source_location.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/source_stream.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/token.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o
+src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/build.make
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=$(CMAKE_PROGRESS_66) "Linking CXX static library libace-c.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=$(CMAKE_PROGRESS_67) "Linking CXX static library libace-c.a"
 	cd /Users/andrew/ace-lang/bin/src/ace-c && $(CMAKE_COMMAND) -P CMakeFiles/ace-c.dir/cmake_clean_target.cmake
 	cd /Users/andrew/ace-lang/bin/src/ace-c && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/ace-c.dir/link.txt --verbose=$(VERBOSE)
 
@@ -1829,6 +1855,7 @@ src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/source_l
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/source_stream.cpp.o.requires
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/token.cpp.o.requires
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o.requires
+src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o.requires
 
 .PHONY : src/ace-c/CMakeFiles/ace-c.dir/requires
 

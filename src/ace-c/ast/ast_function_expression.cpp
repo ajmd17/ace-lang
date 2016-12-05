@@ -36,13 +36,17 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             // add the identifier to the table
             param->Visit(visitor, mod);
 
+            ObjectType param_type = ObjectType::type_builtin_undefined;
+
             // add the param's type to param_types
             if (param->GetIdentifier() != nullptr) {
-                param_types.push_back(param->GetIdentifier()->GetObjectType());
-            } else {
-                // bad parameter
-                param_types.push_back(ObjectType::type_builtin_undefined);
+                param_type = param->GetIdentifier()->GetObjectType();
+                if (param->HasTypeContract()) {
+                    param_type.SetTypeContract(param->GetTypeContract());
+                }
             }
+
+            param_types.push_back(param_type);
         }
     }
 

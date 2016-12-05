@@ -11,14 +11,23 @@ AstTypeContractTerm::AstTypeContractTerm(const std::string &type_contract_operat
     const SourceLocation &location)
     : AstTypeContractExpression(location),
       m_type_contract_operation(type_contract_operation),
-      m_type_spec(type_spec)
+      m_type_spec(type_spec),
+      m_type(TypeContract::Type::TC_INVALID)
 {
 }
 
 void AstTypeContractTerm::Visit(AstVisitor *visitor, Module *mod)
 {
-    m_type_spec->Visit(visitor, mod);
-    // TODO
+    // check that it is a valid type contract!
+    m_type = TypeContract::FromString(m_type_contract_operation);
+    if (m_type != TypeContract::Type::TC_INVALID) {
+        m_type_spec->Visit(visitor, mod);
+    } else {
+        // whoops! invalid requirement
+        visitor->GetCompilationUnit()->GetErrorList().AddError(
+            CompilerError(Level_fatal, Msg_unknown_type_contract_requirement,
+                m_location, m_type_contract_operation));
+    }
 }
 
 void AstTypeContractTerm::Build(AstVisitor *visitor, Module *mod)
@@ -27,6 +36,16 @@ void AstTypeContractTerm::Build(AstVisitor *visitor, Module *mod)
 
 void AstTypeContractTerm::Optimize(AstVisitor *visitor, Module *mod)
 {
+}
+
+bool AstTypeContractTerm::Satisfies(AstVisitor *visitor, const ObjectType &object_type) const
+{
+    switch (m_type) {
+    case TypeContract::Type::TC_IS:
+        return object_type == m_type_spec->GetObjectType();
+    default:
+        return false;
+    }
 }
 
 
@@ -55,4 +74,14 @@ void AstTypeContractBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
 void AstTypeContractBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
+}
+
+bool AstTypeContractBinaryExpression::Satisfies(AstVisitor *visitor, const ObjectType &object_type) const
+{
+    if (m_op == &Operator::operator_bitwise_and) {
+        return m_left->Satisfies(visitor, object_type) && m_right->Satisfies(visitor, object_type);
+    } else if (m_op == &Operator::operator_bitwise_or) {
+        return m_left->Satisfies(visitor, object_type) || m_right->Satisfies(visitor, object_type);
+    }
+    return false;
 }

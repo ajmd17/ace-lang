@@ -64,6 +64,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/ace-c.dir/source_stream.cpp.o"
   "CMakeFiles/ace-c.dir/token.cpp.o"
   "CMakeFiles/ace-c.dir/token_stream.cpp.o"
+  "CMakeFiles/ace-c.dir/type_contract.cpp.o"
   "libace-c.pdb"
   "libace-c.a"
 )

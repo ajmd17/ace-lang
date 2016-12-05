@@ -41,7 +41,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                     ObjectType mem_type = mem->GetObjectType();
                     mem_type.SetDefaultValue(mem->GetAssignment());
 
-                    DataMember_t dm(mem->GetName(), mem_type);
+                    DataMember dm(mem->GetName(), mem_type);
                     object_type.AddDataMember(dm);
                     m_num_members++;
                 }

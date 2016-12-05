@@ -69,6 +69,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/andrew/ace-lang/src/ace-c/source_stream.cpp" "/Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/ace-c.dir/source_stream.cpp.o"
   "/Users/andrew/ace-lang/src/ace-c/token.cpp" "/Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/ace-c.dir/token.cpp.o"
   "/Users/andrew/ace-lang/src/ace-c/token_stream.cpp" "/Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o"
+  "/Users/andrew/ace-lang/src/ace-c/type_contract.cpp" "/Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
 

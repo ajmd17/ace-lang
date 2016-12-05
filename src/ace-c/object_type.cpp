@@ -1,4 +1,5 @@
 #include <ace-c/object_type.hpp>
+#include <ace-c/ast/ast_type_contract.hpp>
 #include <ace-c/ast/ast_expression.hpp>
 #include <ace-c/ast/ast_array_expression.hpp>
 #include <ace-c/ast/ast_undefined.hpp>
@@ -8,6 +9,18 @@
 #include <ace-c/ast/ast_integer.hpp>
 #include <ace-c/ast/ast_float.hpp>
 #include <ace-c/ast/ast_string.hpp>
+
+DataMember::DataMember(const std::string &name, const ObjectType &type)
+    : m_name(name),
+      m_type(type)
+{
+}
+
+DataMember::DataMember(const DataMember &other)
+    : m_name(other.m_name),
+      m_type(other.m_type)
+{
+}
 
 const ObjectType
     ObjectType::type_builtin_undefined("Undefined", std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof))),
@@ -147,19 +160,35 @@ ObjectType::ObjectType(const std::string &str,
       m_default_value(default_value),
       m_static_id(0),
       m_is_function(false),
-      m_return_type(nullptr)
+      m_return_type(nullptr),
+      m_type_contract(nullptr)
 {
 }
 
 ObjectType::ObjectType(const std::string &str,
     const std::shared_ptr<AstExpression> &default_value,
-    const std::vector<DataMember_t> &data_members)
+    const std::vector<DataMember> &data_members)
     : m_str(str),
       m_default_value(default_value),
       m_data_members(data_members),
       m_static_id(0),
       m_is_function(false),
-      m_return_type(nullptr)
+      m_return_type(nullptr),
+      m_type_contract(nullptr)
+{
+}
+
+ObjectType::ObjectType(const std::string &str,
+    const std::shared_ptr<AstExpression> &default_value,
+    const std::vector<DataMember> &data_members,
+    const std::shared_ptr<AstTypeContractExpression> &type_contract)
+    : m_str(str),
+      m_default_value(default_value),
+      m_data_members(data_members),
+      m_static_id(0),
+      m_is_function(false),
+      m_return_type(nullptr),
+      m_type_contract(type_contract)
 {
 }
 
@@ -172,7 +201,8 @@ ObjectType::ObjectType(const ObjectType &other)
       m_return_type(other.m_return_type != nullptr 
         ? std::shared_ptr<ObjectType>(new ObjectType(*other.m_return_type.get()))
         : nullptr),
-      m_param_types(other.m_param_types)
+      m_param_types(other.m_param_types),
+      m_type_contract(other.m_type_contract)
 {
 }
 
@@ -182,8 +212,8 @@ ObjectType::~ObjectType()
 
 bool ObjectType::HasDataMember(const std::string &name) const
 {
-    for (const DataMember_t &dm : m_data_members) {
-        if (dm.first == name) {
+    for (const DataMember &dm : m_data_members) {
+        if (dm.m_name == name) {
             return true;
         }
     }
@@ -193,7 +223,7 @@ bool ObjectType::HasDataMember(const std::string &name) const
 int ObjectType::GetDataMemberIndex(const std::string &name) const
 {
     for (int i = 0; i < m_data_members.size(); i++) {
-        if (m_data_members[i].first == name) {
+        if (m_data_members[i].m_name == name) {
             return i;
         }
     }
@@ -202,9 +232,9 @@ int ObjectType::GetDataMemberIndex(const std::string &name) const
 
 ObjectType ObjectType::GetDataMemberType(const std::string &name) const
 {
-    for (const DataMember_t &dm : m_data_members) {
-        if (dm.first == name) {
-            return dm.second;
+    for (const DataMember &dm : m_data_members) {
+        if (dm.m_name == name) {
+            return dm.m_type;
         }
     }
     return type_builtin_undefined;
@@ -216,8 +246,8 @@ bool ObjectType::IsRecordType() const
         return false;
     }
     
-    for (const DataMember_t &dm : m_data_members) {
-        if (!dm.second.IsRecordType()) {
+    for (const DataMember &dm : m_data_members) {
+        if (!dm.m_type.IsRecordType()) {
             return false;
         }
     }

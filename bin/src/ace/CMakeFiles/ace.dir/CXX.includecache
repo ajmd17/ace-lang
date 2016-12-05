@@ -221,6 +221,10 @@ ace-c/object_type.hpp
 -
 ace-c/operator.hpp
 -
+ace-c/ast_visitor.hpp
+-
+ace-c/type_contract.hpp
+-
 string
 -
 memory
@@ -576,6 +580,12 @@ stdexcept
 stack
 -
 string
+-
+
+../include/ace-c/type_contract.hpp
+string
+-
+map
 -
 
 ../include/ace-c/typedefs.hpp

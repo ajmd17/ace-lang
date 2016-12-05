@@ -227,6 +227,10 @@ ace-c/object_type.hpp
 -
 ace-c/operator.hpp
 -
+ace-c/ast_visitor.hpp
+-
+ace-c/type_contract.hpp
+-
 string
 -
 memory
@@ -606,6 +610,12 @@ stack
 string
 -
 
+../include/ace-c/type_contract.hpp
+string
+-
+map
+-
+
 ../include/ace-c/typedefs.hpp
 cstdint
 -
@@ -830,6 +840,8 @@ ace-c/emit/instruction.hpp
 common/instructions.hpp
 -
 cassert
+-
+iostream
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp
@@ -1341,6 +1353,8 @@ ace-c/module.hpp
 /Users/andrew/ace-lang/src/ace-c/object_type.cpp
 ace-c/object_type.hpp
 -
+ace-c/ast/ast_type_contract.hpp
+-
 ace-c/ast/ast_expression.hpp
 -
 ace-c/ast/ast_array_expression.hpp
@@ -1426,5 +1440,9 @@ ace-c/token.hpp
 
 /Users/andrew/ace-lang/src/ace-c/token_stream.cpp
 ace-c/token_stream.hpp
+-
+
+/Users/andrew/ace-lang/src/ace-c/type_contract.cpp
+ace-c/type_contract.hpp
 -
 

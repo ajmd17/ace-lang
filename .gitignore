@@ -255,3 +255,11 @@ paket-files/
 # Mac OS shell files
 .DS_Store
 ._*
+
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake

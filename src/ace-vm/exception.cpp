@@ -26,3 +26,8 @@ Exception Exception::DivisionByZeroException()
 {
     return Exception(utf::Utf8String("attempted to divide by zero"));
 }
+
+Exception Exception::OutOfBoundsException()
+{
+    return Exception(utf::Utf8String("index out of bounds of the array"));
+}

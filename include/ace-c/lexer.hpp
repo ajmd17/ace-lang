@@ -45,7 +45,10 @@ private:
 
     /** Adds an end-of-file error if at the end, returns true if not */
     bool HasNext();
-    void SkipWhitespace();
+    /** Reads until there is no more whitespace.
+        Returns true if a newline character was encountered.
+    */
+    bool SkipWhitespace();
 };
 
 #endif

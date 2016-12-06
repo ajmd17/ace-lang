@@ -15,6 +15,8 @@ std::string Token::TokenTypeToString(TokenType type)
         return "keyword";
     case Token_operator:
         return "operator";
+    case Token_newline:
+        return "newline";
     case Token_comma:
         return ",";
     case Token_semicolon:
@@ -60,4 +62,16 @@ Token::Token(const Token &other)
       m_value(other.m_value),
       m_location(other.m_location)
 {
+}
+
+bool Token::IsContinuationToken() const
+{
+    return m_type == Token_operator ||
+        m_type == Token_comma ||
+        m_type == Token_colon ||
+        m_type == Token_dot ||
+        m_type == Token_right_arrow ||
+        m_type == Token_open_parenthesis ||
+        m_type == Token_open_bracket ||
+        m_type == Token_open_brace;
 }

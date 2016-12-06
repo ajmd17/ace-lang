@@ -129,6 +129,8 @@ ace-vm/bytecode_stream.hpp
 -
 fstream
 -
+chrono
+-
 cassert
 -
 
@@ -156,8 +158,6 @@ ace-vm/heap_value.hpp
 
 /Users/andrew/ace-lang/src/ace-vm/main.cpp
 ace-vm/ace-vm.hpp
--
-chrono
 -
 
 /Users/andrew/ace-lang/src/ace-vm/object.cpp

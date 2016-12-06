@@ -62,11 +62,8 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         if (!function_scope.GetReturnTypes().empty()) {
             // search through return types for ambiguities
             for (const auto &it : function_scope.GetReturnTypes()) {
-                if (it.first == ObjectType::type_builtin_any) {
-                    // error; functions must be explicitly marked to return 'Any'
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_must_be_explicitly_marked_any, it.second));
-                } else if (m_return_type == ObjectType::type_builtin_undefined) {
+                if (m_return_type == ObjectType::type_builtin_any || 
+                    m_return_type == ObjectType::type_builtin_undefined) {
                     m_return_type = it.first;
                 } else if (ObjectType::TypeCompatible(m_return_type, it.first, false)) {
                     m_return_type = ObjectType::FindCompatibleType(m_return_type, it.first, true);

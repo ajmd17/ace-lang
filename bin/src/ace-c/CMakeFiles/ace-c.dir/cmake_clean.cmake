@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/ace-c.dir/ace-c.cpp.o"
+  "CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_binary_expression.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_block.cpp.o"

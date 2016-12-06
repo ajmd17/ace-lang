@@ -3,7 +3,6 @@
 #include <ace-c/module.hpp>
 #include <ace-c/semantic_analyzer.hpp>
 #include <ace-c/optimizer.hpp>
-#include <ace-c/compilation_unit.hpp>
 #include <ace-c/ast/ast_module_declaration.hpp>
 #include <ace-c/ast/ast_variable_declaration.hpp>
 #include <ace-c/ast/ast_variable.hpp>
@@ -22,7 +21,16 @@
 #include <fstream>
 
 namespace ace_compiler {
-void BuildSourceFile(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
+
+bool BuildSourceFile(const utf::Utf8String &filename,
+    const utf::Utf8String &out_filename)
+{
+    CompilationUnit compilation_unit;
+    return BuildSourceFile(filename, out_filename, compilation_unit);
+}
+
+bool BuildSourceFile(const utf::Utf8String &filename,
+    const utf::Utf8String &out_filename, CompilationUnit &compilation_unit)
 {
     std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
 
@@ -39,8 +47,6 @@ void BuildSourceFile(const utf::Utf8String &filename, const utf::Utf8String &out
         in_file.close();
 
         SourceStream source_stream(&source_file);
-
-        CompilationUnit compilation_unit;
         TokenStream token_stream;
 
         Lexer lex(source_stream, &token_stream, &compilation_unit);
@@ -76,14 +82,20 @@ void BuildSourceFile(const utf::Utf8String &filename, const utf::Utf8String &out
 
             // emit bytecode instructions to file
             std::ofstream out_file(out_filename.GetData(), std::ios::out | std::ios::binary);
+            
             if (!out_file.is_open()) {
                 utf::cout << "Could not open file for writing: " << out_filename << "\n";
             } else {
                 out_file << compilation_unit.GetInstructionStream();
             }
+
             out_file.close();
+
+            return true;
         }
     }
+
+    return false;
 }
 
 void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
@@ -122,4 +134,5 @@ void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8Strin
         }
     }
 }
+
 } // ace_compiler

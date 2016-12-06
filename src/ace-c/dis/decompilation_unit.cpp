@@ -454,7 +454,7 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             uint8_t src;
             m_bs.Read(&src);
 
-            uint32_t idx;
+            uint8_t idx;
             m_bs.Read(&idx);
 
             if (os != nullptr) {
@@ -466,12 +466,12 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                     << "load_arrayidx ["
                         << "%" << (int)reg << ", "
                         << "%" << (int)src << ", "
-                        << "u32(" << (int)idx << ")"
+                        << "%" << (int)idx << ")"
                     << "]"
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(code, reg, src, idx);
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, reg, src, idx);
 
             break;
         }

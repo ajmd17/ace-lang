@@ -7,7 +7,21 @@
 #IncludeRegexTransform: 
 
 ../include/ace-c/ace-c.hpp
+ace-c/compilation_unit.hpp
+-
 common/utf8.hpp
+-
+
+../include/ace-c/ast/ast_array_access.hpp
+ace-c/ast/ast_identifier.hpp
+-
+ace-c/ast/ast_expression.hpp
+-
+string
+-
+vector
+-
+memory
 -
 
 ../include/ace-c/ast/ast_array_expression.hpp
@@ -519,6 +533,8 @@ ace-c/ast/ast_variable.hpp
 -
 ace-c/ast/ast_member_access.hpp
 -
+ace-c/ast/ast_array_access.hpp
+-
 ace-c/ast/ast_true.hpp
 -
 ace-c/ast/ast_false.hpp
@@ -667,8 +683,6 @@ ace-c/semantic_analyzer.hpp
 -
 ace-c/optimizer.hpp
 -
-ace-c/compilation_unit.hpp
--
 ace-c/ast/ast_module_declaration.hpp
 -
 ace-c/ast/ast_variable_declaration.hpp
@@ -698,6 +712,28 @@ ace-c/dis/decompilation_unit.hpp
 ace-c/dis/byte_stream.hpp
 -
 fstream
+-
+
+/Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp
+ace-c/ast/ast_array_access.hpp
+-
+ace-c/emit/instruction.hpp
+-
+ace-c/emit/static_object.hpp
+-
+ace-c/ast/ast_variable.hpp
+-
+ace-c/ast/ast_function_call.hpp
+-
+ace-c/ast_visitor.hpp
+-
+ace-c/compiler.hpp
+-
+ace-c/module.hpp
+-
+common/instructions.hpp
+-
+cassert
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp
@@ -735,6 +771,8 @@ ace-c/ast/ast_false.hpp
 -
 ace-c/ast/ast_member_access.hpp
 -
+ace-c/ast/ast_array_access.hpp
+-
 ace-c/operator.hpp
 -
 ace-c/emit/instruction.hpp
@@ -744,6 +782,8 @@ ace-c/emit/static_object.hpp
 ace-c/optimizer.hpp
 -
 ace-c/ast_visitor.hpp
+-
+ace-c/compiler.hpp
 -
 ace-c/module.hpp
 -
@@ -1242,6 +1282,10 @@ ace-c/compiler.hpp
 ace-c/module.hpp
 -
 ace-c/ast/ast_module_declaration.hpp
+-
+common/instructions.hpp
+-
+cassert
 -
 
 /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp

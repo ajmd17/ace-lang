@@ -77,10 +77,14 @@ ObjectType ObjectType::MakeFunctionType(const ObjectType &return_type, const std
     return res;
 }
 
-ObjectType ObjectType::MakeArrayType(const ObjectType &array_member_type)
+ObjectType ObjectType::MakeArrayType(const ObjectType &array_held_type)
 {
-    std::string type_str = "Array (" + array_member_type.ToString() + ")";
-    return ObjectType(type_str, std::shared_ptr<AstArrayExpression>(new AstArrayExpression({}, SourceLocation::eof)));
+    std::string type_str = "Array (" + array_held_type.ToString() + ")";
+
+    ObjectType res(type_str, std::shared_ptr<AstArrayExpression>(new AstArrayExpression({}, SourceLocation::eof)));
+    res.m_is_array = true;
+    res.m_array_held_type.reset(new ObjectType(array_held_type));
+    return res;
 }
 
 bool ObjectType::TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers)

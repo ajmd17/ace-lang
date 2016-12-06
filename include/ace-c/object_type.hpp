@@ -26,7 +26,7 @@ public:
 
     static const ObjectType *GetBuiltinType(const std::string &str);
     static ObjectType MakeFunctionType(const ObjectType &return_type, const std::vector<ObjectType> &param_types);
-    static ObjectType MakeArrayType(const ObjectType &array_member_type);
+    static ObjectType MakeArrayType(const ObjectType &array_held_type);
     static bool TypeCompatible(const ObjectType &left, const ObjectType &right, bool strict_numbers = false);
     static ObjectType FindCompatibleType(const ObjectType &left, const ObjectType &right, bool use_number = false);
 
@@ -62,13 +62,19 @@ public:
     */
     bool IsRecordType() const;
 
-    /** Checks if the object type is a function type **/
+    /** Checks if the object type is a function type */
     inline bool IsFunctionType() const { return m_is_function; }
     /** Gets the return type of this object type (if it is a function) */
     inline const std::shared_ptr<ObjectType> &GetReturnType() const { return m_return_type; }
     /** Gets the parameter types of this object type (if it is a function) */
     inline const std::vector<ObjectType> &GetParamTypes() const { return m_param_types; }
 
+    /** If the object type is an array type */
+    inline bool IsArrayType() const { return m_is_array; }
+    /** Gets the type of object this array holds */
+    inline const std::shared_ptr<ObjectType> &GetArrayHeldType() const { return m_array_held_type; }
+
+    /** Type contracts */
     inline bool HasTypeContract() const { return m_type_contract != nullptr; }
     inline const std::shared_ptr<AstTypeContractExpression> &GetTypeContract() const { return m_type_contract; }
     inline void SetTypeContract(const std::shared_ptr<AstTypeContractExpression> &type_contract)
@@ -87,6 +93,9 @@ protected:
     bool m_is_function;
     std::shared_ptr<ObjectType> m_return_type;
     std::vector<ObjectType> m_param_types;
+
+    bool m_is_array;
+    std::shared_ptr<ObjectType> m_array_held_type;
 
     // if it has a type contract
     std::shared_ptr<AstTypeContractExpression> m_type_contract;

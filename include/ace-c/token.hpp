@@ -15,6 +15,7 @@ public:
       Token_identifier,
       Token_keyword,
       Token_operator,
+      Token_newline,
       Token_comma,
       Token_semicolon,
       Token_colon,
@@ -42,6 +43,8 @@ public:
     inline const std::string &GetValue() const { return m_value; }
     inline const SourceLocation &GetLocation() const { return m_location; }
     inline bool Empty() const { return m_type == Token_empty; }
+
+    bool IsContinuationToken() const;
 
 private:
     TokenType m_type;

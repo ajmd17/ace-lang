@@ -2,6 +2,7 @@
 #include <ace-vm/bytecode_stream.hpp>
 
 #include <fstream>
+#include <chrono>
 #include <cassert>
 
 namespace ace_vm {
@@ -33,7 +34,16 @@ void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, int pos)
     BytecodeStream bytecode_stream(bytecodes, bytecode_size, pos);
 
     vm->SetBytecodeStream(&bytecode_stream);
+
+    // time how long execution took
+    auto start = std::chrono::high_resolution_clock::now();
+
     vm->Execute();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<
+        std::chrono::duration<double, std::ratio<1>>>(end - start).count();
+    utf::cout << "Elapsed time: " << elapsed_ms << "s\n";
 
     delete[] bytecodes;
 }

@@ -24,7 +24,7 @@ struct TypeInfo {
 };
 
 struct StackValue {
-    enum {
+    enum ValueType {
         INT32,
         INT64,
         FLOAT,
@@ -37,7 +37,7 @@ struct StackValue {
         TYPE_INFO,
     } m_type;
 
-    union {
+    union ValueData {
         int32_t i32;
         int64_t i64;
         float f;
@@ -52,6 +52,9 @@ struct StackValue {
 
     StackValue();
     explicit StackValue(const StackValue &other);
+
+    inline StackValue::ValueType GetType() const { return m_type; }
+    inline StackValue::ValueData GetValue() const { return m_value; }
 
     void Mark();
     utf::Utf8String ToString();

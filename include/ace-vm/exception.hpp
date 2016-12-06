@@ -13,6 +13,7 @@ public:
     static Exception InvalidArgsException(int expected, int received);
     static Exception NullReferenceException();
     static Exception DivisionByZeroException();
+    static Exception OutOfBoundsException();
 
 private:
     const utf::Utf8String m_str;

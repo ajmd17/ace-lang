@@ -154,6 +154,13 @@ const SourceLocation &Parser::CurrentLocation() const
     return peek != nullptr ? peek->GetLocation() : SourceLocation::eof;
 }
 
+void Parser::SkipStatementTerminators()
+{
+    // read past statement terminator tokens
+    while (Match(Token::TokenType::Token_semicolon, true) ||
+           Match(Token::TokenType::Token_newline, true));
+}
+
 void Parser::Parse(bool expect_module_decl)
 {
     if (expect_module_decl) {
@@ -175,22 +182,17 @@ void Parser::Parse(bool expect_module_decl)
     while (m_token_stream->HasNext()) {
         SourceLocation location = CurrentLocation();
 
-        // read semicolon tokens
-        if (Match(Token::TokenType::Token_semicolon, true)) {
+        // skip statement terminator tokens
+        if (Match(Token::TokenType::Token_semicolon, true) ||
+            Match(Token::TokenType::Token_newline, true)) {
             continue;
         }
 
-        std::shared_ptr<AstStatement> statement(ParseStatement());
-
-        if (statement != nullptr) {
-            m_ast_iterator->Push(statement);
+        std::shared_ptr<AstStatement> stmt = ParseStatement();
+        
+        if (stmt != nullptr) {
+            m_ast_iterator->Push(stmt);
         } else {
-            // expression or statement could not be evaluated
-            CompilerError error(Level_fatal,
-                Msg_illegal_expression, location);
-
-            m_compilation_unit->GetErrorList().AddError(error);
-
             // skip ahead to avoid endlessly looping
             m_token_stream->Next();
         }
@@ -248,6 +250,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
     } else if (Match(Token::TokenType::Token_open_brace, false)) {
         return ParseBlock();
     }
+
     return ParseExpression();
 }
 
@@ -298,6 +301,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     if (expr != nullptr) {
         if (Match(Token::TokenType::Token_dot, false)) {
             return ParseMemberAccess(expr);
+        } else if (Match(Token::TokenType::Token_open_bracket, false)) {
+            return ParseArrayAccess(expr);
         }
     }
 
@@ -307,12 +312,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 std::shared_ptr<AstExpression> Parser::ParseParentheses()
 {
     Expect(Token::TokenType::Token_open_parenthesis, true);
-    SourceLocation expr_location = CurrentLocation();
     std::shared_ptr<AstExpression> expr = ParseExpression();
-    if (expr == nullptr) {
-        CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
-        m_compilation_unit->GetErrorList().AddError(error);
-    }
     Expect(Token::TokenType::Token_close_parenthesis, true);
     return expr;
 }
@@ -392,10 +392,9 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
 
 std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstExpression> target)
 {
-    Expect(Token::TokenType::Token_dot, true);
-
     std::vector<std::shared_ptr<AstIdentifier>> parts;
 
+    Expect(Token::TokenType::Token_dot, true);
     do {
         auto ident = ParseIdentifier();
         if (ident == nullptr) {
@@ -407,6 +406,22 @@ std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstEx
 
     return std::shared_ptr<AstMemberAccess>(
         new AstMemberAccess(target, parts, target->GetLocation()));
+}
+
+std::shared_ptr<AstArrayAccess> Parser::ParseArrayAccess(std::shared_ptr<AstExpression> target)
+{
+    const Token *token = Expect(Token::TokenType::Token_open_bracket, true);
+    
+    if (token != nullptr) {
+        auto expr = ParseExpression();
+        Expect(Token::TokenType::Token_close_bracket, true);
+        if (expr != nullptr) {
+            return std::shared_ptr<AstArrayAccess>(
+                new AstArrayAccess(target, expr, token->GetLocation()));
+        }
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<AstTrue> Parser::ParseTrue()
@@ -435,9 +450,11 @@ std::shared_ptr<AstBlock> Parser::ParseBlock()
     const Token *token = Expect(Token::TokenType::Token_open_brace, true);
     if (token != nullptr) {
         std::shared_ptr<AstBlock> block(new AstBlock(token->GetLocation()));
+
         while (!Match(Token::TokenType::Token_close_brace, true)) {
-            // read semicolon tokens
-            if (!Match(Token::TokenType::Token_semicolon, true)) {
+            // skip statement terminator tokens
+            if (!Match(Token::TokenType::Token_semicolon, true) &&
+                !Match(Token::TokenType::Token_newline, true)) {
                 block->AddChild(ParseStatement());
             }
         }
@@ -697,32 +714,8 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractTerm()
     const Token *contract_prop = Expect(Token::TokenType::Token_identifier, true);
     if (contract_prop != nullptr) {
         // read the contract parameter here
-
-        // type contract properties include:
-        // has: does the object have a member
-        // is:  is the object of a type
-        // not: is the object /not/ of a type
-
-        auto term = std::shared_ptr<AstTypeContractTerm>(new AstTypeContractTerm(
+        return std::shared_ptr<AstTypeContractTerm>(new AstTypeContractTerm(
             contract_prop->GetValue(), ParseTypeSpecification(), contract_prop->GetLocation()));
-
-        /*if (contract_prop->GetValue() == "has") {
-            // parse 'has' contract
-        } else if (contract_prop->GetValue() == "is") {
-            // parse 'is' contract
-        } else if (contract_prop->GetValue() == "not") {
-            // parse 'not' contract
-        } else {
-            // allow user to define their own contracts?
-            // for now, error
-            CompilerError error(Level_fatal, Msg_unknown_type_contract, 
-                contract_prop->GetLocation(), contract_prop->GetValue());
-            m_compilation_unit->GetErrorList().AddError(error);
-
-            return nullptr;
-        }*/
-
-        return term;
     }
 
     return nullptr;
@@ -895,6 +888,7 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
             if (expr != nullptr) {
                 members.push_back(expr);
             }
+
             if (!Match(Token::TokenType::Token_comma, true)) {
                 break;
             }
@@ -980,6 +974,8 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
 
         if (Expect(Token::TokenType::Token_open_brace, true)) {
             while (!Match(Token::TokenType::Token_close_brace, true)) {
+                SkipStatementTerminators();
+
                 if (MatchKeyword(Keyword_let, false) || Match(Token::TokenType::Token_identifier, false)) {
                     // do not require keyword for data members
                     members.push_back(ParseVariableDeclaration(false));
@@ -993,8 +989,7 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
                     m_token_stream->Next();
                 }
 
-                // read past semicolons
-                while (Match(Token::TokenType::Token_semicolon, true));
+                SkipStatementTerminators();
             }
         }
 

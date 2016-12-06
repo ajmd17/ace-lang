@@ -31,13 +31,23 @@ Lexer::Lexer(const Lexer &other)
 
 void Lexer::Analyze()
 {
+    // skip initial whitespace
     SkipWhitespace();
+
     while (m_source_stream.HasNext() && m_source_stream.Peek() != '\0') {
         Token token = NextToken();
         if (!token.Empty()) {
             m_token_stream->Push(token);
         }
-        SkipWhitespace();
+
+        // SkipWhitespace() returns true if there was a newline
+        const SourceLocation location = m_source_location;
+        if (SkipWhitespace()) {
+            // add the `newline` statement terminator if not a continuation token
+            if (!token.IsContinuationToken()) {
+                m_token_stream->Push(Token(Token::TokenType::Token_newline, "newline", location));
+            }
+        }
     }
 }
 
@@ -55,7 +65,7 @@ Token Lexer::NextToken()
     // go back to previous position
     m_source_stream.GoBack(total_pos_change);
 
-    if (ch[0] == '\"') {
+    if (ch[0] == '\"' || ch[0] == '\'') {
         return ReadStringLiteral();
     } else if (ch[0] == '0' && (ch[1] == 'x' || ch[1] == 'X')) {
         return ReadHexNumberLiteral();
@@ -202,7 +212,6 @@ Token Lexer::ReadStringLiteral()
     SourceLocation location = m_source_location;
 
     std::string value;
-
     int pos_change = 0;
 
     u32char delim = m_source_stream.Next(pos_change);
@@ -214,13 +223,13 @@ Token Lexer::ReadStringLiteral()
     while (true) {
         m_source_location.GetColumn() += pos_change;
 
-        if (ch == (u32char)('\n') || !HasNext()) {
+        if (ch == (u32char)'\n' || !HasNext()) {
             // unterminated string literal
             m_compilation_unit->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_unterminated_string_literal,
                     location));
 
-            if (ch == (u32char)('\n')) {
+            if (ch == (u32char)'\n') {
                 // increment line and reset column
                 m_source_location.GetColumn() = 0;
                 m_source_location.GetLine()++;
@@ -233,7 +242,7 @@ Token Lexer::ReadStringLiteral()
         }
 
         // determine whether to read an escape sequence
-        if (ch == (u32char)('\\')) {
+        if (ch == (u32char)'\\') {
             u32char esc = ReadEscapeCode();
             // append the bytes
             value.append(utf::get_bytes(esc));
@@ -488,15 +497,20 @@ bool Lexer::HasNext()
     return true;
 }
 
-void Lexer::SkipWhitespace()
+bool Lexer::SkipWhitespace()
 {
+    bool had_newline = false;
+
     while (m_source_stream.HasNext() && utf32_isspace(m_source_stream.Peek())) {
         int pos_change = 0;
-        if (m_source_stream.Next(pos_change) == (u32char)('\n')) {
+        if (m_source_stream.Next(pos_change) == (u32char)'\n') {
             m_source_location.GetLine()++;
             m_source_location.GetColumn() = 0;
+            had_newline = true;
         } else {
             m_source_location.GetColumn() += pos_change;
         }
     }
+
+    return had_newline;
 }

@@ -152,6 +152,33 @@ ace-c.cpp.s:
 	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.s
 .PHONY : ace-c.cpp.s
 
+ast/ast_array_access.o: ast/ast_array_access.cpp.o
+
+.PHONY : ast/ast_array_access.o
+
+# target to build an object file
+ast/ast_array_access.cpp.o:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o
+.PHONY : ast/ast_array_access.cpp.o
+
+ast/ast_array_access.i: ast/ast_array_access.cpp.i
+
+.PHONY : ast/ast_array_access.i
+
+# target to preprocess a source file
+ast/ast_array_access.cpp.i:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.i
+.PHONY : ast/ast_array_access.cpp.i
+
+ast/ast_array_access.s: ast/ast_array_access.cpp.s
+
+.PHONY : ast/ast_array_access.s
+
+# target to generate assembly for a file
+ast/ast_array_access.cpp.s:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.s
+.PHONY : ast/ast_array_access.cpp.s
+
 ast/ast_array_expression.o: ast/ast_array_expression.cpp.o
 
 .PHONY : ast/ast_array_expression.o
@@ -1919,6 +1946,9 @@ help:
 	@echo "... ace-c.o"
 	@echo "... ace-c.i"
 	@echo "... ace-c.s"
+	@echo "... ast/ast_array_access.o"
+	@echo "... ast/ast_array_access.i"
+	@echo "... ast/ast_array_access.s"
 	@echo "... ast/ast_array_expression.o"
 	@echo "... ast/ast_array_expression.i"
 	@echo "... ast/ast_array_expression.s"

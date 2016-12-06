@@ -25,6 +25,14 @@
     ((stack_value).m_type == StackValue::FLOAT || \
     (stack_value).m_type == StackValue::DOUBLE)
 
+#define IS_VALUE_STRING(stack_value, out) \
+    ((stack_value).m_type == StackValue::HEAP_POINTER && \
+    (out = (stack_value).m_value.ptr->GetPointer<utf::Utf8String>()))
+
+#define IS_VALUE_ARRAY(stack_value, out) \
+    ((stack_value).m_type == StackValue::HEAP_POINTER && \
+    (out = (stack_value).m_value.ptr->GetPointer<Array>()))
+
 #define MATCH_TYPES(lhs, rhs) \
     ((lhs).m_type < (rhs).m_type) ? (rhs).m_type : (lhs).m_type
 
@@ -115,6 +123,15 @@ private:
 
     inline bool HasNextInstruction() const { return m_bs->Position() < m_bs->Size(); }
 
+    /** Returns the value as a 64-bit integer without checking if it is not of that type. */
+    inline int64_t GetIntFast(const StackValue &stack_value) 
+    {
+        return stack_value.m_type == StackValue::INT64
+            ? stack_value.m_value.i64
+            : (int64_t)stack_value.m_value.i32;
+    }
+
+    /** Returns the value as a 64-bit integer, throwing an error if the type is invalid. */
     inline int64_t GetValueInt64(const StackValue &stack_value)
     {
         switch (stack_value.m_type) {

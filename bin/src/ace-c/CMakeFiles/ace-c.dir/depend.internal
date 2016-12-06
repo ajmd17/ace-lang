@@ -3,6 +3,7 @@
 
 src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o
  ../include/ace-c/ace-c.hpp
+ ../include/ace-c/ast/ast_array_access.hpp
  ../include/ace-c/ast/ast_array_expression.hpp
  ../include/ace-c/ast/ast_binary_expression.hpp
  ../include/ace-c/ast/ast_block.hpp
@@ -68,6 +69,31 @@ src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o
  ../include/ace-c/typedefs.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace-c/ace-c.cpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o
+ ../include/ace-c/ast/ast_array_access.hpp
+ ../include/ace-c/ast/ast_expression.hpp
+ ../include/ace-c/ast/ast_function_call.hpp
+ ../include/ace-c/ast/ast_identifier.hpp
+ ../include/ace-c/ast/ast_statement.hpp
+ ../include/ace-c/ast/ast_variable.hpp
+ ../include/ace-c/ast_iterator.hpp
+ ../include/ace-c/ast_visitor.hpp
+ ../include/ace-c/compilation_unit.hpp
+ ../include/ace-c/compiler.hpp
+ ../include/ace-c/compiler_error.hpp
+ ../include/ace-c/emit/instruction.hpp
+ ../include/ace-c/emit/instruction_stream.hpp
+ ../include/ace-c/emit/static_object.hpp
+ ../include/ace-c/error_list.hpp
+ ../include/ace-c/identifier.hpp
+ ../include/ace-c/identifier_table.hpp
+ ../include/ace-c/module.hpp
+ ../include/ace-c/object_type.hpp
+ ../include/ace-c/scope.hpp
+ ../include/ace-c/source_location.hpp
+ ../include/ace-c/tree.hpp
+ ../include/common/instructions.hpp
+ /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o
  ../include/ace-c/ast/ast_array_expression.hpp
  ../include/ace-c/ast/ast_expression.hpp
@@ -91,6 +117,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o
  ../include/common/instructions.hpp
  /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_binary_expression.cpp.o
+ ../include/ace-c/ast/ast_array_access.hpp
  ../include/ace-c/ast/ast_binary_expression.hpp
  ../include/ace-c/ast/ast_constant.hpp
  ../include/ace-c/ast/ast_declaration.hpp
@@ -108,6 +135,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_binary_expression.cpp.o
  ../include/ace-c/ast_iterator.hpp
  ../include/ace-c/ast_visitor.hpp
  ../include/ace-c/compilation_unit.hpp
+ ../include/ace-c/compiler.hpp
  ../include/ace-c/compiler_error.hpp
  ../include/ace-c/configuration.hpp
  ../include/ace-c/emit/instruction.hpp
@@ -422,6 +450,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_integer.cpp.o
  ../include/common/instructions.hpp
  /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o
+ ../include/ace-c/ast/ast_array_access.hpp
  ../include/ace-c/ast/ast_array_expression.hpp
  ../include/ace-c/ast/ast_binary_expression.hpp
  ../include/ace-c/ast/ast_block.hpp
@@ -983,6 +1012,7 @@ src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o
  ../include/ace-c/scope.hpp
  ../include/ace-c/source_location.hpp
  ../include/ace-c/tree.hpp
+ ../include/common/instructions.hpp
  /Users/andrew/ace-lang/src/ace-c/compiler.cpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler_error.cpp.o
  ../include/ace-c/compiler_error.hpp
@@ -1066,6 +1096,21 @@ src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o
  /Users/andrew/ace-lang/src/ace-c/lexer.cpp
 src/ace-c/CMakeFiles/ace-c.dir/main.cpp.o
  ../include/ace-c/ace-c.hpp
+ ../include/ace-c/ast/ast_expression.hpp
+ ../include/ace-c/ast/ast_statement.hpp
+ ../include/ace-c/compilation_unit.hpp
+ ../include/ace-c/compiler_error.hpp
+ ../include/ace-c/emit/instruction.hpp
+ ../include/ace-c/emit/instruction_stream.hpp
+ ../include/ace-c/emit/static_object.hpp
+ ../include/ace-c/error_list.hpp
+ ../include/ace-c/identifier.hpp
+ ../include/ace-c/identifier_table.hpp
+ ../include/ace-c/module.hpp
+ ../include/ace-c/object_type.hpp
+ ../include/ace-c/scope.hpp
+ ../include/ace-c/source_location.hpp
+ ../include/ace-c/tree.hpp
  ../include/common/cli_args.hpp
  ../include/common/str_util.hpp
  ../include/common/utf8.hpp
@@ -1150,6 +1195,7 @@ src/ace-c/CMakeFiles/ace-c.dir/optimizer.cpp.o
  ../include/ace-c/typedefs.hpp
  /Users/andrew/ace-lang/src/ace-c/optimizer.cpp
 src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o
+ ../include/ace-c/ast/ast_array_access.hpp
  ../include/ace-c/ast/ast_array_expression.hpp
  ../include/ace-c/ast/ast_binary_expression.hpp
  ../include/ace-c/ast/ast_block.hpp

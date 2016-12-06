@@ -1,13 +1,15 @@
+#include <ace/api.hpp>
+
 #include <ace-c/ace-c.hpp>
 #include <ace-c/configuration.hpp>
 #include <ace-c/semantic_analyzer.hpp>
 #include <ace-c/optimizer.hpp>
-#include <ace-c/compilation_unit.hpp>
 #include <ace-c/lexer.hpp>
 #include <ace-c/parser.hpp>
 #include <ace-c/compiler.hpp>
 
-#include <ace-vm/ace-vm.hpp>
+#include <ace-vm/object.hpp>
+#include <ace-vm/array.hpp>
 
 #include <common/utf8.hpp>
 #include <common/cli_args.hpp>
@@ -15,103 +17,20 @@
 
 #include <string>
 #include <sstream>
+#include <chrono>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 
-struct NativeFunctionDefine {
-    std::string module_name;
-    std::string function_name;
-    ObjectType return_type;
-    std::vector<ObjectType> param_types;
-    NativeFunctionPtr_t ptr;
-
-    NativeFunctionDefine(
-        const std::string &module_name,
-        const std::string &function_name,
-        const ObjectType &return_type,
-        const std::vector<ObjectType> &param_types,
-        NativeFunctionPtr_t ptr)
-        : module_name(module_name),
-          function_name(function_name),
-          return_type(return_type),
-          param_types(param_types),
-          ptr(ptr)
-    {
-    }
-
-    NativeFunctionDefine(const NativeFunctionDefine &other)
-        : module_name(other.module_name),
-          function_name(other.function_name),
-          return_type(other.return_type),
-          param_types(other.param_types),
-          ptr(other.ptr)
-    {
-    }
-};
-
-void AddNativeFunction(const NativeFunctionDefine &def,
-    VM *vm, CompilationUnit *compilation_unit)
-{
-    assert(vm != nullptr);
-
-    Module *mod = nullptr;
-
-    for (std::unique_ptr<Module> &it : compilation_unit->m_modules) {
-        if (it->GetName() == def.module_name) {
-            mod = it.get();
-            break;
-        }
-    }
-
-    if (mod == nullptr) {
-        // add this module to the compilation unit
-        std::unique_ptr<Module> this_module(new Module(def.module_name, SourceLocation::eof));
-        compilation_unit->m_modules.push_back(std::move(this_module));
-        compilation_unit->m_module_index++;
-        mod = compilation_unit->m_modules.back().get();
-    }
-
-    assert(mod != nullptr);
-
-    // get global scope
-    Scope &scope = mod->m_scopes.Top();
-
-    // look up variable to make sure it doesn't already exist
-    // only this scope matters, variables with the same name outside
-    // of this scope are fine
-    Identifier *ident = mod->LookUpIdentifier(def.function_name, true);
-    assert(ident == nullptr &&
-        "cannot create multiple objects with the same name");
-    // add identifier
-    ident = scope.GetIdentifierTable().AddIdentifier(def.function_name);
-    assert(ident != nullptr);
-
-    // create value
-    std::vector<std::shared_ptr<AstParameter>> parameters; // TODO
-    std::shared_ptr<AstBlock> block(new AstBlock(SourceLocation::eof));
-    std::shared_ptr<AstFunctionExpression> value(
-        new AstFunctionExpression(parameters, nullptr, block, SourceLocation::eof));
-
-    value->SetReturnType(def.return_type);
-
-    // set identifier info
-    ident->SetFlags(FLAG_CONST);
-    ident->SetObjectType(ObjectType::MakeFunctionType(def.return_type, def.param_types));
-    ident->SetCurrentValue(value);
-    ident->SetStackLocation(compilation_unit->GetInstructionStream().GetStackSize());
-    compilation_unit->GetInstructionStream().IncStackSize();
-
-    // finally, push to VM
-    vm->PushNativeFunctionPtr(def.ptr);
-}
+using namespace ace;
 
 void Runtime_gc(VMState *state, StackValue **args, int nargs)
 {
     /*std::stringstream ss;
     // dump heap to stringstream
     ss << "Before:\n" << state->m_heap << "\n\n";
-    utf::cout << utf::Utf8String(ss.str().c_str());
+    auto str = ss.str();
+    utf::cout << utf::Utf8String(str.c_str());
     // clear stringstream
     ss.str("");*/
 
@@ -126,7 +45,8 @@ void Runtime_gc(VMState *state, StackValue **args, int nargs)
 
   /*  // dump heap to stringstream, after GC
     ss << "After:\n" << state->m_heap << "\n\n";
-    utf::cout << utf::Utf8String(ss.str().c_str());*/
+    auto str = ss.str();
+    utf::cout << utf::Utf8String(str.c_str());*/
 }
 
 void Global_to_string(VMState *state, StackValue **args, int nargs)
@@ -148,9 +68,67 @@ void Global_to_string(VMState *state, StackValue **args, int nargs)
     res.m_value.ptr = ptr;
 }
 
+void Global_length(VMState *state, StackValue **args, int nargs)
+{
+    if (nargs != 1) {
+        state->ThrowException(Exception::InvalidArgsException(1, nargs));
+        return;
+    }
+
+
+    int len = 0;
+
+    StackValue *target_ptr = args[0];
+    assert(target_ptr != nullptr);
+
+    const int buffer_size = 256;
+    char buffer[buffer_size];
+    std::snprintf(buffer, buffer_size, "length() is undefined for type '%s'",
+        target_ptr->GetTypeString());
+    Exception e = Exception(utf::Utf8String(buffer));
+
+    if (target_ptr->GetType() == StackValue::ValueType::HEAP_POINTER) {
+        utf::Utf8String *strptr = nullptr;
+        Array *arrayptr = nullptr;
+        Object *objptr = nullptr;
+        
+        if (target_ptr->GetValue().ptr == nullptr) {
+            state->ThrowException(Exception::NullReferenceException());
+        } else if ((strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) != nullptr) {
+            // get length of string
+            len = strptr->GetLength();
+        } else if ((arrayptr = target_ptr->GetValue().ptr->GetPointer<Array>()) != nullptr) {
+            // get length of array
+            len = arrayptr->GetSize();
+        } else if ((objptr = target_ptr->GetValue().ptr->GetPointer<Object>()) != nullptr) {
+            // get number of members in object
+            len = objptr->GetSize();
+        } else {
+            state->ThrowException(e);
+        }
+    } else {
+        state->ThrowException(e);
+    }
+
+    StackValue &res = state->GetExecutionThread().GetRegisters()[0];
+
+    // assign register value to the length
+    res.m_type = StackValue::INT32;
+    res.m_value.i32 = len;
+}
+
 int main(int argc, char *argv[])
 {
     utf::init();
+
+    VM *vm = new VM;
+    CompilationUnit compilation_unit;
+
+    APIInstance api;
+    api.Function("Runtime", "gc", ObjectType::type_builtin_void, {}, Runtime_gc);
+    api.Function(API::GLOBAL_MODULE_NAME, "to_string", ObjectType::type_builtin_string, {}, Global_to_string);
+    api.Function(API::GLOBAL_MODULE_NAME, "length", ObjectType::type_builtin_int, {}, Global_length);
+    api.BindAll(vm, &compilation_unit);
 
     if (argc == 1) {
         // trigger the REPL when no command line arguments have been provided
@@ -159,22 +137,7 @@ int main(int argc, char *argv[])
         // do not cull unused objects
         ace::compiler::Config::cull_unused_objects = false;
 
-        // the current compilation unit for REPL
-        CompilationUnit compilation_unit;
         AstIterator ast_iterator;
-
-        // REPL VM
-        VM *vm = new VM;
-
-        // bind native function library
-        std::vector<NativeFunctionDefine> native_functions = {
-            NativeFunctionDefine("Runtime", "gc", ObjectType::type_builtin_void, {}, Runtime_gc),
-            NativeFunctionDefine("__global__", "to_string", ObjectType::type_builtin_string, {}, Global_to_string)
-        };
-
-        for (auto &def : native_functions) {
-            AddNativeFunction(def, vm, &compilation_unit);
-        }
 
         utf::Utf8String out_filename = "tmp.aex";
         std::ofstream out_file(out_filename.GetData(),
@@ -297,8 +260,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        delete vm;
-
     } else if (argc >= 2) {
         enum {
             COMPILE_SOURCE,
@@ -337,13 +298,14 @@ int main(int argc, char *argv[])
         }
 
         if (mode == COMPILE_SOURCE) {
-            ace_compiler::BuildSourceFile(src_filename, out_filename);
-            // execute the bytecode file
-            ace_vm::RunBytecodeFile(out_filename);
+            if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
+                // execute the compiled bytecode file
+                ace_vm::RunBytecodeFile(vm, out_filename);
+            }
         } else if (mode == DECOMPILE_BYTECODE) {
             ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
         }
     }
 
-    return 0;
+    delete vm;
 }

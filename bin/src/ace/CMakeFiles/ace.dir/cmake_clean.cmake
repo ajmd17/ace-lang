@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/ace.dir/api.cpp.o"
   "CMakeFiles/ace.dir/main.cpp.o"
   "ace.pdb"
   "ace"

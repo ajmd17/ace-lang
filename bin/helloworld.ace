@@ -1,0 +1,19 @@
+module HelloWorld
+
+
+countdown = func(from, to)  {
+	print 'Counting down from ', from, ' to ', to, '...'
+	// print 'Counting down from %{from} to %{to}...'
+ 
+	while from >= to {
+		print from, '...'
+		from -= 1
+	}
+	return from
+}
+
+main = func() {
+	countdown(500, 25)
+}
+
+main()

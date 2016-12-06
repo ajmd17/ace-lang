@@ -125,6 +125,33 @@ ace/fast:
 	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/build
 .PHONY : ace/fast
 
+api.o: api.cpp.o
+
+.PHONY : api.o
+
+# target to build an object file
+api.cpp.o:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/api.cpp.o
+.PHONY : api.cpp.o
+
+api.i: api.cpp.i
+
+.PHONY : api.i
+
+# target to preprocess a source file
+api.cpp.i:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/api.cpp.i
+.PHONY : api.cpp.i
+
+api.s: api.cpp.s
+
+.PHONY : api.s
+
+# target to generate assembly for a file
+api.cpp.s:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/api.cpp.s
+.PHONY : api.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -161,6 +188,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... ace"
+	@echo "... api.o"
+	@echo "... api.i"
+	@echo "... api.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

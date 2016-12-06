@@ -61,10 +61,12 @@ public:
     }
 
     template <typename T>
+    inline auto GetRawPointer() -> typename std::decay<T>::type*
+        { return reinterpret_cast<typename std::decay<T>::type*>(m_ptr); }
+
+    template <typename T>
     inline auto GetPointer() -> typename std::decay<T>::type*
-    {
-        return TypeCompatible<T>() ? reinterpret_cast<typename std::decay<T>::type*>(m_ptr) : nullptr;
-    }
+        { return TypeCompatible<T>() ? GetRawPointer<T>() : nullptr; }
 
 private:
     // base class for an 'any' holder with pure virtual functions

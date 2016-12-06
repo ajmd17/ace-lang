@@ -160,6 +160,10 @@ void VM::InvokeFunction(StackValue &value, uint8_t num_args)
 
 void VM::HandleInstruction(uint8_t code)
 {
+    if (!m_state.good) {
+        return;
+    }
+
     switch (code) {
     case STORE_STATIC_STRING: {
         // get string length
@@ -221,6 +225,34 @@ void VM::HandleInstruction(uint8_t code)
         StackValue sv;
         sv.m_type = StackValue::TYPE_INFO;
         sv.m_value.type_info.m_size = size;
+
+      /*  // load (size) member names.
+        for (int i = 0; i < size; i++) {
+            // get string length
+            uint32_t len;
+            m_bs->Read(&len);
+
+            // read string based on length
+            char *str = new char[len + 1];
+            m_bs->Read(str, len);
+            str[len] = '\0';
+
+            // the value will be freed on
+            // the destructor call of m_state.m_static_memory
+            HeapValue *hv = new HeapValue();
+            hv->Assign(utf::Utf8String(str));
+
+            StackValue sv;
+            sv.m_type = StackValue::HEAP_POINTER;
+            sv.m_value.ptr = hv;
+
+            m_state.m_static_memory.Store(sv);
+
+            delete[] str;
+
+            // set the member of the type's name
+            Member &mb = 
+        } */
 
         m_state.m_static_memory.Store(sv);
 
@@ -408,7 +440,7 @@ void VM::HandleInstruction(uint8_t code)
             Object *objptr = nullptr;
             if ((objptr = hv->GetPointer<Object>()) != nullptr) {
                 assert(idx < objptr->GetSize() && "member index out of bounds");
-                m_state.m_exec_thread.m_regs[dst] = objptr->GetMember(idx);
+                m_state.m_exec_thread.m_regs[dst] = objptr->GetMember(idx).value;
             } else {
                 m_state.ThrowException(Exception(utf::Utf8String("not a standard object")));
             }
@@ -423,22 +455,38 @@ void VM::HandleInstruction(uint8_t code)
         uint8_t src;
         m_bs->Read(&src);
 
-        uint32_t idx;
-        m_bs->Read(&idx);
+        uint8_t idx_reg;
+        m_bs->Read(&idx_reg);
+
+        StackValue &idx_sv = m_state.m_exec_thread.m_regs[idx_reg];
 
         StackValue &sv = m_state.m_exec_thread.m_regs[src];
         assert(sv.m_type == StackValue::HEAP_POINTER && "source must be a pointer");
 
         HeapValue *hv = sv.m_value.ptr;
+
+        utf::Utf8String *str_ptr = nullptr;
+
         if (hv == nullptr) {
             m_state.ThrowException(Exception::NullReferenceException());
         } else {
-            Array *arrayptr = nullptr;
-            if ((arrayptr = hv->GetPointer<Array>()) != nullptr) {
-                assert(idx < arrayptr->GetSize() && "index out of bounds of array");
-                m_state.m_exec_thread.m_regs[dst] = arrayptr->AtIndex(idx);
+            if (IS_VALUE_INTEGER(idx_sv)) {
+                int64_t idx_i = GetIntFast(idx_sv);
+
+                Array *arrayptr = nullptr;
+                if ((arrayptr = hv->GetPointer<Array>()) != nullptr) {
+                    if (idx_i >= arrayptr->GetSize()) {
+                        m_state.ThrowException(Exception::OutOfBoundsException());
+                    } else {
+                        m_state.m_exec_thread.m_regs[dst] = arrayptr->AtIndex(idx_i);
+                    }
+                } else {
+                    m_state.ThrowException(Exception(utf::Utf8String("object is not an array")));
+                }
+            } else if (IS_VALUE_STRING(idx_sv, str_ptr)) {
+                m_state.ThrowException(Exception(utf::Utf8String("Map is not yet supported")));
             } else {
-                m_state.ThrowException(Exception(utf::Utf8String("object is not an array")));
+                m_state.ThrowException(Exception(utf::Utf8String("array index must be of type Int or String")));
             }
         }
 
@@ -519,7 +567,7 @@ void VM::HandleInstruction(uint8_t code)
             Object *objptr = nullptr;
             if ((objptr = hv->GetPointer<Object>()) != nullptr) {
                 assert(idx < objptr->GetSize() && "member index out of bounds");
-                objptr->GetMember(idx) = m_state.m_exec_thread.m_regs[src];
+                objptr->GetMember(idx).value = m_state.m_exec_thread.m_regs[src];
             } else {
                 m_state.ThrowException(Exception(utf::Utf8String("not a standard object")));
             }
@@ -546,8 +594,11 @@ void VM::HandleInstruction(uint8_t code)
         } else {
             Array *arrayptr = nullptr;
             if ((arrayptr = hv->GetPointer<Array>()) != nullptr) {
-                assert(idx < arrayptr->GetSize() && "index out of bounds of array");
-                arrayptr->AtIndex(idx) = m_state.m_exec_thread.m_regs[src];
+                if (idx >= arrayptr->GetSize()) {
+                    m_state.ThrowException(Exception::OutOfBoundsException());
+                } else {
+                    arrayptr->AtIndex(idx) = m_state.m_exec_thread.m_regs[src];
+                }
             } else {
                 m_state.ThrowException(Exception(utf::Utf8String("object is not an array")));
             }
@@ -914,9 +965,40 @@ void VM::HandleInstruction(uint8_t code)
         StackValue result;
         result.m_type = MATCH_TYPES(lhs, rhs);
 
-        if (lhs.m_type == StackValue::HEAP_POINTER) {
+        /*if (lhs.m_type == StackValue::HEAP_POINTER) {
+            Array *lhs_array = nullptr;
+
+            if ((lhs_array = lhs.m_value.ptr->GetPointer<Array>()) != nullptr) {
+                Array *rhs_array = nullptr;
+                if ((rhs_array = rhs.m_value.ptr->GetPointer<Array>()) != nullptr) {
+                    // array join operator
+                    // returns an array that has a size of length(lhs) + length(rhs)
+
+                    int lhs_size = lhs_array->GetSize();
+                    int rhs_size = rhs_array->GetSize();
+                    int res_size = (lhs_size > rhs_size) ? lhs_size : rhs_size;
+
+                    // allocate heap object
+                    HeapValue *hv = m_state.HeapAlloc();
+                    if (hv != nullptr) {
+                        hv->Assign(Array(res_size));
+                        // it's okay to use GetRawPointer because we know the type,
+                        // seeing as we just assigned it.
+                        Array *res_array = hv->GetRawPointer<Array>();
+                        // set elements
+                        
+
+                        // assign register value to the allocated object
+                        StackValue &sv = m_state.m_exec_thread.m_regs[dst];
+                        sv.m_type = StackValue::HEAP_POINTER;
+                        sv.m_value.ptr = hv;
+                    }
+                }
+            }
+
             
-        } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
+        } else */
+        if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
             int64_t left = GetValueInt64(lhs);
             int64_t right = GetValueInt64(rhs);
             int64_t result_value = left + right;
@@ -1152,6 +1234,7 @@ void VM::Execute()
     if (!m_state.good) {
         m_state.ThrowException(Exception("VM is in exception state, cannot continue"));
     }
+
     while (HasNextInstruction() && m_state.good) {
         uint8_t code;
         m_bs->Read(&code, 1);

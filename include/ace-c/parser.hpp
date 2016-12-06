@@ -25,6 +25,7 @@
 #include <ace-c/ast/ast_function_call.hpp>
 #include <ace-c/ast/ast_variable.hpp>
 #include <ace-c/ast/ast_member_access.hpp>
+#include <ace-c/ast/ast_array_access.hpp>
 #include <ace-c/ast/ast_true.hpp>
 #include <ace-c/ast/ast_false.hpp>
 #include <ace-c/ast/ast_null.hpp>
@@ -62,6 +63,11 @@ private:
     const Token *ExpectOperator(const Operator *op, bool read = false);
     const SourceLocation &CurrentLocation() const;
 
+    /** Skip past newlines and semicolons.
+        Returns true if any were hit.
+    */
+    void SkipStatementTerminators();
+
     int OperatorPrecedence(const Operator *&out);
 
     std::shared_ptr<AstStatement> ParseStatement();
@@ -73,6 +79,7 @@ private:
     std::shared_ptr<AstIdentifier> ParseIdentifier();
     std::shared_ptr<AstFunctionCall> ParseFunctionCall();
     std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
+    std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
     std::shared_ptr<AstNull> ParseNull();

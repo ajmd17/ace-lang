@@ -92,7 +92,6 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
     }
 
     if (!has_side_effects) {
-        
         // unclaim register for array
         visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         // get active register
@@ -140,5 +139,6 @@ bool AstArrayExpression::MayHaveSideEffects() const
 
 ObjectType AstArrayExpression::GetObjectType() const
 {
+    // TODO: determine the held type?
     return ObjectType::MakeArrayType(ObjectType::type_builtin_any);
 }

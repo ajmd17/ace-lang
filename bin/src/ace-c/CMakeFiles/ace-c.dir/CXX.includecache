@@ -114,6 +114,12 @@ memory
 vector
 -
 
+../include/ace-c/ast/ast_generated_statement.hpp
+ace-c/ast/ast_statement.hpp
+-
+functional
+-
+
 ../include/ace-c/ast/ast_identifier.hpp
 ace-c/ast/ast_expression.hpp
 -
@@ -381,6 +387,8 @@ ostream
 -
 cstring
 -
+iostream
+-
 
 ../include/ace-c/emit/instruction_stream.hpp
 ace-c/emit/instruction.hpp
@@ -396,6 +404,8 @@ cstdint
 
 ../include/ace-c/emit/static_object.hpp
 string
+-
+vector
 -
 
 ../include/ace-c/error_list.hpp
@@ -642,7 +652,15 @@ algorithm
 string
 -
 
+../include/common/hasher.hpp
+cstdint
+-
+
 ../include/common/instructions.hpp
+
+../include/common/my_assert.hpp
+iostream
+-
 
 ../include/common/str_util.hpp
 string
@@ -733,7 +751,7 @@ ace-c/module.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp
@@ -751,7 +769,7 @@ ace-c/configuration.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp
@@ -792,8 +810,6 @@ ace-c/configuration.hpp
 common/instructions.hpp
 -
 iostream
--
-cassert
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp
@@ -879,7 +895,7 @@ ace-c/emit/instruction.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 iostream
 -
@@ -899,7 +915,7 @@ ace-c/configuration.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp
@@ -919,9 +935,13 @@ ace-c/configuration.hpp
 -
 common/instructions.hpp
 -
+common/my_assert.hpp
+-
 vector
 -
-cassert
+
+/Users/andrew/ace-lang/src/ace-c/ast/ast_generated_statement.cpp
+ace-c/ast/ast_generated_statement.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp
@@ -933,7 +953,7 @@ ace-c/module.hpp
 -
 iostream
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp
@@ -941,11 +961,11 @@ ace-c/ast/ast_if_statement.hpp
 -
 ace-c/ast_visitor.hpp
 -
+ace-c/compiler.hpp
+-
 ace-c/emit/instruction.hpp
 -
 ace-c/emit/static_object.hpp
--
-ace-c/configuration.hpp
 -
 common/instructions.hpp
 -
@@ -1017,13 +1037,19 @@ ace-c/ast/ast_variable.hpp
 -
 ace-c/ast/ast_function_call.hpp
 -
+ace-c/ast/ast_generated_statement.hpp
+-
 ace-c/ast_visitor.hpp
+-
+ace-c/compiler.hpp
 -
 ace-c/module.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
+-
+common/hasher.hpp
 -
 iostream
 -
@@ -1065,7 +1091,7 @@ common/instructions.hpp
 -
 iostream
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp
@@ -1077,7 +1103,7 @@ ace-c/emit/instruction.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp
@@ -1101,7 +1127,7 @@ ace-c/module.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp
@@ -1171,6 +1197,10 @@ ace-c/module.hpp
 -
 ace-c/emit/static_object.hpp
 -
+common/hasher.hpp
+-
+iostream
+-
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp
 ace-c/ast/ast_type_specification.hpp
@@ -1203,7 +1233,7 @@ ace-c/configuration.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp
@@ -1221,7 +1251,7 @@ ace-c/emit/instruction.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 iostream
 -
@@ -1241,7 +1271,7 @@ ace-c/configuration.hpp
 -
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 iostream
 -
@@ -1283,9 +1313,11 @@ ace-c/module.hpp
 -
 ace-c/ast/ast_module_declaration.hpp
 -
+ace-c/configuration.hpp
+-
 common/instructions.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp
@@ -1331,6 +1363,8 @@ iostream
 /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp
 ace-c/emit/static_object.hpp
 -
+common/my_assert.hpp
+-
 cstring
 -
 
@@ -1351,7 +1385,7 @@ ace-c/configuration.hpp
 -
 unordered_set
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/keywords.cpp
@@ -1435,7 +1469,7 @@ ace-c/ast/ast_variable.hpp
 -
 ace-c/ast/ast_constant.hpp
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/parser.cpp
@@ -1446,6 +1480,8 @@ memory
 cstdlib
 -
 cstdio
+-
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/scope.cpp

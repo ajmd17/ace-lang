@@ -14,6 +14,7 @@ public:
     static Exception NullReferenceException();
     static Exception DivisionByZeroException();
     static Exception OutOfBoundsException();
+    static Exception MemberNotFoundException();
 
 private:
     const utf::Utf8String m_str;

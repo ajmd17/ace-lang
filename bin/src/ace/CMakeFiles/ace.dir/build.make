@@ -60,15 +60,15 @@ include src/ace/CMakeFiles/ace.dir/flags.make
 src/ace/CMakeFiles/ace.dir/api.cpp.o: src/ace/CMakeFiles/ace.dir/flags.make
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../src/ace/api.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/ace/CMakeFiles/ace.dir/api.cpp.o"
-	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ace.dir/api.cpp.o -c /Users/andrew/ace-lang/src/ace/api.cpp
+	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   $(CXX_DEFINES) -D__FILENAME__=api.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ace.dir/api.cpp.o -c /Users/andrew/ace-lang/src/ace/api.cpp
 
 src/ace/CMakeFiles/ace.dir/api.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ace.dir/api.cpp.i"
-	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/andrew/ace-lang/src/ace/api.cpp > CMakeFiles/ace.dir/api.cpp.i
+	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=api.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/andrew/ace-lang/src/ace/api.cpp > CMakeFiles/ace.dir/api.cpp.i
 
 src/ace/CMakeFiles/ace.dir/api.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ace.dir/api.cpp.s"
-	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/andrew/ace-lang/src/ace/api.cpp -o CMakeFiles/ace.dir/api.cpp.s
+	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=api.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/andrew/ace-lang/src/ace/api.cpp -o CMakeFiles/ace.dir/api.cpp.s
 
 src/ace/CMakeFiles/ace.dir/api.cpp.o.requires:
 
@@ -84,15 +84,15 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o.provides.build: src/ace/CMakeFiles/ace.dir/
 src/ace/CMakeFiles/ace.dir/main.cpp.o: src/ace/CMakeFiles/ace.dir/flags.make
 src/ace/CMakeFiles/ace.dir/main.cpp.o: ../src/ace/main.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object src/ace/CMakeFiles/ace.dir/main.cpp.o"
-	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ace.dir/main.cpp.o -c /Users/andrew/ace-lang/src/ace/main.cpp
+	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   $(CXX_DEFINES) -D__FILENAME__=main.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ace.dir/main.cpp.o -c /Users/andrew/ace-lang/src/ace/main.cpp
 
 src/ace/CMakeFiles/ace.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ace.dir/main.cpp.i"
-	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/andrew/ace-lang/src/ace/main.cpp > CMakeFiles/ace.dir/main.cpp.i
+	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=main.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/andrew/ace-lang/src/ace/main.cpp > CMakeFiles/ace.dir/main.cpp.i
 
 src/ace/CMakeFiles/ace.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ace.dir/main.cpp.s"
-	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/andrew/ace-lang/src/ace/main.cpp -o CMakeFiles/ace.dir/main.cpp.s
+	cd /Users/andrew/ace-lang/bin/src/ace && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=main.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/andrew/ace-lang/src/ace/main.cpp -o CMakeFiles/ace.dir/main.cpp.s
 
 src/ace/CMakeFiles/ace.dir/main.cpp.o.requires:
 

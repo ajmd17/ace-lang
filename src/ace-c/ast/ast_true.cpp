@@ -108,7 +108,7 @@ std::shared_ptr<AstConstant> AstTrue::operator>>(
 std::shared_ptr<AstConstant> AstTrue::operator&&(
         AstConstant *right) const
 {
-    bool right_true = right->IsTrue();
+    int right_true = right->IsTrue();
     if (right_true == 1) {
         return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     } else if (right_true == 0) {

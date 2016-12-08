@@ -2,8 +2,9 @@
 #define STATIC_MEMORY_HPP
 
 #include <ace-vm/stack_value.hpp>
+#include <common/my_assert.hpp>
 
-#include <cassert>
+#include <utility>
 
 class StaticMemory {
 public:
@@ -14,23 +15,26 @@ public:
     StaticMemory(const StaticMemory &other) = delete;
     ~StaticMemory();
 
+    /** Delete everything in static memory */
+    void Purge();
+
     inline StackValue &operator[](size_t index)
     {
-        assert(index < static_size && "out of bounds");
+        ASSERT_MSG(index < static_size, "out of bounds");
         return m_data[index];
     }
 
     inline const StackValue &operator[](size_t index) const
     {
-        assert(index < static_size && "out of bounds");
+        ASSERT_MSG(index < static_size, "out of bounds");
         return m_data[index];
     }
 
-    // push a value to the stack
-    inline void Store(const StackValue &value)
+    // move a value to static memory
+    inline void Store(StackValue &&value)
     {
-        assert(m_sp < static_size && "not enough static memory");
-        m_data[m_sp++] = value;
+        ASSERT_MSG(m_sp < static_size, "not enough static memory");
+        m_data[m_sp++] = std::move(value);
     }
 
 private:

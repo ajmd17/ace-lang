@@ -353,6 +353,8 @@ ostream
 -
 cstring
 -
+iostream
+-
 
 ../include/ace-c/emit/instruction_stream.hpp
 ace-c/emit/instruction.hpp
@@ -368,6 +370,8 @@ cstdint
 
 ../include/ace-c/emit/static_object.hpp
 string
+-
+vector
 -
 
 ../include/ace-c/error_list.hpp
@@ -619,9 +623,9 @@ ace-vm/stack_value.hpp
 -
 
 ../include/ace-vm/bytecode_stream.hpp
-iostream
+common/my_assert.hpp
 -
-cassert
+iostream
 -
 
 ../include/ace-vm/exception.hpp
@@ -647,13 +651,15 @@ cstdlib
 ../include/ace-vm/object.hpp
 ace-vm/stack_value.hpp
 -
+cstdint
+-
 
 ../include/ace-vm/stack_memory.hpp
 ace-vm/stack_value.hpp
 -
-array
+common/my_assert.hpp
 -
-cassert
+array
 -
 
 ../include/ace-vm/stack_value.hpp
@@ -669,7 +675,9 @@ cstdint
 ../include/ace-vm/static_memory.hpp
 ace-vm/stack_value.hpp
 -
-cassert
+common/my_assert.hpp
+-
+utility
 -
 
 ../include/ace-vm/vm.hpp
@@ -712,6 +720,10 @@ algorithm
 string
 -
 
+../include/common/my_assert.hpp
+iostream
+-
+
 ../include/common/str_util.hpp
 string
 -
@@ -751,7 +763,7 @@ memory
 -
 vector
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace/main.cpp
@@ -787,7 +799,7 @@ sstream
 -
 chrono
 -
-cassert
+common/my_assert.hpp
 -
 cstdio
 -

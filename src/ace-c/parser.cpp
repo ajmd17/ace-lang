@@ -3,6 +3,7 @@
 #include <memory>
 #include <cstdlib>
 #include <cstdio>
+#include <common/my_assert.hpp>
 
 Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream,
         CompilationUnit *compilation_unit)
@@ -164,18 +165,18 @@ void Parser::SkipStatementTerminators()
 void Parser::Parse(bool expect_module_decl)
 {
     if (expect_module_decl) {
-        std::shared_ptr<AstModuleDeclaration> module_ast(nullptr);
+        std::shared_ptr<AstModuleDeclaration> module_ast;
 
         // all source code files must start with module declaration
         const Token *module_decl = ExpectKeyword(Keyword_module, true);
         if (module_decl != nullptr) {
             const Token *module_name = Expect(Token::TokenType::Token_identifier, true);
-            if (module_name != nullptr) {
-                module_ast.reset(new AstModuleDeclaration(
-                    module_name->GetValue(), module_decl->GetLocation()));
+            ASSERT(module_name != nullptr);
 
-                m_ast_iterator->Push(module_ast);
-            }
+            module_ast.reset(new AstModuleDeclaration(
+                module_name->GetValue(), module_decl->GetLocation()));
+
+            m_ast_iterator->Push(module_ast);
         }
     }
 

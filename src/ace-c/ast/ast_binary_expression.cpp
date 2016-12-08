@@ -19,7 +19,6 @@
 #include <common/instructions.hpp>
 
 #include <iostream>
-#include <cassert>
 
 /** Attemps to evaluate the optimized expression at compile-time. */
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left,

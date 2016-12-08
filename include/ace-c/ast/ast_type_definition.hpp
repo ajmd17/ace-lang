@@ -18,6 +18,7 @@ public:
     inline const std::string &GetName() const { return m_name; }
     inline const std::vector<std::shared_ptr<AstVariableDeclaration>>
         &GetMembers() const { return m_members; }
+    inline int GetNumMembers() const { return m_num_members; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;

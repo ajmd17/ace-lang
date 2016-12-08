@@ -15,6 +15,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp" "/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir/stack_memory.cpp.o"
   "/Users/andrew/ace-lang/src/ace-vm/stack_value.cpp" "/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir/stack_value.cpp.o"
   "/Users/andrew/ace-lang/src/ace-vm/static_memory.cpp" "/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir/static_memory.cpp.o"
+  "/Users/andrew/ace-lang/src/ace-vm/type_info.cpp" "/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir/type_info.cpp.o"
   "/Users/andrew/ace-lang/src/ace-vm/vm.cpp" "/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir/vm.cpp.o"
   "/Users/andrew/ace-lang/src/ace-vm/vm_state.cpp" "/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir/vm_state.cpp.o"
   )

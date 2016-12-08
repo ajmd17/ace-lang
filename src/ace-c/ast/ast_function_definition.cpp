@@ -6,8 +6,7 @@
 #include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
-
-#include <cassert>
+#include <common/my_assert.hpp>
 
 AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
     const std::shared_ptr<AstFunctionExpression> &expr,
@@ -19,7 +18,7 @@ AstFunctionDefinition::AstFunctionDefinition(const std::string &name,
 
 void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 {
-    assert(m_expr != nullptr);
+    ASSERT(m_expr != nullptr);
     m_expr->Visit(visitor, mod);
 
     AstDeclaration::Visit(visitor, mod);

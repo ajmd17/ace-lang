@@ -1,10 +1,96 @@
 #include <ace-c/compiler.hpp>
 #include <ace-c/module.hpp>
 #include <ace-c/ast/ast_module_declaration.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
+#include <common/my_assert.hpp>
 
-#include <cassert>
+void Compiler::CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info)
+{
+    ASSERT(info.cond != nullptr && info.then_part != nullptr);
+
+    uint8_t rp;
+
+    // the label to jump to the very end
+    StaticObject end_label;
+    end_label.m_type = StaticObject::TYPE_LABEL;
+    end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+    // the label to jump to the else-part
+    StaticObject else_label;
+    else_label.m_type = StaticObject::TYPE_LABEL;
+    else_label.m_id = (info.else_part != nullptr) ? visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId() : -1;
+
+    // get current register index
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    // build the conditional
+    info.cond->Build(visitor, mod);
+    // compare the conditional to 0
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(CMPZ, rp);
+
+    // get current register index
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // load the label address from static memory into register 0
+    if (info.else_part != nullptr) {
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        }
+    } else {
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)end_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        }
+    }
+
+    // jump if condition is false or zero.
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(JE, rp);
+
+    // enter the block
+    info.then_part->Build(visitor, mod);
+
+    if (info.else_part != nullptr) {
+        // jump to the very end now that we've accepted the if-block
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        // get current register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // load the label address from static memory into register 1
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        }
+        // jump if they are equal: i.e the value is false
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(JMP, rp);
+        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        // get current register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // set the label's position to where the else-block would be
+        else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
+        info.else_part->Build(visitor, mod);
+    }
+
+    // set the label's position to after the block,
+    // so we can skip it if the condition is false
+    end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+}
 
 void Compiler::LoadLeftThenRight(AstVisitor *visitor, Module *mod, Compiler::ExprInfo info)
 {
@@ -32,7 +118,8 @@ void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::Exp
 
     // if left is a function call, we have to move rhs to the stack!
     // otherwise, the function call will overwrite what's in register 0.
-    int stack_size_before;
+    int stack_size_before = 0;
+
     if (left_side_effects) {
         // store value of the right hand side on the stack
         visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(PUSH, rp);
@@ -54,7 +141,7 @@ void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::Exp
         // load from stack
         int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         int diff = stack_size_after - stack_size_before;
-        assert(diff == 1);
+        ASSERT(diff == 1);
 
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
@@ -68,7 +155,7 @@ void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::Exp
 
 void Compiler::LoadLeftAndStore(AstVisitor *visitor, Module *mod, Compiler::ExprInfo info)
 {
-    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    uint8_t rp;
 
     // load left-hand side into register 0
     info.left->Build(visitor, mod);
@@ -94,7 +181,7 @@ void Compiler::LoadLeftAndStore(AstVisitor *visitor, Module *mod, Compiler::Expr
     int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int diff = stack_size_after - stack_size_before;
 
-    assert(diff == 1);
+    ASSERT(diff == 1);
 
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);

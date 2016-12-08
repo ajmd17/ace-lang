@@ -4,7 +4,7 @@
 
 #include <common/instructions.hpp>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 
 AstParameter::AstParameter(const std::string &name, bool is_variadic,
     const SourceLocation &location)
@@ -24,7 +24,7 @@ void AstParameter::Visit(AstVisitor *visitor, Module *mod)
 
 void AstParameter::Build(AstVisitor *visitor, Module *mod)
 {
-    assert(m_identifier != nullptr);
+    ASSERT(m_identifier != nullptr);
 
     // get current stack size
     int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();

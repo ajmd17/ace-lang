@@ -4,6 +4,7 @@
 #include <vector>
 #include <ostream>
 #include <cstring>
+#include <iostream>
 
 template <class...Ts>
 struct Instruction {
@@ -23,6 +24,15 @@ protected:
         size_t length = std::strlen(str);
         std::vector<char> operand(length);
         std::memcpy(&operand[0], str, length);
+        m_data.push_back(operand);
+    }
+
+    template <typename T>
+    void Accept(std::vector<T> ts)
+    {
+        std::vector<char> operand;
+        operand.resize(sizeof(T) * ts.size());
+        std::memcpy(&operand[0], &ts[0], sizeof(T) * ts.size());
         m_data.push_back(operand);
     }
 

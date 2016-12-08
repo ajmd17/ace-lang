@@ -69,6 +69,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o
  ../include/ace-vm/vm.hpp
  ../include/ace-vm/vm_state.hpp
  ../include/ace/api.hpp
+ ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace/api.cpp
 src/ace/CMakeFiles/ace.dir/main.cpp.o
@@ -150,6 +151,7 @@ src/ace/CMakeFiles/ace.dir/main.cpp.o
  ../include/ace-vm/vm_state.hpp
  ../include/ace/api.hpp
  ../include/common/cli_args.hpp
+ ../include/common/my_assert.hpp
  ../include/common/str_util.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace/main.cpp

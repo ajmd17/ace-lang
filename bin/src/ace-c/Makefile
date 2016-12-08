@@ -476,6 +476,33 @@ ast/ast_function_expression.cpp.s:
 	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.s
 .PHONY : ast/ast_function_expression.cpp.s
 
+ast/ast_generated_statement.o: ast/ast_generated_statement.cpp.o
+
+.PHONY : ast/ast_generated_statement.o
+
+# target to build an object file
+ast/ast_generated_statement.cpp.o:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o
+.PHONY : ast/ast_generated_statement.cpp.o
+
+ast/ast_generated_statement.i: ast/ast_generated_statement.cpp.i
+
+.PHONY : ast/ast_generated_statement.i
+
+# target to preprocess a source file
+ast/ast_generated_statement.cpp.i:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.i
+.PHONY : ast/ast_generated_statement.cpp.i
+
+ast/ast_generated_statement.s: ast/ast_generated_statement.cpp.s
+
+.PHONY : ast/ast_generated_statement.s
+
+# target to generate assembly for a file
+ast/ast_generated_statement.cpp.s:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.s
+.PHONY : ast/ast_generated_statement.cpp.s
+
 ast/ast_identifier.o: ast/ast_identifier.cpp.o
 
 .PHONY : ast/ast_identifier.o
@@ -1982,6 +2009,9 @@ help:
 	@echo "... ast/ast_function_expression.o"
 	@echo "... ast/ast_function_expression.i"
 	@echo "... ast/ast_function_expression.s"
+	@echo "... ast/ast_generated_statement.o"
+	@echo "... ast/ast_generated_statement.i"
+	@echo "... ast/ast_generated_statement.s"
 	@echo "... ast/ast_identifier.o"
 	@echo "... ast/ast_identifier.i"
 	@echo "... ast/ast_identifier.s"

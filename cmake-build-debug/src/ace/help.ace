@@ -1,0 +1,13 @@
+module Help
+
+type T {
+  i: String
+}
+
+let i = 0
+while i < 2 {
+  let t: T
+  i += 1
+}
+
+

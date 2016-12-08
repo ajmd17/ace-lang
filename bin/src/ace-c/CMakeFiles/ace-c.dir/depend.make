@@ -92,6 +92,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o: ../include/ace-c/scop
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_access.cpp.o: ../src/ace-c/ast/ast_array_access.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o: ../include/ace-c/ast/ast_array_expression.hpp
@@ -114,6 +115,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o: ../include/ace-c/
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_array_expression.cpp.o: ../src/ace-c/ast/ast_array_expression.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_binary_expression.cpp.o: ../include/ace-c/ast/ast_array_access.hpp
@@ -293,6 +295,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o: ../include/ace-c/tre
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o: ../include/ace-c/type_contract.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o: ../include/ace-c/typedefs.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o: ../src/ace-c/ast/ast_function_call.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o: ../include/ace-c/ast/ast_block.hpp
@@ -324,6 +327,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o: ../include/ace
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o: ../include/ace-c/type_contract.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o: ../src/ace-c/ast/ast_function_definition.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/ace-c/ast/ast_block.hpp
@@ -354,7 +358,13 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/ace
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/ace-c/type_contract.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../src/ace-c/ast/ast_function_expression.cpp
+
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../include/ace-c/ast/ast_generated_statement.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../include/ace-c/ast/ast_statement.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../include/ace-c/source_location.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../src/ace-c/ast/ast_generated_statement.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/ast/ast_expression.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/ast/ast_identifier.hpp
@@ -374,6 +384,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/object
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/scope.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/tree.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../src/ace-c/ast/ast_identifier.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/ast/ast_block.hpp
@@ -383,8 +394,8 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/ast/
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/ast_iterator.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/ast_visitor.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/compilation_unit.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/compiler.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/compiler_error.hpp
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/configuration.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/emit/instruction.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o: ../include/ace-c/emit/static_object.hpp
@@ -515,6 +526,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../src/ace-c/ast/ast_
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_expression.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_function_call.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_generated_statement.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_identifier.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_member_access.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_statement.hpp
@@ -522,6 +534,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast_iterator.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast_visitor.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/compilation_unit.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/compiler.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/compiler_error.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/emit/instruction.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
@@ -534,7 +547,9 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/obj
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/scope.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/tree.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/common/hasher.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../src/ace-c/ast/ast_member_access.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_module_declaration.cpp.o: ../include/ace-c/ast/ast_declaration.hpp
@@ -605,6 +620,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_object.cpp.o: ../include/ace-c/scope.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_object.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_object.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_object.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_object.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_object.cpp.o: ../src/ace-c/ast/ast_object.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_parameter.cpp.o: ../include/ace-c/ast/ast_declaration.hpp
@@ -632,6 +648,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_parameter.cpp.o: ../include/ace-c/source_
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_parameter.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_parameter.cpp.o: ../include/ace-c/type_contract.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_parameter.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_parameter.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_parameter.cpp.o: ../src/ace-c/ast/ast_parameter.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_print_statement.cpp.o: ../include/ace-c/ast/ast_expression.hpp
@@ -675,6 +692,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_return_statement.cpp.o: ../include/ace-c/
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_return_statement.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_return_statement.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_return_statement.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_return_statement.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_return_statement.cpp.o: ../src/ace-c/ast/ast_return_statement.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_statement.cpp.o: ../include/ace-c/ast/ast_statement.hpp
@@ -805,6 +823,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/s
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/typedefs.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/common/hasher.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../src/ace-c/ast/ast_type_definition.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_specification.cpp.o: ../include/ace-c/ast/ast_expression.hpp
@@ -855,6 +874,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_unary_expression.cpp.o: ../include/ace-c/
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_unary_expression.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_unary_expression.cpp.o: ../include/ace-c/typedefs.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_unary_expression.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_unary_expression.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_unary_expression.cpp.o: ../src/ace-c/ast/ast_unary_expression.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_undefined.cpp.o: ../include/ace-c/ast/ast_constant.hpp
@@ -888,6 +908,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable.cpp.o: ../include/ace-c/source_l
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable.cpp.o: ../include/ace-c/typedefs.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable.cpp.o: ../src/ace-c/ast/ast_variable.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../include/ace-c/ast/ast_constant.hpp
@@ -916,6 +937,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../include/ac
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../include/ace-c/typedefs.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../src/ace-c/ast/ast_variable_declaration.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/ast/ast_constant.hpp
@@ -1000,6 +1022,7 @@ src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/ast_visitor.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/compilation_unit.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/compiler.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/compiler_error.hpp
+src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/configuration.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/emit/instruction.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/emit/static_object.hpp
@@ -1012,6 +1035,7 @@ src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/scope.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compiler.cpp.o: ../src/ace-c/compiler.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/compiler_error.cpp.o: ../include/ace-c/compiler_error.hpp
@@ -1043,6 +1067,7 @@ src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../include/common/
 src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../src/ace-c/emit/instruction_stream.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/emit/static_object.cpp.o: ../include/ace-c/emit/static_object.hpp
+src/ace-c/CMakeFiles/ace-c.dir/emit/static_object.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/emit/static_object.cpp.o: ../src/ace-c/emit/static_object.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/error_list.cpp.o: ../include/ace-c/compiler_error.hpp
@@ -1064,6 +1089,7 @@ src/ace-c/CMakeFiles/ace-c.dir/identifier_table.cpp.o: ../include/ace-c/identifi
 src/ace-c/CMakeFiles/ace-c.dir/identifier_table.cpp.o: ../include/ace-c/identifier_table.hpp
 src/ace-c/CMakeFiles/ace-c.dir/identifier_table.cpp.o: ../include/ace-c/object_type.hpp
 src/ace-c/CMakeFiles/ace-c.dir/identifier_table.cpp.o: ../include/ace-c/source_location.hpp
+src/ace-c/CMakeFiles/ace-c.dir/identifier_table.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/identifier_table.cpp.o: ../src/ace-c/identifier_table.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/keywords.cpp.o: ../include/ace-c/keywords.hpp
@@ -1192,6 +1218,7 @@ src/ace-c/CMakeFiles/ace-c.dir/optimizer.cpp.o: ../include/ace-c/scope.hpp
 src/ace-c/CMakeFiles/ace-c.dir/optimizer.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/optimizer.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/optimizer.cpp.o: ../include/ace-c/typedefs.hpp
+src/ace-c/CMakeFiles/ace-c.dir/optimizer.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/optimizer.cpp.o: ../src/ace-c/optimizer.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o: ../include/ace-c/ast/ast_array_access.hpp
@@ -1250,6 +1277,7 @@ src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o: ../include/ace-c/token_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o: ../include/ace-c/type_contract.hpp
 src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o: ../include/ace-c/typedefs.hpp
+src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/parser.cpp.o: ../src/ace-c/parser.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/scope.cpp.o: ../include/ace-c/ast/ast_expression.hpp

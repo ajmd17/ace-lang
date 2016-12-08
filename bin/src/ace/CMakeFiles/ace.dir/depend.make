@@ -68,6 +68,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-vm/static_memory.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-vm/vm.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-vm/vm_state.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace/api.hpp
+src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/common/my_assert.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/common/utf8.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../src/ace/api.cpp
 
@@ -149,6 +150,7 @@ src/ace/CMakeFiles/ace.dir/main.cpp.o: ../include/ace-vm/vm.hpp
 src/ace/CMakeFiles/ace.dir/main.cpp.o: ../include/ace-vm/vm_state.hpp
 src/ace/CMakeFiles/ace.dir/main.cpp.o: ../include/ace/api.hpp
 src/ace/CMakeFiles/ace.dir/main.cpp.o: ../include/common/cli_args.hpp
+src/ace/CMakeFiles/ace.dir/main.cpp.o: ../include/common/my_assert.hpp
 src/ace/CMakeFiles/ace.dir/main.cpp.o: ../include/common/str_util.hpp
 src/ace/CMakeFiles/ace.dir/main.cpp.o: ../include/common/utf8.hpp
 src/ace/CMakeFiles/ace.dir/main.cpp.o: ../src/ace/main.cpp

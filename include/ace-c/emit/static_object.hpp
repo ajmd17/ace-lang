@@ -2,6 +2,7 @@
 #define STATIC_OBJECT_HPP
 
 #include <string>
+#include <vector>
 
 struct StaticFunction {
     uint32_t m_addr;
@@ -11,12 +12,13 @@ struct StaticFunction {
 struct StaticTypeInfo {
     uint8_t m_size;
     char *m_name;
+    std::vector<uint32_t> m_hashes;
 };
 
 struct StaticObject {
     int m_id;
 
-    union {
+    /*union*/ struct {
         int lbl;
         char *str;
         StaticFunction func;

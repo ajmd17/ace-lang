@@ -29,7 +29,7 @@ enum Instructions : char {
     STORE_STATIC_STRING,   // str  [u32 len, i8[] str]
     STORE_STATIC_ADDRESS,  // addr [@ addr]
     STORE_STATIC_FUNCTION, // func [@ addr, u8 nargs]
-    STORE_STATIC_TYPE,     // type [u16 size, [u8 len, i8[] name]]
+    STORE_STATIC_TYPE,     // type [u16 size, u32... hashes]
 
     /* Load a value into a register */
     LOAD_I32,      // load_i32      [% reg, i32 val]
@@ -42,8 +42,9 @@ enum Instructions : char {
     LOAD_STRING,   // load_str      [% reg, u32 len, i8[] str]
     LOAD_ADDR,     // load_addr     [% reg, @ addr]
     LOAD_FUNC,     // load_func     [% reg, @ addr, u8 nargs]
-    LOAD_TYPE,     // load_type     [% reg, u16 size, [u8 len, i8[] name]]
+    LOAD_TYPE,     // load_type     [% reg, u16 size, u32... hashes]
     LOAD_MEM,      // load_mem      [% reg, % src, u8 idx]
+    LOAD_MEM_HASH, // load_mem_hash [% reg, % src, u32 hash]
     LOAD_ARRAYIDX, // load_arrayidx [% reg, % src, % idx]
     LOAD_NULL,     // load_null     [% reg]
     LOAD_TRUE,     // load_true     [% reg]
@@ -59,6 +60,12 @@ enum Instructions : char {
     MOV_ARRAYIDX,   // mov_arrayidx [% dst_array, u32 dst_idx, %src]
     /* Copy register value to another register */
     MOV_REG,        // mov_reg      [% dst, % src]
+
+    /* Check if the object in the register has a member the hash
+       If it is found, the register `reg` will hold the loaded object.
+       If not, it will instead hold null
+    */
+    HAS_MEM_HASH, // has_mem_hash [% reg, % src, u32 hash]
 
     /* Push a value from register to the stack */
     PUSH, // push [% src]

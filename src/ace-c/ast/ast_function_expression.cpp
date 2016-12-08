@@ -7,9 +7,9 @@
 #include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
+#include <common/my_assert.hpp>
 
 #include <vector>
-#include <cassert>
 
 AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<AstParameter>> &parameters,
     const std::shared_ptr<AstTypeSpecification> &type_specification,
@@ -99,7 +99,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
 void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 {
-    assert(m_block != nullptr);
+    ASSERT(m_block != nullptr);
 
     // the properties of this function
     StaticFunction sf;
@@ -203,7 +203,8 @@ int AstFunctionExpression::IsTrue() const
 
 bool AstFunctionExpression::MayHaveSideEffects() const
 {
-    return false;
+    // changed to true because it affects registers
+    return true;
 }
 
 ObjectType AstFunctionExpression::GetObjectType() const

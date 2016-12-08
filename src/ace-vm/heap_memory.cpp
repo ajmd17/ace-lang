@@ -21,11 +21,19 @@ Heap::Heap()
 
 Heap::~Heap()
 {
+    // purge the heap on destructor
+    Purge();
+}
+
+void Heap::Purge()
+{
     // clean up all allocated objects
     while (m_head != nullptr) {
         HeapNode *tmp = m_head;
         m_head = tmp->before;
         delete tmp;
+
+        m_num_objects--;
     }
 }
 

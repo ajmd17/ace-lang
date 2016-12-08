@@ -17,9 +17,9 @@ ace-vm/stack_value.hpp
 -
 
 ../include/ace-vm/bytecode_stream.hpp
-iostream
+common/my_assert.hpp
 -
-cassert
+iostream
 -
 
 ../include/ace-vm/exception.hpp
@@ -45,13 +45,15 @@ cstdlib
 ../include/ace-vm/object.hpp
 ace-vm/stack_value.hpp
 -
+cstdint
+-
 
 ../include/ace-vm/stack_memory.hpp
 ace-vm/stack_value.hpp
 -
-array
+common/my_assert.hpp
 -
-cassert
+array
 -
 
 ../include/ace-vm/stack_value.hpp
@@ -67,7 +69,13 @@ cstdint
 ../include/ace-vm/static_memory.hpp
 ace-vm/stack_value.hpp
 -
-cassert
+common/my_assert.hpp
+-
+utility
+-
+
+../include/ace-vm/type_info.hpp
+common/my_assert.hpp
 -
 
 ../include/ace-vm/vm.hpp
@@ -95,6 +103,10 @@ ace-vm/exception.hpp
 -
 
 ../include/common/instructions.hpp
+
+../include/common/my_assert.hpp
+iostream
+-
 
 ../include/common/utf8.hpp
 iostream
@@ -131,7 +143,7 @@ fstream
 -
 chrono
 -
-cassert
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-vm/array.cpp
@@ -163,6 +175,8 @@ ace-vm/ace-vm.hpp
 /Users/andrew/ace-lang/src/ace-vm/object.cpp
 ace-vm/object.hpp
 -
+cstring
+-
 
 /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp
 ace-vm/stack_memory.hpp
@@ -184,6 +198,12 @@ cinttypes
 ace-vm/static_memory.hpp
 -
 
+/Users/andrew/ace-lang/src/ace-vm/type_info.cpp
+ace-vm/type_info.hpp
+-
+cstring
+-
+
 /Users/andrew/ace-lang/src/ace-vm/vm.cpp
 ace-vm/vm.hpp
 -
@@ -195,6 +215,8 @@ ace-vm/array.hpp
 -
 ace-vm/object.hpp
 -
+ace-vm/type_info.hpp
+-
 common/instructions.hpp
 -
 common/utf8.hpp
@@ -203,7 +225,7 @@ algorithm
 -
 cstdio
 -
-cassert
+common/my_assert.hpp
 -
 cinttypes
 -

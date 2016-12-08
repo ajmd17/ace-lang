@@ -4,11 +4,11 @@
 #include <ace-c/ast/ast_variable.hpp>
 #include <ace-c/ast/ast_constant.hpp>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 
 void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor, Module *mod)
 {
-    assert(expr != nullptr);
+    ASSERT(expr != nullptr);
 
     expr->Optimize(visitor, mod);
 

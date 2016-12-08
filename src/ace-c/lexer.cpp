@@ -44,7 +44,9 @@ void Lexer::Analyze()
         const SourceLocation location = m_source_location;
         if (SkipWhitespace()) {
             // add the `newline` statement terminator if not a continuation token
-            if (!token.IsContinuationToken()) {
+            if (token.GetType() != Token::TokenType::Token_empty && 
+                token.GetType() != Token::TokenType::Token_newline && 
+                !token.IsContinuationToken()) {
                 m_token_stream->Push(Token(Token::TokenType::Token_newline, "newline", location));
             }
         }
@@ -355,7 +357,7 @@ Token Lexer::ReadLineComment()
     }
 
     // read until newline or EOF is reached
-    while (m_source_stream.HasNext() && m_source_stream.Peek() != (u32char)('\n')) {
+    while (m_source_stream.HasNext() && m_source_stream.Peek() != (u32char)'\n') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;

@@ -22,12 +22,12 @@ public:
     inline const std::vector<Instruction<>> &GetData() const { return m_data; }
 
     inline uint8_t GetCurrentRegister() const { return m_register_counter; }
-    inline void IncRegisterUsage() { m_register_counter++; }
-    inline void DecRegisterUsage() { m_register_counter--; }
+    inline uint8_t IncRegisterUsage() { return ++m_register_counter; }
+    inline uint8_t DecRegisterUsage() { return --m_register_counter; }
 
     inline int GetStackSize() const { return m_stack_size; }
-    inline void IncStackSize() { m_stack_size++; }
-    inline void DecStackSize() { m_stack_size--; }
+    inline int IncStackSize() { return ++m_stack_size; }
+    inline int DecStackSize() { return --m_stack_size; }
 
     inline int NewStaticId() { return m_static_id++; }
 

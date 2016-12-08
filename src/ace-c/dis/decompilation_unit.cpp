@@ -107,6 +107,14 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             uint16_t size;
             m_bs.Read(&size);
 
+            std::vector<uint32_t> hashes;
+            hashes.resize(size);
+
+            // load (size) hashes.
+            for (int i = 0; i < size; i++) {
+                m_bs.Read(&hashes[i]);
+            }
+
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
@@ -114,12 +122,22 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
 
                 (*os)
                     << "type ["
-                        << "u16(" << (int)size << ")"
+                        << "u16(" << (int)size << "), ";
+
+                for (int i = 0; i < size; i++) {
+                    (*os)
+                        << "u32(" << hashes[i] << ")";
+                    if (i != size - 1) {
+                        (*os) << ", ";
+                    }
+                }
+                
+                (*os)
                     << "]"
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint8_t>(code, size);
+            is << Instruction<uint8_t, uint8_t, std::vector<uint32_t>>(code, size, hashes);
 
             //delete[] name;
 
@@ -391,12 +409,13 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             uint16_t size;
             m_bs.Read(&size);
 
-            /*uint32_t namelen;
-            m_bs.Read(&namelen);
+            std::vector<uint32_t> hashes;
+            hashes.resize(size);
 
-            char *name = new char[namelen + 1];
-            name[namelen] = '\0';
-            m_bs.Read(name, namelen);*/
+            // load (size) hashes.
+            for (int i = 0; i < size; i++) {
+                m_bs.Read(&hashes[i]);
+            }
 
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
@@ -406,14 +425,23 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                 (*os)
                     << "load_type ["
                         << "%" << (int)reg << ", "
-                        << "u16(" << (int)size << ")"
+                        << "u16(" << (int)size << "), ";
+                
+                for (int i = 0; i < size; i++) {
+                    (*os)
+                        << "u32(" << hashes[i] << ")";
+                    if (i != size - 1) {
+                        (*os) << ", ";
+                    }
+                }
+                        
+                (*os)
                     << "]"
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint8_t, uint8_t>(code, reg, size);
-
-            //delete[] name;
+            is << Instruction<uint8_t, uint8_t, uint8_t, std::vector<uint32_t>>
+                (code, reg, size, hashes);
 
             break;
         }
@@ -443,6 +471,35 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             }
 
             is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, reg, src, idx);
+
+            break;
+        }
+        case LOAD_MEM_HASH:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            uint32_t hash;
+            m_bs.Read(&hash);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "load_mem_hash ["
+                        << "%" << (int)reg << ", "
+                        << "%" << (int)src << ", "
+                        << "u32(" << (int)hash << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(code, reg, src, hash);
 
             break;
         }
@@ -668,6 +725,35 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             }
 
             is << Instruction<uint8_t, uint8_t, uint8_t>(code, dst, src);
+
+            break;
+        }
+        case HAS_MEM_HASH:
+        {
+            uint8_t reg;
+            m_bs.Read(&reg);
+
+            uint8_t src;
+            m_bs.Read(&src);
+
+            uint32_t hash;
+            m_bs.Read(&hash);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "has_mem_hash ["
+                        << "%" << (int)reg << ", "
+                        << "%" << (int)src << ", "
+                        << "u32(" << hash << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(code, reg, src, hash);
 
             break;
         }

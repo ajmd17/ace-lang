@@ -102,6 +102,8 @@ public:
 
     void PushNativeFunctionPtr(NativeFunctionPtr_t ptr);
 
+    inline VMState &GetState() { return m_state; }
+    inline const VMState &GetState() const { return m_state; }
     inline Heap &GetHeap() { return m_state.m_heap; }
     inline ExecutionThread &GetExecutionThread() { return m_state.m_exec_thread; }
     inline BytecodeStream *GetBytecodeStream() const { return m_bs; }
@@ -114,21 +116,20 @@ public:
     void Execute();
 
 private:
-    /*StaticMemory m_static_memory;
-    Heap m_heap;
-    ExecutionThread m_exec_thread;*/
     VMState m_state;
 
     BytecodeStream *m_bs;
 
+    /** A quick way to check if there is an instruction left to execute */
     inline bool HasNextInstruction() const { return m_bs->Position() < m_bs->Size(); }
 
     /** Returns the value as a 64-bit integer without checking if it is not of that type. */
     inline int64_t GetIntFast(const StackValue &stack_value) 
     {
-        return stack_value.m_type == StackValue::INT64
-            ? stack_value.m_value.i64
-            : (int64_t)stack_value.m_value.i32;
+        if (stack_value.m_type == StackValue::INT64) {
+            return stack_value.m_value.i64;
+        }
+        return (int64_t) stack_value.m_value.i32;
     }
 
     /** Returns the value as a 64-bit integer, throwing an error if the type is invalid. */

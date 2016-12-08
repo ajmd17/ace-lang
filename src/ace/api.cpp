@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <vector>
-#include <cassert>
+#include <common/my_assert.hpp>
 
 namespace ace {
 
@@ -12,7 +12,7 @@ const std::string API::GLOBAL_MODULE_NAME = "__global__";
 void API::BindNativeFunction(const NativeFunctionDefine &def,
     VM *vm, CompilationUnit *compilation_unit)
 {
-    assert(vm != nullptr);
+    ASSERT(vm != nullptr);
 
     Module *mod = nullptr;
 
@@ -31,7 +31,7 @@ void API::BindNativeFunction(const NativeFunctionDefine &def,
         mod = compilation_unit->m_modules.back().get();
     }
 
-    assert(mod != nullptr);
+    ASSERT(mod != nullptr);
 
     // get global scope
     Scope &scope = mod->m_scopes.Top();
@@ -40,11 +40,11 @@ void API::BindNativeFunction(const NativeFunctionDefine &def,
     // only this scope matters, variables with the same name outside
     // of this scope are fine
     Identifier *ident = mod->LookUpIdentifier(def.function_name, true);
-    assert(ident == nullptr &&
+    ASSERT(ident == nullptr &&
         "cannot create multiple objects with the same name");
     // add identifier
     ident = scope.GetIdentifierTable().AddIdentifier(def.function_name);
-    assert(ident != nullptr);
+    ASSERT(ident != nullptr);
 
     // create value
     std::vector<std::shared_ptr<AstParameter>> parameters; // TODO

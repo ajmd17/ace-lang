@@ -9,7 +9,7 @@ namespace ace_vm {
 
 void RunBytecodeFile(const utf::Utf8String &filename);
 
-void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, int pos = 0);
+void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_time = false, int pos = 0);
 
 } // ace_vm
 

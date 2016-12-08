@@ -422,6 +422,33 @@ static_memory.cpp.s:
 	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-vm/CMakeFiles/ace-vm.dir/build.make src/ace-vm/CMakeFiles/ace-vm.dir/static_memory.cpp.s
 .PHONY : static_memory.cpp.s
 
+type_info.o: type_info.cpp.o
+
+.PHONY : type_info.o
+
+# target to build an object file
+type_info.cpp.o:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-vm/CMakeFiles/ace-vm.dir/build.make src/ace-vm/CMakeFiles/ace-vm.dir/type_info.cpp.o
+.PHONY : type_info.cpp.o
+
+type_info.i: type_info.cpp.i
+
+.PHONY : type_info.i
+
+# target to preprocess a source file
+type_info.cpp.i:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-vm/CMakeFiles/ace-vm.dir/build.make src/ace-vm/CMakeFiles/ace-vm.dir/type_info.cpp.i
+.PHONY : type_info.cpp.i
+
+type_info.s: type_info.cpp.s
+
+.PHONY : type_info.s
+
+# target to generate assembly for a file
+type_info.cpp.s:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace-vm/CMakeFiles/ace-vm.dir/build.make src/ace-vm/CMakeFiles/ace-vm.dir/type_info.cpp.s
+.PHONY : type_info.cpp.s
+
 vm.o: vm.cpp.o
 
 .PHONY : vm.o
@@ -518,6 +545,9 @@ help:
 	@echo "... static_memory.o"
 	@echo "... static_memory.i"
 	@echo "... static_memory.s"
+	@echo "... type_info.o"
+	@echo "... type_info.i"
+	@echo "... type_info.s"
 	@echo "... vm.o"
 	@echo "... vm.i"
 	@echo "... vm.s"

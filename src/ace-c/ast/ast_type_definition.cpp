@@ -5,6 +5,10 @@
 #include <ace-c/module.hpp>
 #include <ace-c/emit/static_object.hpp>
 
+#include <common/hasher.hpp>
+
+#include <iostream>
+
 AstTypeDefinition::AstTypeDefinition(const std::string &name,
     const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
     const SourceLocation &location)
@@ -33,16 +37,26 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         // open the scope for data members
         mod->m_scopes.Open(Scope());
 
+        // generate hashes for member names
+        std::vector<uint32_t> hashes;
+        hashes.reserve(m_members.size());
+
         for (const auto &mem : m_members) {
             if (mem != nullptr) {
                 mem->Visit(visitor, mod);
 
-                if (!object_type.HasDataMember(mem->GetName())) {
+                std::string mem_name = mem->GetName();
+
+                if (!object_type.HasDataMember(mem_name)) {
                     ObjectType mem_type = mem->GetObjectType();
                     mem_type.SetDefaultValue(mem->GetAssignment());
 
-                    DataMember dm(mem->GetName(), mem_type);
+                    DataMember dm(mem_name, mem_type);
                     object_type.AddDataMember(dm);
+
+                    // generate hash from member name
+                    hashes.push_back(hash_fnv_1(mem_name.c_str()));
+
                     m_num_members++;
                 }
             }
@@ -58,6 +72,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         // create static object
         StaticTypeInfo st;
         st.m_size = m_num_members;
+        st.m_hashes = hashes;
         st.m_name = new char[len + 1];
         st.m_name[len] = '\0';
         std::strcpy(st.m_name, type_name.c_str());

@@ -5,7 +5,7 @@
 
 #include <common/instructions.hpp>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 #include <iostream>
 
 AstVariable::AstVariable(const std::string &name, const SourceLocation &location)
@@ -20,7 +20,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
 
 void AstVariable::Build(AstVisitor *visitor, Module *mod)
 {
-    assert(m_identifier != nullptr);
+    ASSERT(m_identifier != nullptr);
 
     int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int stack_location = m_identifier->GetStackLocation();

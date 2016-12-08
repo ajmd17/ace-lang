@@ -1,20 +1,23 @@
 #include <ace-vm/ace-vm.hpp>
 #include <ace-vm/bytecode_stream.hpp>
 
+#include <common/my_assert.hpp>
+
 #include <fstream>
 #include <chrono>
-#include <cassert>
+#include <cstdint>
 
 namespace ace_vm {
+
 void RunBytecodeFile(const utf::Utf8String &filename)
 {
     VM vm;
     RunBytecodeFile(&vm, filename);
 }
 
-void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, int pos)
+void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_time, int pos)
 {
-    assert(vm != nullptr);
+    ASSERT(vm != nullptr);
 
     // load bytecode from file
     std::ifstream file(filename.GetData(),
@@ -24,7 +27,7 @@ void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, int pos)
         return;
     }
 
-    size_t bytecode_size = file.tellg();
+    int64_t bytecode_size = file.tellg();
     file.seekg(0, std::ios::beg);
 
     char *bytecodes = new char[bytecode_size];
@@ -40,11 +43,14 @@ void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, int pos)
 
     vm->Execute();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto elapsed_ms = std::chrono::duration_cast<
-        std::chrono::duration<double, std::ratio<1>>>(end - start).count();
-    utf::cout << "Elapsed time: " << elapsed_ms << "s\n";
+    if (record_time) {
+        auto end = std::chrono::high_resolution_clock::now();
+        auto elapsed_ms = std::chrono::duration_cast<
+                std::chrono::duration<double, std::ratio<1>>>(end - start).count();
+        utf::cout << "Elapsed time: " << elapsed_ms << "s\n";
+    }
 
     delete[] bytecodes;
 }
+
 } // ace_vm

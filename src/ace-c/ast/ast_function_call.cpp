@@ -6,7 +6,7 @@
 
 #include <common/instructions.hpp>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 #include <iostream>
 
 AstFunctionCall::AstFunctionCall(const std::string &name,
@@ -25,7 +25,7 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
     // visit each argument
     for (auto &arg : m_args) {
-        assert(arg != nullptr);
+        ASSERT(arg != nullptr);
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
     }
     
@@ -54,7 +54,7 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
                     }
                 }
 
-                assert(identifier_type.GetReturnType() != nullptr);
+                ASSERT(identifier_type.GetReturnType() != nullptr);
                 m_return_type = *identifier_type.GetReturnType().get();
             }
         }
@@ -63,11 +63,11 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
 void AstFunctionCall::BuildArgumentsStart(AstVisitor *visitor, Module *mod)
 {
-    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    uint8_t rp;
 
     // push a copy of each argument to the stack
     for (auto &arg : m_args) {
-        assert(arg != nullptr);
+        ASSERT(arg != nullptr);
 
         arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
 
@@ -103,13 +103,13 @@ void AstFunctionCall::BuildArgumentsEnd(AstVisitor *visitor, Module *mod)
 
 void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
 {
-    assert(m_identifier != nullptr);
+    ASSERT(m_identifier != nullptr);
 
     BuildArgumentsStart(visitor, mod);
 
     int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     int stack_location = m_identifier->GetStackLocation();
-    int offset = stack_size - stack_location + m_args.size();
+    int offset = stack_size - stack_location + (int)m_args.size();
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -126,13 +126,13 @@ void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)
     }
 
     // invoke the function
-    int argc = m_args.size();
+    int argc = (int)m_args.size();
     if (m_has_self_object) {
         argc++;
     }
 
     visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t>(CALL, rp, argc);
+        Instruction<uint8_t, uint8_t, uint8_t>(CALL, rp, (uint8_t)argc);
 
     BuildArgumentsEnd(visitor, mod);
 }

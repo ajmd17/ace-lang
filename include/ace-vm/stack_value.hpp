@@ -19,10 +19,6 @@ struct Function {
     uint8_t m_nargs;
 };
 
-struct TypeInfo {
-    uint8_t m_size;
-};
-
 struct StackValue {
     enum ValueType {
         INT32,
@@ -33,8 +29,7 @@ struct StackValue {
         HEAP_POINTER,
         FUNCTION,
         NATIVE_FUNCTION,
-        ADDRESS,
-        TYPE_INFO,
+        ADDRESS
     } m_type;
 
     union ValueData {
@@ -47,7 +42,6 @@ struct StackValue {
         Function func;
         NativeFunctionPtr_t native_func;
         uint32_t addr;
-        TypeInfo type_info;
     } m_value;
 
     StackValue();

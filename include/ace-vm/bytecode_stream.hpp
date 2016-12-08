@@ -1,8 +1,9 @@
 #ifndef BYTECODE_STREAM_HPP
 #define BYTECODE_STREAM_HPP
 
+#include <common/my_assert.hpp>
+
 #include <iostream>
-#include <cassert>
 
 class BytecodeStream {
 public:
@@ -11,7 +12,7 @@ public:
 
     inline void ReadBytes(char *ptr, size_t num_bytes)
     {
-        assert(m_position + num_bytes < m_size + 1 && "cannot read past end of buffer");
+        ASSERT_MSG(m_position + num_bytes < m_size + 1, "cannot read past end of buffer");
         for (size_t i = 0; i < num_bytes; i++) {
             ptr[i] = m_buffer[m_position++];
         }

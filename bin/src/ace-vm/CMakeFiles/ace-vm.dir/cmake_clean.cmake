@@ -10,6 +10,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/ace-vm.dir/stack_memory.cpp.o"
   "CMakeFiles/ace-vm.dir/stack_value.cpp.o"
   "CMakeFiles/ace-vm.dir/static_memory.cpp.o"
+  "CMakeFiles/ace-vm.dir/type_info.cpp.o"
   "CMakeFiles/ace-vm.dir/vm.cpp.o"
   "CMakeFiles/ace-vm.dir/vm_state.cpp.o"
   "libace-vm.pdb"

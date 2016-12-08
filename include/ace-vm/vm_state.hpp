@@ -15,6 +15,7 @@ struct Registers {
     int m_flags = 0;
 
     inline StackValue &operator[](uint8_t index) { return m_reg[index]; }
+    inline void ResetFlags() { m_flags = 0; }
 };
 
 struct ExceptionState {
@@ -25,6 +26,7 @@ struct ExceptionState {
     // set to true when an exception occurs,
     // set to false when handled in BEGIN_TRY
     bool m_exception_occured = false;
+    inline void Reset() { m_try_counter = 0; m_exception_occured = false; }
 };
 
 struct ExecutionThread {
@@ -44,6 +46,11 @@ struct VMState {
 
     bool good = true;
     int m_max_heap_objects = GC_THRESHOLD_MIN;
+
+    /** Reset the state of the VM, destroying all heap objects,
+        stack objects and exception flags, etc.
+     */
+    void Reset();
 
     void ThrowException(const Exception &exception);
     HeapValue *HeapAlloc();

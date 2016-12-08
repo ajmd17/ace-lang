@@ -20,6 +20,8 @@ public:
 
     inline size_t Size() const { return m_num_objects; }
 
+    /** Destroy everything on the heap */
+    void Purge();
     /** Allocate a new value on the heap. */
     HeapValue *Alloc();
     /** Delete all nodes that are not marked */

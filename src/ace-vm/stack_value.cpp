@@ -27,7 +27,7 @@ void StackValue::Mark()
         if ((objptr = m_value.ptr->GetPointer<Object>()) != nullptr) {
             int objsize = objptr->GetSize();
             for (int i = 0; i < objsize; i++) {
-                objptr->GetMember(i).GetValue().Mark();
+                objptr->GetMember(i).value.Mark();
             }
         } else if ((arrayptr = m_value.ptr->GetPointer<Array>()) != nullptr) {
             int arraysize = arrayptr->GetSize();

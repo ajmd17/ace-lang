@@ -14,11 +14,12 @@
 #include <common/utf8.hpp>
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
+#include <common/my_assert.hpp>
 
 #include <string>
 #include <sstream>
 #include <chrono>
-#include <cassert>
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 
@@ -60,7 +61,7 @@ void Global_to_string(VMState *state, StackValue **args, int nargs)
     HeapValue *ptr = state->HeapAlloc();
     StackValue &res = state->GetExecutionThread().GetRegisters()[0];
     
-    assert(ptr != nullptr);
+    ASSERT(ptr != nullptr);
 
     ptr->Assign(args[0]->ToString());
     // assign register value to the allocated object
@@ -79,7 +80,7 @@ void Global_length(VMState *state, StackValue **args, int nargs)
     int len = 0;
 
     StackValue *target_ptr = args[0];
-    assert(target_ptr != nullptr);
+    ASSERT(target_ptr != nullptr);
 
     const int buffer_size = 256;
     char buffer[buffer_size];
@@ -117,6 +118,264 @@ void Global_length(VMState *state, StackValue **args, int nargs)
     res.m_value.i32 = len;
 }
 
+static void LexLine(const utf::Utf8String &line, TokenStream &token_stream)
+{
+    CompilationUnit tmp_compilation_unit;
+
+    // send code to be compiled
+    SourceFile source_file("<stdin>", line.GetBufferSize());
+    std::memcpy(source_file.GetBuffer(), line.GetData(), line.GetBufferSize());
+    SourceStream source_stream(&source_file);
+
+    Lexer lex(source_stream, &token_stream, &tmp_compilation_unit);
+    lex.Analyze();
+}
+
+static int REPL(VM *vm, CompilationUnit &compilation_unit,
+    const utf::Utf8String &template_code, bool first_time = true)
+{
+    AstIterator ast_iterator;
+
+    int indent = 0;
+    int parentheses_counter = 0;
+    int bracket_counter = 0;
+
+    utf::Utf8String code;
+    utf::Utf8String out_filename = "tmp.aex";
+
+    if (first_time) { // compile template code (expects module declaration)
+        // truncate the file, overwriting any previous data
+        std::ofstream out_file(out_filename.GetData(),
+            std::ios::out | std::ios::binary | std::ios::trunc);
+        out_file.close();
+
+        code = template_code;
+        utf::cout << code;
+
+        // send code to be compiled
+        SourceFile source_file("<stdin>", code.GetBufferSize());
+        std::memcpy(source_file.GetBuffer(), code.GetData(), code.GetBufferSize());
+        SourceStream source_stream(&source_file);
+
+        TokenStream token_stream;
+        Lexer lex(source_stream, &token_stream, &compilation_unit);
+        lex.Analyze();
+
+        Parser parser(&ast_iterator, &token_stream, &compilation_unit);
+        parser.Parse(true);
+
+        SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
+        semantic_analyzer.Analyze(true);
+    }
+
+    utf::Utf8String line;
+    std::string tmp_line;
+
+    utf::cout << "> ";
+    while (std::getline(std::cin, tmp_line)) {
+        utf::Utf8String current_line(tmp_line.c_str());
+
+        for (char ch : tmp_line) {
+            if (ch == '{') {
+                indent++;
+            } else if (ch == '}') {
+                indent--;
+            } else if (ch == '(') {
+                parentheses_counter++;
+            } else if (ch == ')') {
+                parentheses_counter--;
+            } else if (ch == '[') {
+                bracket_counter++;
+            } else if (ch == ']') {
+                bracket_counter--;
+            }
+        }
+
+        // run lexer on entered line to determine
+        // if we should keep reading input
+        TokenStream tmp_ts;
+        LexLine(current_line, tmp_ts);
+
+        bool cont_token = !tmp_ts.m_tokens.empty() && tmp_ts.m_tokens.back().IsContinuationToken();
+        bool wait_for_next = indent > 0 ||
+                parentheses_counter > 0 ||
+                bracket_counter > 0 ||
+                cont_token;
+
+        line += current_line + "\n";
+
+        if (!wait_for_next) {
+            // so we can rewind upon errors
+            int old_pos = ast_iterator.GetPosition();
+
+            // send code to be compiled
+            SourceFile source_file("<stdin>", line.GetBufferSize());
+            std::memcpy(source_file.GetBuffer(), line.GetData(), line.GetBufferSize());
+            SourceStream source_stream(&source_file);
+
+            TokenStream token_stream;
+            Lexer lex(source_stream, &token_stream, &compilation_unit);
+            lex.Analyze();
+
+            Parser parser(&ast_iterator, &token_stream, &compilation_unit);
+            parser.Parse(false);
+
+            // in REPL mode only analyze if parsing and lexing went okay.
+            SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
+            semantic_analyzer.Analyze(false);
+
+            compilation_unit.GetErrorList().SortErrors();
+            for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
+                utf::cout
+                        << utf::Utf8String(error.GetLocation().GetFileName().c_str()) << " "
+                        << "[" << (error.GetLocation().GetLine() + 1)
+                        << ", " << (error.GetLocation().GetColumn() + 1)
+                        << "]: " << utf::Utf8String(error.GetText().c_str()) << "\n";
+            }
+
+            if (!compilation_unit.GetErrorList().HasFatalErrors()) {
+                // only optimize if there were no errors
+                // before this point
+                ast_iterator.SetPosition(old_pos);
+                Optimizer optimizer(&ast_iterator, &compilation_unit);
+                optimizer.Optimize(false);
+
+                // compile into bytecode instructions
+                ast_iterator.SetPosition(old_pos);
+                Compiler compiler(&ast_iterator, &compilation_unit);
+                compiler.Compile(false);
+
+                // emit bytecode instructions to file
+                std::ofstream temp_bytecode_file(out_filename.GetData(),
+                    std::ios::out | std::ios::binary | std::ios::app | std::ios::ate);
+
+                int64_t file_pos = temp_bytecode_file.tellp();
+
+                if (!temp_bytecode_file.is_open()) {
+                    utf::cout << "Could not open file for writing: " << out_filename << "\n";
+                    for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
+                        ast_iterator.Pop();
+                    }
+                    ast_iterator.SetPosition(old_pos);
+                } else {
+                    temp_bytecode_file << compilation_unit.GetInstructionStream();
+                    compilation_unit.GetInstructionStream().ClearInstructions();
+                    temp_bytecode_file.close();
+
+                    // store stack size so that we can revert on error
+                    size_t stack_size_before = vm->GetState().GetExecutionThread().GetStack().GetStackPointer();
+
+                    ace_vm::RunBytecodeFile(vm, out_filename, false, file_pos);
+
+                    if (!vm->GetState().good) {
+                        // if an exception was unhandled, ask the user if they'd like to restart.
+                        utf::cout <<
+                            "A runtime error has occurred within this script.\n"
+                            "Would you like to go back to the previous state? Answering (N) will destroy the script.";
+
+                        int response = -1;
+                        while (response == -1) {
+                            utf::cout << " (Y/n): ";
+
+                            std::string str;
+                            std::getline(std::cin, str);
+                            str = str_util::trim(str);
+
+                            if (!str.empty()) {
+                                int ch = std::tolower(str[0]);
+                                if (ch == 'y') {
+                                    response = 1;
+                                } else if (ch == 'n') {
+                                    response = 0;
+                                } else {
+                                    utf::cout << "I'm sorry, I didn't catch that. I only understand yes and no.";
+                                    response = -1;
+                                }
+                            }
+                        }
+
+                        if (response == 1) {
+                            // overwrite the bytecode file with the code that has been generated up to the point of error
+                            // start by loading it into a temporary buffer
+                            std::ifstream tmp_is(out_filename.GetData(), std::ios::in | std::ios::binary | std::ios::ate);
+                            // len is only the amount of bytes up to where we were before in the file.
+                            int64_t len = std::min((int64_t)tmp_is.tellg(), file_pos);
+                            // create buffer
+                            char *buf = new char[len];
+                            // seek to beginning
+                            tmp_is.seekg(0, std::ios::beg);
+                            // read into buffer
+                            tmp_is.read(buf, len);
+                            // close temporary file
+                            tmp_is.close();
+
+                            // create the new file to write the buffer to
+                            std::ofstream tmp_os(out_filename.GetData(), std::ios::out | std::ios::binary);
+                            tmp_os.write(buf, len);
+                            tmp_os.close();
+
+                            // delete buffer, it's no longer needed
+                            delete[] buf;
+
+                            size_t stack_size_now = vm->GetState().GetExecutionThread().GetStack().GetStackPointer();
+                            while (stack_size_now > stack_size_before) {
+                                vm->GetState().GetExecutionThread().GetStack().Pop();
+                                stack_size_now--;
+                            }
+
+                            // trigger the GC after popping items from stack,
+                            // to clean up any heap variables no longer in use.
+                            vm->GetState().GetExecutionThread().GetStack().MarkAll();
+                            vm->GetState().GetHeap().Sweep();
+
+                            // clear vm exception state
+                            vm->GetState().GetExecutionThread().GetExceptionState().Reset();
+
+                            // we're good to go now
+                            vm->GetState().good = true;
+
+                            // restart the script
+                            return REPL(vm, compilation_unit, "", false);
+                        } else {
+                            // user selected no
+                            return 1;
+                        }
+                    } else {
+                        // everything is good, no compile or runtime errors here
+                        // store the line
+                        code += line;
+                    }
+                }
+            } else {
+                for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
+                    ast_iterator.Pop();
+                }
+                ast_iterator.SetPosition(old_pos);
+                compilation_unit.GetErrorList().ClearErrors();
+            }
+
+            line = "";
+
+            utf::cout << "> ";
+        } else {
+            if (wait_for_next) {
+                if (indent) {
+                    for (int i = 0; i < indent; i++) {
+                        utf::cout << "..";
+                    }
+                } else {
+                    if (parentheses_counter || bracket_counter || cont_token) {
+                        utf::cout << "..";
+                    }
+                }
+                utf::cout << "  ";
+            }
+        }
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     utf::init();
@@ -137,128 +396,7 @@ int main(int argc, char *argv[])
         // do not cull unused objects
         ace::compiler::Config::cull_unused_objects = false;
 
-        AstIterator ast_iterator;
-
-        utf::Utf8String out_filename = "tmp.aex";
-        std::ofstream out_file(out_filename.GetData(),
-            std::ios::out | std::ios::binary | std::ios::trunc);
-        out_file.close();
-
-        int block_counter = 0;
-        utf::Utf8String code = "// Ace REPL\nmodule repl;\n";
-        utf::cout << code;
-
-        { // compile template code
-            // send code to be compiled
-            SourceFile source_file("<stdin>", code.GetBufferSize());
-            std::memcpy(source_file.GetBuffer(), code.GetData(), code.GetBufferSize());
-            SourceStream source_stream(&source_file);
-
-            TokenStream token_stream;
-            Lexer lex(source_stream, &token_stream, &compilation_unit);
-            lex.Analyze();
-
-            Parser parser(&ast_iterator, &token_stream, &compilation_unit);
-            parser.Parse(true);
-
-            SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
-            semantic_analyzer.Analyze(true);
-        }
-
-        utf::Utf8String line;
-        std::string tmp_line;
-
-        utf::cout << "> ";
-        while (std::getline(std::cin, tmp_line)) {
-            utf::Utf8String current_line(tmp_line.c_str());
-
-            for (char ch : tmp_line) {
-                if (ch == '{') {
-                    block_counter++;
-                } else if (ch == '}') {
-                    block_counter--;
-                }
-            }
-
-            current_line += "\n";
-            line += current_line;
-
-            if (block_counter <= 0) {
-                // so we can rewind upon errors
-                int old_pos = ast_iterator.GetPosition();
-
-                // send code to be compiled
-                SourceFile source_file("<stdin>", line.GetBufferSize());
-                std::memcpy(source_file.GetBuffer(), line.GetData(), line.GetBufferSize());
-                SourceStream source_stream(&source_file);
-
-                TokenStream token_stream;
-                Lexer lex(source_stream, &token_stream, &compilation_unit);
-                lex.Analyze();
-
-                Parser parser(&ast_iterator, &token_stream, &compilation_unit);
-                parser.Parse(false);
-
-                // in REPL mode only analyze if parsing and lexing went okay.
-                SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
-                semantic_analyzer.Analyze(false);
-
-                compilation_unit.GetErrorList().SortErrors();
-                for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
-                    utf::cout
-                        << utf::Utf8String(error.GetLocation().GetFileName().c_str()) << " "
-                        << "[" << (error.GetLocation().GetLine() + 1)
-                        << ", " << (error.GetLocation().GetColumn() + 1)
-                        << "]: " << utf::Utf8String(error.GetText().c_str()) << "\n";
-                }
-
-                if (!compilation_unit.GetErrorList().HasFatalErrors()) {
-                    // only optimize if there were no errors
-                    // before this point
-                    ast_iterator.SetPosition(old_pos);
-                    Optimizer optimizer(&ast_iterator, &compilation_unit);
-                    optimizer.Optimize(false);
-
-                    // compile into bytecode instructions
-                    ast_iterator.SetPosition(old_pos);
-                    Compiler compiler(&ast_iterator, &compilation_unit);
-                    compiler.Compile(false);
-
-                    // emit bytecode instructions to file
-                    std::ofstream out_file(out_filename.GetData(),
-                        std::ios::out | std::ios::binary | std::ios::app | std::ios::ate);
-
-                    int file_pos = (int)out_file.tellp();
-
-                    if (!out_file.is_open()) {
-                        utf::cout << "Could not open file for writing: " << out_filename << "\n";
-                        for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
-                            ast_iterator.Pop();
-                        }
-                        ast_iterator.SetPosition(old_pos);
-                    } else {
-                        out_file << compilation_unit.GetInstructionStream();
-                        compilation_unit.GetInstructionStream().ClearInstructions();
-                        out_file.close();
-                        ace_vm::RunBytecodeFile(vm, out_filename, file_pos);
-                    }
-                } else {
-                    for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
-                        ast_iterator.Pop();
-                    }
-                    ast_iterator.SetPosition(old_pos);
-                    compilation_unit.GetErrorList().ClearErrors();
-                }
-
-                line = "";
-
-                utf::cout << "> ";
-            } else {
-                for (int i = 0; i < block_counter; i++) {
-                    utf::cout << "... ";
-                }
-            }
-        }
+        REPL(vm, compilation_unit, "module repl;\n");
 
     } else if (argc >= 2) {
         enum {
@@ -300,7 +438,7 @@ int main(int argc, char *argv[])
         if (mode == COMPILE_SOURCE) {
             if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
                 // execute the compiled bytecode file
-                ace_vm::RunBytecodeFile(vm, out_filename);
+                ace_vm::RunBytecodeFile(vm, out_filename, true);
             }
         } else if (mode == DECOMPILE_BYTECODE) {
             ace_compiler::DecompileBytecodeFile(src_filename, out_filename);

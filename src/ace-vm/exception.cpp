@@ -31,3 +31,8 @@ Exception Exception::OutOfBoundsException()
 {
     return Exception(utf::Utf8String("index out of bounds of the array"));
 }
+
+Exception Exception::MemberNotFoundException()
+{
+    return Exception(utf::Utf8String("invalid access to member of object"));
+}

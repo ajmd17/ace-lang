@@ -6,8 +6,7 @@
 #include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
-
-#include <cassert>
+#include <common/my_assert.hpp>
 
 AstArrayExpression::AstArrayExpression(const std::vector<std::shared_ptr<AstExpression>> &members,
     const SourceLocation &location)
@@ -26,7 +25,7 @@ void AstArrayExpression::Visit(AstVisitor *visitor, Module *mod)
 void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
 {
     bool has_side_effects = MayHaveSideEffects();
-    size_t array_size = m_members.size();
+    uint32_t array_size = (uint32_t)m_members.size();
     
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -36,7 +35,8 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
         Instruction<uint8_t, uint8_t, uint32_t>(NEW_ARRAY, rp, array_size);
 
     
-    int stack_size_before;
+    int stack_size_before = 0;
+
     if (has_side_effects) {
         // move to stack temporarily
         
@@ -68,7 +68,7 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
 
             int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
             int diff = stack_size_after - stack_size_before;
-            assert(diff == 1);
+            ASSERT(diff == 1);
 
             // load array from stack back into register
             visitor->GetCompilationUnit()->GetInstructionStream() <<
@@ -101,7 +101,7 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
     
         int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         int diff = stack_size_after - stack_size_before;
-        assert(diff == 1);
+        ASSERT(diff == 1);
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
 

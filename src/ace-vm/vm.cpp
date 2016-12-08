@@ -3,13 +3,14 @@
 #include <ace-vm/heap_value.hpp>
 #include <ace-vm/array.hpp>
 #include <ace-vm/object.hpp>
+#include <ace-vm/type_info.hpp>
 
 #include <common/instructions.hpp>
 #include <common/utf8.hpp>
 
 #include <algorithm>
 #include <cstdio>
-#include <cassert>
+#include <common/my_assert.hpp>
 #include <cinttypes>
 
 VM::VM(BytecodeStream *bs)
@@ -108,9 +109,6 @@ void VM::Echo(StackValue &value)
     case StackValue::ADDRESS:
         utf::printf(UTF8_CSTR("Address<%du>"), value.m_value.addr);
         break;
-    case StackValue::TYPE_INFO:
-        utf::printf(UTF8_CSTR("Type<%du>"), value.m_value.type_info.m_size);
-        break;
     }
 }
 
@@ -118,7 +116,7 @@ void VM::InvokeFunction(StackValue &value, uint8_t num_args)
 {
     if (value.m_type != StackValue::FUNCTION) {
         if (value.m_type == StackValue::NATIVE_FUNCTION) {
-            StackValue **args = new StackValue*[num_args];
+            StackValue **args = new StackValue*[num_args > 0 ? num_args : 1];
 
             int i = m_state.m_exec_thread.m_stack.GetStackPointer() - 1;
             for (int j = 0; j < num_args && i >= 0; i--, j++) {
@@ -184,7 +182,7 @@ void VM::HandleInstruction(uint8_t code)
         sv.m_type = StackValue::HEAP_POINTER;
         sv.m_value.ptr = hv;
 
-        m_state.m_static_memory.Store(sv);
+        m_state.m_static_memory.Store(std::move(sv));
 
         delete[] str;
 
@@ -198,7 +196,7 @@ void VM::HandleInstruction(uint8_t code)
         sv.m_type = StackValue::ADDRESS;
         sv.m_value.addr = value;
 
-        m_state.m_static_memory.Store(sv);
+        m_state.m_static_memory.Store(std::move(sv));
 
         break;
     }
@@ -214,7 +212,7 @@ void VM::HandleInstruction(uint8_t code)
         sv.m_value.func.m_addr = addr;
         sv.m_value.func.m_nargs = nargs;
 
-        m_state.m_static_memory.Store(sv);
+        m_state.m_static_memory.Store(std::move(sv));
 
         break;
     }
@@ -222,39 +220,26 @@ void VM::HandleInstruction(uint8_t code)
         uint16_t size;
         m_bs->Read(&size);
 
-        StackValue sv;
-        sv.m_type = StackValue::TYPE_INFO;
-        sv.m_value.type_info.m_size = size;
+        ASSERT(size > 0);
 
-      /*  // load (size) member names.
+        uint32_t *hashes = new uint32_t[size];
+
+        // load (size) hashes.
         for (int i = 0; i < size; i++) {
-            // get string length
-            uint32_t len;
-            m_bs->Read(&len);
+            m_bs->Read(&hashes[i]);
+        }
 
-            // read string based on length
-            char *str = new char[len + 1];
-            m_bs->Read(str, len);
-            str[len] = '\0';
+        // the value will be freed on
+        // the destructor call of m_state.m_static_memory
+        HeapValue *hv = new HeapValue();
+        hv->Assign(TypeInfo(size, hashes));
 
-            // the value will be freed on
-            // the destructor call of m_state.m_static_memory
-            HeapValue *hv = new HeapValue();
-            hv->Assign(utf::Utf8String(str));
+        StackValue sv;
+        sv.m_type = StackValue::HEAP_POINTER;
+        sv.m_value.ptr = hv;
+        m_state.m_static_memory.Store(std::move(sv));
 
-            StackValue sv;
-            sv.m_type = StackValue::HEAP_POINTER;
-            sv.m_value.ptr = hv;
-
-            m_state.m_static_memory.Store(sv);
-
-            delete[] str;
-
-            // set the member of the type's name
-            Member &mb = 
-        } */
-
-        m_state.m_static_memory.Store(sv);
+        delete[] hashes;
 
         break;
     }
@@ -414,9 +399,28 @@ void VM::HandleInstruction(uint8_t code)
         uint16_t size;
         m_bs->Read(&size);
 
+        ASSERT(size > 0);
+
+        uint32_t *hashes = new uint32_t[size];
+
+        // load (size) hashes.
+        for (int i = 0; i < size; i++) {
+            m_bs->Read(&hashes[i]);
+        }
+
+        // allocate heap value
+        HeapValue *hv = m_state.HeapAlloc();
+
+        ASSERT(hv != nullptr);
+
+        hv->Assign(TypeInfo(size, hashes));
+
+        // assign register value to the allocated object
         StackValue &sv = m_state.m_exec_thread.m_regs[reg];
-        sv.m_type = StackValue::TYPE_INFO;
-        sv.m_value.type_info.m_size = size;
+        sv.m_type = StackValue::HEAP_POINTER;
+        sv.m_value.ptr = hv;
+
+        delete[] hashes;
 
         break;
     }
@@ -431,7 +435,7 @@ void VM::HandleInstruction(uint8_t code)
         m_bs->Read(&idx);
 
         StackValue &sv = m_state.m_exec_thread.m_regs[src];
-        assert(sv.m_type == StackValue::HEAP_POINTER && "source must be a pointer");
+        ASSERT(sv.m_type == StackValue::HEAP_POINTER);
 
         HeapValue *hv = sv.m_value.ptr;
         if (hv == nullptr) {
@@ -439,8 +443,40 @@ void VM::HandleInstruction(uint8_t code)
         } else {
             Object *objptr = nullptr;
             if ((objptr = hv->GetPointer<Object>()) != nullptr) {
-                assert(idx < objptr->GetSize() && "member index out of bounds");
+                ASSERT_MSG(idx < objptr->GetSize(), "member index out of bounds");
                 m_state.m_exec_thread.m_regs[dst] = objptr->GetMember(idx).value;
+            } else {
+                m_state.ThrowException(Exception(utf::Utf8String("not a standard object")));
+            }
+        }
+
+        break;
+    }
+    case LOAD_MEM_HASH: {
+        uint8_t dst;
+        m_bs->Read(&dst);
+
+        uint8_t src;
+        m_bs->Read(&src);
+
+        uint32_t hash;
+        m_bs->Read(&hash);
+
+        StackValue &sv = m_state.m_exec_thread.m_regs[src];
+        ASSERT(sv.m_type == StackValue::HEAP_POINTER);
+
+        HeapValue *hv = sv.m_value.ptr;
+        if (hv == nullptr) {
+            m_state.ThrowException(Exception::NullReferenceException());
+        } else {
+            Object *objptr = nullptr;
+            if ((objptr = hv->GetPointer<Object>()) != nullptr) {
+                Member *member = objptr->LookupMemberFromHash(hash);
+                if (member == nullptr) {
+                    m_state.ThrowException(Exception::MemberNotFoundException());
+                } else {
+                    m_state.m_exec_thread.m_regs[dst] = member->value;
+                }
             } else {
                 m_state.ThrowException(Exception(utf::Utf8String("not a standard object")));
             }
@@ -461,7 +497,7 @@ void VM::HandleInstruction(uint8_t code)
         StackValue &idx_sv = m_state.m_exec_thread.m_regs[idx_reg];
 
         StackValue &sv = m_state.m_exec_thread.m_regs[src];
-        assert(sv.m_type == StackValue::HEAP_POINTER && "source must be a pointer");
+        ASSERT_MSG(sv.m_type == StackValue::HEAP_POINTER, "source must be a pointer");
 
         HeapValue *hv = sv.m_value.ptr;
 
@@ -558,7 +594,7 @@ void VM::HandleInstruction(uint8_t code)
         m_bs->Read(&src);
 
         StackValue &sv = m_state.m_exec_thread.m_regs[dst];
-        assert(sv.m_type == StackValue::HEAP_POINTER && "destination must be a pointer");
+        ASSERT_MSG(sv.m_type == StackValue::HEAP_POINTER, "destination must be a pointer");
 
         HeapValue *hv = sv.m_value.ptr;
         if (hv == nullptr) {
@@ -566,7 +602,7 @@ void VM::HandleInstruction(uint8_t code)
         } else {
             Object *objptr = nullptr;
             if ((objptr = hv->GetPointer<Object>()) != nullptr) {
-                assert(idx < objptr->GetSize() && "member index out of bounds");
+                ASSERT_MSG(idx < objptr->GetSize(), "member index out of bounds");
                 objptr->GetMember(idx).value = m_state.m_exec_thread.m_regs[src];
             } else {
                 m_state.ThrowException(Exception(utf::Utf8String("not a standard object")));
@@ -586,7 +622,7 @@ void VM::HandleInstruction(uint8_t code)
         m_bs->Read(&src);
 
         StackValue &sv = m_state.m_exec_thread.m_regs[dst];
-        assert(sv.m_type == StackValue::HEAP_POINTER && "destination must be a pointer");
+        ASSERT_MSG(sv.m_type == StackValue::HEAP_POINTER, "destination must be a pointer");
 
         HeapValue *hv = sv.m_value.ptr;
         if (hv == nullptr) {
@@ -617,6 +653,39 @@ void VM::HandleInstruction(uint8_t code)
 
         break;
     }
+    case HAS_MEM_HASH: {
+        uint8_t dst;
+        m_bs->Read(&dst);
+
+        uint8_t src;
+        m_bs->Read(&src);
+
+        uint32_t hash;
+        m_bs->Read(&hash);
+
+        StackValue &sv = m_state.m_exec_thread.m_regs[src];
+        StackValue &res = m_state.m_exec_thread.m_regs[dst];
+
+        if (sv.m_type == StackValue::HEAP_POINTER) {
+            HeapValue *hv = sv.m_value.ptr;
+            if (hv != nullptr) {
+                Object *objptr = nullptr;
+                if ((objptr = hv->GetPointer<Object>()) != nullptr) {
+                    Member *member = objptr->LookupMemberFromHash(hash);
+                    if (member != nullptr) {
+                        res = member->value;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // not found, set it to null
+        res.m_type = StackValue::HEAP_POINTER;
+        res.m_value.ptr = nullptr;
+
+        break;
+    }
     case PUSH: {
         uint8_t reg;
         m_bs->Read(&reg);
@@ -637,7 +706,7 @@ void VM::HandleInstruction(uint8_t code)
         m_bs->Read(&src);
 
         StackValue &sv = m_state.m_exec_thread.m_regs[dst];
-        assert(sv.m_type == StackValue::HEAP_POINTER && "destination must be a pointer");
+        ASSERT_MSG(sv.m_type == StackValue::HEAP_POINTER, "destination must be a pointer");
 
         HeapValue *hv = sv.m_value.ptr;
         if (hv == nullptr) {
@@ -671,7 +740,7 @@ void VM::HandleInstruction(uint8_t code)
         m_bs->Read(&reg);
 
         const StackValue &addr = m_state.m_exec_thread.m_regs[reg];
-        assert(addr.m_type == StackValue::ADDRESS && "register must hold an address");
+        ASSERT_MSG(addr.m_type == StackValue::ADDRESS, "register must hold an address");
 
         m_bs->Seek(addr.m_value.addr);
 
@@ -683,7 +752,7 @@ void VM::HandleInstruction(uint8_t code)
 
         if (m_state.m_exec_thread.m_regs.m_flags == EQUAL) {
             const StackValue &addr = m_state.m_exec_thread.m_regs[reg];
-            assert(addr.m_type == StackValue::ADDRESS && "register must hold an address");
+            ASSERT_MSG(addr.m_type == StackValue::ADDRESS, "register must hold an address");
 
             m_bs->Seek(addr.m_value.addr);
         }
@@ -696,7 +765,7 @@ void VM::HandleInstruction(uint8_t code)
 
         if (m_state.m_exec_thread.m_regs.m_flags != EQUAL) {
             const StackValue &addr = m_state.m_exec_thread.m_regs[reg];
-            assert(addr.m_type == StackValue::ADDRESS && "register must hold an address");
+            ASSERT_MSG(addr.m_type == StackValue::ADDRESS, "register must hold an address");
 
             m_bs->Seek(addr.m_value.addr);
         }
@@ -709,7 +778,7 @@ void VM::HandleInstruction(uint8_t code)
 
         if (m_state.m_exec_thread.m_regs.m_flags == GREATER) {
             const StackValue &addr = m_state.m_exec_thread.m_regs[reg];
-            assert(addr.m_type == StackValue::ADDRESS && "register must hold an address");
+            ASSERT_MSG(addr.m_type == StackValue::ADDRESS, "register must hold an address");
 
             m_bs->Seek(addr.m_value.addr);
         }
@@ -722,7 +791,7 @@ void VM::HandleInstruction(uint8_t code)
 
         if (m_state.m_exec_thread.m_regs.m_flags == GREATER || m_state.m_exec_thread.m_regs.m_flags == EQUAL) {
             const StackValue &addr = m_state.m_exec_thread.m_regs[reg];
-            assert(addr.m_type == StackValue::ADDRESS && "register must hold an address");
+            ASSERT_MSG(addr.m_type == StackValue::ADDRESS, "register must hold an address");
 
             m_bs->Seek(addr.m_value.addr);
         }
@@ -747,7 +816,7 @@ void VM::HandleInstruction(uint8_t code)
 
         // copy the value of the address for the catch-block
         StackValue addr(m_state.m_exec_thread.m_regs[reg]);
-        assert(addr.m_type == StackValue::ADDRESS && "register must hold an address");
+        ASSERT_MSG(addr.m_type == StackValue::ADDRESS, "register must hold an address");
 
         int try_counter_before = m_state.m_exec_thread.m_exception_state.m_try_counter++;
         // the size of the stack before, so we can revert to it on error
@@ -795,15 +864,16 @@ void VM::HandleInstruction(uint8_t code)
 
         // read value from register
         StackValue &type_sv = m_state.m_exec_thread.m_regs[src];
-        assert(type_sv.m_type == StackValue::TYPE_INFO && "object must be type info");
+        ASSERT(type_sv.m_type == StackValue::HEAP_POINTER);
 
-        // get number of data members
-        int size = type_sv.m_value.type_info.m_size;
+        TypeInfo *type_ptr = type_sv.m_value.ptr->GetPointer<TypeInfo>();
+        ASSERT(type_ptr != nullptr);
 
         // allocate heap object
         HeapValue *hv = m_state.HeapAlloc();
         if (hv != nullptr) {
-            hv->Assign(Object(size));
+            // create the Object from the info type_ptr provides us with.
+            hv->Assign(Object(type_ptr->GetSize(), type_ptr->GetHashes()));
 
             // assign register value to the allocated object
             StackValue &sv = m_state.m_exec_thread.m_regs[dst];
@@ -1025,7 +1095,7 @@ void VM::HandleInstruction(uint8_t code)
             m_state.ThrowException(Exception(utf::Utf8String(buffer)));
         }
 
-        // set the desination register to be the result
+        // set the destination register to be the result
         m_state.m_exec_thread.m_regs[dst_reg] = result;
 
         break;

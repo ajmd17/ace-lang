@@ -9,7 +9,7 @@
 
 #include <common/instructions.hpp>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 
 AstArrayAccess::AstArrayAccess(const std::shared_ptr<AstExpression> &target,
     const std::shared_ptr<AstExpression> &index,
@@ -29,8 +29,8 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
 
 void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)
 {
-    assert(m_target != nullptr);
-    assert(m_index != nullptr);
+    ASSERT(m_target != nullptr);
+    ASSERT(m_index != nullptr);
 
     bool target_side_effects = m_target->MayHaveSideEffects();
     bool index_side_effects = m_index->MayHaveSideEffects();
@@ -77,8 +77,8 @@ void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)
 
 void AstArrayAccess::Optimize(AstVisitor *visitor, Module *mod)
 {
-    assert(m_target != nullptr);
-    assert(m_index != nullptr);
+    ASSERT(m_target != nullptr);
+    ASSERT(m_index != nullptr);
 
     m_target->Optimize(visitor, mod);
     m_index->Optimize(visitor, mod);

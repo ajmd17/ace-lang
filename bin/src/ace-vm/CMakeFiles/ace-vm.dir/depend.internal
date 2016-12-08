@@ -12,6 +12,7 @@ src/ace-vm/CMakeFiles/ace-vm.dir/ace-vm.cpp.o
  ../include/ace-vm/static_memory.hpp
  ../include/ace-vm/vm.hpp
  ../include/ace-vm/vm_state.hpp
+ ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp
 src/ace-vm/CMakeFiles/ace-vm.dir/array.cpp.o
@@ -22,6 +23,7 @@ src/ace-vm/CMakeFiles/ace-vm.dir/array.cpp.o
  /Users/andrew/ace-lang/src/ace-vm/array.cpp
 src/ace-vm/CMakeFiles/ace-vm.dir/bytecode_stream.cpp.o
  ../include/ace-vm/bytecode_stream.hpp
+ ../include/common/my_assert.hpp
  /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp
 src/ace-vm/CMakeFiles/ace-vm.dir/exception.cpp.o
  ../include/ace-vm/exception.hpp
@@ -45,6 +47,7 @@ src/ace-vm/CMakeFiles/ace-vm.dir/main.cpp.o
  ../include/ace-vm/static_memory.hpp
  ../include/ace-vm/vm.hpp
  ../include/ace-vm/vm_state.hpp
+ ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace-vm/main.cpp
 src/ace-vm/CMakeFiles/ace-vm.dir/object.cpp.o
@@ -57,6 +60,7 @@ src/ace-vm/CMakeFiles/ace-vm.dir/stack_memory.cpp.o
  ../include/ace-vm/heap_value.hpp
  ../include/ace-vm/stack_memory.hpp
  ../include/ace-vm/stack_value.hpp
+ ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp
 src/ace-vm/CMakeFiles/ace-vm.dir/stack_value.cpp.o
@@ -70,8 +74,13 @@ src/ace-vm/CMakeFiles/ace-vm.dir/static_memory.cpp.o
  ../include/ace-vm/heap_value.hpp
  ../include/ace-vm/stack_value.hpp
  ../include/ace-vm/static_memory.hpp
+ ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp
+src/ace-vm/CMakeFiles/ace-vm.dir/type_info.cpp.o
+ ../include/ace-vm/type_info.hpp
+ ../include/common/my_assert.hpp
+ /Users/andrew/ace-lang/src/ace-vm/type_info.cpp
 src/ace-vm/CMakeFiles/ace-vm.dir/vm.cpp.o
  ../include/ace-vm/array.hpp
  ../include/ace-vm/bytecode_stream.hpp
@@ -82,9 +91,11 @@ src/ace-vm/CMakeFiles/ace-vm.dir/vm.cpp.o
  ../include/ace-vm/stack_memory.hpp
  ../include/ace-vm/stack_value.hpp
  ../include/ace-vm/static_memory.hpp
+ ../include/ace-vm/type_info.hpp
  ../include/ace-vm/vm.hpp
  ../include/ace-vm/vm_state.hpp
  ../include/common/instructions.hpp
+ ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace-vm/vm.cpp
 src/ace-vm/CMakeFiles/ace-vm.dir/vm_state.cpp.o
@@ -95,5 +106,6 @@ src/ace-vm/CMakeFiles/ace-vm.dir/vm_state.cpp.o
  ../include/ace-vm/stack_value.hpp
  ../include/ace-vm/static_memory.hpp
  ../include/ace-vm/vm_state.hpp
+ ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp

@@ -7,7 +7,7 @@
 
 #include <common/instructions.hpp>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 #include <iostream>
 
 AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
@@ -40,7 +40,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             }
         }
 
-        assert(m_assignment != nullptr);
+        ASSERT(m_assignment != nullptr);
 
         if (!m_assignment_already_visited) {
             // visit assignment
@@ -70,7 +70,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
 void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
-    assert(m_assignment != nullptr);
+    ASSERT(m_assignment != nullptr);
     if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
         // get current stack size
         int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();

@@ -4,6 +4,24 @@
 
 #include <algorithm>
 
+void VMState::Reset()
+{
+    // purge the heap
+    m_heap.Purge();
+    // reset heap threshold
+    m_max_heap_objects = GC_THRESHOLD_MIN;
+    // purge static memory
+    m_static_memory.Purge();
+    // purge the stack
+    m_exec_thread.m_stack.Purge();
+    // reset exception state
+    m_exec_thread.m_exception_state.Reset();
+    // reset register flags
+    m_exec_thread.m_regs.ResetFlags();
+    // we're good to go
+    good = true;
+}
+
 void VMState::ThrowException(const Exception &exception)
 {
     m_exec_thread.m_exception_state.m_exception_occured = true;
@@ -30,6 +48,8 @@ HeapValue *VMState::HeapAlloc()
         // run the gc
         m_exec_thread.m_stack.MarkAll();
         m_heap.Sweep();
+
+        utf::cout << "gc()\n";
 
         // check if size is still over the maximum,
         // and resize the maximum if necessary.

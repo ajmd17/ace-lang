@@ -108,7 +108,7 @@ src/ace-c/preinstall:
 src/ace-c/CMakeFiles/ace-c.dir/all:
 	$(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/depend
 	$(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71 "Built target ace-c"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72 "Built target ace-c"
 .PHONY : src/ace-c/CMakeFiles/ace-c.dir/all
 
 # Include target in all.
@@ -118,7 +118,7 @@ all: src/ace-c/CMakeFiles/ace-c.dir/all
 
 # Build rule for subdir invocation for target.
 src/ace-c/CMakeFiles/ace-c.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 69
 	$(MAKE) -f CMakeFiles/Makefile2 src/ace-c/CMakeFiles/ace-c.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 0
 .PHONY : src/ace-c/CMakeFiles/ace-c.dir/rule
@@ -163,7 +163,7 @@ src/ace-vm/preinstall:
 src/ace-vm/CMakeFiles/ace-vm.dir/all:
 	$(MAKE) -f src/ace-vm/CMakeFiles/ace-vm.dir/build.make src/ace-vm/CMakeFiles/ace-vm.dir/depend
 	$(MAKE) -f src/ace-vm/CMakeFiles/ace-vm.dir/build.make src/ace-vm/CMakeFiles/ace-vm.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=72,73,74,75,76,77,78,79,80,81,82,83,84,85 "Built target ace-vm"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=73,74,75,76,77,78,79,80,81,82,83,84,85,86,87 "Built target ace-vm"
 .PHONY : src/ace-vm/CMakeFiles/ace-vm.dir/all
 
 # Include target in all.
@@ -173,7 +173,7 @@ all: src/ace-vm/CMakeFiles/ace-vm.dir/all
 
 # Build rule for subdir invocation for target.
 src/ace-vm/CMakeFiles/ace-vm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 15
 	$(MAKE) -f CMakeFiles/Makefile2 src/ace-vm/CMakeFiles/ace-vm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 0
 .PHONY : src/ace-vm/CMakeFiles/ace-vm.dir/rule
@@ -229,7 +229,7 @@ all: src/ace/CMakeFiles/ace.dir/all
 
 # Build rule for subdir invocation for target.
 src/ace/CMakeFiles/ace.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 85
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 87
 	$(MAKE) -f CMakeFiles/Makefile2 src/ace/CMakeFiles/ace.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/andrew/ace-lang/bin/CMakeFiles 0
 .PHONY : src/ace/CMakeFiles/ace.dir/rule

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 
 AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &location)
     : AstExpression(location),
@@ -15,21 +15,31 @@ AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &loca
 {
 }
 
-void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
+void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
 {
     // make sure that the variable exists
     Scope &scope = mod->m_scopes.Top();
 
     // the variable must exist in the active scope or a parent scope
     m_identifier = mod->LookUpIdentifier(m_name, false);
-    // if the identifier was not found, 
+
+    // if the identifier was not found,
     // look in the global module to see if it is a global function.
     if (m_identifier == nullptr) {
         m_identifier = visitor->GetCompilationUnit()->
-            GetGlobalModule()->LookUpIdentifier(m_name, false);
+                GetGlobalModule()->LookUpIdentifier(m_name, false);
+    }
+}
+
+void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
+{
+    if (m_identifier == nullptr) {
+        PerformLookup(visitor, mod);
     }
 
     if (m_identifier == nullptr) {
+        // not found by PerformLookup() so check for module names
+        // here's where we'll add the errors
         bool found_module = false;
         // check all modules for one with the same name
         for (const auto &it : visitor->GetCompilationUnit()->m_modules) {
@@ -71,6 +81,6 @@ ObjectType AstIdentifier::GetObjectType() const
 
 int AstIdentifier::GetStackOffset(int stack_size) const
 {
-    assert(m_identifier != nullptr);
+    ASSERT(m_identifier != nullptr);
     return stack_size - m_identifier->GetStackLocation();
 }

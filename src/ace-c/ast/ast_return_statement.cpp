@@ -5,7 +5,7 @@
 
 #include <common/instructions.hpp>
 
-#include <cassert>
+#include <common/my_assert.hpp>
 
 AstReturnStatement::AstReturnStatement(const std::shared_ptr<AstExpression> &expr,
     const SourceLocation &location)
@@ -17,7 +17,7 @@ AstReturnStatement::AstReturnStatement(const std::shared_ptr<AstExpression> &exp
 
 void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
 {
-    assert(m_expr != nullptr);
+    ASSERT(m_expr != nullptr);
 
     m_expr->Visit(visitor, mod);
 
@@ -35,7 +35,7 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
     }
 
     if (in_function) {
-        assert(top != nullptr);
+        ASSERT(top != nullptr);
         // add return type
         top->m_value.AddReturnType(m_expr->GetObjectType(), m_location);
     } else {

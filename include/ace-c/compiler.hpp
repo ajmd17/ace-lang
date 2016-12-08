@@ -5,11 +5,21 @@
 
 class Compiler : public AstVisitor {
 public:
+    struct CondInfo {
+        AstStatement *cond;
+        AstStatement *then_part;
+        AstStatement *else_part;
+    };
+
     struct ExprInfo {
         AstExpression *left;
         AstExpression *right;
     };
 
+    /** Compiler a standard if-then-else statement into the program.
+        If the `else` expression is nullptr it will be omitted.
+    */
+    static void CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info);
     /** Standard evaluation order. Load left into register 0,
         then load right into register 1.
         Rinse and repeat.

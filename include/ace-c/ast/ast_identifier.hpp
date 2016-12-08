@@ -16,6 +16,8 @@ public:
     AstIdentifier(const std::string &name, const SourceLocation &location);
     virtual ~AstIdentifier() = default;
 
+    void PerformLookup(AstVisitor *visitor, Module *mod);
+
     inline const std::string &GetName() const { return m_name; }
     inline Identifier *GetIdentifier() const { return m_identifier; }
     inline AccessMode GetAccessMode() const { return m_access_mode; }

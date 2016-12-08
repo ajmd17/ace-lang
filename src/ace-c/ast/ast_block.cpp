@@ -1,12 +1,9 @@
 #include <ace-c/ast/ast_block.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/ast_visitor.hpp>
-#include <ace-c/module.hpp>
 #include <ace-c/ast/ast_return_statement.hpp>
 
 #include <common/instructions.hpp>
-
-#include <iostream>
 
 AstBlock::AstBlock(const SourceLocation &location)
     : AstStatement(location),

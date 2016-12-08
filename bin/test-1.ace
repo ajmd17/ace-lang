@@ -1,0 +1,31 @@
+module Test1
+
+type A {
+  a: String
+  b: Int
+  c: Number
+}
+
+type B {
+  a: A
+  doSomething = func() {
+    print 'doSomething()'
+  }
+}
+
+main = func() {
+  let b: B
+  b.a.a = 'Hello world'
+
+  let c: Any = b
+
+  print 'b.a = ', b.a
+  print 'b.a.a = ', b.a.a
+  print 'b.doSomething() = ', b.doSomething()
+
+
+  print 'c.a.a = ', c.a.a
+
+}
+
+main() 

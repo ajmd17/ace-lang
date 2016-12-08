@@ -2,7 +2,7 @@
 #include <ace-c/configuration.hpp>
 
 #include <unordered_set>
-#include <cassert>
+#include <common/my_assert.hpp>
 
 IdentifierTable::IdentifierTable()
     : m_identifier_index(0)
@@ -30,7 +30,7 @@ int IdentifierTable::CountUsedVariables() const
 
 Identifier *IdentifierTable::AddAlias(const std::string &name, Identifier *aliasee)
 {
-    assert(aliasee != nullptr);
+    ASSERT(aliasee != nullptr);
     m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(name,
         aliasee->GetIndex(), aliasee->GetFlags() | FLAG_ALIAS)));
     return m_identifiers.back().get();

@@ -6,7 +6,7 @@
 #include <common/instructions.hpp>
 
 #include <iostream>
-#include <cassert>
+#include <common/my_assert.hpp>
 
 AstObject::AstObject(const ObjectType &object_type,
     const SourceLocation &location)
@@ -35,7 +35,9 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, obj_reg, static_id);
 
     if (!ace::compiler::Config::use_static_objects) {
-        // no padding fill (instructions happen to be the same size)
+        // padding fill for LOAD_TYPE instruction!
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() +=
+                m_object_type.GetDataMembers().size() * sizeof(uint32_t);
     }
 
     // store newly allocated object in same register
@@ -53,7 +55,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     // for each data member, load the default value
     int i = 0;
     for (const DataMember &dm : m_object_type.GetDataMembers()) {
-        assert(dm.m_type.GetDefaultValue() != nullptr && "default value was nullptr");
+        ASSERT_MSG(dm.m_type.GetDefaultValue() != nullptr, "default value was nullptr");
 
         if (dm.m_type.IsRecordType()) {
             // the member is a record type, and there is no chance of the 
@@ -89,7 +91,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
             int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
             int diff = stack_size - obj_stack_loc;
-            assert(diff == 1);
+            ASSERT(diff == 1);
 
             // load type from stack
             visitor->GetCompilationUnit()->GetInstructionStream() <<

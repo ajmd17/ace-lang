@@ -3,29 +3,22 @@
 
 #include <ace-vm/stack_value.hpp>
 
+#include <cstdint>
+
 struct Member {
-    Member() {}
-    Member(const StackValue &name, const StackValue &value)
-        : name(name), value(value) {}
-    Member(const Member &other)
-        : name(other.name), value(other.value) {}
-
-    inline StackValue &GetName() { return name; }
-    inline const StackValue &GetName() const { return name; }
-    inline StackValue &GetValue() { return value; }
-    inline const StackValue &GetValue() const { return value; }
-
-    StackValue name;
+    uint32_t hash;
     StackValue value;
 };
 
 class Object {
 public:
-    Object(int size);
+    Object(int size, uint32_t *hashes);
     Object(const Object &other);
+    Object &operator=(const Object &other);
     ~Object();
 
-    Object &operator=(const Object &other);
+    Member *LookupMemberFromHash(uint32_t hash) const;
+
     inline bool operator==(const Object &other) const { return this == &other; }
 
     inline int GetSize() const { return m_size; }

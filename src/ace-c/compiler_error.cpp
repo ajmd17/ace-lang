@@ -74,6 +74,14 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_module_name_begins_lowercase, "module name '%' should begin with an uppercase character" },
 };
 
+CompilerError::CompilerError(const CompilerError &other)
+    : m_level(other.m_level),
+      m_msg(other.m_msg),
+      m_location(other.m_location),
+      m_text(other.m_text)
+{
+}
+
 bool CompilerError::operator<(const CompilerError &other) const
 {
     if (m_level == other.m_level) {

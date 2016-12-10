@@ -22,8 +22,8 @@ public:
     inline bool HasNext() const { return m_position < m_list.size(); }
     inline const SourceLocation &GetLocation() const { return m_list[m_position]->m_location; }
 
-    std::vector<std::shared_ptr<AstStatement>> m_list;
     int m_position;
+    std::vector<std::shared_ptr<AstStatement>> m_list;
 };
 
 #endif

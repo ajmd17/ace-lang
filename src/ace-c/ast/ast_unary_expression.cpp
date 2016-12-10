@@ -100,7 +100,7 @@ void AstUnaryExpression::Build(AstVisitor *visitor, Module *mod)
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         if (m_op->GetType() == ARITHMETIC) {
-            uint8_t opcode;
+            uint8_t opcode = 0;
 
             if (m_op == &Operator::operator_negative) {
                 opcode = NEG;

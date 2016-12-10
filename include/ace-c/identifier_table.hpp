@@ -23,10 +23,10 @@ public:
     Identifier *LookUpIdentifier(const std::string &name);
 
 private:
-    /** Uses std::list to avoid pointer invalidation. */
-    std::vector<std::shared_ptr<Identifier>> m_identifiers;
     /** To be incremented every time a new identifier is added */
     int m_identifier_index;
+    /** List of all identifiers in the table */
+    std::vector<std::shared_ptr<Identifier>> m_identifiers;
 };
 
 #endif

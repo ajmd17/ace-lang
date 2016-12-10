@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+ <key>clang_version</key>
+<string>Apple LLVM version 8.0.0 (clang-800.0.38)</string>
+ <key>files</key>
+ <array>
+  <string>/Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp</string>
+ </array>
+ <key>diagnostics</key>
+ <array>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>52</integer>
+      <key>col</key><integer>9</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>52</integer>
+         <key>col</key><integer>14</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>52</integer>
+         <key>col</key><integer>85</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>188eec4948966c0ed9dcc2944c969271</string>
+  <key>issue_context_kind</key><string>function</string>
+  <key>issue_context</key><string>LoadMemberFromHashAndCall</string>
+  <key>issue_hash_function_offset</key><string>25</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>52</integer>
+   <key>col</key><integer>9</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>142</integer>
+      <key>col</key><integer>9</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>142</integer>
+         <key>col</key><integer>14</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>142</integer>
+         <key>col</key><integer>85</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>ce50b55aaf8d313fe8e984938f6810d7</string>
+  <key>issue_context_kind</key><string>function</string>
+  <key>issue_context</key><string>LoadMemberAtIndexAndCall</string>
+  <key>issue_hash_function_offset</key><string>25</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>142</integer>
+   <key>col</key><integer>9</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>351</integer>
+      <key>col</key><integer>5</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>351</integer>
+         <key>col</key><integer>10</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>351</integer>
+         <key>col</key><integer>83</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>f39c8c3d2cc73f78293d9c31930dabbc</string>
+  <key>issue_context_kind</key><string>C++ method</string>
+  <key>issue_context</key><string>Build</string>
+  <key>issue_hash_function_offset</key><string>16</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>351</integer>
+   <key>col</key><integer>5</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>452</integer>
+      <key>col</key><integer>21</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>452</integer>
+         <key>col</key><integer>26</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>452</integer>
+         <key>col</key><integer>99</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>ead4c90bcbcf42ae1f82c76db9e95e9f</string>
+  <key>issue_context_kind</key><string>C++ method</string>
+  <key>issue_context</key><string>Build</string>
+  <key>issue_hash_function_offset</key><string>117</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>452</integer>
+   <key>col</key><integer>21</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>455</integer>
+      <key>col</key><integer>21</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>455</integer>
+         <key>col</key><integer>26</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>455</integer>
+         <key>col</key><integer>97</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>9a01e8cec42a6e692e8e7428e554f454</string>
+  <key>issue_context_kind</key><string>C++ method</string>
+  <key>issue_context</key><string>Build</string>
+  <key>issue_hash_function_offset</key><string>120</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>455</integer>
+   <key>col</key><integer>21</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>549</integer>
+      <key>col</key><integer>13</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>549</integer>
+         <key>col</key><integer>18</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>549</integer>
+         <key>col</key><integer>91</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>178e94a5fed73e2653ae92b34f557402</string>
+  <key>issue_context_kind</key><string>C++ method</string>
+  <key>issue_context</key><string>Build</string>
+  <key>issue_hash_function_offset</key><string>214</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>549</integer>
+   <key>col</key><integer>13</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>570</integer>
+      <key>col</key><integer>17</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>570</integer>
+         <key>col</key><integer>22</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>570</integer>
+         <key>col</key><integer>95</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>e15ac77377000ef40cc133559e157fec</string>
+  <key>issue_context_kind</key><string>C++ method</string>
+  <key>issue_context</key><string>Build</string>
+  <key>issue_hash_function_offset</key><string>235</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>570</integer>
+   <key>col</key><integer>17</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+  <dict>
+   <key>path</key>
+   <array>
+    <dict>
+     <key>kind</key><string>event</string>
+     <key>location</key>
+     <dict>
+      <key>line</key><integer>578</integer>
+      <key>col</key><integer>17</integer>
+      <key>file</key><integer>0</integer>
+     </dict>
+     <key>ranges</key>
+     <array>
+       <array>
+        <dict>
+         <key>line</key><integer>578</integer>
+         <key>col</key><integer>22</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+        <dict>
+         <key>line</key><integer>578</integer>
+         <key>col</key><integer>95</integer>
+         <key>file</key><integer>0</integer>
+        </dict>
+       </array>
+     </array>
+     <key>depth</key><integer>0</integer>
+     <key>extended_message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+     <key>message</key>
+     <string>Value stored to &apos;rp&apos; is never read</string>
+    </dict>
+   </array>
+   <key>description</key><string>Value stored to &apos;rp&apos; is never read</string>
+   <key>category</key><string>Dead store</string>
+   <key>type</key><string>Dead assignment</string>
+   <key>check_name</key><string>deadcode.DeadStores</string>
+   <!-- This hash is experimental and going to change! -->
+   <key>issue_hash_content_of_line_in_context</key><string>e15ac77377000ef40cc133559e157fec</string>
+  <key>issue_context_kind</key><string>C++ method</string>
+  <key>issue_context</key><string>Build</string>
+  <key>issue_hash_function_offset</key><string>243</string>
+  <key>location</key>
+  <dict>
+   <key>line</key><integer>578</integer>
+   <key>col</key><integer>17</integer>
+   <key>file</key><integer>0</integer>
+  </dict>
+  </dict>
+ </array>
+</dict>
+</plist>

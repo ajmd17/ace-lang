@@ -1,0 +1,14 @@
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/ace-vm.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/array.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/bytecode_stream.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/exception.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/heap_memory.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/heap_value.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/main.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/object.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/stack_memory.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/stack_value.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/static_memory.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/type_info.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/vm.o
+/Users/andrew/ace-lang/bin/src/ace-vm/ace-lang.build/Release/ace-vm.build/Objects-normal/x86_64/vm_state.o

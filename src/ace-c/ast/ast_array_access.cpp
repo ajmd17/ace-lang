@@ -34,10 +34,9 @@ void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)
 
     bool target_side_effects = m_target->MayHaveSideEffects();
     bool index_side_effects = m_index->MayHaveSideEffects();
-
+    
+    uint8_t rp;
     uint8_t r0, r1;
-
-    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
     Compiler::ExprInfo info {
         m_target.get(), m_index.get()

@@ -61,7 +61,7 @@ private:
     Token Expect(Token::TokenType type, bool read = false);
     Token ExpectKeyword(Keywords keyword, bool read = false);
     Token ExpectOperator(const Operator *op, bool read = false);
-    const SourceLocation &CurrentLocation() const;
+    SourceLocation CurrentLocation() const;
 
     /** Skip past newlines and semicolons.
         Returns true if any were hit.

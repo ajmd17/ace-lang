@@ -598,15 +598,15 @@ public:
     {
         size_t this_len = std::strlen(m_data);
         size_t other_len = std::strlen(str);
+        size_t new_size = this_len + other_len + 1;
 
-        if (this_len + other_len < m_size) {
+        if (new_size <= m_size) {
             std::strcat(m_data, str);
-            m_size += other_len;
             // calculate utf-8 length of string and add it
             m_length += utf8_strlen(str);
         } else {
             // we must delete and recreate the array
-            m_size = this_len + other_len + 1;
+            m_size = new_size;
 
             char *new_data = new char[m_size];
             std::strcpy(new_data, m_data);

@@ -193,15 +193,13 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
     } else {
         AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
         AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
-        AstFunctionCall *left_as_call = dynamic_cast<AstFunctionCall*>(m_left.get());
-        AstFunctionCall *right_as_call = dynamic_cast<AstFunctionCall*>(m_right.get());
-
+        
         Compiler::ExprInfo info {
             m_left.get(), m_right.get()
         };
 
         if (m_op->GetType() == ARITHMETIC) {
-            uint8_t opcode;
+            uint8_t opcode = 0;
 
             if (m_op == &Operator::operator_add) {
                 opcode = ADD;
@@ -213,7 +211,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 opcode = DIV;
             }
 
-            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+            uint8_t rp;
 
             if (left_as_binop == nullptr && right_as_binop != nullptr) {
                 // if the right hand side is a binary operation,
@@ -578,6 +576,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
         } else if (m_op->GetType() == COMPARISON) {
             uint8_t rp;
             uint8_t opcode;
+            
             bool swapped = false;
 
             if (m_op == &Operator::operator_equals) {
@@ -718,8 +717,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
             } else {
                 // assignment/operation
-
-                uint8_t opcode;
+                uint8_t opcode = 0;
+                
                 if (m_op == &Operator::operator_add_assign) {
                     opcode = ADD;
                 } else if (m_op == &Operator::operator_subtract_assign) {

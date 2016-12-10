@@ -173,7 +173,7 @@ u32char Lexer::ReadEscapeCode()
     // location of the start of the escape code
     SourceLocation location = m_source_location;
 
-    u32char esc;
+    u32char esc = 0;
 
     if (HasNext()) {
         int pos_change = 0;

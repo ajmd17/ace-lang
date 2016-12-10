@@ -18,6 +18,8 @@ public:
     inline const std::string &GetFilePath() const { return m_filepath; }
     inline char *GetBuffer() const { return m_buffer; }
     inline size_t GetSize() const { return m_size; }
+    
+    void ReadIntoBuffer(const char *data, size_t size);
 
 private:
     std::string m_filepath;

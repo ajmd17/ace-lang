@@ -47,9 +47,8 @@ public:
     inline const SourceLocation &GetLocation() const { return m_location; }
     inline bool Empty() const { return m_type == Token_empty; }
     
-    // operator bool() is false if the token is empty
-    inline operator bool() const
-        { return m_type != Token_empty; }
+    // return true if not empty
+    inline explicit operator bool() const { return m_type != TokenType::Token_empty; }
 
     bool IsContinuationToken() const;
 

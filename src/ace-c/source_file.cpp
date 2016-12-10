@@ -1,5 +1,7 @@
 #include <ace-c/source_file.hpp>
 
+#include <common/my_assert.hpp>
+
 #include <stdexcept>
 #include <cstring>
 
@@ -30,4 +32,10 @@ SourceFile &SourceFile::operator>>(const std::string &str)
     }
 
     return *this;
+}
+
+void SourceFile::ReadIntoBuffer(const char *data, size_t size)
+{
+    ASSERT(m_size >= size);
+    std::memcpy(m_buffer, data, size);
 }

@@ -17,9 +17,6 @@ AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &loca
 
 void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
 {
-    // make sure that the variable exists
-    Scope &scope = mod->m_scopes.Top();
-
     // the variable must exist in the active scope or a parent scope
     m_identifier = mod->LookUpIdentifier(m_name, false);
 

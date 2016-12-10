@@ -215,7 +215,7 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
 
             // send code to be compiled
             SourceFile source_file("<stdin>", line.GetBufferSize());
-            std::memcpy(source_file.GetBuffer(), line.GetData(), line.GetBufferSize());
+            source_file.ReadIntoBuffer(line.GetData(), line.GetBufferSize());
             SourceStream source_stream(&source_file);
 
             TokenStream token_stream;
@@ -231,11 +231,15 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
 
             compilation_unit.GetErrorList().SortErrors();
             for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
+                
+                std::string filename = error.GetLocation().GetFileName();
+                std::string error_text = error.GetText();
+                
                 utf::cout
-                        << utf::Utf8String(error.GetLocation().GetFileName().c_str()) << " "
+                        << utf::Utf8String(filename.c_str()) << " "
                         << "[" << (error.GetLocation().GetLine() + 1)
                         << ", " << (error.GetLocation().GetColumn() + 1)
-                        << "]: " << utf::Utf8String(error.GetText().c_str()) << "\n";
+                        << "]: " << utf::Utf8String(error_text.c_str()) << "\n";
             }
 
             if (!compilation_unit.GetErrorList().HasFatalErrors()) {

@@ -110,9 +110,11 @@ public:
             break;
         }
 
-        MakeMessage(error_message_strings.at(m_msg).c_str(), args...);
+        std::string msg_str = error_message_strings.at(m_msg);
+        MakeMessage(msg_str.c_str(), args...);
     }
-
+    
+    CompilerError(const CompilerError &other);
     ~CompilerError() {}
 
     inline ErrorLevel GetLevel() const { return m_level; }

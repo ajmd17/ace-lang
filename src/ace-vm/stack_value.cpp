@@ -89,7 +89,7 @@ utf::Utf8String StackValue::ToString()
         }
         break;
     case StackValue::BOOLEAN:
-        n = snprintf(buf, buf_size, "%s", m_value.b ? "true" : "false");
+        snprintf(buf, buf_size, "%s", m_value.b ? "true" : "false");
         return utf::Utf8String(buf);
         break;
     case StackValue::HEAP_POINTER:
@@ -100,7 +100,7 @@ utf::Utf8String StackValue::ToString()
         
         if (m_value.ptr == nullptr) {
             // special case for null pointers
-            n = snprintf(buf, buf_size, "%s", "null");
+            snprintf(buf, buf_size, "%s", "null");
             return utf::Utf8String(buf);
         } else if ((str = m_value.ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // return the string directly
@@ -108,7 +108,6 @@ utf::Utf8String StackValue::ToString()
         } else if ((arrayptr = m_value.ptr->GetPointer<Array>()) != nullptr) {
             // convert array list to string
             const char sep_str[] = ", ";
-            int sep_str_len = std::strlen(sep_str);
 
             utf::Utf8String res("[", 256);
 

@@ -1,5 +1,8 @@
 #include <ace-c/configuration.hpp>
 
+const int ace::compiler::Config::MAX_DATA_MEMBERS = 255;
+const std::string ace::compiler::Config::GLOBAL_MODULE_NAME = "_Global_";
+
 bool ace::compiler::Config::lazy_declarations = true;
 bool ace::compiler::Config::use_static_objects = true;
 bool ace::compiler::Config::cull_unused_objects = true;

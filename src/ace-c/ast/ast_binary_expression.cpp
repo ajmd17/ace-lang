@@ -53,6 +53,14 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
             result = (*left_as_constant) && right_as_constant;
         } else if (oper == &Operator::operator_logical_or) {
             result = (*left_as_constant) || right_as_constant;
+        } else if (oper == &Operator::operator_less) {
+            result = (*left_as_constant) < right_as_constant;
+        } else if (oper == &Operator::operator_greater) {
+            result = (*left_as_constant) > right_as_constant;
+        } else if (oper == &Operator::operator_less_eql) {
+            result = (*left_as_constant) <= right_as_constant;
+        } else if (oper == &Operator::operator_greater_eql) {
+            result = (*left_as_constant) >= right_as_constant;
         } else if (oper == &Operator::operator_equals) {
             result = left_as_constant->Equals(right_as_constant);
         }

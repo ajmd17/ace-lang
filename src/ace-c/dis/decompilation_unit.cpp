@@ -494,7 +494,7 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                     << "load_mem_hash ["
                         << "%" << (int)reg << ", "
                         << "%" << (int)src << ", "
-                        << "u32(" << (int)hash << ")"
+                        << "u32(" << hash << ")"
                     << "]"
                     << std::endl;
             }

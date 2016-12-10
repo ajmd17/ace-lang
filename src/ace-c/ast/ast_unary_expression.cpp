@@ -13,7 +13,7 @@
 
 #include <common/my_assert.hpp>
 
-/** Attemps to evaluate the optimized expression at compile-time. */
+/** Attempts to evaluate the optimized expression at compile-time. */
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &target, 
     const Operator *oper, AstVisitor *visitor)
 {

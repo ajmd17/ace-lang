@@ -1,0 +1,18 @@
+module Types
+
+type T{
+  id: Int
+  name: String
+}
+
+if 3 >= 5+5 {
+  let t: T
+  print t.id
+  print t.name
+  t.name = 'hi'
+  print t.name
+}
+
+Runtime.gc()
+Runtime.gc()
+

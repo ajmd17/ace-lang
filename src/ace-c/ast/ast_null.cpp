@@ -132,6 +132,26 @@ std::shared_ptr<AstConstant> AstNull::operator||(
         new AstInteger(right->IntValue(), m_location));
 }
 
+std::shared_ptr<AstConstant> AstNull::operator<(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstNull::operator>(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstNull::operator<=(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstNull::operator>=(AstConstant *right) const
+{
+    return nullptr;
+}
+
 std::shared_ptr<AstConstant> AstNull::Equals(AstConstant *right) const
 {
     if (dynamic_cast<AstNull*>(right) != nullptr) {

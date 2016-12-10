@@ -27,7 +27,7 @@ void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
     // look in the global module to see if it is a global function.
     if (m_identifier == nullptr) {
         m_identifier = visitor->GetCompilationUnit()->
-                GetGlobalModule()->LookUpIdentifier(m_name, false);
+            GetGlobalModule()->LookUpIdentifier(m_name, false);
     }
 }
 

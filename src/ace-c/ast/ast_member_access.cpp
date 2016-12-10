@@ -3,10 +3,11 @@
 #include <ace-c/emit/static_object.hpp>
 #include <ace-c/ast/ast_variable.hpp>
 #include <ace-c/ast/ast_function_call.hpp>
-#include <ace-c/ast/ast_generated_statement.hpp>
+#include <ace-c/ast/ast_generated_expression.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/compiler.hpp>
 #include <ace-c/module.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -372,20 +373,112 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 
                     int found_member_reg = -1;
 
-                    std::shared_ptr<AstGeneratedStatement> cond(
+                    // the label to jump to the very end
+                    StaticObject end_label;
+                    end_label.m_type = StaticObject::TYPE_LABEL;
+                    end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                    // the label to jump to the else-part
+                    StaticObject else_label;
+                    else_label.m_type = StaticObject::TYPE_LABEL;
+                    else_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+                    // build the conditional
+                    // get current register index
+                    // claim register to hold the object we're loading the member from
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+                    // compile in the instruction to check if it has the member
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(HAS_MEM_HASH, rp, rp - 1, hash);
+
+                    found_member_reg = rp;
+
+                    // store the data in a register
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+
+                    // compare the found member to zero
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t>(CMPZ, found_member_reg);
+
+                    // load the label address from static memory into register 0
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
+
+                    if (!ace::compiler::Config::use_static_objects) {
+                        // fill with padding, for LOAD_ADDR instruction.
+                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                    }
+
+                    // jump if condition is false or zero.
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t>(JE, rp);
+
+                    // enter the block
+                    // the member was found here, so we can call what was in the register.
+
+                    // push args
+                    int nargs = field_as_call->GetArguments().size();
+                    field_as_call->BuildArgumentsStart(visitor, mod);
+                    // invoke it.
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint8_t>(CALL, (uint8_t)found_member_reg, (uint8_t)nargs);
+
+                    // pop args
+                    field_as_call->BuildArgumentsEnd(visitor, mod);
+
+                    // unclaim register used to hold the object we're loading the member from
+                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+
+                    // this is the `else` part
+                    // jump to the very end now that we've accepted the if-block
+                    visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+                    // get current register index
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                    // load the label address from static memory into register 1
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+                    if (!ace::compiler::Config::use_static_objects) {
+                        // fill with padding, for LOAD_ADDR instruction.
+                        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                    }
+                    // jump if they are equal: i.e the value is false
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t>(JMP, rp);
+                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                    // get current register index
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+                    // unclaim for conditional
+                    rp = visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+
+                    // set the label's position to where the else-block would be
+                    else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
+
+                    // member was not found, so use UCS
+                    BuildUCS(visitor, mod, field_as_call);
+
+                    // set the label's position to after the block,
+                    // so we can skip it if the condition is false
+                    end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+                    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+
+                    /*std::shared_ptr<AstGeneratedStatement> cond(
                             new AstGeneratedStatement(
                                     // visit
                                     nullptr,
                                     // build
                                     [=, &found_member_reg](AstVisitor *v, Module *m) {
                                         // get current register index
-                                        uint8_t rp = v->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+                                        // claim register to hold the object we're loading the member from
+                                        uint8_t rp = v->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
                                         // compile in the instruction to check if it has the member
                                         v->GetCompilationUnit()->GetInstructionStream() <<
-                                            Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(
-                                                    HAS_MEM_HASH, rp, rp,
-                                                    hash);
+                                            Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(HAS_MEM_HASH, rp, rp - 1, hash);
 
                                         found_member_reg = rp;
 
@@ -402,7 +495,7 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
                                     // visit
                                     nullptr,
                                     // build
-                                    [=](AstVisitor *v, Module *m) {
+                                    [=, &found_member_reg](AstVisitor *v, Module *m) {
                                         // the member was found here, so we can call what was in the register.
 
                                         // push args
@@ -410,12 +503,12 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
                                         field_as_call->BuildArgumentsStart(visitor, mod);
                                         // invoke it.
                                         v->GetCompilationUnit()->GetInstructionStream() <<
-                                            Instruction<uint8_t, uint8_t, uint8_t>(
-                                                    CALL,
-                                                    (uint8_t) found_member_reg,
-                                                    (uint8_t) nargs);
+                                            Instruction<uint8_t, uint8_t, uint8_t>(CALL, (uint8_t)found_member_reg, (uint8_t)nargs);
                                         // pop args
                                         field_as_call->BuildArgumentsEnd(v, m);
+
+                                        // unclaim register used to hold the object we're loading the member from
+                                        v->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
                                     },
                                     // optimize
                                     nullptr,
@@ -441,12 +534,9 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
                     };
 
                     // build the conditional into the program
-                    Compiler::CreateConditional(visitor, mod, info);
+                    Compiler::CreateConditional(visitor, mod, info);*/
 
                     // decrease register usage from the conditional
-                    visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-                    // get current register index
-                    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
                 }
 

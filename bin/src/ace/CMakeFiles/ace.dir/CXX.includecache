@@ -714,6 +714,8 @@ string
 vector
 -
 
+../include/ace/runtime.hpp
+
 ../include/common/cli_args.hpp
 algorithm
 -
@@ -726,6 +728,14 @@ iostream
 
 ../include/common/str_util.hpp
 string
+-
+algorithm
+-
+functional
+-
+cctype
+-
+locale
 -
 
 ../include/common/utf8.hpp
@@ -769,6 +779,8 @@ common/my_assert.hpp
 /Users/andrew/ace-lang/src/ace/main.cpp
 ace/api.hpp
 -
+ace/runtime.hpp
+-
 ace-c/ace-c.hpp
 -
 ace-c/configuration.hpp
@@ -787,8 +799,6 @@ ace-vm/object.hpp
 -
 ace-vm/array.hpp
 -
-common/utf8.hpp
--
 common/cli_args.hpp
 -
 common/str_util.hpp
@@ -799,10 +809,14 @@ sstream
 -
 chrono
 -
-common/my_assert.hpp
+algorithm
 -
 cstdio
 -
 cstdlib
+-
+
+/Users/andrew/ace-lang/src/ace/runtime.cpp
+ace/runtime.hpp
 -
 

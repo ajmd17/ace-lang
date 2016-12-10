@@ -20,61 +20,61 @@ Parser::Parser(const Parser &other)
 {
 }
 
-const Token *Parser::MatchAhead(Token::TokenType type, int n)
+Token Parser::MatchAhead(Token::TokenType type, int n)
 {
-    const Token *peek = m_token_stream->Peek(n);
-    if (peek != nullptr && peek->GetType() == type) {
+    Token peek = m_token_stream->Peek(n);
+    if (peek && peek.GetType() == type) {
         return peek;
     }
-    return nullptr;
+    return Token::EMPTY;
 }
 
-const Token *Parser::Match(Token::TokenType type, bool read)
+Token Parser::Match(Token::TokenType type, bool read)
 {
-    const Token *peek = m_token_stream->Peek();
-    if (peek != nullptr && peek->GetType() == type) {
+    Token peek = m_token_stream->Peek();
+    if (peek && peek.GetType() == type) {
         if (read) {
             m_token_stream->Next();
         }
         return peek;
     }
-    return nullptr;
+    return Token::EMPTY;
 }
 
-const Token *Parser::MatchKeyword(Keywords keyword, bool read)
+Token Parser::MatchKeyword(Keywords keyword, bool read)
 {
-    const Token *peek = m_token_stream->Peek();
-    if (peek != nullptr && peek->GetType() == Token::TokenType::Token_keyword) {
+    Token peek = m_token_stream->Peek();
+    if (peek && peek.GetType() == Token::TokenType::Token_keyword) {
         std::string str = Keyword::ToString(keyword);
-        if (peek->GetValue() == str) {
+        if (peek.GetValue() == str) {
             if (read) {
                 m_token_stream->Next();
             }
             return peek;
         }
     }
-    return nullptr;
+    return Token::EMPTY;
 }
 
-const Token *Parser::MatchOperator(const Operator *op, bool read)
+Token Parser::MatchOperator(const Operator *op, bool read)
 {
-    const Token *peek = m_token_stream->Peek();
-    if (peek != nullptr && peek->GetType() == Token::TokenType::Token_operator) {
+    Token peek = m_token_stream->Peek();
+    if (peek && peek.GetType() == Token::TokenType::Token_operator) {
         std::string str = op->ToString();
-        if (peek->GetValue() == str) {
+        if (peek.GetValue() == str) {
             if (read) {
                 m_token_stream->Next();
             }
             return peek;
         }
     }
-    return nullptr;
+    return Token::EMPTY;
 }
 
-const Token *Parser::Expect(Token::TokenType type, bool read)
+Token Parser::Expect(Token::TokenType type, bool read)
 {
-    const Token *token = Match(type, read);
-    if (token == nullptr) {
+    Token token = Match(type, read);
+    if (token) {
         SourceLocation location = CurrentLocation();
 
         ErrorMessage error_msg;
@@ -98,10 +98,10 @@ const Token *Parser::Expect(Token::TokenType type, bool read)
     return token;
 }
 
-const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
+Token Parser::ExpectKeyword(Keywords keyword, bool read)
 {
-    const Token *token = MatchKeyword(keyword, read);
-    if (token == nullptr) {
+    Token token = MatchKeyword(keyword, read);
+    if (token) {
         SourceLocation location = CurrentLocation();
         if (read) {
             m_token_stream->Next();
@@ -128,10 +128,10 @@ const Token *Parser::ExpectKeyword(Keywords keyword, bool read)
     return token;
 }
 
-const Token *Parser::ExpectOperator(const Operator *op, bool read)
+Token Parser::ExpectOperator(const Operator *op, bool read)
 {
-    const Token *token = MatchOperator(op, read);
-    if (token == nullptr) {
+    Token token = MatchOperator(op, read);
+    if (token) {
         SourceLocation location = CurrentLocation();
         if (read) {
             m_token_stream->Next();
@@ -151,8 +151,7 @@ const Token *Parser::ExpectOperator(const Operator *op, bool read)
 
 const SourceLocation &Parser::CurrentLocation() const
 {
-    const Token *peek = m_token_stream->Peek();
-    return peek != nullptr ? peek->GetLocation() : SourceLocation::eof;
+    return m_token_stream->Peek().GetLocation();
 }
 
 void Parser::SkipStatementTerminators()
@@ -168,13 +167,13 @@ void Parser::Parse(bool expect_module_decl)
         std::shared_ptr<AstModuleDeclaration> module_ast;
 
         // all source code files must start with module declaration
-        const Token *module_decl = ExpectKeyword(Keyword_module, true);
-        if (module_decl != nullptr) {
-            const Token *module_name = Expect(Token::TokenType::Token_identifier, true);
-            ASSERT(module_name != nullptr);
+        Token module_decl = ExpectKeyword(Keyword_module, true);
+        if (module_decl) {
+            Token module_name = Expect(Token::TokenType::Token_identifier, true);
+            ASSERT(module_name);
 
             module_ast.reset(new AstModuleDeclaration(
-                module_name->GetValue(), module_decl->GetLocation()));
+                module_name.GetValue(), module_decl.GetLocation()));
 
             m_ast_iterator->Push(module_ast);
         }
@@ -301,9 +300,10 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 
     if (expr != nullptr) {
         if (Match(Token::TokenType::Token_dot, false)) {
-            return ParseMemberAccess(expr);
-        } else if (Match(Token::TokenType::Token_open_bracket, false)) {
-            return ParseArrayAccess(expr);
+            expr = ParseMemberAccess(expr);
+        }
+        if (Match(Token::TokenType::Token_open_bracket, false)) {
+            expr = ParseArrayAccess(expr);
         }
     }
 

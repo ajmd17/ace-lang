@@ -50,68 +50,57 @@ std::shared_ptr<AstConstant> AstFalse::operator+(AstConstant *right) const
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator-(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator-(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator*(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator*(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator/(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator/(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator%(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator%(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator^(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator^(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator&(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator|(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator|(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator<<(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator<<(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator>>(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator>>(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator&&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator&&(AstConstant *right) const
 {
     return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }
 
-std::shared_ptr<AstConstant> AstFalse::operator||(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstFalse::operator||(AstConstant *right) const
 {
     bool right_true = right->IsTrue();
     if (right_true == 1) {
@@ -121,6 +110,26 @@ std::shared_ptr<AstConstant> AstFalse::operator||(
     } else {
         return nullptr;
     }
+}
+
+std::shared_ptr<AstConstant> AstFalse::operator<(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstFalse::operator>(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstFalse::operator<=(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstFalse::operator>=(AstConstant *right) const
+{
+    return nullptr;
 }
 
 std::shared_ptr<AstConstant> AstFalse::Equals(AstConstant *right) const

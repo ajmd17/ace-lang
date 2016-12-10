@@ -1,5 +1,7 @@
 #include <ace-c/token.hpp>
 
+const Token Token::EMPTY = Token(Token::TokenType::Token_empty, "", SourceLocation::eof);
+
 std::string Token::TokenTypeToString(TokenType type)
 {
     switch (type) {

@@ -139,11 +139,13 @@ ace-vm/ace-vm.hpp
 -
 ace-vm/bytecode_stream.hpp
 -
+common/my_assert.hpp
+-
 fstream
 -
 chrono
 -
-common/my_assert.hpp
+cstdint
 -
 
 /Users/andrew/ace-lang/src/ace-vm/array.cpp

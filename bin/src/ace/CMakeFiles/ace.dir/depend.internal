@@ -150,8 +150,12 @@ src/ace/CMakeFiles/ace.dir/main.cpp.o
  ../include/ace-vm/vm.hpp
  ../include/ace-vm/vm_state.hpp
  ../include/ace/api.hpp
+ ../include/ace/runtime.hpp
  ../include/common/cli_args.hpp
  ../include/common/my_assert.hpp
  ../include/common/str_util.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace/main.cpp
+src/ace/CMakeFiles/ace.dir/runtime.cpp.o
+ ../include/ace/runtime.hpp
+ /Users/andrew/ace-lang/src/ace/runtime.cpp

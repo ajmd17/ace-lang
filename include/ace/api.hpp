@@ -1,6 +1,7 @@
 #ifndef API_HPP
 #define API_HPP
 
+#include <ace-c/configuration.hpp>
 #include <ace-c/compilation_unit.hpp>
 #include <ace-vm/ace-vm.hpp>
 
@@ -11,24 +12,41 @@ namespace ace {
 
 class API {
 public:
-    static const std::string GLOBAL_MODULE_NAME;
+    struct NativeVariableDefine {
+        std::string name;
+        ObjectType type;
+        NativeInitializerPtr_t initializer_ptr;
 
-public:
+        NativeVariableDefine(
+            const std::string &name,
+            const ObjectType &type,
+            NativeInitializerPtr_t initializer_ptr)
+            : name(name),
+              type(type),
+              initializer_ptr(initializer_ptr)
+        {
+        }
+
+        NativeVariableDefine(const NativeVariableDefine &other)
+            : name(other.name),
+              type(other.type),
+              initializer_ptr(other.initializer_ptr)
+        {
+        }
+    };
+
     struct NativeFunctionDefine {
-        std::string module_name;
         std::string function_name;
         ObjectType return_type;
         std::vector<ObjectType> param_types;
         NativeFunctionPtr_t ptr;
 
         NativeFunctionDefine(
-            const std::string &module_name,
             const std::string &function_name,
             const ObjectType &return_type,
             const std::vector<ObjectType> &param_types,
             NativeFunctionPtr_t ptr)
-            : module_name(module_name),
-              function_name(function_name),
+            : function_name(function_name),
               return_type(return_type),
               param_types(param_types),
               ptr(ptr)
@@ -36,8 +54,7 @@ public:
         }
 
         NativeFunctionDefine(const NativeFunctionDefine &other)
-            : module_name(other.module_name),
-              function_name(other.function_name),
+            : function_name(other.function_name),
               return_type(other.return_type),
               param_types(other.param_types),
               ptr(other.ptr)
@@ -45,8 +62,52 @@ public:
         }
     };
 
-    static void BindNativeFunction(const NativeFunctionDefine &def,
-        VM *vm, CompilationUnit *compilation_unit);
+    struct TypeDefine {
+    public:
+        std::string m_name;
+        std::vector<NativeFunctionDefine> m_methods;
+        std::vector<NativeVariableDefine> m_members;
+
+        TypeDefine &Member(const std::string &member_name,
+            const ObjectType &member_type,
+            NativeInitializerPtr_t ptr);
+
+        TypeDefine &Method(const std::string &method_name,
+            const ObjectType &return_type,
+            const std::vector<ObjectType> &param_types,
+            NativeFunctionPtr_t ptr);
+    };
+
+    struct ModuleDefine {
+    public:
+        std::string m_name;
+        std::vector<TypeDefine> m_types;
+        std::vector<NativeFunctionDefine> m_function_defs;
+        std::vector<NativeVariableDefine> m_variable_defs;
+
+        TypeDefine &Type(const std::string &type_name);
+
+        ModuleDefine &Variable(const std::string &variable_name,
+            const ObjectType &variable_type,
+            NativeInitializerPtr_t ptr);
+
+        ModuleDefine &Function(const std::string &function_name,
+            const ObjectType &return_type,
+            const std::vector<ObjectType> &param_types,
+            NativeFunctionPtr_t ptr);
+
+        void BindAll(VM *vm, CompilationUnit *compilation_unit);
+
+    private:
+        void BindNativeVariable(const NativeVariableDefine &def,
+            VM *vm, CompilationUnit *compilation_unit);
+
+        void BindNativeFunction(const NativeFunctionDefine &def,
+            VM *vm, CompilationUnit *compilation_unit);
+
+        void BindType(const TypeDefine &def,
+            VM *vm, CompilationUnit *compilation_unit);
+    };
 };
 
 class APIInstance {
@@ -55,16 +116,15 @@ public:
     APIInstance(const APIInstance &other) = delete;
     ~APIInstance() {}
 
-    APIInstance &Function(const std::string &module_name,
-        const std::string &function_name,
-        const ObjectType &return_type,
-        const std::vector<ObjectType> &param_types,
-        NativeFunctionPtr_t ptr);
+    API::ModuleDefine &Module(const std::string &name);
 
     void BindAll(VM *vm, CompilationUnit *compilation_unit);
 
 private:
-    std::vector<API::NativeFunctionDefine> m_defs;
+    std::vector<API::ModuleDefine> m_module_defs;
+
+    //std::vector<API::NativeFunctionDefine> m_function_defs;
+    //std::vector<API::NativeVariableDefine> m_variable_defs;
 };
 
 } // namespace ace

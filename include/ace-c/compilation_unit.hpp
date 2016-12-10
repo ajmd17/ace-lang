@@ -16,12 +16,16 @@ public:
 
     inline std::unique_ptr<Module> &GetGlobalModule() { return m_modules[0]; }
     inline const std::unique_ptr<Module> &GetGlobalModule() const { return m_modules[0]; }
+
     inline std::unique_ptr<Module> &GetModule(int i) { return m_modules[i]; }
     inline const std::unique_ptr<Module> &GetModule(int i) const { return m_modules[i]; }
+
     inline std::unique_ptr<Module> &GetCurrentModule() { return m_modules[m_module_index]; }
     inline const std::unique_ptr<Module> &GetCurrentModule() const { return m_modules[m_module_index]; }
+
     inline ErrorList &GetErrorList() { return m_error_list; }
     inline const ErrorList &GetErrorList() const { return m_error_list; }
+
     inline InstructionStream &GetInstructionStream() { return m_instruction_stream; }
     inline const InstructionStream &GetInstructionStream() const { return m_instruction_stream; }
 

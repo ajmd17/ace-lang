@@ -93,7 +93,7 @@ enum Instructions : char {
     NEW,       // new [% dst, % type]
     NEW_ARRAY, // new_array [% dst, u32 size]
 
-    /* Compare to register values */
+    /* Compare two register values */
     CMP,  // cmp [% lhs, % rhs]
     CMPZ, // cmpz [% lhs]
 

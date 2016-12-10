@@ -4,10 +4,10 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/module.hpp>
 #include <ace-c/emit/static_object.hpp>
+#include <ace-c/configuration.hpp>
 
 #include <common/hasher.hpp>
-
-#include <iostream>
+#include <common/my_assert.hpp>
 
 AstTypeDefinition::AstTypeDefinition(const std::string &name,
     const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
@@ -68,6 +68,8 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         // mangle the type name
         std::string type_name = mod->GetName() + "." + m_name;
         size_t len = type_name.length();
+
+        ASSERT((int)m_num_members < ace::compiler::Config::MAX_DATA_MEMBERS);
 
         // create static object
         StaticTypeInfo st;

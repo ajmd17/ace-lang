@@ -54,13 +54,13 @@ private:
     TokenStream *m_token_stream;
     CompilationUnit *m_compilation_unit;
 
-    const Token *MatchAhead(Token::TokenType type, int n);
-    const Token *Match(Token::TokenType type, bool read = false);
-    const Token *MatchKeyword(Keywords keyword, bool read = false);
-    const Token *MatchOperator(const Operator *op, bool read = false);
-    const Token *Expect(Token::TokenType type, bool read = false);
-    const Token *ExpectKeyword(Keywords keyword, bool read = false);
-    const Token *ExpectOperator(const Operator *op, bool read = false);
+    Token MatchAhead(Token::TokenType type, int n);
+    Token Match(Token::TokenType type, bool read = false);
+    Token MatchKeyword(Keywords keyword, bool read = false);
+    Token MatchOperator(const Operator *op, bool read = false);
+    Token Expect(Token::TokenType type, bool read = false);
+    Token ExpectKeyword(Keywords keyword, bool read = false);
+    Token ExpectOperator(const Operator *op, bool read = false);
     const SourceLocation &CurrentLocation() const;
 
     /** Skip past newlines and semicolons.

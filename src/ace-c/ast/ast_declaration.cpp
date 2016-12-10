@@ -37,23 +37,43 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_redeclared_identifier_module, m_location, m_name));
         } else {
-            // add identifier
-            m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
-
-            bool in_function = false;
-
-            TreeNode<Scope> *top = mod->m_scopes.TopNode();
-            while (top != nullptr) {
-                if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
-                    in_function = true;
-                    break;
+            // check it it is a type
+            bool found_type = false;
+            if (ObjectType::GetBuiltinType(m_name) != nullptr) {
+                found_type = true;
+            } else {
+                // check non-builtin types
+                ObjectType tmp;
+                if (mod->LookUpUserType(m_name, tmp)) {
+                    found_type = true;
+                } else if (visitor->GetCompilationUnit()->GetGlobalModule()->LookUpUserType(m_name, tmp)) {
+                    // global module
+                    found_type = true;
                 }
-                top = top->m_parent;
             }
 
-            if (in_function) {
-                // set declared in function flag
-                m_identifier->GetFlags() |= FLAG_DECLARED_IN_FUNCTION;
+            if (found_type) {
+                visitor->GetCompilationUnit()->GetErrorList().AddError(
+                    CompilerError(Level_fatal, Msg_redeclared_identifier_type, m_location, m_name));
+            } else {
+                // add identifier
+                m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
+
+                bool in_function = false;
+
+                TreeNode<Scope> *top = mod->m_scopes.TopNode();
+                while (top != nullptr) {
+                    if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
+                        in_function = true;
+                        break;
+                    }
+                    top = top->m_parent;
+                }
+
+                if (in_function) {
+                    // set declared in function flag
+                    m_identifier->GetFlags() |= FLAG_DECLARED_IN_FUNCTION;
+                }
             }
         }
     }

@@ -30,11 +30,13 @@ void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_time, 
     int64_t bytecode_size = file.tellg();
     file.seekg(0, std::ios::beg);
 
+    ASSERT(bytecode_size > 0);
+
     char *bytecodes = new char[bytecode_size];
     file.read(bytecodes, bytecode_size);
     file.close();
 
-    BytecodeStream bytecode_stream(bytecodes, bytecode_size, pos);
+    BytecodeStream bytecode_stream(bytecodes, (size_t)bytecode_size, pos);
 
     vm->SetBytecodeStream(&bytecode_stream);
 

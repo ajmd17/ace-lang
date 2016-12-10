@@ -13,6 +13,7 @@ struct StackValue;
 struct VMState;
 
 typedef void(*NativeFunctionPtr_t)(VMState*, StackValue**, int);
+typedef void(*NativeInitializerPtr_t)(VMState*, StackValue*);
 
 struct Function {
     uint32_t m_addr;

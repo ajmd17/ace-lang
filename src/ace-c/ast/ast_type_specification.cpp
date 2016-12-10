@@ -22,15 +22,18 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
         if (m_right == nullptr) {
             // only the left is here so check this module only
             if (!mod->LookUpUserType(m_left, m_object_type)) {
-                // first check if there is an identifier with the
-                // same name, maybe the user was confused
-                if (mod->LookUpIdentifier(m_left, false)) {
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_expected_type_got_identifier, m_location, m_left));
-                } else {
-                    // error, unknown type
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_undefined_type, m_location, m_left));
+                // check the global module for the specified type
+                if (!visitor->GetCompilationUnit()->GetGlobalModule()->LookUpUserType(m_left, m_object_type)) {
+                    // first check if there is an identifier with the
+                    // same name, maybe the user was confused
+                    if (mod->LookUpIdentifier(m_left, false)) {
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(
+                            CompilerError(Level_fatal, Msg_expected_type_got_identifier, m_location, m_left));
+                    } else {
+                        // error, unknown type
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(
+                            CompilerError(Level_fatal, Msg_undefined_type, m_location, m_left));
+                    }
                 }
             }
         } else {

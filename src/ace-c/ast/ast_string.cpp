@@ -150,6 +150,27 @@ std::shared_ptr<AstConstant> AstString::operator||(
     return std::shared_ptr<AstTrue>(new AstTrue(m_location));
 }
 
+
+std::shared_ptr<AstConstant> AstString::operator<(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstString::operator>(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstString::operator<=(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstString::operator>=(AstConstant *right) const
+{
+    return nullptr;
+}
+
 std::shared_ptr<AstConstant> AstString::Equals(AstConstant *right) const
 {
     // TODO

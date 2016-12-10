@@ -536,6 +536,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/compilation_unit.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/compiler.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/compiler_error.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/configuration.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/emit/instruction.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/emit/static_object.hpp
@@ -824,6 +825,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/s
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/typedefs.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/common/hasher.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../src/ace-c/ast/ast_type_definition.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_specification.cpp.o: ../include/ace-c/ast/ast_expression.hpp
@@ -943,6 +945,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_variable_declaration.cpp.o: ../src/ace-c/
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/ast/ast_constant.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/ast/ast_expression.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/ast/ast_statement.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/ast/ast_undefined.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/ast/ast_void.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/object_type.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_void.cpp.o: ../include/ace-c/source_location.hpp
@@ -1064,6 +1067,7 @@ src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../include/ace-c/e
 src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../include/ace-c/emit/static_object.hpp
 src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../include/common/instructions.hpp
+src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/emit/instruction_stream.cpp.o: ../src/ace-c/emit/instruction_stream.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/emit/static_object.cpp.o: ../include/ace-c/emit/static_object.hpp

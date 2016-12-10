@@ -665,6 +665,14 @@ iostream
 ../include/common/str_util.hpp
 string
 -
+algorithm
+-
+functional
+-
+cctype
+-
+locale
+-
 
 ../include/common/utf8.hpp
 iostream
@@ -819,13 +827,9 @@ ace-c/emit/instruction.hpp
 -
 ace-c/ast_visitor.hpp
 -
-ace-c/module.hpp
--
 ace-c/ast/ast_return_statement.hpp
 -
 common/instructions.hpp
--
-iostream
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp
@@ -1045,6 +1049,8 @@ ace-c/compiler.hpp
 -
 ace-c/module.hpp
 -
+ace-c/configuration.hpp
+-
 common/instructions.hpp
 -
 common/my_assert.hpp
@@ -1199,7 +1205,7 @@ ace-c/emit/static_object.hpp
 -
 common/hasher.hpp
 -
-iostream
+common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp
@@ -1279,6 +1285,8 @@ iostream
 /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp
 ace-c/ast/ast_void.hpp
 -
+ace-c/ast/ast_undefined.hpp
+-
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp
 ace-c/ast/ast_while_loop.hpp
@@ -1353,11 +1361,11 @@ ace-c/configuration.hpp
 -
 common/instructions.hpp
 -
+common/my_assert.hpp
+-
 algorithm
 -
 cstring
--
-iostream
 -
 
 /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp

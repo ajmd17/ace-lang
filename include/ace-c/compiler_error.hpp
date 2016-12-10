@@ -35,6 +35,7 @@ enum ErrorMessage {
     Msg_too_few_args,
     Msg_redeclared_identifier,
     Msg_redeclared_identifier_module,
+    Msg_redeclared_identifier_type,
     Msg_undeclared_identifier,
     Msg_expected_identifier,
     Msg_ambiguous_identifier,

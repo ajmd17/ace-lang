@@ -1,4 +1,5 @@
 #include <ace-c/ast/ast_void.hpp>
+#include <ace-c/ast/ast_undefined.hpp>
 
 AstVoid::AstVoid(const SourceLocation &location)
     : AstConstant(location)
@@ -34,95 +35,102 @@ a_float AstVoid::FloatValue() const
     return 0.0f;
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator+(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator+(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator-(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator-(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator*(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator*(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator/(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator/(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator%(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator%(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator^(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator^(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator&(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator|(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator|(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator<<(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator<<(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator>>(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator>>(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator&&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator&&(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::operator||(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator||(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
-std::shared_ptr<AstConstant> AstVoid::Equals(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstVoid::operator<(AstConstant *right) const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
+}
+
+std::shared_ptr<AstConstant> AstVoid::operator>(AstConstant *right) const
+{
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
+}
+
+std::shared_ptr<AstConstant> AstVoid::operator<=(AstConstant *right) const
+{
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
+}
+
+std::shared_ptr<AstConstant> AstVoid::operator>=(AstConstant *right) const
+{
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
+}
+
+std::shared_ptr<AstConstant> AstVoid::Equals(AstConstant *right) const
+{
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator-() const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator~() const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
 
 std::shared_ptr<AstConstant> AstVoid::operator!() const
 {
-    return nullptr;
+    return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }

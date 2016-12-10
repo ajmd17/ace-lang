@@ -33,16 +33,23 @@ public:
     };
 
     static std::string TokenTypeToString(Token::TokenType type);
+    
+    static const Token EMPTY;
 
 public:
     Token(TokenType type, const std::string &value,
         const SourceLocation &location);
+    
     Token(const Token &other);
 
     inline TokenType GetType() const { return m_type; }
     inline const std::string &GetValue() const { return m_value; }
     inline const SourceLocation &GetLocation() const { return m_location; }
     inline bool Empty() const { return m_type == Token_empty; }
+    
+    // operator bool() is false if the token is empty
+    inline operator bool() const
+        { return m_type != Token_empty; }
 
     bool IsContinuationToken() const;
 

@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/andrew/ace-lang/src/ace/api.cpp" "/Users/andrew/ace-lang/bin/src/ace/CMakeFiles/ace.dir/api.cpp.o"
   "/Users/andrew/ace-lang/src/ace/main.cpp" "/Users/andrew/ace-lang/bin/src/ace/CMakeFiles/ace.dir/main.cpp.o"
+  "/Users/andrew/ace-lang/src/ace/runtime.cpp" "/Users/andrew/ace-lang/bin/src/ace/CMakeFiles/ace.dir/runtime.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
 

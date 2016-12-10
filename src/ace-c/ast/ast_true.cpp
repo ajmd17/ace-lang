@@ -124,6 +124,26 @@ std::shared_ptr<AstConstant> AstTrue::operator||(
     return std::shared_ptr<AstTrue>(new AstTrue(m_location));
 }
 
+std::shared_ptr<AstConstant> AstTrue::operator<(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstTrue::operator>(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstTrue::operator<=(AstConstant *right) const
+{
+    return nullptr;
+}
+
+std::shared_ptr<AstConstant> AstTrue::operator>=(AstConstant *right) const
+{
+    return nullptr;
+}
+
 std::shared_ptr<AstConstant> AstTrue::Equals(AstConstant *right) const
 {
     if (dynamic_cast<AstTrue*>(right) != nullptr) {

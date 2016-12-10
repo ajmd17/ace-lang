@@ -215,7 +215,7 @@
 		<Unit filename="/Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp">
 			<Option target="ace-c"/>
 		</Unit>
-		<Unit filename="/Users/andrew/ace-lang/src/ace-c/ast/ast_generated_statement.cpp">
+		<Unit filename="/Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp">
 			<Option target="ace-c"/>
 		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp">
@@ -426,6 +426,9 @@
 			<Option target="ace"/>
 		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace/main.cpp">
+			<Option target="ace"/>
+		</Unit>
+		<Unit filename="/Users/andrew/ace-lang/src/ace/runtime.cpp">
 			<Option target="ace"/>
 		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/CMakeLists.txt">

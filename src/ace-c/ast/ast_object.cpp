@@ -37,7 +37,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     if (!ace::compiler::Config::use_static_objects) {
         // padding fill for LOAD_TYPE instruction!
         visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() +=
-                m_object_type.GetDataMembers().size() * sizeof(uint32_t);
+            m_object_type.GetDataMembers().size() * sizeof(uint32_t);
     }
 
     // store newly allocated object in same register

@@ -119,7 +119,6 @@ void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::Exp
     // if left is a function call, we have to move rhs to the stack!
     // otherwise, the function call will overwrite what's in register 0.
     int stack_size_before = 0;
-
     if (left_side_effects) {
         // store value of the right hand side on the stack
         visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(PUSH, rp);

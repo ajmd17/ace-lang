@@ -20,6 +20,7 @@ public:
 
     inline const std::string &GetName() const { return m_name; }
     inline Identifier *GetIdentifier() const { return m_identifier; }
+    inline void SetIdentifier(Identifier *identifier) { m_identifier = identifier; }
     inline AccessMode GetAccessMode() const { return m_access_mode; }
     inline void SetAccessMode(AccessMode access_mode) { m_access_mode = access_mode; }
 

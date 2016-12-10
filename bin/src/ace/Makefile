@@ -179,6 +179,33 @@ main.cpp.s:
 	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+runtime.o: runtime.cpp.o
+
+.PHONY : runtime.o
+
+# target to build an object file
+runtime.cpp.o:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/runtime.cpp.o
+.PHONY : runtime.cpp.o
+
+runtime.i: runtime.cpp.i
+
+.PHONY : runtime.i
+
+# target to preprocess a source file
+runtime.cpp.i:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/runtime.cpp.i
+.PHONY : runtime.cpp.i
+
+runtime.s: runtime.cpp.s
+
+.PHONY : runtime.s
+
+# target to generate assembly for a file
+runtime.cpp.s:
+	cd /Users/andrew/ace-lang/bin && $(MAKE) -f src/ace/CMakeFiles/ace.dir/build.make src/ace/CMakeFiles/ace.dir/runtime.cpp.s
+.PHONY : runtime.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -194,6 +221,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... runtime.o"
+	@echo "... runtime.i"
+	@echo "... runtime.s"
 .PHONY : help
 
 

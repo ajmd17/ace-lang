@@ -1,4 +1,5 @@
 #include <ace/api.hpp>
+#include <ace/runtime.hpp>
 
 #include <ace-c/ace-c.hpp>
 #include <ace-c/configuration.hpp>
@@ -11,10 +12,8 @@
 #include <ace-vm/object.hpp>
 #include <ace-vm/array.hpp>
 
-#include <common/utf8.hpp>
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
-#include <common/my_assert.hpp>
 
 #include <string>
 #include <sstream>
@@ -35,6 +34,8 @@ void Runtime_gc(VMState *state, StackValue **args, int nargs)
     // clear stringstream
     ss.str("");*/
 
+    size_t heap_size_before = state->GetHeap().Size();
+
     if (nargs != 0) {
         state->ThrowException(Exception::InvalidArgsException(0, nargs));
         return;
@@ -43,6 +44,10 @@ void Runtime_gc(VMState *state, StackValue **args, int nargs)
     // run the gc
     state->m_exec_thread.m_stack.MarkAll();
     state->m_heap.Sweep();
+
+    size_t heap_size_after = state->GetHeap().Size();
+
+    utf::cout << (heap_size_before - heap_size_after) << " object(s) collected.\n";
 
   /*  // dump heap to stringstream, after GC
     ss << "After:\n" << state->m_heap << "\n\n";
@@ -258,48 +263,29 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
                     }
                     ast_iterator.SetPosition(old_pos);
                 } else {
+                    int64_t bytecode_file_size;
+
                     temp_bytecode_file << compilation_unit.GetInstructionStream();
                     compilation_unit.GetInstructionStream().ClearInstructions();
+                    bytecode_file_size = temp_bytecode_file.tellp();
                     temp_bytecode_file.close();
 
-                    // store stack size so that we can revert on error
-                    size_t stack_size_before = vm->GetState().GetExecutionThread().GetStack().GetStackPointer();
+                    // check if we even have to run the bytecode file
+                    if (bytecode_file_size - file_pos > 0) {
 
-                    ace_vm::RunBytecodeFile(vm, out_filename, false, file_pos);
+                        // store stack size so that we can revert on error
+                        size_t stack_size_before = vm->GetState().GetExecutionThread().GetStack().GetStackPointer();
 
-                    if (!vm->GetState().good) {
-                        // if an exception was unhandled, ask the user if they'd like to restart.
-                        utf::cout <<
-                            "A runtime error has occurred within this script.\n"
-                            "Would you like to go back to the previous state? Answering (N) will destroy the script.";
+                        ace_vm::RunBytecodeFile(vm, out_filename, false, file_pos);
 
-                        int response = -1;
-                        while (response == -1) {
-                            utf::cout << " (Y/n): ";
-
-                            std::string str;
-                            std::getline(std::cin, str);
-                            str = str_util::trim(str);
-
-                            if (!str.empty()) {
-                                int ch = std::tolower(str[0]);
-                                if (ch == 'y') {
-                                    response = 1;
-                                } else if (ch == 'n') {
-                                    response = 0;
-                                } else {
-                                    utf::cout << "I'm sorry, I didn't catch that. I only understand yes and no.";
-                                    response = -1;
-                                }
-                            }
-                        }
-
-                        if (response == 1) {
+                        if (!vm->GetState().good) {
+                            // if an exception was unhandled go back to previous state
                             // overwrite the bytecode file with the code that has been generated up to the point of error
                             // start by loading it into a temporary buffer
-                            std::ifstream tmp_is(out_filename.GetData(), std::ios::in | std::ios::binary | std::ios::ate);
+                            std::ifstream tmp_is(out_filename.GetData(),
+                                std::ios::in | std::ios::binary | std::ios::ate);
                             // len is only the amount of bytes up to where we were before in the file.
-                            int64_t len = std::min((int64_t)tmp_is.tellg(), file_pos);
+                            int64_t len = std::min((int64_t) tmp_is.tellg(), file_pos);
                             // create buffer
                             char *buf = new char[len];
                             // seek to beginning
@@ -337,13 +323,10 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
                             // restart the script
                             return REPL(vm, compilation_unit, "", false);
                         } else {
-                            // user selected no
-                            return 1;
+                            // everything is good, no compile or runtime errors here
+                            // store the line
+                            code += line;
                         }
-                    } else {
-                        // everything is good, no compile or runtime errors here
-                        // store the line
-                        code += line;
                     }
                 }
             } else {
@@ -358,18 +341,16 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
 
             utf::cout << "> ";
         } else {
-            if (wait_for_next) {
-                if (indent) {
-                    for (int i = 0; i < indent; i++) {
-                        utf::cout << "..";
-                    }
-                } else {
-                    if (parentheses_counter || bracket_counter || cont_token) {
-                        utf::cout << "..";
-                    }
+            if (indent) {
+                for (int i = 0; i < indent; i++) {
+                    utf::cout << "..";
                 }
-                utf::cout << "  ";
+            } else {
+                if (parentheses_counter || bracket_counter || cont_token) {
+                    utf::cout << "..";
+                }
             }
+            utf::cout << "  ";
         }
     }
 
@@ -384,9 +365,59 @@ int main(int argc, char *argv[])
     CompilationUnit compilation_unit;
 
     APIInstance api;
-    api.Function("Runtime", "gc", ObjectType::type_builtin_void, {}, Runtime_gc);
-    api.Function(API::GLOBAL_MODULE_NAME, "to_string", ObjectType::type_builtin_string, {}, Global_to_string);
-    api.Function(API::GLOBAL_MODULE_NAME, "length", ObjectType::type_builtin_int, {}, Global_length);
+
+    api.Module("Runtime")
+        .Function("gc", ObjectType::type_builtin_void, {}, Runtime_gc)
+        .Variable("version", ObjectType::type_builtin_string, [](VMState *state, StackValue *out) {
+            ASSERT(state != nullptr);
+            ASSERT(out != nullptr);
+
+            // allocate heap value
+            HeapValue *hv = state->HeapAlloc();
+
+            ASSERT(hv != nullptr);
+
+            // create each version object
+            StackValue sv_major;
+            sv_major.m_type = StackValue::INT32;
+            sv_major.m_value.i32 = Runtime::VERSION_MAJOR;
+
+            StackValue sv_minor;
+            sv_minor.m_type = StackValue::INT32;
+            sv_minor.m_value.i32 = Runtime::VERSION_MINOR;
+
+            StackValue sv_patch;
+            sv_patch.m_type = StackValue::INT32;
+            sv_patch.m_value.i32 = Runtime::VERSION_PATCH;
+
+            // create array
+            Array res(3);
+            res.AtIndex(0) = sv_major;
+            res.AtIndex(1) = sv_minor;
+            res.AtIndex(2) = sv_patch;
+
+            // assign heap value to array
+            hv->Assign(res);
+
+            // assign the out value to this
+            out->m_type = StackValue::HEAP_POINTER;
+            out->m_value.ptr = hv;
+        });
+
+    api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
+        .Function("to_string", ObjectType::type_builtin_string, {}, Global_to_string)
+        .Function("length", ObjectType::type_builtin_int, {}, Global_length);
+
+    api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
+        .Type("Thread")
+        .Member("id", ObjectType::type_builtin_int, [](VMState *state, StackValue *out) {
+            out->m_type = StackValue::INT32;
+            out->m_value.i32 = 1337;
+        })
+        .Method("start", ObjectType::type_builtin_void, {}, [](VMState *state, StackValue **args, int nargs) {
+            utf::cout << "Thread.start called\n";
+        });
+
     api.BindAll(vm, &compilation_unit);
 
     if (argc == 1) {

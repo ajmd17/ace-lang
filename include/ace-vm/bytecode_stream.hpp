@@ -20,9 +20,7 @@ public:
 
     template <typename T>
     inline void Read(T *ptr, size_t num_bytes = sizeof(T))
-    {
-        ReadBytes(reinterpret_cast<char*>(ptr), num_bytes);
-    }
+        { ReadBytes(reinterpret_cast<char*>(ptr), num_bytes); }
 
     inline size_t Position() const { return m_position; }
     inline size_t Size() const { return m_size; }

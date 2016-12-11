@@ -111,8 +111,9 @@ public:
 
     HeapValue *HeapAlloc();
     void Echo(StackValue &value);
-    void InvokeFunction(StackValue &value, uint8_t num_args);
-    void HandleInstruction(uint8_t code);
+    void InvokeFunction(ExecutionThread *thread, StackValue &value, uint8_t num_args);
+    void HandleInstruction(ExecutionThread *thread, uint8_t code);
+    void LaunchThread(ExecutionThread *thread);
     void Execute();
 
 private:

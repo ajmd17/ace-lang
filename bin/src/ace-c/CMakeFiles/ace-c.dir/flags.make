@@ -34,7 +34,7 @@ CXX_INCLUDES = -I/Users/andrew/ace-lang/include
 
 # Custom defines: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o_DEFINES = __FILENAME__=ast_function_expression.cpp
 
-# Custom defines: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o_DEFINES = __FILENAME__=ast_generated_statement.cpp
+# Custom defines: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o_DEFINES = __FILENAME__=ast_generated_expression.cpp
 
 # Custom defines: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o_DEFINES = __FILENAME__=ast_identifier.cpp
 

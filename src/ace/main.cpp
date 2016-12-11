@@ -431,7 +431,7 @@ int main(int argc, char *argv[])
         // do not cull unused objects
         ace::compiler::Config::cull_unused_objects = false;
 
-        REPL(vm, compilation_unit, "module repl;\n");
+        REPL(vm, compilation_unit, "  module repl\n");
 
     } else if (argc >= 2) {
         enum {

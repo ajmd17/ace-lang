@@ -12,7 +12,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o"
-  "CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o"
+  "CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o"
   "CMakeFiles/ace-c.dir/ast/ast_import.cpp.o"

@@ -369,28 +369,28 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o.provides: src/a
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o.provides.build: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o
 
 
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: src/ace-c/CMakeFiles/ace-c.dir/flags.make
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../src/ace-c/ast/ast_generated_statement.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o"
-	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   $(CXX_DEFINES) -D__FILENAME__=ast_generated_statement.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o -c /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_statement.cpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: src/ace-c/CMakeFiles/ace-c.dir/flags.make
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: ../src/ace-c/ast/ast_generated_expression.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/andrew/ace-lang/bin/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o"
+	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   $(CXX_DEFINES) -D__FILENAME__=ast_generated_expression.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o -c /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp
 
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.i"
-	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=ast_generated_statement.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_statement.cpp > CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.i
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.i"
+	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=ast_generated_expression.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp > CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.i
 
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.s"
-	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=ast_generated_statement.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_statement.cpp -o CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.s
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.s"
+	cd /Users/andrew/ace-lang/bin/src/ace-c && /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) -D__FILENAME__=ast_generated_expression.cpp $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp -o CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.s
 
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.requires:
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.requires:
 
-.PHONY : src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.requires
+.PHONY : src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.requires
 
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.provides: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.requires
-	$(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.provides.build
-.PHONY : src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.provides
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.provides: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.requires
+	$(MAKE) -f src/ace-c/CMakeFiles/ace-c.dir/build.make src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.provides.build
+.PHONY : src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.provides
 
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.provides.build: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.provides.build: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o
 
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: src/ace-c/CMakeFiles/ace-c.dir/flags.make
@@ -1704,7 +1704,7 @@ ace__c_OBJECTS = \
 "CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o" \
 "CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o" \
 "CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o" \
-"CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o" \
+"CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o" \
 "CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o" \
 "CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o" \
 "CMakeFiles/ace-c.dir/ast/ast_import.cpp.o" \
@@ -1776,7 +1776,7 @@ src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_float.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o
-src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o
+src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o
 src/ace-c/libace-c.a: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_import.cpp.o
@@ -1855,7 +1855,7 @@ src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_call.cpp.o.requires
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_definition.cpp.o.requires
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o.requires
-src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o.requires
+src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o.requires
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o.requires
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_if_statement.cpp.o.requires
 src/ace-c/CMakeFiles/ace-c.dir/requires: src/ace-c/CMakeFiles/ace-c.dir/ast/ast_import.cpp.o.requires

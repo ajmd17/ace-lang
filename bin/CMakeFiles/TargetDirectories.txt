@@ -1,5 +1,13 @@
-/Users/andrew/ace-lang/bin/CMakeFiles/ALL_BUILD.dir
-/Users/andrew/ace-lang/bin/CMakeFiles/ZERO_CHECK.dir
+/Users/andrew/ace-lang/bin/CMakeFiles/edit_cache.dir
+/Users/andrew/ace-lang/bin/CMakeFiles/rebuild_cache.dir
+/Users/andrew/ace-lang/bin/src/CMakeFiles/edit_cache.dir
+/Users/andrew/ace-lang/bin/src/CMakeFiles/rebuild_cache.dir
+/Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/edit_cache.dir
+/Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/rebuild_cache.dir
 /Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/ace-c.dir
+/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/edit_cache.dir
+/Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/rebuild_cache.dir
 /Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir
+/Users/andrew/ace-lang/bin/src/ace/CMakeFiles/edit_cache.dir
+/Users/andrew/ace-lang/bin/src/ace/CMakeFiles/rebuild_cache.dir
 /Users/andrew/ace-lang/bin/src/ace/CMakeFiles/ace.dir

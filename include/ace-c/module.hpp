@@ -20,8 +20,14 @@ public:
     /** Check to see if the identifier exists in multiple scopes, starting
         from the currently opened scope.
         If this_scope_only is set to true, only the current scope will be
-        searched. */
+        searched.
+    */
     Identifier *LookUpIdentifier(const std::string &name, bool this_scope_only);
+    /** Check to see if the identifier exists in this scope or above this one.
+        Will only search the number of depth levels it is given.
+        Pass `1` for this scope only.
+    */
+    Identifier *LookUpIdentifierDepth(const std::string &name, int depth_level);
 
     /** Check to see if a user has declared a type with this name */
     bool LookUpUserType(const std::string &type, ObjectType &out);

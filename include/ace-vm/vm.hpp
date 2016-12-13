@@ -9,12 +9,14 @@
 #include <cstdint>
 #include <cstdio>
 
+#define MAIN_THREAD m_state.m_threads[0]
+
 #define THROW_COMPARISON_ERROR(lhs, rhs) \
     do { \
         char buffer[256]; \
         std::sprintf(buffer, "cannot compare '%s' with '%s'", \
             lhs.GetTypeString(), rhs.GetTypeString()); \
-        m_state.ThrowException(Exception(buffer)); \
+        m_state.ThrowException(thread, Exception(buffer)); \
     } while (0)
 
 #define IS_VALUE_INTEGER(stack_value) \
@@ -39,14 +41,14 @@
 #define COMPARE_FLOATING_POINT(lhs, rhs) \
     do { \
         if (IS_VALUE_FLOATING_POINT(rhs) || IS_VALUE_INTEGER(rhs)) { \
-            double left = GetValueDouble(lhs); \
-            double right = GetValueDouble(rhs); \
+            double left = GetValueDouble(thread, lhs); \
+            double right = GetValueDouble(thread, rhs); \
             if (left > right) { \
-                m_state.m_exec_thread.m_regs.m_flags = GREATER; \
+                thread->m_regs.m_flags = GREATER; \
             } else if (left == right) { \
-                m_state.m_exec_thread.m_regs.m_flags = EQUAL; \
+                thread->m_regs.m_flags = EQUAL; \
             } else { \
-                m_state.m_exec_thread.m_regs.m_flags = NONE; \
+                thread->m_regs.m_flags = NONE; \
             } \
         } else { \
             THROW_COMPARISON_ERROR(lhs, rhs); \
@@ -57,11 +59,11 @@
     do { \
         if (rhs.m_type == StackValue::HEAP_POINTER) { \
             if (lhs.m_value.ptr > rhs.m_value.ptr) { \
-                m_state.m_exec_thread.m_regs.m_flags = GREATER; \
+                thread->m_regs.m_flags = GREATER; \
             } else if (lhs.m_value.ptr == rhs.m_value.ptr) { \
-                m_state.m_exec_thread.m_regs.m_flags = EQUAL; \
+                thread->m_regs.m_flags = EQUAL; \
             } else { \
-                m_state.m_exec_thread.m_regs.m_flags = NONE; \
+                thread->m_regs.m_flags = NONE; \
             } \
         } else { \
             THROW_COMPARISON_ERROR(lhs, rhs); \
@@ -72,12 +74,12 @@
     do { \
         if (rhs.m_type == StackValue::FUNCTION) { \
             if (lhs.m_value.func.m_addr > rhs.m_value.func.m_addr) { \
-                m_state.m_exec_thread.m_regs.m_flags = GREATER; \
+                thread->m_regs.m_flags = GREATER; \
             } else if (lhs.m_value.func.m_addr == rhs.m_value.func.m_addr && \
                 rhs.m_value.func.m_nargs == lhs.m_value.func.m_nargs) { \
-                m_state.m_exec_thread.m_regs.m_flags = EQUAL; \
+                thread->m_regs.m_flags = EQUAL; \
             } else { \
-                m_state.m_exec_thread.m_regs.m_flags = NONE; \
+                thread->m_regs.m_flags = NONE; \
             } \
         } else { \
             THROW_COMPARISON_ERROR(lhs, rhs); \
@@ -96,7 +98,7 @@ enum CompareFlags : int {
 
 class VM {
 public:
-    VM(BytecodeStream *bs = nullptr);
+    VM();
     VM(const VM &other) = delete;
     ~VM();
 
@@ -105,24 +107,15 @@ public:
     inline VMState &GetState() { return m_state; }
     inline const VMState &GetState() const { return m_state; }
     inline Heap &GetHeap() { return m_state.m_heap; }
-    inline ExecutionThread &GetExecutionThread() { return m_state.m_exec_thread; }
-    inline BytecodeStream *GetBytecodeStream() const { return m_bs; }
-    inline void SetBytecodeStream(BytecodeStream *bs) { m_bs = bs; }
 
-    HeapValue *HeapAlloc();
-    void Echo(StackValue &value);
-    void InvokeFunction(ExecutionThread *thread, StackValue &value, uint8_t num_args);
-    void HandleInstruction(ExecutionThread *thread, uint8_t code);
+    void Print(const StackValue &value);
+    void Invoke(ExecutionThread *thread, BytecodeStream *bs, const StackValue &value, uint8_t num_args);
+    void HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t code);
     void LaunchThread(ExecutionThread *thread);
     void Execute();
 
 private:
     VMState m_state;
-
-    BytecodeStream *m_bs;
-
-    /** A quick way to check if there is an instruction left to execute */
-    inline bool HasNextInstruction() const { return m_bs->Position() < m_bs->Size(); }
 
     /** Returns the value as a 64-bit integer without checking if it is not of that type. */
     inline int64_t GetIntFast(const StackValue &stack_value) 
@@ -134,7 +127,7 @@ private:
     }
 
     /** Returns the value as a 64-bit integer, throwing an error if the type is invalid. */
-    inline int64_t GetValueInt64(const StackValue &stack_value)
+    inline int64_t GetValueInt64(ExecutionThread *thread, const StackValue &stack_value)
     {
         switch (stack_value.m_type) {
         case StackValue::INT32:
@@ -152,14 +145,14 @@ private:
             char buffer[256];
             std::sprintf(buffer, "no conversion from '%s' to 'Int64'",
                 stack_value.GetTypeString());
-            m_state.ThrowException(Exception(buffer));
+            m_state.ThrowException(thread, Exception(buffer));
 
             return 0;
         }
         }
     }
 
-    inline double GetValueDouble(const StackValue &stack_value)
+    inline double GetValueDouble(ExecutionThread *thread, const StackValue &stack_value)
     {
         switch (stack_value.m_type) {
         case StackValue::INT32:
@@ -177,7 +170,7 @@ private:
             char buffer[256];
             std::sprintf(buffer, "no conversion from '%s' to 'Double'",
                 stack_value.GetTypeString());
-            m_state.ThrowException(Exception(buffer));
+            m_state.ThrowException(thread, Exception(buffer));
 
             return std::numeric_limits<double>::quiet_NaN();
         }

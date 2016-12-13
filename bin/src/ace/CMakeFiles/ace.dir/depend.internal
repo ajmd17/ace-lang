@@ -14,6 +14,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o
  ../include/ace-c/ast/ast_function_call.hpp
  ../include/ace-c/ast/ast_function_definition.hpp
  ../include/ace-c/ast/ast_function_expression.hpp
+ ../include/ace-c/ast/ast_generated_expression.hpp
  ../include/ace-c/ast/ast_identifier.hpp
  ../include/ace-c/ast/ast_if_statement.hpp
  ../include/ace-c/ast/ast_import.hpp
@@ -22,6 +23,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o
  ../include/ace-c/ast/ast_member_access.hpp
  ../include/ace-c/ast/ast_module_declaration.hpp
  ../include/ace-c/ast/ast_null.hpp
+ ../include/ace-c/ast/ast_object.hpp
  ../include/ace-c/ast/ast_parameter.hpp
  ../include/ace-c/ast/ast_print_statement.hpp
  ../include/ace-c/ast/ast_return_statement.hpp
@@ -40,6 +42,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o
  ../include/ace-c/ast_visitor.hpp
  ../include/ace-c/compilation_unit.hpp
  ../include/ace-c/compiler_error.hpp
+ ../include/ace-c/configuration.hpp
  ../include/ace-c/emit/instruction.hpp
  ../include/ace-c/emit/instruction_stream.hpp
  ../include/ace-c/emit/static_object.hpp
@@ -69,6 +72,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o
  ../include/ace-vm/vm.hpp
  ../include/ace-vm/vm_state.hpp
  ../include/ace/api.hpp
+ ../include/common/hasher.hpp
  ../include/common/my_assert.hpp
  ../include/common/utf8.hpp
  /Users/andrew/ace-lang/src/ace/api.cpp

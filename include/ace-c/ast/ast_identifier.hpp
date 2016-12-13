@@ -37,6 +37,7 @@ protected:
     Identifier *m_identifier;
     AccessMode m_access_mode;
     bool m_in_function;
+    int m_depth;
 
     int GetStackOffset(int stack_size) const;
 };

@@ -13,6 +13,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_float.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_function_call.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_function_definition.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_function_expression.hpp
+src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_generated_expression.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_identifier.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_if_statement.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_import.hpp
@@ -21,6 +22,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_local_import.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_member_access.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_module_declaration.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_null.hpp
+src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_object.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_parameter.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_print_statement.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast/ast_return_statement.hpp
@@ -39,6 +41,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast_iterator.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/ast_visitor.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/compilation_unit.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/compiler_error.hpp
+src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/configuration.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/emit/instruction.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-c/emit/static_object.hpp
@@ -68,6 +71,7 @@ src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-vm/static_memory.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-vm/vm.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace-vm/vm_state.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/ace/api.hpp
+src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/common/hasher.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/common/my_assert.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../include/common/utf8.hpp
 src/ace/CMakeFiles/ace.dir/api.cpp.o: ../src/ace/api.cpp

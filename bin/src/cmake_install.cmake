@@ -31,6 +31,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/Users/andrew/ace-lang/bin/src/ace-c/cmake_install.cmake")
   include("/Users/andrew/ace-lang/bin/src/ace-vm/cmake_install.cmake")
+  include("/Users/andrew/ace-lang/bin/src/ace-jit/cmake_install.cmake")
   include("/Users/andrew/ace-lang/bin/src/ace/cmake_install.cmake")
 
 endif()

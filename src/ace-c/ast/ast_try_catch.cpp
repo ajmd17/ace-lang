@@ -52,12 +52,18 @@ void AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(BEGIN_TRY, rp);
 
+    // try block increases stack size to hold the data about the catch block
+    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
     // build the try-block
     m_try_block->Build(visitor, mod);
 
     // send the instruction to end the try-block
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t>(END_TRY);
+
+    // decrease stack size for the try block
+    visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
 
     // jump to the end, as to not execute the catch-block
     // get current register index

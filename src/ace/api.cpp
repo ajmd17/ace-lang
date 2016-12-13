@@ -151,16 +151,20 @@ void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
     ident->SetStackLocation(compilation_unit->GetInstructionStream().GetStackSize());
     compilation_unit->GetInstructionStream().IncStackSize();
 
+    ASSERT(vm->GetState().GetNumThreads() > 0);
+
+    ExecutionThread *main_thread = vm->GetState().m_threads[0];
+
     // create the object that will be stored
     StackValue obj;
     obj.m_type = StackValue::HEAP_POINTER;
     obj.m_value.ptr = nullptr;
 
     // call the initializer
-    def.initializer_ptr(&vm->GetState(), &obj);
+    def.initializer_ptr(&vm->GetState(), main_thread, &obj);
 
-    // push the object to the VM's stack
-    vm->GetState().GetExecutionThread().GetStack().Push(obj);
+    // push the object to the main thread's stack
+    main_thread->GetStack().Push(obj);
 }
 
 void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,

@@ -2,8 +2,10 @@
 #define ACE_VM_HPP
 
 #include <ace-vm/vm.hpp>
-
 #include <common/utf8.hpp>
+
+#include <thread>
+#include <vector>
 
 namespace ace_vm {
 

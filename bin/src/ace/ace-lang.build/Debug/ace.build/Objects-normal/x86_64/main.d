@@ -20,6 +20,7 @@ dependencies: /Users/andrew/ace-lang/src/ace/main.cpp \
   /Users/andrew/ace-lang/include/ace-vm/vm.hpp \
   /Users/andrew/ace-lang/include/ace-vm/bytecode_stream.hpp \
   /Users/andrew/ace-lang/include/common/my_assert.hpp \
+  /Users/andrew/ace-lang/include/common/non_owning_ptr.hpp \
   /Users/andrew/ace-lang/include/ace-vm/vm_state.hpp \
   /Users/andrew/ace-lang/include/ace-vm/stack_memory.hpp \
   /Users/andrew/ace-lang/include/ace-vm/stack_value.hpp \
@@ -80,4 +81,5 @@ dependencies: /Users/andrew/ace-lang/src/ace/main.cpp \
   /Users/andrew/ace-lang/include/ace-vm/object.hpp \
   /Users/andrew/ace-lang/include/ace-vm/array.hpp \
   /Users/andrew/ace-lang/include/common/cli_args.hpp \
-  /Users/andrew/ace-lang/include/common/str_util.hpp
+  /Users/andrew/ace-lang/include/common/str_util.hpp \
+  /Users/andrew/ace-lang/include/common/instructions.hpp

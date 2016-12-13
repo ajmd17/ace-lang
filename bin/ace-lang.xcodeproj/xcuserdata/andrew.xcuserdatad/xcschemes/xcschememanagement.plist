@@ -19,6 +19,11 @@
 			<key>orderHint</key>
 			<integer>2</integer>
 		</dict>
+		<key>ace-jit.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>5</integer>
+		</dict>
 		<key>ace-vm.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -32,12 +37,42 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>063F4CD9C64F44D4AE26A43C</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>1A31CE39F3D442479776DABC</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
+		<key>37F54568A5C34122BB5AA0F7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>6B68503C412242E0A4476565</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>78D2122C54E04EBFAD168870</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>8453CBBB4F204881834B4529</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B1FA60B496E84CEEBDA5824F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>CFA071975ACD451FAF28E084</key>
 		<dict>
 			<key>primary</key>
 			<true/>

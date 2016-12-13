@@ -11,7 +11,8 @@ AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &loca
       m_name(name),
       m_identifier(nullptr),
       m_access_mode(ACCESS_MODE_LOAD),
-      m_in_function(false)
+      m_in_function(false),
+      m_depth(0)
 {
 }
 
@@ -58,8 +59,10 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
         m_identifier->IncUseCount();
     }
 
+    m_depth = 0;
     TreeNode<Scope> *top = mod->m_scopes.TopNode();
     while (top != nullptr) {
+        m_depth++;
         if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
             m_in_function = true;
             break;

@@ -11,9 +11,10 @@
 // forward declarations
 struct StackValue;
 struct VMState;
+struct ExecutionThread;
 
-typedef void(*NativeFunctionPtr_t)(VMState*, StackValue**, int);
-typedef void(*NativeInitializerPtr_t)(VMState*, StackValue*);
+typedef void(*NativeFunctionPtr_t)(VMState*, ExecutionThread*, StackValue**, int);
+typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, StackValue*);
 
 struct Function {
     uint32_t m_addr;
@@ -30,7 +31,8 @@ struct StackValue {
         HEAP_POINTER,
         FUNCTION,
         NATIVE_FUNCTION,
-        ADDRESS
+        ADDRESS,
+        TRY_CATCH_INFO
     } m_type;
 
     union ValueData {
@@ -40,9 +42,19 @@ struct StackValue {
         double d;
         bool b;
         HeapValue *ptr;
-        Function func;
+
+        struct {
+            uint32_t m_addr;
+            uint32_t m_nargs;
+        } func;
+
         NativeFunctionPtr_t native_func;
         uint32_t addr;
+
+        struct {
+            uint32_t catch_address;
+        } try_catch_info;
+
     } m_value;
 
     StackValue();

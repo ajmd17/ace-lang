@@ -34,6 +34,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_must_be_explicitly_marked_any, "function must be explicitly marked to return 'Any'" },
     { Msg_return_outside_function, "'return' not allowed outside of function body" },
     { Msg_not_a_function, "'%' is not a function" },
+    { Msg_closure_capture_must_be_parameter, "'%' was declared in a function above this one, and must be passed as a parameter to be captured" },
     { Msg_undefined_type, "'%' is not a built-in or user-defined type" },
     { Msg_redefined_type, "type '%' has already been defined in this module" },
     { Msg_redefined_builtin_type, "cannot create type '%', it is a built-in type" },

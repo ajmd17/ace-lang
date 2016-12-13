@@ -21,6 +21,9 @@
 // %   = register (1 byte)
 // @   = address (4 bytes)
 
+// NOTE: instructions that load data from stack index load from the main/global thread.
+// instructions that load from stack offset load from their own thread.
+
 enum Instructions : char {
     /* No operation */
     NOP = 0x00, // nop

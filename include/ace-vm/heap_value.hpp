@@ -77,7 +77,7 @@ private:
         size_t m_type_id;
     };
 
-    // derived class that can hold any time
+    // derived class that can hold any type
     template <typename T> struct DerivedHolder : public BaseHolder {
         explicit DerivedHolder(const T &value) : BaseHolder(GetTypeId<T>()), m_value(value) {}
 

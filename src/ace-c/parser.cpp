@@ -164,6 +164,10 @@ Token Parser::ExpectOperator(const Operator *op, bool read)
 
 SourceLocation Parser::CurrentLocation() const
 {
+    if (m_token_stream->GetSize() != 0 && !m_token_stream->HasNext()) {
+        return m_token_stream->Last().GetLocation();
+    }
+
     return m_token_stream->Peek().GetLocation();
 }
 
@@ -475,6 +479,7 @@ std::shared_ptr<AstNull> Parser::ParseNull()
 std::shared_ptr<AstBlock> Parser::ParseBlock()
 {
     const Token token = Expect(Token::TokenType::Token_open_brace, true);
+
     if (token) {
         std::shared_ptr<AstBlock> block(new AstBlock(token.GetLocation()));
 
@@ -498,14 +503,13 @@ std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
     
     if (token) {
         SourceLocation cond_location = CurrentLocation();
-        std::shared_ptr<AstExpression> conditional = ParseExpression();
-        std::shared_ptr<AstBlock> block = ParseBlock();
 
+        std::shared_ptr<AstExpression> conditional = ParseExpression();
         if (conditional == nullptr) {
-            CompilerError error(Level_fatal, Msg_illegal_expression, cond_location);
-            m_compilation_unit->GetErrorList().AddError(error);
             return nullptr;
         }
+
+        std::shared_ptr<AstBlock> block = ParseBlock();
         if (block == nullptr) {
             return nullptr;
         }

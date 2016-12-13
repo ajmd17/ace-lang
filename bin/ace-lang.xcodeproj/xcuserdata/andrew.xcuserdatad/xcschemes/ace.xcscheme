@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E496A67787AD4FF7B397D08C"
+               BlueprintIdentifier = "B1FA60B496E84CEEBDA5824F"
                BuildableName = "ace"
                BlueprintName = "ace"
                ReferencedContainer = "container:bin/ace-lang.xcodeproj">
@@ -32,7 +32,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E496A67787AD4FF7B397D08C"
+            BlueprintIdentifier = "B1FA60B496E84CEEBDA5824F"
             BuildableName = "ace"
             BlueprintName = "ace"
             ReferencedContainer = "container:bin/ace-lang.xcodeproj">
@@ -55,7 +55,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E496A67787AD4FF7B397D08C"
+            BlueprintIdentifier = "B1FA60B496E84CEEBDA5824F"
             BuildableName = "ace"
             BlueprintName = "ace"
             ReferencedContainer = "container:bin/ace-lang.xcodeproj">
@@ -74,7 +74,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E496A67787AD4FF7B397D08C"
+            BlueprintIdentifier = "B1FA60B496E84CEEBDA5824F"
             BuildableName = "ace"
             BlueprintName = "ace"
             ReferencedContainer = "container:bin/ace-lang.xcodeproj">

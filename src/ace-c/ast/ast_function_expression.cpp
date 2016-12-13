@@ -142,6 +142,9 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         }
     }
 
+    // increase stack size for call stack info
+    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
     // build the function body
     m_block->Build(visitor, mod);
 
@@ -153,6 +156,9 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     for (int i = 0; i < param_stack_size; i++) {
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
     }
+
+    // decrease stack size for call stack info
+    visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
 
     // set the label's position to after the block
     end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();

@@ -66,6 +66,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o: ../include/ace-c/token_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o: ../include/ace-c/type_contract.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o: ../include/ace-c/typedefs.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o: ../include/common/utf8.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ace-c.cpp.o: ../src/ace-c/ace-c.cpp
 
@@ -361,10 +362,12 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/com
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_function_expression.cpp.o: ../src/ace-c/ast/ast_function_expression.cpp
 
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../include/ace-c/ast/ast_generated_statement.hpp
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../include/ace-c/ast/ast_statement.hpp
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../include/ace-c/source_location.hpp
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_statement.cpp.o: ../src/ace-c/ast/ast_generated_statement.cpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: ../include/ace-c/ast/ast_expression.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: ../include/ace-c/ast/ast_generated_expression.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: ../include/ace-c/ast/ast_statement.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: ../include/ace-c/object_type.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: ../include/ace-c/source_location.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_generated_expression.cpp.o: ../src/ace-c/ast/ast_generated_expression.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/ast/ast_expression.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_identifier.cpp.o: ../include/ace-c/ast/ast_identifier.hpp
@@ -521,12 +524,13 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../include/ace-c/toke
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../include/ace-c/tree.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../include/ace-c/type_contract.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../include/ace-c/typedefs.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../include/common/utf8.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_local_import.cpp.o: ../src/ace-c/ast/ast_local_import.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_expression.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_function_call.hpp
-src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_generated_statement.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_generated_expression.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_identifier.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_member_access.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_member_access.cpp.o: ../include/ace-c/ast/ast_statement.hpp
@@ -812,6 +816,7 @@ src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/a
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/ast_visitor.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/compilation_unit.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/compiler_error.hpp
+src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/configuration.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/emit/instruction.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/ast/ast_type_definition.cpp.o: ../include/ace-c/emit/static_object.hpp
@@ -1003,6 +1008,7 @@ src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/ast/ast_
 src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/ast/ast_statement.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/compilation_unit.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/compiler_error.hpp
+src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/configuration.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/emit/instruction.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/emit/instruction_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/compilation_unit.cpp.o: ../include/ace-c/emit/static_object.hpp
@@ -1121,6 +1127,7 @@ src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o: ../include/ace-c/source_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o: ../include/ace-c/token.hpp
 src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o: ../include/ace-c/token_stream.hpp
 src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o: ../include/ace-c/tree.hpp
+src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o: ../include/common/utf8.hpp
 src/ace-c/CMakeFiles/ace-c.dir/lexer.cpp.o: ../src/ace-c/lexer.cpp
 
@@ -1316,6 +1323,7 @@ src/ace-c/CMakeFiles/ace-c.dir/semantic_analyzer.cpp.o: ../include/ace-c/tree.hp
 src/ace-c/CMakeFiles/ace-c.dir/semantic_analyzer.cpp.o: ../src/ace-c/semantic_analyzer.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/source_file.cpp.o: ../include/ace-c/source_file.hpp
+src/ace-c/CMakeFiles/ace-c.dir/source_file.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/source_file.cpp.o: ../src/ace-c/source_file.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/source_location.cpp.o: ../include/ace-c/source_location.hpp
@@ -1333,6 +1341,7 @@ src/ace-c/CMakeFiles/ace-c.dir/token.cpp.o: ../src/ace-c/token.cpp
 src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o: ../include/ace-c/source_location.hpp
 src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o: ../include/ace-c/token.hpp
 src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o: ../include/ace-c/token_stream.hpp
+src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o: ../include/common/my_assert.hpp
 src/ace-c/CMakeFiles/ace-c.dir/token_stream.cpp.o: ../src/ace-c/token_stream.cpp
 
 src/ace-c/CMakeFiles/ace-c.dir/type_contract.cpp.o: ../include/ace-c/type_contract.hpp

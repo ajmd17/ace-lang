@@ -44,9 +44,20 @@ void Lexer::Analyze()
         const SourceLocation location = m_source_location;
         if (SkipWhitespace()) {
             // add the `newline` statement terminator if not a continuation token
-            if (token.GetType() != Token::TokenType::Token_empty && 
-                token.GetType() != Token::TokenType::Token_newline && 
-                !token.IsContinuationToken()) {
+            if (token && token.GetType() != Token::TokenType::Token_newline && !token.IsContinuationToken()) {
+                // skip whitespace before next token
+                SkipWhitespace();
+
+                // check if next token is connected
+                if (m_source_stream.HasNext() && m_source_stream.Peek() != '\0') {
+                    auto peek = m_source_stream.Peek();
+                    if (peek == '{' || peek == '.') {
+                        // do not add newline
+                        continue;
+                    }
+                }
+
+                // add newline
                 m_token_stream->Push(Token(Token::TokenType::Token_newline, "newline", location));
             }
         }

@@ -114,6 +114,12 @@ memory
 vector
 -
 
+../include/ace-c/ast/ast_generated_expression.hpp
+ace-c/ast/ast_expression.hpp
+-
+functional
+-
+
 ../include/ace-c/ast/ast_identifier.hpp
 ace-c/ast/ast_expression.hpp
 -
@@ -174,6 +180,12 @@ ace-c/ast/ast_declaration.hpp
 
 ../include/ace-c/ast/ast_null.hpp
 ace-c/ast/ast_constant.hpp
+-
+
+../include/ace-c/ast/ast_object.hpp
+ace-c/ast/ast_expression.hpp
+-
+ace-c/object_type.hpp
 -
 
 ../include/ace-c/ast/ast_parameter.hpp
@@ -345,6 +357,8 @@ map
 -
 
 ../include/ace-c/configuration.hpp
+string
+-
 
 ../include/ace-c/emit/instruction.hpp
 vector
@@ -585,6 +599,8 @@ string
 ../include/ace-c/token_stream.hpp
 ace-c/token.hpp
 -
+common/my_assert.hpp
+-
 vector
 -
 
@@ -705,6 +721,8 @@ ace-vm/exception.hpp
 -
 
 ../include/ace/api.hpp
+ace-c/configuration.hpp
+-
 ace-c/compilation_unit.hpp
 -
 ace-vm/ace-vm.hpp
@@ -720,6 +738,10 @@ vector
 algorithm
 -
 string
+-
+
+../include/common/hasher.hpp
+cstdint
 -
 
 ../include/common/my_assert.hpp
@@ -769,11 +791,19 @@ ace/api.hpp
 -
 ace-c/parser.hpp
 -
+ace-c/configuration.hpp
+-
+ace-c/ast/ast_object.hpp
+-
+ace-c/ast/ast_generated_expression.hpp
+-
+common/my_assert.hpp
+-
+common/hasher.hpp
+-
 memory
 -
 vector
--
-common/my_assert.hpp
 -
 
 /Users/andrew/ace-lang/src/ace/main.cpp

@@ -36,9 +36,9 @@ void RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_time, 
     file.read(bytecodes, bytecode_size);
     file.close();
 
-    BytecodeStream bytecode_stream(bytecodes, (size_t)bytecode_size, pos);
+    BytecodeStream bytecode_stream(non_owning_ptr<char>(bytecodes), (size_t)bytecode_size, pos);
 
-    vm->SetBytecodeStream(&bytecode_stream);
+    vm->GetState().SetBytecodeStream(non_owning_ptr<BytecodeStream>(&bytecode_stream));
 
     // time how long execution took
     auto start = std::chrono::high_resolution_clock::now();

@@ -114,8 +114,8 @@ memory
 vector
 -
 
-../include/ace-c/ast/ast_generated_statement.hpp
-ace-c/ast/ast_statement.hpp
+../include/ace-c/ast/ast_generated_expression.hpp
+ace-c/ast/ast_expression.hpp
 -
 functional
 -
@@ -365,6 +365,8 @@ map
 -
 
 ../include/ace-c/configuration.hpp
+string
+-
 
 ../include/ace-c/dis/byte_stream.hpp
 ace-c/source_file.hpp
@@ -618,6 +620,8 @@ string
 
 ../include/ace-c/token_stream.hpp
 ace-c/token.hpp
+-
+common/my_assert.hpp
 -
 vector
 -
@@ -944,8 +948,8 @@ common/my_assert.hpp
 vector
 -
 
-/Users/andrew/ace-lang/src/ace-c/ast/ast_generated_statement.cpp
-ace-c/ast/ast_generated_statement.hpp
+/Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp
+ace-c/ast/ast_generated_expression.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp
@@ -1041,7 +1045,7 @@ ace-c/ast/ast_variable.hpp
 -
 ace-c/ast/ast_function_call.hpp
 -
-ace-c/ast/ast_generated_statement.hpp
+ace-c/ast/ast_generated_expression.hpp
 -
 ace-c/ast_visitor.hpp
 -
@@ -1203,6 +1207,8 @@ ace-c/module.hpp
 -
 ace-c/emit/static_object.hpp
 -
+ace-c/configuration.hpp
+-
 common/hasher.hpp
 -
 common/my_assert.hpp
@@ -1312,6 +1318,8 @@ ace-c/ast_visitor.hpp
 
 /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp
 ace-c/compilation_unit.hpp
+-
+ace-c/configuration.hpp
 -
 
 /Users/andrew/ace-lang/src/ace-c/compiler.cpp
@@ -1483,13 +1491,15 @@ common/my_assert.hpp
 /Users/andrew/ace-lang/src/ace-c/parser.cpp
 ace-c/parser.hpp
 -
+common/my_assert.hpp
+-
 memory
 -
 cstdlib
 -
 cstdio
 -
-common/my_assert.hpp
+iostream
 -
 
 /Users/andrew/ace-lang/src/ace-c/scope.cpp
@@ -1506,6 +1516,8 @@ ace-c/module.hpp
 
 /Users/andrew/ace-lang/src/ace-c/source_file.cpp
 ace-c/source_file.hpp
+-
+common/my_assert.hpp
 -
 stdexcept
 -

@@ -29,6 +29,23 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
     return nullptr;
 }
 
+Identifier *Module::LookUpIdentifierDepth(const std::string &name, int depth_level)
+{
+    TreeNode<Scope> *top = m_scopes.TopNode();
+
+    for (int i = 0; top != nullptr && i < depth_level; i++) {
+        Identifier *result = top->m_value.GetIdentifierTable().LookUpIdentifier(name);
+
+        if (result != nullptr) {
+            return result;
+        }
+
+        top = top->m_parent;
+    }
+
+    return nullptr;
+}
+
 bool Module::LookUpUserType(const std::string &type, ObjectType &out)
 {
     for (ObjectType &it : m_user_types) {

@@ -47,6 +47,7 @@ enum ErrorMessage {
     Msg_must_be_explicitly_marked_any,
     Msg_return_outside_function,
     Msg_not_a_function,
+    Msg_closure_capture_must_be_parameter,
     Msg_undefined_type,
     Msg_redefined_type,
     Msg_redefined_builtin_type,

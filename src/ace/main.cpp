@@ -14,57 +14,50 @@
 
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
+#include <common/instructions.hpp>
 
+#include <vector>
 #include <string>
 #include <sstream>
 #include <chrono>
 #include <algorithm>
+#include <mutex>
+#include <thread>
 #include <cstdio>
 #include <cstdlib>
+#include <ace-vm/stack_value.hpp>
 
 using namespace ace;
 
-void Runtime_gc(VMState *state, StackValue **args, int nargs)
-{
-    /*std::stringstream ss;
-    // dump heap to stringstream
-    ss << "Before:\n" << state->m_heap << "\n\n";
-    auto str = ss.str();
-    utf::cout << utf::Utf8String(str.c_str());
-    // clear stringstream
-    ss.str("");*/
+std::mutex mtx;
+// all cpp threads
+std::vector<std::thread> threads;
 
+void Runtime_gc(VMState *state, ExecutionThread *thread, StackValue **args, int nargs)
+{
     size_t heap_size_before = state->GetHeap().Size();
 
     if (nargs != 0) {
-        state->ThrowException(Exception::InvalidArgsException(0, nargs));
+        state->ThrowException(thread, Exception::InvalidArgsException(0, nargs));
         return;
     }
     
-    // run the gc
-    state->m_exec_thread.m_stack.MarkAll();
-    state->m_heap.Sweep();
+    state->GC();
 
     size_t heap_size_after = state->GetHeap().Size();
-
     utf::cout << (heap_size_before - heap_size_after) << " object(s) collected.\n";
-
-  /*  // dump heap to stringstream, after GC
-    ss << "After:\n" << state->m_heap << "\n\n";
-    auto str = ss.str();
-    utf::cout << utf::Utf8String(str.c_str());*/
 }
 
-void Global_to_string(VMState *state, StackValue **args, int nargs)
+void Global_to_string(VMState *state, ExecutionThread *thread, StackValue **args, int nargs)
 {
     if (nargs != 1) {
-        state->ThrowException(Exception::InvalidArgsException(1, nargs));
+        state->ThrowException(thread, Exception::InvalidArgsException(1, nargs));
         return;
     }
 
     // create heap value for string
-    HeapValue *ptr = state->HeapAlloc();
-    StackValue &res = state->GetExecutionThread().GetRegisters()[0];
+    HeapValue *ptr = state->HeapAlloc(thread);
+    StackValue &res = thread->GetRegisters()[0];
     
     ASSERT(ptr != nullptr);
 
@@ -74,13 +67,13 @@ void Global_to_string(VMState *state, StackValue **args, int nargs)
     res.m_value.ptr = ptr;
 }
 
-void Global_length(VMState *state, StackValue **args, int nargs)
+void Global_length(VMState *state, ExecutionThread *thread, StackValue **args, int nargs)
 {
     if (nargs != 1) {
-        state->ThrowException(Exception::InvalidArgsException(1, nargs));
+        state->ThrowException(thread,
+            Exception::InvalidArgsException(1, nargs));
         return;
     }
-
 
     int len = 0;
 
@@ -99,7 +92,7 @@ void Global_length(VMState *state, StackValue **args, int nargs)
         Object *objptr = nullptr;
         
         if (target_ptr->GetValue().ptr == nullptr) {
-            state->ThrowException(Exception::NullReferenceException());
+            state->ThrowException(thread, Exception::NullReferenceException());
         } else if ((strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // get length of string
             len = strptr->GetLength();
@@ -110,17 +103,81 @@ void Global_length(VMState *state, StackValue **args, int nargs)
             // get number of members in object
             len = objptr->GetSize();
         } else {
-            state->ThrowException(e);
+            state->ThrowException(thread, e);
         }
     } else {
-        state->ThrowException(e);
+        state->ThrowException(thread, e);
     }
 
-    StackValue &res = state->GetExecutionThread().GetRegisters()[0];
+    StackValue &res = thread->GetRegisters()[0];
 
     // assign register value to the length
     res.m_type = StackValue::INT32;
     res.m_value.i32 = len;
+}
+
+void Global_spawn_thread(VMState *state, ExecutionThread *thread, StackValue **args, int nargs)
+{
+    if (nargs < 1) {
+        state->ThrowException(thread,
+            Exception::InvalidArgsException(1, nargs));
+        return;
+    }
+
+    StackValue *target_ptr = args[0];
+    ASSERT(target_ptr != nullptr);
+
+    StackValue target(*target_ptr);
+
+    const int buffer_size = 256;
+    char buffer[buffer_size];
+    std::snprintf(buffer, buffer_size, "spawn_thread() is undefined for type '%s'",
+        target_ptr->GetTypeString());
+    Exception e = Exception(utf::Utf8String(buffer));
+
+    // the position of the bytecode stream before thread execution
+    size_t pos = state->GetBytecodeStream()->Position();
+
+    if (target.GetType() == StackValue::ValueType::FUNCTION) {
+        // create the thread
+        ExecutionThread *new_thread = state->CreateThread();
+        ASSERT(new_thread != nullptr);
+
+        // copy values to the new stack
+        for (int i = 1; i < nargs; i++) {
+            if (args[i] != nullptr) {
+                new_thread->GetStack().Push(*args[i]);
+            }
+        }
+
+        threads.emplace_back(std::thread([new_thread, state, nargs, target, pos]() {
+            ASSERT(state->GetBytecodeStream() != nullptr);
+
+            // create copy of byte stream
+            BytecodeStream bs = *state->GetBytecodeStream();
+            bs.SetPosition(pos);
+
+            // keep track of function depth so we can
+            // quit the thread when the function returns
+            const int func_depth_start = new_thread->m_func_depth;
+            
+            // call the function
+            state->m_vm->Invoke(new_thread, &bs, target, nargs - 1);
+
+            while (!bs.Eof() && state->good && (new_thread->m_func_depth - func_depth_start)) {
+                uint8_t code;
+                bs.Read(&code, 1);
+
+                state->m_vm->HandleInstruction(new_thread, &bs, code);
+            }
+
+            // remove the thread
+            std::lock_guard<std::mutex> lock(mtx);
+            state->DestroyThread(new_thread->GetId());
+        }));
+    } else {
+        state->ThrowException(thread, e);
+    }
 }
 
 static void LexLine(const utf::Utf8String &line, TokenStream &token_stream)
@@ -134,6 +191,56 @@ static void LexLine(const utf::Utf8String &line, TokenStream &token_stream)
 
     Lexer lex(source_stream, &token_stream, &tmp_compilation_unit);
     lex.Analyze();
+}
+
+static int RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_time, int pos=0)
+{
+    ASSERT(vm != nullptr);
+
+    threads.clear();
+
+    // load bytecode from file
+    std::ifstream file(filename.GetData(), std::ios::in | std::ios::binary | std::ios::ate);
+    // file could not be opened
+    if (!file.is_open()) {
+        utf::cout << "Could not open file " << filename << "\n";
+        return 1;
+    }
+
+    int64_t bytecode_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    ASSERT(bytecode_size > 0);
+
+    char *bytecodes = new char[bytecode_size];
+    file.read(bytecodes, bytecode_size);
+    file.close();
+
+    BytecodeStream bytecode_stream(non_owning_ptr<char>(bytecodes), (size_t)bytecode_size, pos);
+
+    vm->GetState().SetBytecodeStream(non_owning_ptr<BytecodeStream>(&bytecode_stream));
+
+    // time how long execution took
+    auto start = std::chrono::high_resolution_clock::now();
+
+    vm->Execute();
+
+    if (record_time) {
+        auto end = std::chrono::high_resolution_clock::now();
+        auto elapsed_ms = std::chrono::duration_cast<
+            std::chrono::duration<double, std::ratio<1>>>(end - start).count();
+        utf::cout << "Elapsed time: " << elapsed_ms << "s\n";
+    }
+
+    // wait for threads
+    for (std::thread &thread : threads) {
+        thread.join();
+    }
+    threads.clear();
+
+    delete[] bytecodes;
+
+    return 0;
 }
 
 static int REPL(VM *vm, CompilationUnit &compilation_unit,
@@ -277,10 +384,14 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
                     // check if we even have to run the bytecode file
                     if (bytecode_file_size - file_pos > 0) {
 
-                        // store stack size so that we can revert on error
-                        size_t stack_size_before = vm->GetState().GetExecutionThread().GetStack().GetStackPointer();
+                        ASSERT(vm->GetState().GetNumThreads() > 0);
+                        ExecutionThread *main_thread = vm->GetState().m_threads[0];
+                        ASSERT(main_thread != nullptr);
 
-                        ace_vm::RunBytecodeFile(vm, out_filename, false, file_pos);
+                        // store stack size so that we can revert on error
+                        size_t stack_size_before = main_thread->GetStack().GetStackPointer();
+
+                        RunBytecodeFile(vm, out_filename, false, file_pos);
 
                         if (!vm->GetState().good) {
                             // if an exception was unhandled go back to previous state
@@ -307,19 +418,27 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
                             // delete buffer, it's no longer needed
                             delete[] buf;
 
-                            size_t stack_size_now = vm->GetState().GetExecutionThread().GetStack().GetStackPointer();
+                            size_t stack_size_now = main_thread->GetStack().GetStackPointer();
                             while (stack_size_now > stack_size_before) {
-                                vm->GetState().GetExecutionThread().GetStack().Pop();
+                                main_thread->GetStack().Pop();
                                 stack_size_now--;
+                            }
+
+                            // kill off any thread that isn't the main thread
+                            for (int i = 1; i < vm->GetState().GetNumThreads(); i++) {
+                                if (vm->GetState().m_threads[i] != nullptr) {
+                                    vm->GetState().DestroyThread(i);
+                                }
                             }
 
                             // trigger the GC after popping items from stack,
                             // to clean up any heap variables no longer in use.
-                            vm->GetState().GetExecutionThread().GetStack().MarkAll();
+                            main_thread->GetStack().MarkAll();
+                            vm->GetState().GetHeap().Sweep();
                             vm->GetState().GetHeap().Sweep();
 
                             // clear vm exception state
-                            vm->GetState().GetExecutionThread().GetExceptionState().Reset();
+                            main_thread->GetExceptionState().Reset();
 
                             // we're good to go now
                             vm->GetState().good = true;
@@ -367,17 +486,16 @@ int main(int argc, char *argv[])
 
     VM *vm = new VM;
     CompilationUnit compilation_unit;
-
     APIInstance api;
 
     api.Module("Runtime")
         .Function("gc", ObjectType::type_builtin_void, {}, Runtime_gc)
-        .Variable("version", ObjectType::type_builtin_string, [](VMState *state, StackValue *out) {
+        .Variable("version", ObjectType::type_builtin_string, [](VMState *state, ExecutionThread *thread, StackValue *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
             // allocate heap value
-            HeapValue *hv = state->HeapAlloc();
+            HeapValue *hv = state->HeapAlloc(thread);
 
             ASSERT(hv != nullptr);
 
@@ -410,15 +528,15 @@ int main(int argc, char *argv[])
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
         .Function("to_string", ObjectType::type_builtin_string, {}, Global_to_string)
-        .Function("length", ObjectType::type_builtin_int, {}, Global_length);
+        .Function("length", ObjectType::type_builtin_int, {}, Global_length)
+        .Function("spawn_thread", ObjectType::type_builtin_void, {}, Global_spawn_thread)
+        .Function("dummy", ObjectType::type_builtin_void, {}, [](VMState *state, ExecutionThread *thread, StackValue **args, int nargs){
+
+        });
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
         .Type("Thread")
-        .Member("id", ObjectType::type_builtin_int, [](VMState *state, StackValue *out) {
-            out->m_type = StackValue::INT32;
-            out->m_value.i32 = 1337;
-        })
-        .Method("start", ObjectType::type_builtin_void, {}, [](VMState *state, StackValue **args, int nargs) {
+        .Method("start", ObjectType::type_builtin_void, {}, [](VMState *state, ExecutionThread *thread, StackValue **args, int nargs) {
             utf::cout << "Thread.start called\n";
         });
 
@@ -473,7 +591,7 @@ int main(int argc, char *argv[])
         if (mode == COMPILE_SOURCE) {
             if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
                 // execute the compiled bytecode file
-                ace_vm::RunBytecodeFile(vm, out_filename, true);
+                RunBytecodeFile(vm, out_filename, true);
             }
         } else if (mode == DECOMPILE_BYTECODE) {
             ace_compiler::DecompileBytecodeFile(src_filename, out_filename);

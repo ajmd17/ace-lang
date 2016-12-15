@@ -20,6 +20,11 @@ Object::Object(const Object &other)
     }
 }
 
+Object::~Object()
+{
+    delete[] m_members;
+}
+
 Object &Object::operator=(const Object &other)
 {
     if (m_size != other.m_size) {
@@ -36,11 +41,6 @@ Object &Object::operator=(const Object &other)
     std::memcpy(m_members, other.m_members, sizeof(Member) * m_size);
 
     return *this;
-}
-
-Object::~Object()
-{
-    delete[] m_members;
 }
 
 Member *Object::LookupMemberFromHash(uint32_t hash) const

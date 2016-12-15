@@ -49,51 +49,42 @@ utf::Utf8String StackValue::ToString()
     int n = 0;
 
     switch (m_type) {
-    case StackValue::INT32: {
+    case StackValue::I32: {
         n = snprintf(buf, buf_size, "%d", m_value.i32);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
             snprintf(res.GetData(), n, "%d", m_value.i32);
             return res;
-        } else {
-            return utf::Utf8String(buf);
         }
-        break;
+        return utf::Utf8String(buf);
     }
-    case StackValue::INT64:
+    case StackValue::I64:
         n = snprintf(buf, buf_size, "%" PRId64, m_value.i64);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
             snprintf(res.GetData(), n, "%" PRId64, m_value.i64);
             return res;
-        } else {
-            return utf::Utf8String(buf);
         }
-        break;
-    case StackValue::FLOAT:
+        return utf::Utf8String(buf);
+    case StackValue::F32:
         n = snprintf(buf, buf_size, "%g", m_value.f);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
             snprintf(res.GetData(), n, "%g", m_value.f);
             return res;
-        } else {
-            return utf::Utf8String(buf);
         }
-        break;
-    case StackValue::DOUBLE:
+        return utf::Utf8String(buf);
+    case StackValue::F64:
         n = snprintf(buf, buf_size, "%g", m_value.d);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
             snprintf(res.GetData(), n, "%g", m_value.d);
             return res;
-        } else {
-            return utf::Utf8String(buf);
         }
-        break;
+        return utf::Utf8String(buf);
     case StackValue::BOOLEAN:
         snprintf(buf, buf_size, "%s", m_value.b ? "true" : "false");
         return utf::Utf8String(buf);
-        break;
     case StackValue::HEAP_POINTER:
     {
         utf::Utf8String *str = nullptr;
@@ -133,14 +124,12 @@ utf::Utf8String StackValue::ToString()
                 utf::Utf8String res((size_t)n);
                 snprintf(res.GetData(), n, "%p", (void*)m_value.ptr);
                 return res;
-            } else {
-                return utf::Utf8String(buf);
             }
+            return utf::Utf8String(buf);
         }
 
         break;
     }
-    default:
-        return GetTypeString();
+    default: return GetTypeString();
     }
 }

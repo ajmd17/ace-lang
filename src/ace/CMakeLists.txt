@@ -9,4 +9,4 @@ foreach(f IN LISTS ace_SOURCES)
 endforeach()
 
 add_executable(ace ${ace_SOURCES})
-target_link_libraries(ace ace-c ace-vm)
+target_link_libraries(ace ace-c ace-vm ace-runtime)

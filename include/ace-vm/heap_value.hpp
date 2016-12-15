@@ -5,6 +5,7 @@
 #include <typeinfo>
 #include <cstdint>
 #include <cstdlib>
+#include <stdio.h>
 
 enum HeapValueFlags {
     GC_MARKED = 0x01,
@@ -19,9 +20,14 @@ public:
 
     inline bool operator==(const HeapValue &other) const
     {
-        if (!((intptr_t)m_holder ^ (intptr_t)other.m_holder) && m_holder != nullptr) {
+        if (m_holder == other.m_holder) {
+            return true;
+        }
+
+        if (m_holder != NULL && other.m_holder != NULL) {
             return (*m_holder) == (*other.m_holder);
         }
+
         return false;
     }
 
@@ -33,9 +39,7 @@ public:
 
     template <typename T>
     inline bool TypeCompatible() const 
-    { 
-        return GetTypeId() == GetTypeId<typename std::decay<T>::type>(); 
-    }
+        { return GetTypeId() == GetTypeId<typename std::decay<T>::type>(); }
 
     template <typename T>
     inline void Assign(const T &value)

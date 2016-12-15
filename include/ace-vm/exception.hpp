@@ -15,6 +15,9 @@ public:
     static Exception DivisionByZeroException();
     static Exception OutOfBoundsException();
     static Exception MemberNotFoundException();
+    static Exception FileOpenException(const char *file_name);
+    static Exception LibraryLoadException(const char *lib_name);
+    static Exception LibraryFunctionLoadException(const char *func_name);
 
 private:
     const utf::Utf8String m_str;

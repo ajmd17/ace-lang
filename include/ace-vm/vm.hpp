@@ -20,12 +20,12 @@
     } while (0)
 
 #define IS_VALUE_INTEGER(stack_value) \
-    ((stack_value).m_type == StackValue::INT32 || \
-    (stack_value).m_type == StackValue::INT64)
+    ((stack_value).m_type == StackValue::I32 || \
+    (stack_value).m_type == StackValue::I64)
 
 #define IS_VALUE_FLOATING_POINT(stack_value) \
-    ((stack_value).m_type == StackValue::FLOAT || \
-    (stack_value).m_type == StackValue::DOUBLE)
+    ((stack_value).m_type == StackValue::F32 || \
+    (stack_value).m_type == StackValue::F64)
 
 #define IS_VALUE_STRING(stack_value, out) \
     ((stack_value).m_type == StackValue::HEAP_POINTER && \
@@ -55,37 +55,6 @@
         } \
     } while (0) \
 
-#define COMPARE_REFERENCES(lhs, rhs) \
-    do { \
-        if (rhs.m_type == StackValue::HEAP_POINTER) { \
-            if (lhs.m_value.ptr > rhs.m_value.ptr) { \
-                thread->m_regs.m_flags = GREATER; \
-            } else if (lhs.m_value.ptr == rhs.m_value.ptr) { \
-                thread->m_regs.m_flags = EQUAL; \
-            } else { \
-                thread->m_regs.m_flags = NONE; \
-            } \
-        } else { \
-            THROW_COMPARISON_ERROR(lhs, rhs); \
-        } \
-    } while(0)
-
-#define COMPARE_FUNCTIONS(lhs, rhs) \
-    do { \
-        if (rhs.m_type == StackValue::FUNCTION) { \
-            if (lhs.m_value.func.m_addr > rhs.m_value.func.m_addr) { \
-                thread->m_regs.m_flags = GREATER; \
-            } else if (lhs.m_value.func.m_addr == rhs.m_value.func.m_addr && \
-                rhs.m_value.func.m_nargs == lhs.m_value.func.m_nargs) { \
-                thread->m_regs.m_flags = EQUAL; \
-            } else { \
-                thread->m_regs.m_flags = NONE; \
-            } \
-        } else { \
-            THROW_COMPARISON_ERROR(lhs, rhs); \
-        } \
-    } while(0)
-
 enum CompareFlags : int {
     NONE = 0x00,
     EQUAL = 0x01,
@@ -106,40 +75,92 @@ public:
 
     inline VMState &GetState() { return m_state; }
     inline const VMState &GetState() const { return m_state; }
-    inline Heap &GetHeap() { return m_state.m_heap; }
 
     void Print(const StackValue &value);
     void Invoke(ExecutionThread *thread, BytecodeStream *bs, const StackValue &value, uint8_t num_args);
     void HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t code);
-    void LaunchThread(ExecutionThread *thread);
     void Execute();
 
 private:
     VMState m_state;
 
+    inline void CompareAsFloats(ExecutionThread *thread, const StackValue &lhs, const StackValue &rhs)
+    {
+        if (IS_VALUE_FLOATING_POINT(rhs) || IS_VALUE_INTEGER(rhs)) {
+            double left = GetValueDouble(thread, lhs);
+            double right = GetValueDouble(thread, rhs);
+            if (left > right) {
+                thread->m_regs.m_flags = GREATER;
+            } else if (left == right) {
+                thread->m_regs.m_flags = EQUAL;
+            } else {
+                thread->m_regs.m_flags = NONE;
+            }
+        } else {
+            THROW_COMPARISON_ERROR(lhs, rhs);
+        }
+    }
+
+    inline void CompareAsPointers(ExecutionThread *thread, const StackValue &lhs, const StackValue &rhs)
+    {
+        if (lhs.m_value.ptr == rhs.m_value.ptr) {
+            // pointers equal, drop out early.
+            thread->m_regs.m_flags = EQUAL;
+        } else if (lhs.m_value.ptr == nullptr || rhs.m_value.ptr == nullptr) {
+            // one of them is null, not equal
+            thread->m_regs.m_flags = NONE;
+        } else if (lhs.m_value.ptr->GetTypeId() == rhs.m_value.ptr->GetTypeId()) {
+            // comparable types
+            if (lhs.m_value.ptr->operator==(*rhs.m_value.ptr)) {
+                thread->m_regs.m_flags = EQUAL;
+            } else {
+                thread->m_regs.m_flags = NONE;
+            }
+        } else {
+            THROW_COMPARISON_ERROR(lhs, rhs);
+        }
+    }
+
+    inline void CompareAsFunctions(ExecutionThread *thread, const StackValue &lhs, const StackValue &rhs)
+    {
+        if ((lhs.m_value.func.m_addr == rhs.m_value.func.m_addr) &&
+            (rhs.m_value.func.m_nargs == lhs.m_value.func.m_nargs)) {
+            thread->m_regs.m_flags = EQUAL;
+        } else {
+            thread->m_regs.m_flags = NONE;
+        }
+    }
+
+    inline void CompareAsNativeFunctions(ExecutionThread *thread, const StackValue &lhs, const StackValue &rhs)
+    {
+        if (lhs.m_value.native_func == rhs.m_value.native_func) {
+            thread->m_regs.m_flags = EQUAL;
+        } else {
+            thread->m_regs.m_flags = NONE;
+        }
+    }
+
     /** Returns the value as a 64-bit integer without checking if it is not of that type. */
     inline int64_t GetIntFast(const StackValue &stack_value) 
     {
-        if (stack_value.m_type == StackValue::INT64) {
+        if (stack_value.m_type == StackValue::I64) {
             return stack_value.m_value.i64;
         }
-        return (int64_t) stack_value.m_value.i32;
+        return (int64_t)stack_value.m_value.i32;
     }
 
     /** Returns the value as a 64-bit integer, throwing an error if the type is invalid. */
     inline int64_t GetValueInt64(ExecutionThread *thread, const StackValue &stack_value)
     {
         switch (stack_value.m_type) {
-        case StackValue::INT32:
+        case StackValue::I32:
             return (int64_t)stack_value.m_value.i32;
-        case StackValue::INT64:
+        case StackValue::I64:
             return stack_value.m_value.i64;
-        case StackValue::FLOAT:
+        case StackValue::F32:
             return (int64_t)stack_value.m_value.f;
-        case StackValue::DOUBLE:
+        case StackValue::F64:
             return (int64_t)stack_value.m_value.d;
-        case StackValue::BOOLEAN:
-            return (int64_t)stack_value.m_value.b;
         default:
         {
             char buffer[256];
@@ -155,20 +176,18 @@ private:
     inline double GetValueDouble(ExecutionThread *thread, const StackValue &stack_value)
     {
         switch (stack_value.m_type) {
-        case StackValue::INT32:
+        case StackValue::I32:
             return (double)stack_value.m_value.i32;
-        case StackValue::INT64:
+        case StackValue::I64:
             return (double)stack_value.m_value.i64;
-        case StackValue::FLOAT:
+        case StackValue::F32:
             return (double)stack_value.m_value.f;
-        case StackValue::DOUBLE:
+        case StackValue::F64:
             return stack_value.m_value.d;
-        case StackValue::BOOLEAN:
-            return (double)stack_value.m_value.b;
         default:
         {
             char buffer[256];
-            std::sprintf(buffer, "no conversion from '%s' to 'Double'",
+            std::sprintf(buffer, "no conversion from '%s' to 'Float64'",
                 stack_value.GetTypeString());
             m_state.ThrowException(thread, Exception(buffer));
 

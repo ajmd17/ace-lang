@@ -36,3 +36,18 @@ Exception Exception::MemberNotFoundException()
 {
     return Exception(utf::Utf8String("invalid access to member of object"));
 }
+
+Exception Exception::FileOpenException(const char *file_name)
+{
+    return Exception(utf::Utf8String("Could not open file: `") + file_name + "`");
+}
+
+Exception Exception::LibraryLoadException(const char *lib_name)
+{
+    return Exception(utf::Utf8String("could not load library: `") + lib_name + "`");
+}
+
+Exception Exception::LibraryFunctionLoadException(const char *func_name)
+{
+    return Exception(utf::Utf8String("could not load function: `") + func_name + "`");
+}

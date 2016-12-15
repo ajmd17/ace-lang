@@ -18,11 +18,7 @@ VMState::VMState()
 
 VMState::~VMState()
 {
-    for (int i = 0; i < VM_MAX_THREADS; i++) {
-        if (m_threads[i] != nullptr) {
-            delete m_threads[i];
-        }
-    }
+    Reset();
 }
 
 void VMState::Reset()
@@ -64,12 +60,12 @@ HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
 {
     ASSERT(thread != nullptr);
 
-    int heap_size = m_heap.Size();
+    size_t heap_size = m_heap.Size();
     
     if (heap_size >= GC_THRESHOLD_MAX) {
         // heap overflow.
         char buffer[256];
-        std::sprintf(buffer, "heap overflow, heap size is %d", heap_size);
+        std::sprintf(buffer, "heap overflow, heap size is %zu", heap_size);
         ThrowException(thread, Exception(buffer));
         return nullptr;
     } else if (heap_size >= m_max_heap_objects) {
@@ -85,9 +81,7 @@ HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
         }
     }
 
-    HeapValue *res = m_heap.Alloc();
-
-    return res;
+    return m_heap.Alloc();
 }
 
 void VMState::GC()

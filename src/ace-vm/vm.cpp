@@ -13,6 +13,7 @@
 #include <common/my_assert.hpp>
 #include <cinttypes>
 #include <mutex>
+#include <ace-c/typedefs.hpp>
 
 static std::mutex mtx;
 
@@ -40,16 +41,16 @@ void VM::PushNativeFunctionPtr(NativeFunctionPtr_t ptr)
 void VM::Print(const StackValue &value)
 {
     switch (value.m_type) {
-    case StackValue::INT32:
+    case StackValue::I32:
         utf::printf(UTF8_CSTR("%d"), value.m_value.i32);
         break;
-    case StackValue::INT64:
+    case StackValue::I64:
         utf::printf(UTF8_CSTR("%" PRId64), value.m_value.i64);
         break;
-    case StackValue::FLOAT:
+    case StackValue::F32:
         utf::printf(UTF8_CSTR("%g"), value.m_value.f);
         break;
-    case StackValue::DOUBLE:
+    case StackValue::F64:
         utf::printf(UTF8_CSTR("%g"), value.m_value.d);
         break;
     case StackValue::BOOLEAN:
@@ -124,7 +125,7 @@ void VM::Invoke(ExecutionThread *thread, BytecodeStream *bs, const StackValue &v
                 args[j] = &thread->m_stack[i];
             }
 
-            value.m_value.native_func(&m_state, thread, args, num_args);
+            value.m_value.native_func(ace::sdk::Params { &m_state, thread, args, num_args });
 
             delete[] args;
         } else {
@@ -156,7 +157,28 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 {
     std::lock_guard<std::mutex> lock(mtx);
     
-    if (!m_state.good) {
+    if (thread->m_exception_state.HasExceptionOccurred()) {
+        if (thread->m_exception_state.m_try_counter < 0) {
+            // handle exception
+            thread->m_exception_state.m_try_counter--;
+
+            StackValue *top = nullptr;
+            while ((top = &thread->m_stack.Top())->m_type != StackValue::TRY_CATCH_INFO) {
+                thread->m_stack.Pop();
+            }
+
+            // top should be exception data
+            ASSERT(top != nullptr && top->m_type == StackValue::TRY_CATCH_INFO);
+
+            // jump to the catch block
+            bs->Seek(top->m_value.try_catch_info.catch_address);
+            // reset the exception flag
+            thread->m_exception_state.m_exception_occured = false;
+
+            // pop exception data from stack
+            thread->m_stack.Pop();
+        }
+
         return;
     }
 
@@ -245,12 +267,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         uint8_t reg;
         bs->Read(&reg);
 
+        int32_t i32;
+        bs->Read(&i32);
+
         // get register value given
         StackValue &value = thread->m_regs[reg];
-        value.m_type = StackValue::INT32;
-
-        // read 32-bit integer into register value
-        bs->Read(&value.m_value.i32);
+        value.m_type = StackValue::I32;
+        value.m_value.i32 = i32;
 
         break;
     }
@@ -258,12 +281,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         uint8_t reg;
         bs->Read(&reg);
 
+        int64_t i64;
+        bs->Read(&i64);
+
         // get register value given
         StackValue &value = thread->m_regs[reg];
-        value.m_type = StackValue::INT64;
-
-        // read 64-bit integer into register value
-        bs->Read(&value.m_value.i64);
+        value.m_type = StackValue::I64;
+        value.m_value.i64 = i64;
 
         break;
     }
@@ -271,12 +295,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         uint8_t reg;
         bs->Read(&reg);
 
+        float f;
+        bs->Read(&f);
+
         // get register value given
         StackValue &value = thread->m_regs[reg];
-        value.m_type = StackValue::FLOAT;
-
-        // read float into register value
-        bs->Read(&value.m_value.f);
+        value.m_type = StackValue::F32;
+        value.m_value.f = f;
 
         break;
     }
@@ -284,12 +309,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         uint8_t reg;
         bs->Read(&reg);
 
+        double d;
+        bs->Read(&d);
+
         // get register value given
         StackValue &value = thread->m_regs[reg];
-        value.m_type = StackValue::DOUBLE;
-
-        // read double into register value
-        bs->Read(&value.m_value.d);
+        value.m_type = StackValue::F64;
+        value.m_value.d = d;
 
         break;
     }
@@ -922,11 +948,17 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         uint8_t rhs_reg;
         bs->Read(&rhs_reg);
 
-        // load values from registers
-        StackValue &lhs = thread->m_regs[lhs_reg];
-        StackValue &rhs = thread->m_regs[rhs_reg];
+        // dropout early for comparing something against itself
+        if (lhs_reg == rhs_reg) {
+            thread->m_regs.m_flags = EQUAL;
+            break;
+        }
 
-        // COMPARE INTEGERS
+        // load values from registers
+        const StackValue &lhs = thread->m_regs[lhs_reg];
+        const StackValue &rhs = thread->m_regs[rhs_reg];
+
+        // compare integers
         if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
             int64_t left = GetValueInt64(thread, lhs);
             int64_t right = GetValueInt64(thread, rhs);
@@ -941,7 +973,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
                 // set NONE flag
                 thread->m_regs.m_flags = NONE;
             }
-        // COMPARE BOOLEANS
+        // compare booleans
         } else if (lhs.m_type == StackValue::BOOLEAN && rhs.m_type == StackValue::BOOLEAN) {
             bool left = lhs.m_value.b;
             bool right = rhs.m_value.b;
@@ -956,19 +988,16 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
                 // set NONE flag
                 thread->m_regs.m_flags = NONE;
             }
-        } else if (lhs.m_type == StackValue::HEAP_POINTER) {
-            COMPARE_REFERENCES(lhs, rhs);
-        } else if (rhs.m_type == StackValue::HEAP_POINTER) {
-            COMPARE_REFERENCES(rhs, lhs);
-        } else if (lhs.m_type == StackValue::FUNCTION) {
-            COMPARE_FUNCTIONS(lhs, rhs);
-        } else if (rhs.m_type == StackValue::FUNCTION) {
-            COMPARE_FUNCTIONS(rhs, lhs);
-        // COMPARE FLOATING POINT
         } else if (IS_VALUE_FLOATING_POINT(lhs)) {
-            COMPARE_FLOATING_POINT(lhs, rhs);
+            CompareAsFloats(thread, lhs, rhs);
         } else if (IS_VALUE_FLOATING_POINT(rhs)) {
-            COMPARE_FLOATING_POINT(rhs, lhs);
+            CompareAsFloats(thread, rhs, lhs);
+        } else if (lhs.m_type == StackValue::HEAP_POINTER && rhs.m_type == StackValue::HEAP_POINTER) {
+            CompareAsPointers(thread, lhs, rhs);
+        } else if (lhs.m_type == StackValue::FUNCTION && rhs.m_type == StackValue::FUNCTION) {
+            CompareAsFunctions(thread, lhs, rhs);
+        } else if (lhs.m_type == StackValue::NATIVE_FUNCTION && rhs.m_type == StackValue::NATIVE_FUNCTION) {
+            CompareAsNativeFunctions(thread, lhs, rhs);
         } else {
             THROW_COMPARISON_ERROR(lhs, rhs);
         }
@@ -1052,7 +1081,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             int64_t right = GetValueInt64(thread, rhs);
             int64_t result_value = left + right;
 
-            if (result.m_type == StackValue::INT32) {
+            if (result.m_type == StackValue::I32) {
                 result.m_value.i32 = (int32_t)result_value;
             } else {
                 result.m_value.i64 = result_value;
@@ -1062,7 +1091,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             double right = GetValueDouble(thread, rhs);
             double result_value = left + right;
 
-            if (result.m_type == StackValue::FLOAT) {
+            if (result.m_type == StackValue::F32) {
                 result.m_value.f = (float)result_value;
             } else {
                 result.m_value.d = result_value;
@@ -1102,7 +1131,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             int64_t right = GetValueInt64(thread, rhs);
             int64_t result_value = left - right;
 
-            if (result.m_type == StackValue::INT32) {
+            if (result.m_type == StackValue::I32) {
                 result.m_value.i32 = (int32_t)result_value;
             } else {
                 result.m_value.i64 = result_value;
@@ -1112,7 +1141,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             double right = GetValueDouble(thread, rhs);
             double result_value = left - right;
 
-            if (result.m_type == StackValue::FLOAT) {
+            if (result.m_type == StackValue::F32) {
                 result.m_value.f = (float)result_value;
             } else {
                 result.m_value.d = result_value;
@@ -1152,7 +1181,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             int64_t right = GetValueInt64(thread, rhs);
             int64_t result_value = left * right;
 
-            if (result.m_type == StackValue::INT32) {
+            if (result.m_type == StackValue::I32) {
                 result.m_value.i32 = (int32_t)result_value;
             } else {
                 result.m_value.i64 = result_value;
@@ -1162,7 +1191,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             double right = GetValueDouble(thread, rhs);
             double result_value = left * right;
 
-            if (result.m_type == StackValue::FLOAT) {
+            if (result.m_type == StackValue::F32) {
                 result.m_value.f = (float)result_value;
             } else {
                 result.m_value.d = result_value;
@@ -1207,7 +1236,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             } else {
                 int64_t result_value = left / right;
 
-                if (result.m_type == StackValue::INT32) {
+                if (result.m_type == StackValue::I32) {
                     result.m_value.i32 = (int32_t)result_value;
                 } else {
                     result.m_value.i64 = result_value;
@@ -1223,7 +1252,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             } else {
                 double result_value = left / right;
 
-                if (result.m_type == StackValue::FLOAT) {
+                if (result.m_type == StackValue::F32) {
                     result.m_value.f = (float)result_value;
                 } else {
                     result.m_value.d = result_value;
@@ -1250,14 +1279,14 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         if (IS_VALUE_INTEGER(value)) {
             int64_t i = GetValueInt64(thread, value);
-            if (value.m_type == StackValue::INT32) {
+            if (value.m_type == StackValue::I32) {
                 value.m_value.i32 = (int32_t)-i;
             } else {
                 value.m_value.i64 = -i;
             }
         } else if (IS_VALUE_FLOATING_POINT(value)) {
             double d = GetValueDouble(thread, value);
-            if (value.m_type == StackValue::FLOAT) {
+            if (value.m_type == StackValue::F32) {
                 value.m_value.f = (float)-d;
             } else {
                 value.m_value.d = -d;
@@ -1277,35 +1306,12 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         bs->Seek(bs->Size());
     }
     }
-
-    // exception handling
-    if (thread->m_exception_state.HasExceptionOccurred()) {
-        ASSERT(thread->m_exception_state.m_try_counter < 0);
-
-        // handle exception
-        thread->m_exception_state.m_try_counter--;
-
-        StackValue *top = NULL;
-        while ((top = &thread->m_stack.Top())->m_type != StackValue::TRY_CATCH_INFO) {
-            thread->m_stack.Pop();
-        }
-
-        // top should be exception data
-        ASSERT(top != NULL && top->m_type == StackValue::TRY_CATCH_INFO);
-
-        // jump to the catch block
-        bs->Seek(top->m_value.try_catch_info.catch_address);
-        // reset the exception flag
-        thread->m_exception_state.m_exception_occured = false;
-
-        // pop exception data from stack
-        thread->m_stack.Pop();
-    }
 }
 
-void VM::LaunchThread(ExecutionThread *thread)
+void VM::Execute()
 {
-    ASSERT(m_state.GetBytecodeStream() != nullptr);
+    ASSERT(m_state.GetNumThreads() > 0);
+    ASSERT(m_state.GetBytecodeStream() != NULL);
 
     // create copy of the stream so we don't affect position change
     BytecodeStream bs = *m_state.GetBytecodeStream();
@@ -1314,12 +1320,6 @@ void VM::LaunchThread(ExecutionThread *thread)
         uint8_t code;
         bs.Read(&code);
 
-        HandleInstruction(thread, &bs, code);
+        HandleInstruction(MAIN_THREAD, &bs, code);
     }
-}
-
-void VM::Execute()
-{
-    ASSERT(m_state.GetNumThreads() > 0);
-    LaunchThread(MAIN_THREAD);
 }

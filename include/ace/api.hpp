@@ -122,9 +122,6 @@ public:
 
 private:
     std::vector<API::ModuleDefine> m_module_defs;
-
-    //std::vector<API::NativeFunctionDefine> m_function_defs;
-    //std::vector<API::NativeVariableDefine> m_variable_defs;
 };
 
 } // namespace ace

@@ -73,18 +73,15 @@ void Heap::Sweep()
                 // make the nodes to the other sides now
                 // point to each other
                 after->before = before;
-
-                // delete the middle node
-                delete last;
-                last = before;
             } else {
-                delete last;
-
                 // since there are no nodes after this,
                 // set the head to be this node here
                 m_head = before;
-                last = m_head;
             }
+
+            // delete the middle node
+            delete last;
+            last = before;
 
             // decrement number of currently allocated
             // objects

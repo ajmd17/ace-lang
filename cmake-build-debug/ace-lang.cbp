@@ -5,7 +5,7 @@
 		<Option title="ace-lang"/>
 		<Option makefile_is_custom="1"/>
 		<Option compiler="gcc"/>
-		<Option virtualFolders="CMake Files\;CMake Files\src\;CMake Files\src\ace-c\;CMake Files\src\ace-vm\;CMake Files\src\ace-jit\;CMake Files\src\ace\;"/>
+		<Option virtualFolders="CMake Files\;CMake Files\src\;CMake Files\src\ace-c\;CMake Files\src\ace-vm\;CMake Files\src\ace-runtime\;CMake Files\src\ace\;"/>
 		<Build>
 			<Target title="all">
 				<Option working_dir="/Users/andrew/ace-lang/cmake-build-debug"/>
@@ -129,11 +129,11 @@
 					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-vm/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="ace-jit">
-				<Option output="/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/libace-jit.a" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit"/>
+			<Target title="ace-runtime">
+				<Option output="/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/libace-runtime.dylib" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime"/>
 				<Option object_output="./"/>
-				<Option type="2"/>
+				<Option type="3"/>
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/Users/andrew/ace-lang/include"/>
@@ -146,17 +146,17 @@
 					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 ace-jit"/>
-					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 ace-runtime"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="ace-jit/fast">
-				<Option output="/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/libace-jit.a" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit"/>
+			<Target title="ace-runtime/fast">
+				<Option output="/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/libace-runtime.dylib" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime"/>
 				<Option object_output="./"/>
-				<Option type="2"/>
+				<Option type="3"/>
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/Users/andrew/ace-lang/include"/>
@@ -169,10 +169,10 @@
 					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 ace-jit/fast"/>
-					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-jit/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 ace-runtime/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/andrew/ace-lang/cmake-build-debug/src/ace-runtime/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="ace">
@@ -426,6 +426,12 @@
 		<Unit filename="/Users/andrew/ace-lang/src/ace-c/type_contract.cpp">
 			<Option target="ace-c"/>
 		</Unit>
+		<Unit filename="/Users/andrew/ace-lang/src/ace-runtime/ace-runtime.cpp">
+			<Option target="ace-runtime"/>
+		</Unit>
+		<Unit filename="/Users/andrew/ace-lang/src/ace-runtime/io.cpp">
+			<Option target="ace-runtime"/>
+		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp">
 			<Option target="ace-vm"/>
 		</Unit>
@@ -489,8 +495,8 @@
 		<Unit filename="/Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\src\ace-vm\"/>
 		</Unit>
-		<Unit filename="/Users/andrew/ace-lang/src/ace-jit/CMakeLists.txt">
-			<Option virtualFolder="CMake Files\src\ace-jit\"/>
+		<Unit filename="/Users/andrew/ace-lang/src/ace-runtime/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\ace-runtime\"/>
 		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\src\ace\"/>

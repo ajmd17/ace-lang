@@ -2,6 +2,7 @@
 #define STACK_VALUE_HPP
 
 #include <ace-vm/heap_value.hpp>
+#include <ace-sdk/ace-sdk.hpp>
 
 #include <common/utf8.hpp>
 
@@ -13,20 +14,17 @@ struct StackValue;
 struct VMState;
 struct ExecutionThread;
 
-typedef void(*NativeFunctionPtr_t)(VMState*, ExecutionThread*, StackValue**, int);
+typedef void(*NativeFunctionPtr_t)(ace::sdk::Params);
 typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, StackValue*);
-
-struct Function {
-    uint32_t m_addr;
-    uint8_t m_nargs;
-};
 
 struct StackValue {
     enum ValueType {
-        INT32,
-        INT64,
-        FLOAT,
-        DOUBLE,
+        /* These first four types are listed in order of precedence */
+        I32,
+        I64,
+        F32,
+        F64,
+
         BOOLEAN,
         HEAP_POINTER,
         FUNCTION,
@@ -54,7 +52,6 @@ struct StackValue {
         struct {
             uint32_t catch_address;
         } try_catch_info;
-
     } m_value;
 
     StackValue();
@@ -69,16 +66,16 @@ struct StackValue {
     inline const char *GetTypeString() const
     {
         switch (m_type) {
-        case INT32:
+        case I32:
             return "Int32";
-        case INT64:
+        case I64:
             return "Int64";
-        case FLOAT:
+        case F32:
             return "Float32";
-        case DOUBLE:
+        case F64:
             return "Float64";
         case BOOLEAN:
-            return "Bool";
+            return "Boolean";
         case HEAP_POINTER:
             return "Object";
         case FUNCTION:
@@ -86,7 +83,7 @@ struct StackValue {
         case NATIVE_FUNCTION:
             return "NativeFunction";
         default:
-            return "Undefined";
+            return "??";
         }
     }
 };

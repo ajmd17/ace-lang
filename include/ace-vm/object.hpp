@@ -14,12 +14,12 @@ class Object {
 public:
     Object(int size, uint32_t *hashes);
     Object(const Object &other);
-    Object &operator=(const Object &other);
     ~Object();
 
-    Member *LookupMemberFromHash(uint32_t hash) const;
-
+    Object &operator=(const Object &other);
     inline bool operator==(const Object &other) const { return this == &other; }
+
+    Member *LookupMemberFromHash(uint32_t hash) const;
 
     inline int GetSize() const { return m_size; }
     inline Member &GetMember(int index) { return m_members[index]; }

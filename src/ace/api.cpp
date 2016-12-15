@@ -24,7 +24,7 @@ static Module *GetModule(CompilationUnit *compilation_unit, const std::string &m
         }
     }
 
-    if (mod == nullptr) {
+    if (!mod) {
         // add this module to the compilation unit
         std::unique_ptr<Module> this_module(new Module(module_name, SourceLocation::eof));
         compilation_unit->m_modules.push_back(std::move(this_module));

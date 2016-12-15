@@ -18,6 +18,7 @@ IdentifierTable::IdentifierTable(const IdentifierTable &other)
 int IdentifierTable::CountUsedVariables() const
 {
     std::unordered_set<int> used_variables;
+    
     for (auto &ident : m_identifiers) {
         if (!ace::compiler::Config::cull_unused_objects || ident->GetUseCount() > 0) {
             if (used_variables.find(ident->GetIndex()) == used_variables.end()) {
@@ -25,14 +26,17 @@ int IdentifierTable::CountUsedVariables() const
             }
         }
     }
+    
     return used_variables.size();
 }
 
 Identifier *IdentifierTable::AddAlias(const std::string &name, Identifier *aliasee)
 {
     ASSERT(aliasee != nullptr);
+    
     m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(name,
         aliasee->GetIndex(), aliasee->GetFlags() | FLAG_ALIAS)));
+    
     return m_identifiers.back().get();
 }
 
@@ -40,6 +44,7 @@ Identifier *IdentifierTable::AddIdentifier(const std::string &name, int flags)
 {
     m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(name,
         m_identifier_index++, flags)));
+    
     return m_identifiers.back().get();
 }
 

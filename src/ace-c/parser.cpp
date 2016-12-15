@@ -1,5 +1,4 @@
 #include <ace-c/parser.hpp>
-#include <common/my_assert.hpp>
 
 #include <memory>
 #include <cstdlib>
@@ -37,7 +36,7 @@ Token Parser::Match(Token::TokenType type, bool read)
     const Token peek = m_token_stream->Peek();
     
     if (peek && peek.GetType() == type) {
-        if (read) {
+        if (read && m_token_stream->HasNext()) {
             m_token_stream->Next();
         }
         
@@ -54,7 +53,7 @@ Token Parser::MatchKeyword(Keywords keyword, bool read)
     if (peek && peek.GetType() == Token::TokenType::Token_keyword) {
         std::string str = Keyword::ToString(keyword);
         if (peek.GetValue() == str) {
-            if (read) {
+            if (read && m_token_stream->HasNext()) {
                 m_token_stream->Next();
             }
             
@@ -72,7 +71,7 @@ Token Parser::MatchOperator(const Operator *op, bool read)
     if (peek && peek.GetType() == Token::TokenType::Token_operator) {
         std::string str = op->ToString();
         if (peek.GetValue() == str) {
-            if (read) {
+            if (read && m_token_stream->HasNext()) {
                 m_token_stream->Next();
             }
             return peek;
@@ -116,7 +115,7 @@ Token Parser::ExpectKeyword(Keywords keyword, bool read)
     
     if (!token) {
         SourceLocation location = CurrentLocation();
-        if (read) {
+        if (read && m_token_stream->HasNext()) {
             m_token_stream->Next();
         }
 
@@ -146,7 +145,7 @@ Token Parser::ExpectOperator(const Operator *op, bool read)
     const Token token = MatchOperator(op, read);
     if (!token) {
         SourceLocation location = CurrentLocation();
-        if (read) {
+        if (read && m_token_stream->HasNext()) {
             m_token_stream->Next();
         }
 
@@ -234,7 +233,7 @@ int Parser::OperatorPrecedence(const Operator *&out)
         }
     }
 
-    if (out != nullptr) {
+    if (out) {
         return out->GetPrecedence();
     } else {
         return -1;
@@ -247,7 +246,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
         if (MatchKeyword(Keyword_import, false)) {
             return ParseImport();
         } else if (MatchKeyword(Keyword_let, false)) {
-            return ParseVariableDeclaration();
+            return ParseVariableDeclaration(true);
         } else if (MatchKeyword(Keyword_func, false)) {
             if (MatchAhead(Token::TokenType::Token_identifier, 1)) {
                 return ParseFunctionDefinition();
@@ -267,6 +266,9 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
         } else if (MatchKeyword(Keyword_return, false)) {
             return ParseReturnStatement();
         }
+    } else if (Match(Token::TokenType::Token_identifier, false) &&
+               MatchAhead(Token::TokenType::Token_colon, 1)) {
+        return ParseVariableDeclaration(false);
     } else if (Match(Token::TokenType::Token_open_brace, false)) {
         return ParseBlock();
     }
@@ -281,7 +283,9 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     if (!token) {
         CompilerError error(Level_fatal, Msg_unexpected_eof, CurrentLocation());
         m_compilation_unit->GetErrorList().AddError(error);
-        m_token_stream->Next();
+        if (m_token_stream->HasNext()) {
+            m_token_stream->Next();
+        }
         return nullptr;
     }
 
@@ -314,12 +318,14 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
             token.GetLocation(), token.GetValue());
         m_compilation_unit->GetErrorList().AddError(error);
 
-        m_token_stream->Next();
+        if (m_token_stream->HasNext()) {
+            m_token_stream->Next();
+        }
 
         return nullptr;
     }
 
-    if (expr != nullptr) {
+    if (expr) {
         if (Match(Token::TokenType::Token_dot, false)) {
             expr = ParseMemberAccess(expr);
         }
@@ -380,7 +386,9 @@ std::shared_ptr<AstIdentifier> Parser::ParseIdentifier()
             return ParseFunctionCall();
         } else {
             // read identifier token
-            m_token_stream->Next();
+            if (m_token_stream->HasNext()) {
+                m_token_stream->Next();
+            }
 
             // return variable
             return std::shared_ptr<AstVariable>(
@@ -401,7 +409,7 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
     while (!Match(Token::TokenType::Token_close_parenthesis, false)) {
         SourceLocation expr_location = CurrentLocation();
         std::shared_ptr<AstExpression> expr = ParseExpression();
-        if (expr == nullptr) {
+        if (!expr) {
             CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
             m_compilation_unit->GetErrorList().AddError(error);
             return nullptr;
@@ -658,6 +666,9 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
         const Operator *op = nullptr;
         if (Operator::IsUnaryOperator(token.GetValue(), op)) {
             auto term = ParseTerm();
+            if (!term) {
+                return nullptr;
+            }
 
             return std::shared_ptr<AstUnaryExpression>(
                 new AstUnaryExpression(term, op, token.GetLocation()));
@@ -725,13 +736,13 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContract()
 std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractExpression()
 {
     auto term = ParseTypeContractTerm();
-    if (term == nullptr) {
+    if (!term) {
         return nullptr;
     }
 
     if (Match(Token::TokenType::Token_operator, false)) {
         auto expr = ParseTypeContractBinaryExpression(0, term);
-        if (expr == nullptr) {
+        if (!expr) {
             return nullptr;
         }
         term = expr;
@@ -786,7 +797,7 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractBinaryExpres
         }
 
         auto right = ParseTypeContractTerm();
-        if (right == nullptr) {
+        if (!right) {
             return nullptr;
         }
 
@@ -822,14 +833,14 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool re
 
     const Token identifier = Expect(Token::TokenType::Token_identifier, true);
     if (identifier) {
-        std::shared_ptr<AstTypeSpecification> type_spec(nullptr);
+        std::shared_ptr<AstTypeSpecification> type_spec;
 
         if (Match(Token::TokenType::Token_colon, true)) {
             // read object type
             type_spec = ParseTypeSpecification();
         }
 
-        std::shared_ptr<AstExpression> assignment(nullptr);
+        std::shared_ptr<AstExpression> assignment;
 
         const Token op = Match(Token::TokenType::Token_operator, true);
         if (op) {
@@ -837,7 +848,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool re
                 // read assignment expression
                 SourceLocation expr_location = CurrentLocation();
                 assignment = ParseExpression();
-                if (assignment == nullptr) {
+                if (!assignment) {
                     CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
                     m_compilation_unit->GetErrorList().AddError(error);
                 }
@@ -1017,7 +1028,9 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
                         m_token_stream->Peek().GetValue());
                     m_compilation_unit->GetErrorList().AddError(error);
 
-                    m_token_stream->Next();
+                    if (m_token_stream->HasNext()) {
+                        m_token_stream->Next();
+                    }
                 }
 
                 SkipStatementTerminators();

@@ -2,5 +2,5 @@
 /Users/andrew/ace-lang/bin/CMakeFiles/ZERO_CHECK.dir
 /Users/andrew/ace-lang/bin/src/ace-c/CMakeFiles/ace-c.dir
 /Users/andrew/ace-lang/bin/src/ace-vm/CMakeFiles/ace-vm.dir
-/Users/andrew/ace-lang/bin/src/ace-jit/CMakeFiles/ace-jit.dir
+/Users/andrew/ace-lang/bin/src/ace-runtime/CMakeFiles/ace-runtime.dir
 /Users/andrew/ace-lang/bin/src/ace/CMakeFiles/ace.dir

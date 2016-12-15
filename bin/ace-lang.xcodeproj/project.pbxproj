@@ -9,9 +9,9 @@
 /* Begin PBXAggregateTarget section */
 		063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 78EA7C3AED8148D1AFC86062 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildConfigurationList = C91763BA598D4AA0AC1F5ACD /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
 			buildPhases = (
-				88BFE3B4E8164E3A84FD3EF9 /* CMake Rules */,
+				F6AB1685AA6D47F99AA23AF1 /* CMake Rules */,
 			);
 			dependencies = (
 			);
@@ -20,16 +20,16 @@
 		};
 		CFA071975ACD451FAF28E084 /* ALL_BUILD */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 1A08B725E5D4442ABAB81D41 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildConfigurationList = F9C1C52D98DE49C3AB8BE61A /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
 			buildPhases = (
-				A19B58273542419A8D5F9699 /* CMake Rules */,
+				BE2093D483A44D71811C383F /* CMake Rules */,
 			);
 			dependencies = (
-				8DE66875D35B4AD39E8EC788 /* PBXTargetDependency */,
-				457DDAB641C049BBAF1FF61E /* PBXTargetDependency */,
-				E1DFFD6C4B5D409EA6EF7D01 /* PBXTargetDependency */,
-				A7475684B5424BDFBE2A6AE6 /* PBXTargetDependency */,
-				DB0C38D9F6D44B95B64EE507 /* PBXTargetDependency */,
+				EC3B81C6F7B84443BDBC7FC9 /* PBXTargetDependency */,
+				DB28D52853974D4BBC6F9940 /* PBXTargetDependency */,
+				0AC0A2A0CE7144A6AB83EDC6 /* PBXTargetDependency */,
+				F04A0729F9EA4F81B40E314F /* PBXTargetDependency */,
+				6D7A227B80574EF1B2848699 /* PBXTargetDependency */,
 			);
 			name = ALL_BUILD;
 			productName = ALL_BUILD;
@@ -37,521 +37,549 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		03ABDEBEDC904AB4BA62C1EB /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */ = {isa = PBXBuildFile; fileRef = 6FE6A5DAE06D4A67837BAC12 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_local_import.cpp' "; }; };
-		04BCD193B6B2429CA3A200F0 /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */ = {isa = PBXBuildFile; fileRef = 0C036AE624724182A04946CA /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=identifier.cpp' "; }; };
-		07A638011769414A9157374B /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */ = {isa = PBXBuildFile; fileRef = 20F72A9170E04ADF850275B7 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ace-c.cpp' "; }; };
-		13516BE565A749BE9510B4FD /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */ = {isa = PBXBuildFile; fileRef = D203B63EF8654369A001A2C6 /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=byte_stream.cpp' "; }; };
-		13B5D3A4857E47DFBAEAE242 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */ = {isa = PBXBuildFile; fileRef = BCC1028AE1F64678B9CB57A9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_null.cpp' "; }; };
-		198E8BE00A7F40529737BD79 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */ = {isa = PBXBuildFile; fileRef = 05268C4EAECF4A3189C69408 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_member_access.cpp' "; }; };
-		1E25F4D815624399BD822C13 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */ = {isa = PBXBuildFile; fileRef = 0A540B1EBCA04F0E91F65353 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_identifier.cpp' "; }; };
-		20DEE07ADD93470894A50A50 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */ = {isa = PBXBuildFile; fileRef = E64F2C12A9D142E0ABC45AD2 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=main.cpp' "; }; };
-		249779603125414DB262E03E /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */ = {isa = PBXBuildFile; fileRef = 04FB358062364D8D84B92C97 /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=parser.cpp' "; }; };
-		27EDF668AE1B4BA994834A84 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = E15CBEBE185B46ACB601F6E8 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
-		299379D8DE324E33B5E3383C /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */ = {isa = PBXBuildFile; fileRef = 871CCD85975C4A429B1BCE23 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=instruction_stream.cpp' "; }; };
-		2ACDB2B41A4B48A9948F9CC5 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */ = {isa = PBXBuildFile; fileRef = 23204611BEFC43299BA9A441 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_try_catch.cpp' "; }; };
-		31DD4BFD4C504E81A5A78608 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */ = {isa = PBXBuildFile; fileRef = E2B3AD2264DA467A93E2AAA4 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_visitor.cpp' "; }; };
-		369CAB4D37654469AA175A5D /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */ = {isa = PBXBuildFile; fileRef = 301263A873404226AAF00215 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=type_info.cpp' "; }; };
-		3F60C575BA26441E9D102FCD /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */ = {isa = PBXBuildFile; fileRef = 7B76272D7CF94D09A0801637 /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_iterator.cpp' "; }; };
-		40C5C4C994DB490FB57CF99E /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */ = {isa = PBXBuildFile; fileRef = 33436B24A5AD4D36AD381953 /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=static_object.cpp' "; }; };
-		4132A16DA5914F44B0C70C2A /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */ = {isa = PBXBuildFile; fileRef = 5D5C93CFD77A4AB99D9E2902 /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=object.cpp' "; }; };
-		427D8419E8BF4EA8A7B711E3 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */ = {isa = PBXBuildFile; fileRef = 3E2ACD5172074493A04AC547 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=error_list.cpp' "; }; };
-		43A8B0191D82489D92510D6D /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */ = {isa = PBXBuildFile; fileRef = 268592B1A9D74827AF305DF9 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=compiler_error.cpp' "; }; };
-		43C66A018C49408A810BD3B9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */ = {isa = PBXBuildFile; fileRef = 536DB991CFA24B909E2991E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_type_specification.cpp' "; }; };
-		45C85417CB0A47B699189060 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */ = {isa = PBXBuildFile; fileRef = BE8451E455074678B8145603 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_void.cpp' "; }; };
-		46D89E7897E54E6084D06877 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */ = {isa = PBXBuildFile; fileRef = 6530723DF7E9445D8027D8C0 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=object_type.cpp' "; }; };
-		4AA515B2C81346AFB7BD14D1 /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */ = {isa = PBXBuildFile; fileRef = ACC3D9AC0B824ECDAB0EADFA /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=exception.cpp' "; }; };
-		4E09CEFECF354B9983843A82 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */ = {isa = PBXBuildFile; fileRef = F2A11B3F9A01448EADDA0581 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_undefined.cpp' "; }; };
-		50C6F2E58E83487E9392CF9F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */ = {isa = PBXBuildFile; fileRef = A0FBB211F2DE4F46B1469405 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_while_loop.cpp' "; }; };
-		512BA56BBA094D2F8AB253B5 /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */ = {isa = PBXBuildFile; fileRef = D1934B67E70F4494B45968BF /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=main.cpp' "; }; };
-		56D0711BD5F043D899571C3A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */ = {isa = PBXBuildFile; fileRef = F8E5DF11D53A4A4489A23B7D /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_type_definition.cpp' "; }; };
-		5817227856984102AE310655 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */ = {isa = PBXBuildFile; fileRef = 8C6D02D181144025A5431EF8 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=array.cpp' "; }; };
-		5AE424FB9B6844128F851DBC /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */ = {isa = PBXBuildFile; fileRef = 6CE9BB4CC79D4F11B60C88C6 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=compiler.cpp' "; }; };
-		6373462BEA904437A587A195 /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */ = {isa = PBXBuildFile; fileRef = 85903E2E38594211899A0E09 /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=stack_memory.cpp' "; }; };
-		63C59B28F01F4EDD8CF97AAC /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */ = {isa = PBXBuildFile; fileRef = 6C13D8D2B4184C31AD91D17C /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=semantic_analyzer.cpp' "; }; };
-		63D1F8E3259D45C4A9B7601C /* /Users/andrew/ace-lang/src/ace/runtime.cpp */ = {isa = PBXBuildFile; fileRef = 1C19DA6C3C124FA6AD7BF892 /* /Users/andrew/ace-lang/src/ace/runtime.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=runtime.cpp' "; }; };
-		69478F48E70841E4A239D446 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */ = {isa = PBXBuildFile; fileRef = B3B2967802664FACB83BDEB2 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=configuration.cpp' "; }; };
-		6E3D9FB7CF294F519126176B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */ = {isa = PBXBuildFile; fileRef = 2518694121DC470BAF4EFC31 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_type_contract.cpp' "; }; };
-		725B96DF5EB34B348CA7937C /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */ = {isa = PBXBuildFile; fileRef = F0FC49ED2776429C92B855CE /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=operator.cpp' "; }; };
-		748498D7CD9D4A65B1A36C74 /* /Users/andrew/ace-lang/src/ace-jit/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 4250418610D04342A1667DCA /* /Users/andrew/ace-lang/src/ace-jit/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
-		7523DF9A385C4F0280DFC537 /* /Users/andrew/ace-lang/src/ace/main.cpp */ = {isa = PBXBuildFile; fileRef = 45D61F78FF634F21AFD934E5 /* /Users/andrew/ace-lang/src/ace/main.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=main.cpp' "; }; };
-		766CE70785F948F68AEFB4CF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */ = {isa = PBXBuildFile; fileRef = FB90D440CE9042A288A22509 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_variable.cpp' "; }; };
-		7907D043BFB143F6B57D1215 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */ = {isa = PBXBuildFile; fileRef = 8506D07E76EA4B8A97214437 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_parameter.cpp' "; }; };
-		7A71ED004B2D4615ABC4E881 /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */ = {isa = PBXBuildFile; fileRef = DBAE702057A447D3A5ABC70A /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=static_memory.cpp' "; }; };
-		7B4B7D4825564CAFB71B2551 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */ = {isa = PBXBuildFile; fileRef = 0AD1911B6A6A479DA1C10766 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=bytecode_stream.cpp' "; }; };
-		81392F5BFC9B416BA62EC2D1 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */ = {isa = PBXBuildFile; fileRef = F574C3EDC0A04B9EBA2D2DA0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_false.cpp' "; }; };
-		86B8D16804614382B46A095A /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */ = {isa = PBXBuildFile; fileRef = 25CEC5B459FE4A89B5F9D9CB /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=vm_state.cpp' "; }; };
-		8F76136AECE74643A475B43E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */ = {isa = PBXBuildFile; fileRef = CBC534DE288B49D2BD1F0346 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_string.cpp' "; }; };
-		926B202024C6428382960F7A /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */ = {isa = PBXBuildFile; fileRef = A87884E649E947688430DC77 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=lexer.cpp' "; }; };
-		95B1A477D30E43E3A8FBE780 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */ = {isa = PBXBuildFile; fileRef = 8A91CE19C606402B8E1D3616 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=heap_memory.cpp' "; }; };
-		97192C1DBAF743AA8C8D5B94 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */ = {isa = PBXBuildFile; fileRef = C6EEF7427F47469697F012C6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_binary_expression.cpp' "; }; };
-		9BF528D9B93D41B7914BC434 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */ = {isa = PBXBuildFile; fileRef = BFD7B6C22BA2438BADF486E4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_block.cpp' "; }; };
-		9CB1F59DCC234B708A0136C8 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */ = {isa = PBXBuildFile; fileRef = 26DF95C7F21E455B902066ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_integer.cpp' "; }; };
-		9FB567B6817C4F838FDFA636 /* /Users/andrew/ace-lang/src/ace-c/token.cpp */ = {isa = PBXBuildFile; fileRef = 4BFC41300A704A63BE48113B /* /Users/andrew/ace-lang/src/ace-c/token.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=token.cpp' "; }; };
-		9FE68D57DDDB43CB80ABF2B3 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */ = {isa = PBXBuildFile; fileRef = 7FE4DAECB5AD4A9697709225 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_module_declaration.cpp' "; }; };
-		A174DB7052F64F07A2E6E648 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */ = {isa = PBXBuildFile; fileRef = C51261F80163442ABD9BDBB8 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_unary_expression.cpp' "; }; };
-		A545DEB929DE43E7906EF9B9 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */ = {isa = PBXBuildFile; fileRef = 0D0BE605CEB24C3281C7D843 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=identifier_table.cpp' "; }; };
-		A694454C2F2F4B22B1D38109 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */ = {isa = PBXBuildFile; fileRef = DC0AF4FA57FB4518BA7FDC4E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_statement.cpp' "; }; };
-		A696F5CDDDA14F6D93CB05B6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */ = {isa = PBXBuildFile; fileRef = AADDAF7AF27A4382AF9DF0DB /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_float.cpp' "; }; };
-		AA3251E9E020476A823E11FF /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */ = {isa = PBXBuildFile; fileRef = 6F826DB075424E80A3354E4D /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=compilation_unit.cpp' "; }; };
-		AC6BA00ACCBB455ABDDCD44C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */ = {isa = PBXBuildFile; fileRef = 3F153D5BD3DA45E3A08628AF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_expression.cpp' "; }; };
-		AD8B8E56C39D49B98050FEFD /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */ = {isa = PBXBuildFile; fileRef = 30F6BD58CC744BBE88892AD0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_constant.cpp' "; }; };
-		AFBF7389BD8242819EC1A56F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */ = {isa = PBXBuildFile; fileRef = 4F0995F0E7C948CDBCDF92A0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_array_access.cpp' "; }; };
-		B80A9A587EFC4BA894BA10B4 /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */ = {isa = PBXBuildFile; fileRef = D4757568A6ED4899AF7A0651 /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=source_stream.cpp' "; }; };
-		B996F7DBA4B64923807E1651 /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */ = {isa = PBXBuildFile; fileRef = 91EF23310E234DBDA7D2E877 /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=source_location.cpp' "; }; };
-		BC222D8F372B405498520C3F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */ = {isa = PBXBuildFile; fileRef = 804E54B36E6449C499335C93 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_if_statement.cpp' "; }; };
-		BC34AF6D2EAF48C392797603 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */ = {isa = PBXBuildFile; fileRef = CEB8109B2D03402789FF04AA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_array_expression.cpp' "; }; };
-		BE8DB8C6BC36498185388284 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */ = {isa = PBXBuildFile; fileRef = 62F89D15FCD94BFE81B17751 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ace-vm.cpp' "; }; };
-		BF2859AB6818418294965174 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */ = {isa = PBXBuildFile; fileRef = 08F5B68D55064B6997061902 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_function_definition.cpp' "; }; };
-		CA6D52F1E51148399E009737 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */ = {isa = PBXBuildFile; fileRef = 4BB4A680C4544FFA9CF51594 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=type_contract.cpp' "; }; };
-		D00B83D710304332B6AC3D51 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */ = {isa = PBXBuildFile; fileRef = 5149C06A68EE487BBD1B28C9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_return_statement.cpp' "; }; };
-		D022F5233F9E4C3D94234483 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */ = {isa = PBXBuildFile; fileRef = AAB837FF712442E08F2EB327 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_generated_expression.cpp' "; }; };
-		D5008704CBBC4AD8A618872C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */ = {isa = PBXBuildFile; fileRef = BE4430CCB25E4870B8AA54B6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_function_call.cpp' "; }; };
-		D6F044AA6E7846EB8A4381A6 /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = A74D58FB14184B98BCBF062A /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
-		D80FD3D9A1F54C5A96F7A05B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */ = {isa = PBXBuildFile; fileRef = 9D275644A6374EE6AC1C59EF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_object.cpp' "; }; };
-		D8BB42D6339B4E6FA585D914 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */ = {isa = PBXBuildFile; fileRef = 487BC784E6B942669B06F297 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_import.cpp' "; }; };
-		DE48D573112D43A4B6DFD782 /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 08F162BED9BA4B16B91A6BBA /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
-		DF45F5A3B33245EAB05DD5E9 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */ = {isa = PBXBuildFile; fileRef = F3CAA7580D794BE49D90C745 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=stack_value.cpp' "; }; };
-		E1E72FD9401F4F8F9583E1A4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */ = {isa = PBXBuildFile; fileRef = BA94266F9378477ABEFB2F19 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_print_statement.cpp' "; }; };
-		E224BF4CAAA84B58B9361A97 /* /Users/andrew/ace-lang/src/ace-c/module.cpp */ = {isa = PBXBuildFile; fileRef = D490F260510B4EA2A11AFE6C /* /Users/andrew/ace-lang/src/ace-c/module.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=module.cpp' "; }; };
-		E2D19549A4A542B5AE38B804 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */ = {isa = PBXBuildFile; fileRef = ACB1F3E18DD24210AAC33E05 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=keywords.cpp' "; }; };
-		E3F93E027380435182C8D615 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */ = {isa = PBXBuildFile; fileRef = 4A0F10BBAB4846E3A2205AB8 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=scope.cpp' "; }; };
-		EBD3899985624685ACF00856 /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */ = {isa = PBXBuildFile; fileRef = BD9C05299CA44FC281B403D0 /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=heap_value.cpp' "; }; };
-		ECACF17AEF7741B196716BE8 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */ = {isa = PBXBuildFile; fileRef = ED2510EB927643268839D2B4 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=source_file.cpp' "; }; };
-		F18897EDA5E44E9CA29E9C38 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */ = {isa = PBXBuildFile; fileRef = 8B4C2E4B2FBB4A1EAF404020 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=optimizer.cpp' "; }; };
-		F4525903EFBF418591F3C27D /* /Users/andrew/ace-lang/src/ace/api.cpp */ = {isa = PBXBuildFile; fileRef = 07B0FAEEDE8545DA83E01048 /* /Users/andrew/ace-lang/src/ace/api.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=api.cpp' "; }; };
-		F6596FE236B74DF1B5A3A8ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */ = {isa = PBXBuildFile; fileRef = E0280BE43E094A4EAB1A530B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_function_expression.cpp' "; }; };
-		F6653A6693E44B978ED98950 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */ = {isa = PBXBuildFile; fileRef = F09B2EAED28A40A7AF9FA4F2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_variable_declaration.cpp' "; }; };
-		F833716340EC43279CB932AE /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */ = {isa = PBXBuildFile; fileRef = B1C454FB104548C9A2D0C3D9 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=token_stream.cpp' "; }; };
-		F923A4F63E55471BBB7B2AA3 /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */ = {isa = PBXBuildFile; fileRef = C13B48305A7A4A798A3D71DD /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=decompilation_unit.cpp' "; }; };
-		FBB92FC49E314858A7A13C0F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */ = {isa = PBXBuildFile; fileRef = CACB221EE42F41239EA94A4C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_declaration.cpp' "; }; };
-		FE3B7829EC554874AAB6241E /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */ = {isa = PBXBuildFile; fileRef = F847D3E192AA47298E92EE2F /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=vm.cpp' "; }; };
-		FFA3EB8A2D8C4AAD83AD4A90 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */ = {isa = PBXBuildFile; fileRef = 7E21BC37B44142C8921FE59A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_true.cpp' "; }; };
+		0F68B6DDBE1642DCA9F38D24 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */ = {isa = PBXBuildFile; fileRef = 04E07455C7844A7683DB07E1 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=array.cpp' "; }; };
+		10EDCEE528A94461A5ECAB79 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */ = {isa = PBXBuildFile; fileRef = B4311F7E41F1419999B91008 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=main.cpp' "; }; };
+		132EB1A3BCF5443DB6726302 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */ = {isa = PBXBuildFile; fileRef = 7D4DDA5617B045F2A6FF1964 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_false.cpp' "; }; };
+		13AD132D87DF40D88CE6BC69 /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */ = {isa = PBXBuildFile; fileRef = 4B84646C0EF74238808E519E /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=main.cpp' "; }; };
+		1FB416E0AB42489DA7630316 /* /Users/andrew/ace-lang/src/ace/runtime.cpp */ = {isa = PBXBuildFile; fileRef = 2B070A2E0DD24CCB8BD25EDE /* /Users/andrew/ace-lang/src/ace/runtime.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=runtime.cpp' "; }; };
+		20027FFF28244269839665D9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */ = {isa = PBXBuildFile; fileRef = A37AFD7C3A8F4E859C522F3C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_generated_expression.cpp' "; }; };
+		24079C7DE94E4FBBADBE87D8 /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 17A8602EFC5F4B25B0BA5DCE /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
+		268D7A3FB5824E5F80B8CF5F /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */ = {isa = PBXBuildFile; fileRef = 39A8F39B544A4656B6A05D32 /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=semantic_analyzer.cpp' "; }; };
+		28B5B49A73E14395A828A6E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */ = {isa = PBXBuildFile; fileRef = 9B9792713061492281503894 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_object.cpp' "; }; };
+		2E84FCCEADDA4323B4005E61 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */ = {isa = PBXBuildFile; fileRef = A0FA0EC82EE7459190110856 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_return_statement.cpp' "; }; };
+		2EC5FA825EE141C28B9A1762 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */ = {isa = PBXBuildFile; fileRef = 812F1ADCE38A47F88FE0CC0A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_module_declaration.cpp' "; }; };
+		32CD57AD6D9744529C86C9FA /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */ = {isa = PBXBuildFile; fileRef = B4E6EA9520CC44018A471021 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=scope.cpp' "; }; };
+		33AB542586054368BC14C282 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */ = {isa = PBXBuildFile; fileRef = 7A330B5CB86F43A69A615136 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_variable_declaration.cpp' "; }; };
+		36AB934DE34A4E0FA4570A89 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */ = {isa = PBXBuildFile; fileRef = 88A85994A8DD479EA85A3599 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_while_loop.cpp' "; }; };
+		3D5DBEE839264E50BBF0DABB /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */ = {isa = PBXBuildFile; fileRef = A6026C4EED1046DFB8858A39 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_type_definition.cpp' "; }; };
+		3EAF5AB308E249AC856E9A19 /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */ = {isa = PBXBuildFile; fileRef = 818827C638484700986040DC /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=source_location.cpp' "; }; };
+		4A47D17E641C4EF6B3A04155 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */ = {isa = PBXBuildFile; fileRef = D8F81A1B6216485B9253E16F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_try_catch.cpp' "; }; };
+		4C8B025A6E554212A60F31FA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */ = {isa = PBXBuildFile; fileRef = A262497BD83C43BEA0152015 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_true.cpp' "; }; };
+		4EEAC70F85364B4D910AC9FA /* /Users/andrew/ace-lang/src/ace-runtime/ace-runtime.cpp */ = {isa = PBXBuildFile; fileRef = F15452E3F3D54D65A32E7D4C /* /Users/andrew/ace-lang/src/ace-runtime/ace-runtime.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ace-runtime.cpp' "; }; };
+		4F29E18A09FA4BEB847CCBC8 /* /Users/andrew/ace-lang/src/ace-c/token.cpp */ = {isa = PBXBuildFile; fileRef = D2447453C9F64AF3A29554E6 /* /Users/andrew/ace-lang/src/ace-c/token.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=token.cpp' "; }; };
+		50168D70DBA84475B7A69AB4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */ = {isa = PBXBuildFile; fileRef = FCCAFF0C7E0D44C8B669A67F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_binary_expression.cpp' "; }; };
+		5550AC13392046F4981F0C42 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */ = {isa = PBXBuildFile; fileRef = 0DEAC056D0F44D95AC708498 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_type_specification.cpp' "; }; };
+		576E5101F6A9468B923E56C2 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */ = {isa = PBXBuildFile; fileRef = 01D745FFDB064CE98B9154C4 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=configuration.cpp' "; }; };
+		5953E30014E54542A29ABB5E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */ = {isa = PBXBuildFile; fileRef = 16C7B33478904B77ABCF8C55 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_identifier.cpp' "; }; };
+		5B92A132132140F6A08E7A93 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */ = {isa = PBXBuildFile; fileRef = 4A31984038C548C6998FB8E2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_local_import.cpp' "; }; };
+		5D8A8259567A4FE9BEBC0843 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */ = {isa = PBXBuildFile; fileRef = 16AAEF2F3E50434B9A43A829 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_unary_expression.cpp' "; }; };
+		5DEF164C73DC46299F781A9A /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 687EEC7451C94DB2A13FDAD2 /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
+		62D57EFA6B7E4F9EB7E7043F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */ = {isa = PBXBuildFile; fileRef = 68E1BAE214784B22823B793B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_float.cpp' "; }; };
+		64254632F6A84745A84492EC /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */ = {isa = PBXBuildFile; fileRef = BE9D090101EA41CD9CEF340D /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=object.cpp' "; }; };
+		64339B77FEBE4452B8949AD5 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */ = {isa = PBXBuildFile; fileRef = AE3EDBAB5A374CB3BFEF2F65 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=stack_value.cpp' "; }; };
+		64571C92F3AF4492847FC11D /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */ = {isa = PBXBuildFile; fileRef = 8B517363CEAB40ABB0AE5E5A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_integer.cpp' "; }; };
+		67F59CD96FAE4977916643F9 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */ = {isa = PBXBuildFile; fileRef = 63DF18FD644D47DB97310200 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=token_stream.cpp' "; }; };
+		69D37CEA4DEF4CE4B91D9E40 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */ = {isa = PBXBuildFile; fileRef = 9312FBEE003F442DAE4144DA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_variable.cpp' "; }; };
+		6A4525F55A2A4762BA3AE21B /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */ = {isa = PBXBuildFile; fileRef = 92709D56CEDF4BB3958AF5C8 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=optimizer.cpp' "; }; };
+		6F604FF423F0493582A668F7 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 28DB5DEF37EC482FA230CB54 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
+		6F9FE8E202AA47E19696AC06 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */ = {isa = PBXBuildFile; fileRef = C11D486D6B934F9FAE4ABDB6 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_visitor.cpp' "; }; };
+		75993FDCFD5147CBBCD880DF /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */ = {isa = PBXBuildFile; fileRef = 2CDB7885FA6349649281ED50 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ace-vm.cpp' "; }; };
+		7830993E6AD94B2FB2560216 /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */ = {isa = PBXBuildFile; fileRef = D1632C558A36497997032C09 /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=vm.cpp' "; }; };
+		787FCD87106E4ED4B75D25C4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */ = {isa = PBXBuildFile; fileRef = D032C40F52EA4390BFC31B4E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_print_statement.cpp' "; }; };
+		8187CFF7AA54415BA2983E4D /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */ = {isa = PBXBuildFile; fileRef = 60730BD4C3E94D2E806ABD76 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_member_access.cpp' "; }; };
+		82538ACA4BD44206843F34F2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */ = {isa = PBXBuildFile; fileRef = 8504461DE0E5472685D8C5AA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_declaration.cpp' "; }; };
+		825F1F82FA78425CB372C2D1 /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */ = {isa = PBXBuildFile; fileRef = 773F99B8EC0B4FBF8DD1E678 /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=identifier.cpp' "; }; };
+		84AE2CCEF44548ABBA745D2C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */ = {isa = PBXBuildFile; fileRef = 2F375591E3E8404BA7CF9E0B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_parameter.cpp' "; }; };
+		8733FB2655A4464BBD48764A /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */ = {isa = PBXBuildFile; fileRef = 849277D7201C4A84A59479AB /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=source_stream.cpp' "; }; };
+		8BEB84D0CB8D4B44A68D00E1 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */ = {isa = PBXBuildFile; fileRef = 0CB3D8F09E864892BFBBC154 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=heap_memory.cpp' "; }; };
+		8CC32ACD5D9045F1BE201BCE /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */ = {isa = PBXBuildFile; fileRef = D3CB732DE60945C9850EA48D /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=compilation_unit.cpp' "; }; };
+		8EA7CAC1B5BE4586904460A0 /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */ = {isa = PBXBuildFile; fileRef = 82CE57E147F842CA83F7831A /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=operator.cpp' "; }; };
+		9D1359D70CF346E792F3E916 /* /Users/andrew/ace-lang/src/ace-c/module.cpp */ = {isa = PBXBuildFile; fileRef = 7B106157FFD94F03ADB4DE2F /* /Users/andrew/ace-lang/src/ace-c/module.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=module.cpp' "; }; };
+		A57AEC714FD54731990B3A06 /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */ = {isa = PBXBuildFile; fileRef = 0A4F75C31D924916981424CE /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_iterator.cpp' "; }; };
+		A6A4B264CFEB427C8FD0C8CC /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */ = {isa = PBXBuildFile; fileRef = 0707A479BA714ACA9D45C8C7 /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=parser.cpp' "; }; };
+		A80B9625BF264559A1427161 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */ = {isa = PBXBuildFile; fileRef = DEEB35AF3EA94C859DB0B343 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_array_expression.cpp' "; }; };
+		ACD1B72062774641B6F9B1BE /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */ = {isa = PBXBuildFile; fileRef = 31BD9BD180B94B9F942DDC94 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_function_definition.cpp' "; }; };
+		AE9FE483681342ABBD4CA2A2 /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */ = {isa = PBXBuildFile; fileRef = 4A305524263849E291FCC482 /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=decompilation_unit.cpp' "; }; };
+		B37C314AD49E4867B79C4D60 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */ = {isa = PBXBuildFile; fileRef = 686FC9B942CD4C89A0DF4A8B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_function_call.cpp' "; }; };
+		BA0EBDD90B3B423EA30668C5 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */ = {isa = PBXBuildFile; fileRef = 7F873AFA6CEE489FA74088ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_array_access.cpp' "; }; };
+		BC7C79B703114E349C4ABDCE /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */ = {isa = PBXBuildFile; fileRef = A981607E13F5441ABCB63BB5 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=keywords.cpp' "; }; };
+		BC94C47CCB2C4EB38B551AA9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */ = {isa = PBXBuildFile; fileRef = 3D6FC1A0BD564087840B2A52 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_if_statement.cpp' "; }; };
+		BD2E205A61B242E0B79316F3 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */ = {isa = PBXBuildFile; fileRef = BAF6EBDE88544070BBE53734 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_import.cpp' "; }; };
+		C27368E305944F55ABDF3F67 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */ = {isa = PBXBuildFile; fileRef = EC8298511DFB43DDA17CC6E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_function_expression.cpp' "; }; };
+		C337BE4E1746434F9D7E13CA /* /Users/andrew/ace-lang/src/ace-runtime/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 7D1248B868164232A1A517A5 /* /Users/andrew/ace-lang/src/ace-runtime/CMakeLists.txt */; settings = {COMPILER_FLAGS = ""; }; };
+		C43376608ABC45259A1BE13F /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */ = {isa = PBXBuildFile; fileRef = AE31F5C4F3A7472DB2E14A3C /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=heap_value.cpp' "; }; };
+		C4762FF26F384BE6BDBA127B /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */ = {isa = PBXBuildFile; fileRef = B3AE0462B97C446D8C9AE5AF /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=byte_stream.cpp' "; }; };
+		C6574D4C929B4EC4A299579E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */ = {isa = PBXBuildFile; fileRef = 70CA5B6EDC304F66849F1A0B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_constant.cpp' "; }; };
+		C661EA2494344FA1A33D6A5C /* /Users/andrew/ace-lang/src/ace/api.cpp */ = {isa = PBXBuildFile; fileRef = B8A99DDBB17B4BB691B653B4 /* /Users/andrew/ace-lang/src/ace/api.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=api.cpp' "; }; };
+		C721B39C93DE4A6C90C27224 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */ = {isa = PBXBuildFile; fileRef = E1CF4AAD231648E0BD32D57C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_undefined.cpp' "; }; };
+		C9270E89F38C48638161188B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */ = {isa = PBXBuildFile; fileRef = 2320C4F70758486DB575889F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_expression.cpp' "; }; };
+		C98298CE67CE4B69964BFD92 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */ = {isa = PBXBuildFile; fileRef = 5BAC15694ECD419CA11B1FA1 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=instruction_stream.cpp' "; }; };
+		CB01FFDCF378402B86E19686 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */ = {isa = PBXBuildFile; fileRef = 97BFD87B4DC946B384DB0271 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=error_list.cpp' "; }; };
+		D141B24FE2E34F7B9FD1078F /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */ = {isa = PBXBuildFile; fileRef = 83F153785F3F4A0BB49C49EC /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=static_object.cpp' "; }; };
+		D1E9BA1D960645E09FF80FE0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */ = {isa = PBXBuildFile; fileRef = 28106C3301454A7CBC40AC45 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_void.cpp' "; }; };
+		D772750F85DA4B82A4D56AA4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */ = {isa = PBXBuildFile; fileRef = DA4FF44F43C3415D9C381103 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_statement.cpp' "; }; };
+		DCF890C638E34581A9AC3478 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */ = {isa = PBXBuildFile; fileRef = 81D2B8141F834FD98A042F76 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ace-c.cpp' "; }; };
+		DD27A1D119EC4EB5BB9B4EB8 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */ = {isa = PBXBuildFile; fileRef = 43D76B27395940198CDB85E3 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=bytecode_stream.cpp' "; }; };
+		DD435642C67D40C5A82FB954 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */ = {isa = PBXBuildFile; fileRef = C52A0E731A6B40768A01476B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_null.cpp' "; }; };
+		DE92078D01C04937804F65F3 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */ = {isa = PBXBuildFile; fileRef = 6980ABC00DA340B29EA4BF88 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=type_info.cpp' "; }; };
+		DEB47E9FA1EF4F6094DE8154 /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */ = {isa = PBXBuildFile; fileRef = AF82BB219AA24E928F88EADB /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=stack_memory.cpp' "; }; };
+		DF457B83AF2B4D399EC627F2 /* /Users/andrew/ace-lang/src/ace/main.cpp */ = {isa = PBXBuildFile; fileRef = 1EF2D5774766486C818104D1 /* /Users/andrew/ace-lang/src/ace/main.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=main.cpp' "; }; };
+		E012814E30D649009B8966B5 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */ = {isa = PBXBuildFile; fileRef = 93A438EFDF3448668F223AD6 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=identifier_table.cpp' "; }; };
+		E1A97D7E3BE4459DA6511CE3 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */ = {isa = PBXBuildFile; fileRef = EFEBB4FFCD8B4EB38555D09F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_type_contract.cpp' "; }; };
+		E4963307B0D649F7872DB684 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */ = {isa = PBXBuildFile; fileRef = 592651E8EC0B44358E422AF5 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_string.cpp' "; }; };
+		E4FD16846E1B47E896605DC1 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */ = {isa = PBXBuildFile; fileRef = 34F17132364F48F1B728C537 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=source_file.cpp' "; }; };
+		E65671276ACE4198801816FC /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */ = {isa = PBXBuildFile; fileRef = 69C17B17C4E74852B2DAF435 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=object_type.cpp' "; }; };
+		E680E4EB575D42DE9898AA4C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */ = {isa = PBXBuildFile; fileRef = 0CD375041B4A4EFE84460E6F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=ast_block.cpp' "; }; };
+		E75A0F6179DB43A6B7EEE457 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */ = {isa = PBXBuildFile; fileRef = F749BEB1EA23432DB6C12737 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=compiler_error.cpp' "; }; };
+		EF44DDA96AFE4679B3BBBEDC /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */ = {isa = PBXBuildFile; fileRef = B60F8D16D0704D9EB5B56D11 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=type_contract.cpp' "; }; };
+		F15A54541D1A451698AF1C4E /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */ = {isa = PBXBuildFile; fileRef = 153CC716FAAA46EBBEFAA20F /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=exception.cpp' "; }; };
+		F1BBFF351A8F44AC96F677F7 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */ = {isa = PBXBuildFile; fileRef = F06ED128BF4D4CC691981C57 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=lexer.cpp' "; }; };
+		F2F5FC919005464F84540B3A /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */ = {isa = PBXBuildFile; fileRef = 103B048F61234AB599FA26D5 /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=static_memory.cpp' "; }; };
+		F7F1042459F543D7930B4F24 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */ = {isa = PBXBuildFile; fileRef = 17E0ADB025F64340821DD0A6 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=compiler.cpp' "; }; };
+		FC809A555BF34C999F3167EF /* /Users/andrew/ace-lang/src/ace-runtime/io.cpp */ = {isa = PBXBuildFile; fileRef = 944D72CF32754D4DADFCD302 /* /Users/andrew/ace-lang/src/ace-runtime/io.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=io.cpp' "; }; };
+		FF341A41417C4FB887B4E41F /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */ = {isa = PBXBuildFile; fileRef = F935E1999C3F4301985EBAA4 /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */; settings = {COMPILER_FLAGS = "'-D__FILENAME__=vm_state.cpp' "; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildStyle section */
-		2147F62CD3DC4D20B61221EE /* Release */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-			};
-			name = Release;
-		};
-		428CE2CFECC1481E8F3A7446 /* MinSizeRel */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-			};
-			name = MinSizeRel;
-		};
-		4AD863C52B054E4DBB554476 /* RelWithDebInfo */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-			};
-			name = RelWithDebInfo;
-		};
-		CA866E13BC594A86820AE7A4 = {
-			isa = PBXBuildStyle;
-		};
-		FE1406F95BE84BCAB9567467 /* Debug */ = {
+		07FD01675B4D4FE18A7472CC /* Debug */ = {
 			isa = PBXBuildStyle;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 			};
 			name = Debug;
 		};
+		1EF4C1E99EC7481F85B1F750 = {
+			isa = PBXBuildStyle;
+		};
+		728F9F2A98F042D8A2151B86 /* MinSizeRel */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = MinSizeRel;
+		};
+		8054D01B10314CD29F35B33D /* Release */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Release;
+		};
+		F827F9A0DD8A45779A274CF7 /* RelWithDebInfo */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = RelWithDebInfo;
+		};
 /* End PBXBuildStyle section */
 
 /* Begin PBXContainerItemProxy section */
-		0AC293AAF23A409D9C2B28E3 /* PBXContainerItemProxy */ = {
+		04C1A209E8B34780B7E8A7EA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
 			remoteInfo = ZERO_CHECK;
 		};
-		14EE1A2C3BDD4F07AAEE661C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
-			remoteInfo = ZERO_CHECK;
-		};
-		5321AE263C044E95A3F5E4A0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
-			remoteInfo = ZERO_CHECK;
-		};
-		5921341A48974BDF8F4E9504 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
-			remoteInfo = ZERO_CHECK;
-		};
-		5EBEE51C4DB643B4A60122FE /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 78D2122C54E04EBFAD168870;
-			remoteInfo = "ace-jit";
-		};
-		779C1DC91BA846D38A1A9F9F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8453CBBB4F204881834B4529;
-			remoteInfo = "ace-c";
-		};
-		7A72997741224C43BB92A120 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
-			remoteInfo = ZERO_CHECK;
-		};
-		AF77692D62EF4410B2D1FF36 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8453CBBB4F204881834B4529;
-			remoteInfo = "ace-c";
-		};
-		CC3EB611A1B348CC8C8C6BBF /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 37F54568A5C34122BB5AA0F7;
-			remoteInfo = "ace-vm";
-		};
-		D78C6893F997419AAC5CCDA1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 37F54568A5C34122BB5AA0F7;
-			remoteInfo = "ace-vm";
-		};
-		EB30CA4E0BC643609ED5ABFE /* PBXContainerItemProxy */ = {
+		07F316689F6E4BF3A36BD371 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = B1FA60B496E84CEEBDA5824F;
 			remoteInfo = ace;
 		};
+		08409D570A8D46708A656FC2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DA8911FF512F4E759A159B69;
+			remoteInfo = "ace-runtime";
+		};
+		124A2DF755054BBC9751997F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37F54568A5C34122BB5AA0F7;
+			remoteInfo = "ace-vm";
+		};
+		197FCD436E4949EBB30D8DF7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DA8911FF512F4E759A159B69;
+			remoteInfo = "ace-runtime";
+		};
+		19C7476D8A694DA2898642A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37F54568A5C34122BB5AA0F7;
+			remoteInfo = "ace-vm";
+		};
+		3C543CA59A1E41169F19A1D7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8453CBBB4F204881834B4529;
+			remoteInfo = "ace-c";
+		};
+		4A0519B387DA42AA954D1077 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
+			remoteInfo = ZERO_CHECK;
+		};
+		4ACAB935FBE6445795798159 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
+			remoteInfo = ZERO_CHECK;
+		};
+		4C6BC5E1908A45EB91EB53F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
+			remoteInfo = ZERO_CHECK;
+		};
+		87EDBF7FA7924F518FFDA89F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 063F4CD9C64F44D4AE26A43C;
+			remoteInfo = ZERO_CHECK;
+		};
+		C0403A4484B94AFDAF07DA10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37F54568A5C34122BB5AA0F7;
+			remoteInfo = "ace-vm";
+		};
+		D042EF1216A04A169D782F51 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD9ECC6612804D5081671C14 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8453CBBB4F204881834B4529;
+			remoteInfo = "ace-c";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		04FB358062364D8D84B92C97 /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = parser.cpp; path = "src/ace-c/parser.cpp"; sourceTree = SOURCE_ROOT; };
-		05268C4EAECF4A3189C69408 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_member_access.cpp; path = "src/ace-c/ast/ast_member_access.cpp"; sourceTree = SOURCE_ROOT; };
-		07B0FAEEDE8545DA83E01048 /* /Users/andrew/ace-lang/src/ace/api.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = api.cpp; path = src/ace/api.cpp; sourceTree = SOURCE_ROOT; };
-		08F162BED9BA4B16B91A6BBA /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = src/ace/CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		08F5B68D55064B6997061902 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_function_definition.cpp; path = "src/ace-c/ast/ast_function_definition.cpp"; sourceTree = SOURCE_ROOT; };
-		0A540B1EBCA04F0E91F65353 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_identifier.cpp; path = "src/ace-c/ast/ast_identifier.cpp"; sourceTree = SOURCE_ROOT; };
-		0AD1911B6A6A479DA1C10766 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = bytecode_stream.cpp; path = "src/ace-vm/bytecode_stream.cpp"; sourceTree = SOURCE_ROOT; };
-		0C036AE624724182A04946CA /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = identifier.cpp; path = "src/ace-c/identifier.cpp"; sourceTree = SOURCE_ROOT; };
-		0D0BE605CEB24C3281C7D843 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = identifier_table.cpp; path = "src/ace-c/identifier_table.cpp"; sourceTree = SOURCE_ROOT; };
-		172598B86E274C0695E66D86 /* /Users/andrew/ace-lang/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		1C19DA6C3C124FA6AD7BF892 /* /Users/andrew/ace-lang/src/ace/runtime.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = runtime.cpp; path = src/ace/runtime.cpp; sourceTree = SOURCE_ROOT; };
-		20F72A9170E04ADF850275B7 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = "ace-c.cpp"; path = "src/ace-c/ace-c.cpp"; sourceTree = SOURCE_ROOT; };
-		23204611BEFC43299BA9A441 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_try_catch.cpp; path = "src/ace-c/ast/ast_try_catch.cpp"; sourceTree = SOURCE_ROOT; };
-		2518694121DC470BAF4EFC31 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_type_contract.cpp; path = "src/ace-c/ast/ast_type_contract.cpp"; sourceTree = SOURCE_ROOT; };
-		25CEC5B459FE4A89B5F9D9CB /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vm_state.cpp; path = "src/ace-vm/vm_state.cpp"; sourceTree = SOURCE_ROOT; };
-		268592B1A9D74827AF305DF9 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = compiler_error.cpp; path = "src/ace-c/compiler_error.cpp"; sourceTree = SOURCE_ROOT; };
-		26DF95C7F21E455B902066ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_integer.cpp; path = "src/ace-c/ast/ast_integer.cpp"; sourceTree = SOURCE_ROOT; };
-		2E3A4563521F4C5993359764 /* ace-vm */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libace-vm.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		301263A873404226AAF00215 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = type_info.cpp; path = "src/ace-vm/type_info.cpp"; sourceTree = SOURCE_ROOT; };
-		30F6BD58CC744BBE88892AD0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_constant.cpp; path = "src/ace-c/ast/ast_constant.cpp"; sourceTree = SOURCE_ROOT; };
-		33436B24A5AD4D36AD381953 /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = static_object.cpp; path = "src/ace-c/emit/static_object.cpp"; sourceTree = SOURCE_ROOT; };
-		3E2ACD5172074493A04AC547 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = error_list.cpp; path = "src/ace-c/error_list.cpp"; sourceTree = SOURCE_ROOT; };
-		3F153D5BD3DA45E3A08628AF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_expression.cpp; path = "src/ace-c/ast/ast_expression.cpp"; sourceTree = SOURCE_ROOT; };
-		4250418610D04342A1667DCA /* /Users/andrew/ace-lang/src/ace-jit/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = "src/ace-jit/CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
-		45D61F78FF634F21AFD934E5 /* /Users/andrew/ace-lang/src/ace/main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = main.cpp; path = src/ace/main.cpp; sourceTree = SOURCE_ROOT; };
-		487BC784E6B942669B06F297 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_import.cpp; path = "src/ace-c/ast/ast_import.cpp"; sourceTree = SOURCE_ROOT; };
-		4A0F10BBAB4846E3A2205AB8 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = scope.cpp; path = "src/ace-c/scope.cpp"; sourceTree = SOURCE_ROOT; };
-		4BB4A680C4544FFA9CF51594 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = type_contract.cpp; path = "src/ace-c/type_contract.cpp"; sourceTree = SOURCE_ROOT; };
-		4BFC41300A704A63BE48113B /* /Users/andrew/ace-lang/src/ace-c/token.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = token.cpp; path = "src/ace-c/token.cpp"; sourceTree = SOURCE_ROOT; };
-		4F0995F0E7C948CDBCDF92A0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_array_access.cpp; path = "src/ace-c/ast/ast_array_access.cpp"; sourceTree = SOURCE_ROOT; };
-		5149C06A68EE487BBD1B28C9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_return_statement.cpp; path = "src/ace-c/ast/ast_return_statement.cpp"; sourceTree = SOURCE_ROOT; };
-		536DB991CFA24B909E2991E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_type_specification.cpp; path = "src/ace-c/ast/ast_type_specification.cpp"; sourceTree = SOURCE_ROOT; };
-		5D5C93CFD77A4AB99D9E2902 /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = object.cpp; path = "src/ace-vm/object.cpp"; sourceTree = SOURCE_ROOT; };
-		62F89D15FCD94BFE81B17751 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = "ace-vm.cpp"; path = "src/ace-vm/ace-vm.cpp"; sourceTree = SOURCE_ROOT; };
-		6530723DF7E9445D8027D8C0 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = object_type.cpp; path = "src/ace-c/object_type.cpp"; sourceTree = SOURCE_ROOT; };
-		6C13D8D2B4184C31AD91D17C /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = semantic_analyzer.cpp; path = "src/ace-c/semantic_analyzer.cpp"; sourceTree = SOURCE_ROOT; };
-		6CE9BB4CC79D4F11B60C88C6 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = compiler.cpp; path = "src/ace-c/compiler.cpp"; sourceTree = SOURCE_ROOT; };
-		6F826DB075424E80A3354E4D /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = compilation_unit.cpp; path = "src/ace-c/compilation_unit.cpp"; sourceTree = SOURCE_ROOT; };
-		6FE6A5DAE06D4A67837BAC12 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_local_import.cpp; path = "src/ace-c/ast/ast_local_import.cpp"; sourceTree = SOURCE_ROOT; };
-		7B76272D7CF94D09A0801637 /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_iterator.cpp; path = "src/ace-c/ast_iterator.cpp"; sourceTree = SOURCE_ROOT; };
-		7E21BC37B44142C8921FE59A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_true.cpp; path = "src/ace-c/ast/ast_true.cpp"; sourceTree = SOURCE_ROOT; };
-		7FE4DAECB5AD4A9697709225 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_module_declaration.cpp; path = "src/ace-c/ast/ast_module_declaration.cpp"; sourceTree = SOURCE_ROOT; };
-		804E54B36E6449C499335C93 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_if_statement.cpp; path = "src/ace-c/ast/ast_if_statement.cpp"; sourceTree = SOURCE_ROOT; };
-		8506D07E76EA4B8A97214437 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_parameter.cpp; path = "src/ace-c/ast/ast_parameter.cpp"; sourceTree = SOURCE_ROOT; };
-		85903E2E38594211899A0E09 /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = stack_memory.cpp; path = "src/ace-vm/stack_memory.cpp"; sourceTree = SOURCE_ROOT; };
-		871CCD85975C4A429B1BCE23 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = instruction_stream.cpp; path = "src/ace-c/emit/instruction_stream.cpp"; sourceTree = SOURCE_ROOT; };
-		8A91CE19C606402B8E1D3616 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = heap_memory.cpp; path = "src/ace-vm/heap_memory.cpp"; sourceTree = SOURCE_ROOT; };
-		8B4C2E4B2FBB4A1EAF404020 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = optimizer.cpp; path = "src/ace-c/optimizer.cpp"; sourceTree = SOURCE_ROOT; };
-		8C6D02D181144025A5431EF8 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = array.cpp; path = "src/ace-vm/array.cpp"; sourceTree = SOURCE_ROOT; };
-		91EF23310E234DBDA7D2E877 /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = source_location.cpp; path = "src/ace-c/source_location.cpp"; sourceTree = SOURCE_ROOT; };
-		9AE5766033504187A4B96E63 /* ace-jit */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libace-jit.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9D275644A6374EE6AC1C59EF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_object.cpp; path = "src/ace-c/ast/ast_object.cpp"; sourceTree = SOURCE_ROOT; };
-		A0FBB211F2DE4F46B1469405 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_while_loop.cpp; path = "src/ace-c/ast/ast_while_loop.cpp"; sourceTree = SOURCE_ROOT; };
-		A74D58FB14184B98BCBF062A /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = "src/ace-vm/CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
-		A87884E649E947688430DC77 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = lexer.cpp; path = "src/ace-c/lexer.cpp"; sourceTree = SOURCE_ROOT; };
-		AAB837FF712442E08F2EB327 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_generated_expression.cpp; path = "src/ace-c/ast/ast_generated_expression.cpp"; sourceTree = SOURCE_ROOT; };
-		AADDAF7AF27A4382AF9DF0DB /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_float.cpp; path = "src/ace-c/ast/ast_float.cpp"; sourceTree = SOURCE_ROOT; };
-		ACB1F3E18DD24210AAC33E05 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = keywords.cpp; path = "src/ace-c/keywords.cpp"; sourceTree = SOURCE_ROOT; };
-		ACC3D9AC0B824ECDAB0EADFA /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = exception.cpp; path = "src/ace-vm/exception.cpp"; sourceTree = SOURCE_ROOT; };
-		B1C454FB104548C9A2D0C3D9 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = token_stream.cpp; path = "src/ace-c/token_stream.cpp"; sourceTree = SOURCE_ROOT; };
-		B3B2967802664FACB83BDEB2 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = configuration.cpp; path = "src/ace-c/configuration.cpp"; sourceTree = SOURCE_ROOT; };
-		BA94266F9378477ABEFB2F19 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_print_statement.cpp; path = "src/ace-c/ast/ast_print_statement.cpp"; sourceTree = SOURCE_ROOT; };
-		BCC1028AE1F64678B9CB57A9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_null.cpp; path = "src/ace-c/ast/ast_null.cpp"; sourceTree = SOURCE_ROOT; };
-		BD9C05299CA44FC281B403D0 /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = heap_value.cpp; path = "src/ace-vm/heap_value.cpp"; sourceTree = SOURCE_ROOT; };
-		BE4430CCB25E4870B8AA54B6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_function_call.cpp; path = "src/ace-c/ast/ast_function_call.cpp"; sourceTree = SOURCE_ROOT; };
-		BE8451E455074678B8145603 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_void.cpp; path = "src/ace-c/ast/ast_void.cpp"; sourceTree = SOURCE_ROOT; };
-		BFD7B6C22BA2438BADF486E4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_block.cpp; path = "src/ace-c/ast/ast_block.cpp"; sourceTree = SOURCE_ROOT; };
-		C13B48305A7A4A798A3D71DD /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = decompilation_unit.cpp; path = "src/ace-c/dis/decompilation_unit.cpp"; sourceTree = SOURCE_ROOT; };
-		C51261F80163442ABD9BDBB8 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_unary_expression.cpp; path = "src/ace-c/ast/ast_unary_expression.cpp"; sourceTree = SOURCE_ROOT; };
-		C6EEF7427F47469697F012C6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_binary_expression.cpp; path = "src/ace-c/ast/ast_binary_expression.cpp"; sourceTree = SOURCE_ROOT; };
-		CACB221EE42F41239EA94A4C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_declaration.cpp; path = "src/ace-c/ast/ast_declaration.cpp"; sourceTree = SOURCE_ROOT; };
-		CBC534DE288B49D2BD1F0346 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_string.cpp; path = "src/ace-c/ast/ast_string.cpp"; sourceTree = SOURCE_ROOT; };
-		CEB8109B2D03402789FF04AA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_array_expression.cpp; path = "src/ace-c/ast/ast_array_expression.cpp"; sourceTree = SOURCE_ROOT; };
-		D11116CFA65F41148FAEB90E /* ace-c */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libace-c.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D1934B67E70F4494B45968BF /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = main.cpp; path = "src/ace-vm/main.cpp"; sourceTree = SOURCE_ROOT; };
-		D203B63EF8654369A001A2C6 /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = byte_stream.cpp; path = "src/ace-c/dis/byte_stream.cpp"; sourceTree = SOURCE_ROOT; };
-		D4757568A6ED4899AF7A0651 /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = source_stream.cpp; path = "src/ace-c/source_stream.cpp"; sourceTree = SOURCE_ROOT; };
-		D490F260510B4EA2A11AFE6C /* /Users/andrew/ace-lang/src/ace-c/module.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = module.cpp; path = "src/ace-c/module.cpp"; sourceTree = SOURCE_ROOT; };
-		DBAE702057A447D3A5ABC70A /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = static_memory.cpp; path = "src/ace-vm/static_memory.cpp"; sourceTree = SOURCE_ROOT; };
-		DC0AF4FA57FB4518BA7FDC4E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_statement.cpp; path = "src/ace-c/ast/ast_statement.cpp"; sourceTree = SOURCE_ROOT; };
-		DD1A068433FB4C70BD8F9D6A /* /Users/andrew/ace-lang/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		DEAB0338DE3549E981C657DB /* ace */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = ace; sourceTree = BUILT_PRODUCTS_DIR; };
-		E0280BE43E094A4EAB1A530B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_function_expression.cpp; path = "src/ace-c/ast/ast_function_expression.cpp"; sourceTree = SOURCE_ROOT; };
-		E15CBEBE185B46ACB601F6E8 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = "src/ace-c/CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
-		E2B3AD2264DA467A93E2AAA4 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_visitor.cpp; path = "src/ace-c/ast_visitor.cpp"; sourceTree = SOURCE_ROOT; };
-		E64F2C12A9D142E0ABC45AD2 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = main.cpp; path = "src/ace-c/main.cpp"; sourceTree = SOURCE_ROOT; };
-		ED2510EB927643268839D2B4 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = source_file.cpp; path = "src/ace-c/source_file.cpp"; sourceTree = SOURCE_ROOT; };
-		F09B2EAED28A40A7AF9FA4F2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_variable_declaration.cpp; path = "src/ace-c/ast/ast_variable_declaration.cpp"; sourceTree = SOURCE_ROOT; };
-		F0FC49ED2776429C92B855CE /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = operator.cpp; path = "src/ace-c/operator.cpp"; sourceTree = SOURCE_ROOT; };
-		F2A11B3F9A01448EADDA0581 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_undefined.cpp; path = "src/ace-c/ast/ast_undefined.cpp"; sourceTree = SOURCE_ROOT; };
-		F3CAA7580D794BE49D90C745 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = stack_value.cpp; path = "src/ace-vm/stack_value.cpp"; sourceTree = SOURCE_ROOT; };
-		F574C3EDC0A04B9EBA2D2DA0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_false.cpp; path = "src/ace-c/ast/ast_false.cpp"; sourceTree = SOURCE_ROOT; };
-		F847D3E192AA47298E92EE2F /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vm.cpp; path = "src/ace-vm/vm.cpp"; sourceTree = SOURCE_ROOT; };
-		F8E5DF11D53A4A4489A23B7D /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_type_definition.cpp; path = "src/ace-c/ast/ast_type_definition.cpp"; sourceTree = SOURCE_ROOT; };
-		FB90D440CE9042A288A22509 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_variable.cpp; path = "src/ace-c/ast/ast_variable.cpp"; sourceTree = SOURCE_ROOT; };
+		01D745FFDB064CE98B9154C4 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = configuration.cpp; path = "src/ace-c/configuration.cpp"; sourceTree = SOURCE_ROOT; };
+		04E07455C7844A7683DB07E1 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = array.cpp; path = "src/ace-vm/array.cpp"; sourceTree = SOURCE_ROOT; };
+		0707A479BA714ACA9D45C8C7 /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = parser.cpp; path = "src/ace-c/parser.cpp"; sourceTree = SOURCE_ROOT; };
+		0A4F75C31D924916981424CE /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_iterator.cpp; path = "src/ace-c/ast_iterator.cpp"; sourceTree = SOURCE_ROOT; };
+		0C7D4017C3414AF2B548F489 /* ace-runtime */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = "libace-runtime.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0CB3D8F09E864892BFBBC154 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = heap_memory.cpp; path = "src/ace-vm/heap_memory.cpp"; sourceTree = SOURCE_ROOT; };
+		0CD375041B4A4EFE84460E6F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_block.cpp; path = "src/ace-c/ast/ast_block.cpp"; sourceTree = SOURCE_ROOT; };
+		0DEAC056D0F44D95AC708498 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_type_specification.cpp; path = "src/ace-c/ast/ast_type_specification.cpp"; sourceTree = SOURCE_ROOT; };
+		103B048F61234AB599FA26D5 /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = static_memory.cpp; path = "src/ace-vm/static_memory.cpp"; sourceTree = SOURCE_ROOT; };
+		1387082A15AC4EE0B21B17FE /* /Users/andrew/ace-lang/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		153CC716FAAA46EBBEFAA20F /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = exception.cpp; path = "src/ace-vm/exception.cpp"; sourceTree = SOURCE_ROOT; };
+		16AAEF2F3E50434B9A43A829 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_unary_expression.cpp; path = "src/ace-c/ast/ast_unary_expression.cpp"; sourceTree = SOURCE_ROOT; };
+		16C7B33478904B77ABCF8C55 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_identifier.cpp; path = "src/ace-c/ast/ast_identifier.cpp"; sourceTree = SOURCE_ROOT; };
+		17A8602EFC5F4B25B0BA5DCE /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = src/ace/CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		17E0ADB025F64340821DD0A6 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = compiler.cpp; path = "src/ace-c/compiler.cpp"; sourceTree = SOURCE_ROOT; };
+		1EF2D5774766486C818104D1 /* /Users/andrew/ace-lang/src/ace/main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = main.cpp; path = src/ace/main.cpp; sourceTree = SOURCE_ROOT; };
+		2320C4F70758486DB575889F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_expression.cpp; path = "src/ace-c/ast/ast_expression.cpp"; sourceTree = SOURCE_ROOT; };
+		28106C3301454A7CBC40AC45 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_void.cpp; path = "src/ace-c/ast/ast_void.cpp"; sourceTree = SOURCE_ROOT; };
+		28DB5DEF37EC482FA230CB54 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = "src/ace-c/CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+		2B070A2E0DD24CCB8BD25EDE /* /Users/andrew/ace-lang/src/ace/runtime.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = runtime.cpp; path = src/ace/runtime.cpp; sourceTree = SOURCE_ROOT; };
+		2CDB7885FA6349649281ED50 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = "ace-vm.cpp"; path = "src/ace-vm/ace-vm.cpp"; sourceTree = SOURCE_ROOT; };
+		2F375591E3E8404BA7CF9E0B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_parameter.cpp; path = "src/ace-c/ast/ast_parameter.cpp"; sourceTree = SOURCE_ROOT; };
+		31BD9BD180B94B9F942DDC94 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_function_definition.cpp; path = "src/ace-c/ast/ast_function_definition.cpp"; sourceTree = SOURCE_ROOT; };
+		34F17132364F48F1B728C537 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = source_file.cpp; path = "src/ace-c/source_file.cpp"; sourceTree = SOURCE_ROOT; };
+		39A8F39B544A4656B6A05D32 /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = semantic_analyzer.cpp; path = "src/ace-c/semantic_analyzer.cpp"; sourceTree = SOURCE_ROOT; };
+		3D6FC1A0BD564087840B2A52 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_if_statement.cpp; path = "src/ace-c/ast/ast_if_statement.cpp"; sourceTree = SOURCE_ROOT; };
+		43D76B27395940198CDB85E3 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = bytecode_stream.cpp; path = "src/ace-vm/bytecode_stream.cpp"; sourceTree = SOURCE_ROOT; };
+		4A305524263849E291FCC482 /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = decompilation_unit.cpp; path = "src/ace-c/dis/decompilation_unit.cpp"; sourceTree = SOURCE_ROOT; };
+		4A31984038C548C6998FB8E2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_local_import.cpp; path = "src/ace-c/ast/ast_local_import.cpp"; sourceTree = SOURCE_ROOT; };
+		4B84646C0EF74238808E519E /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = main.cpp; path = "src/ace-vm/main.cpp"; sourceTree = SOURCE_ROOT; };
+		592651E8EC0B44358E422AF5 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_string.cpp; path = "src/ace-c/ast/ast_string.cpp"; sourceTree = SOURCE_ROOT; };
+		5BAC15694ECD419CA11B1FA1 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = instruction_stream.cpp; path = "src/ace-c/emit/instruction_stream.cpp"; sourceTree = SOURCE_ROOT; };
+		5FED40D231EC49248384B731 /* ace-c */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libace-c.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		60730BD4C3E94D2E806ABD76 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_member_access.cpp; path = "src/ace-c/ast/ast_member_access.cpp"; sourceTree = SOURCE_ROOT; };
+		61ABB0F6A3814F9F961067AC /* /Users/andrew/ace-lang/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		63DF18FD644D47DB97310200 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = token_stream.cpp; path = "src/ace-c/token_stream.cpp"; sourceTree = SOURCE_ROOT; };
+		686FC9B942CD4C89A0DF4A8B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_function_call.cpp; path = "src/ace-c/ast/ast_function_call.cpp"; sourceTree = SOURCE_ROOT; };
+		687EEC7451C94DB2A13FDAD2 /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = "src/ace-vm/CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+		68E1BAE214784B22823B793B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_float.cpp; path = "src/ace-c/ast/ast_float.cpp"; sourceTree = SOURCE_ROOT; };
+		6980ABC00DA340B29EA4BF88 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = type_info.cpp; path = "src/ace-vm/type_info.cpp"; sourceTree = SOURCE_ROOT; };
+		69C17B17C4E74852B2DAF435 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = object_type.cpp; path = "src/ace-c/object_type.cpp"; sourceTree = SOURCE_ROOT; };
+		70CA5B6EDC304F66849F1A0B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_constant.cpp; path = "src/ace-c/ast/ast_constant.cpp"; sourceTree = SOURCE_ROOT; };
+		773F99B8EC0B4FBF8DD1E678 /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = identifier.cpp; path = "src/ace-c/identifier.cpp"; sourceTree = SOURCE_ROOT; };
+		7A330B5CB86F43A69A615136 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_variable_declaration.cpp; path = "src/ace-c/ast/ast_variable_declaration.cpp"; sourceTree = SOURCE_ROOT; };
+		7B106157FFD94F03ADB4DE2F /* /Users/andrew/ace-lang/src/ace-c/module.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = module.cpp; path = "src/ace-c/module.cpp"; sourceTree = SOURCE_ROOT; };
+		7D1248B868164232A1A517A5 /* /Users/andrew/ace-lang/src/ace-runtime/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = "src/ace-runtime/CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+		7D4DDA5617B045F2A6FF1964 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_false.cpp; path = "src/ace-c/ast/ast_false.cpp"; sourceTree = SOURCE_ROOT; };
+		7F873AFA6CEE489FA74088ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_array_access.cpp; path = "src/ace-c/ast/ast_array_access.cpp"; sourceTree = SOURCE_ROOT; };
+		812F1ADCE38A47F88FE0CC0A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_module_declaration.cpp; path = "src/ace-c/ast/ast_module_declaration.cpp"; sourceTree = SOURCE_ROOT; };
+		818827C638484700986040DC /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = source_location.cpp; path = "src/ace-c/source_location.cpp"; sourceTree = SOURCE_ROOT; };
+		81D2B8141F834FD98A042F76 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = "ace-c.cpp"; path = "src/ace-c/ace-c.cpp"; sourceTree = SOURCE_ROOT; };
+		82CE57E147F842CA83F7831A /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = operator.cpp; path = "src/ace-c/operator.cpp"; sourceTree = SOURCE_ROOT; };
+		83F153785F3F4A0BB49C49EC /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = static_object.cpp; path = "src/ace-c/emit/static_object.cpp"; sourceTree = SOURCE_ROOT; };
+		849277D7201C4A84A59479AB /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = source_stream.cpp; path = "src/ace-c/source_stream.cpp"; sourceTree = SOURCE_ROOT; };
+		8504461DE0E5472685D8C5AA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_declaration.cpp; path = "src/ace-c/ast/ast_declaration.cpp"; sourceTree = SOURCE_ROOT; };
+		88A85994A8DD479EA85A3599 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_while_loop.cpp; path = "src/ace-c/ast/ast_while_loop.cpp"; sourceTree = SOURCE_ROOT; };
+		8B517363CEAB40ABB0AE5E5A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_integer.cpp; path = "src/ace-c/ast/ast_integer.cpp"; sourceTree = SOURCE_ROOT; };
+		92709D56CEDF4BB3958AF5C8 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = optimizer.cpp; path = "src/ace-c/optimizer.cpp"; sourceTree = SOURCE_ROOT; };
+		9312FBEE003F442DAE4144DA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_variable.cpp; path = "src/ace-c/ast/ast_variable.cpp"; sourceTree = SOURCE_ROOT; };
+		93A438EFDF3448668F223AD6 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = identifier_table.cpp; path = "src/ace-c/identifier_table.cpp"; sourceTree = SOURCE_ROOT; };
+		944D72CF32754D4DADFCD302 /* /Users/andrew/ace-lang/src/ace-runtime/io.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = io.cpp; path = "src/ace-runtime/io.cpp"; sourceTree = SOURCE_ROOT; };
+		97BFD87B4DC946B384DB0271 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = error_list.cpp; path = "src/ace-c/error_list.cpp"; sourceTree = SOURCE_ROOT; };
+		9B9792713061492281503894 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_object.cpp; path = "src/ace-c/ast/ast_object.cpp"; sourceTree = SOURCE_ROOT; };
+		9BA112A0AFF547AFBECC7875 /* ace-vm */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libace-vm.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0FA0EC82EE7459190110856 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_return_statement.cpp; path = "src/ace-c/ast/ast_return_statement.cpp"; sourceTree = SOURCE_ROOT; };
+		A262497BD83C43BEA0152015 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_true.cpp; path = "src/ace-c/ast/ast_true.cpp"; sourceTree = SOURCE_ROOT; };
+		A37AFD7C3A8F4E859C522F3C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_generated_expression.cpp; path = "src/ace-c/ast/ast_generated_expression.cpp"; sourceTree = SOURCE_ROOT; };
+		A6026C4EED1046DFB8858A39 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_type_definition.cpp; path = "src/ace-c/ast/ast_type_definition.cpp"; sourceTree = SOURCE_ROOT; };
+		A981607E13F5441ABCB63BB5 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = keywords.cpp; path = "src/ace-c/keywords.cpp"; sourceTree = SOURCE_ROOT; };
+		AE31F5C4F3A7472DB2E14A3C /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = heap_value.cpp; path = "src/ace-vm/heap_value.cpp"; sourceTree = SOURCE_ROOT; };
+		AE3EDBAB5A374CB3BFEF2F65 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = stack_value.cpp; path = "src/ace-vm/stack_value.cpp"; sourceTree = SOURCE_ROOT; };
+		AF82BB219AA24E928F88EADB /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = stack_memory.cpp; path = "src/ace-vm/stack_memory.cpp"; sourceTree = SOURCE_ROOT; };
+		B3AE0462B97C446D8C9AE5AF /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = byte_stream.cpp; path = "src/ace-c/dis/byte_stream.cpp"; sourceTree = SOURCE_ROOT; };
+		B4311F7E41F1419999B91008 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = main.cpp; path = "src/ace-c/main.cpp"; sourceTree = SOURCE_ROOT; };
+		B4E6EA9520CC44018A471021 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = scope.cpp; path = "src/ace-c/scope.cpp"; sourceTree = SOURCE_ROOT; };
+		B60F8D16D0704D9EB5B56D11 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = type_contract.cpp; path = "src/ace-c/type_contract.cpp"; sourceTree = SOURCE_ROOT; };
+		B8A99DDBB17B4BB691B653B4 /* /Users/andrew/ace-lang/src/ace/api.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = api.cpp; path = src/ace/api.cpp; sourceTree = SOURCE_ROOT; };
+		BAF6EBDE88544070BBE53734 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_import.cpp; path = "src/ace-c/ast/ast_import.cpp"; sourceTree = SOURCE_ROOT; };
+		BE9D090101EA41CD9CEF340D /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = object.cpp; path = "src/ace-vm/object.cpp"; sourceTree = SOURCE_ROOT; };
+		C11D486D6B934F9FAE4ABDB6 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_visitor.cpp; path = "src/ace-c/ast_visitor.cpp"; sourceTree = SOURCE_ROOT; };
+		C52A0E731A6B40768A01476B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_null.cpp; path = "src/ace-c/ast/ast_null.cpp"; sourceTree = SOURCE_ROOT; };
+		D032C40F52EA4390BFC31B4E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_print_statement.cpp; path = "src/ace-c/ast/ast_print_statement.cpp"; sourceTree = SOURCE_ROOT; };
+		D1632C558A36497997032C09 /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vm.cpp; path = "src/ace-vm/vm.cpp"; sourceTree = SOURCE_ROOT; };
+		D2447453C9F64AF3A29554E6 /* /Users/andrew/ace-lang/src/ace-c/token.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = token.cpp; path = "src/ace-c/token.cpp"; sourceTree = SOURCE_ROOT; };
+		D3CB732DE60945C9850EA48D /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = compilation_unit.cpp; path = "src/ace-c/compilation_unit.cpp"; sourceTree = SOURCE_ROOT; };
+		D46318F6E0104CD6952113CF /* ace */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = ace; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8F81A1B6216485B9253E16F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_try_catch.cpp; path = "src/ace-c/ast/ast_try_catch.cpp"; sourceTree = SOURCE_ROOT; };
+		DA4FF44F43C3415D9C381103 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_statement.cpp; path = "src/ace-c/ast/ast_statement.cpp"; sourceTree = SOURCE_ROOT; };
+		DEEB35AF3EA94C859DB0B343 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_array_expression.cpp; path = "src/ace-c/ast/ast_array_expression.cpp"; sourceTree = SOURCE_ROOT; };
+		E1CF4AAD231648E0BD32D57C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_undefined.cpp; path = "src/ace-c/ast/ast_undefined.cpp"; sourceTree = SOURCE_ROOT; };
+		EC8298511DFB43DDA17CC6E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_function_expression.cpp; path = "src/ace-c/ast/ast_function_expression.cpp"; sourceTree = SOURCE_ROOT; };
+		EFEBB4FFCD8B4EB38555D09F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_type_contract.cpp; path = "src/ace-c/ast/ast_type_contract.cpp"; sourceTree = SOURCE_ROOT; };
+		F06ED128BF4D4CC691981C57 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = lexer.cpp; path = "src/ace-c/lexer.cpp"; sourceTree = SOURCE_ROOT; };
+		F15452E3F3D54D65A32E7D4C /* /Users/andrew/ace-lang/src/ace-runtime/ace-runtime.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = "ace-runtime.cpp"; path = "src/ace-runtime/ace-runtime.cpp"; sourceTree = SOURCE_ROOT; };
+		F749BEB1EA23432DB6C12737 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = compiler_error.cpp; path = "src/ace-c/compiler_error.cpp"; sourceTree = SOURCE_ROOT; };
+		F935E1999C3F4301985EBAA4 /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vm_state.cpp; path = "src/ace-vm/vm_state.cpp"; sourceTree = SOURCE_ROOT; };
+		FCCAFF0C7E0D44C8B669A67F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_binary_expression.cpp; path = "src/ace-c/ast/ast_binary_expression.cpp"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		1A12DF3999504DD5BC736917 /* CMake Rules */ = {
+		09BF45E27AE74511A6D9D286 /* ace-vm */ = {
 			isa = PBXGroup;
 			children = (
-			);
-			name = "CMake Rules";
-			sourceTree = "<group>";
-		};
-		24EED172A22444029F4FD795 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				D11116CFA65F41148FAEB90E /* ace-c */,
-				2E3A4563521F4C5993359764 /* ace-vm */,
-				9AE5766033504187A4B96E63 /* ace-jit */,
-				DEAB0338DE3549E981C657DB /* ace */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		41D0C01EC8D848B4B9AC4F23 /* CMake Rules */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "CMake Rules";
-			sourceTree = "<group>";
-		};
-		4C01FC7CC2AD4AC5902CD96E /* ace */ = {
-			isa = PBXGroup;
-			children = (
-				AC95A8A53F48430481C33BE7 /* Source Files */,
-				08F162BED9BA4B16B91A6BBA /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */,
-			);
-			name = ace;
-			sourceTree = "<group>";
-		};
-		546896566DDF40609CF8E080 /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				7C8561329C2B4D0D88D04B91 /* ALL_BUILD */,
-				F7DE4ADD646B491BB3191131 /* ZERO_CHECK */,
-				9836E9F2D45B486091C81813 /* ace-c */,
-				723FFF234C7140169A47AFFA /* ace-vm */,
-				CF9724A5AE414D2ABB568365 /* ace-jit */,
-				4C01FC7CC2AD4AC5902CD96E /* ace */,
-			);
-			name = Sources;
-			sourceTree = "<group>";
-		};
-		5DD3EAE675A545ECB5293B3D = {
-			isa = PBXGroup;
-			children = (
-				546896566DDF40609CF8E080 /* Sources */,
-				C0420BDE5881446CA17F8A98 /* Resources */,
-				24EED172A22444029F4FD795 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		723FFF234C7140169A47AFFA /* ace-vm */ = {
-			isa = PBXGroup;
-			children = (
-				92E2F84B15D344C997262441 /* Source Files */,
-				A74D58FB14184B98BCBF062A /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */,
+				970F0C11FD7E4A9D866809E0 /* Source Files */,
+				687EEC7451C94DB2A13FDAD2 /* /Users/andrew/ace-lang/src/ace-vm/CMakeLists.txt */,
 			);
 			name = "ace-vm";
 			sourceTree = "<group>";
 		};
-		7C8561329C2B4D0D88D04B91 /* ALL_BUILD */ = {
+		0C79D3C3C8B94252AE7F8E99 /* CMake Rules */ = {
 			isa = PBXGroup;
 			children = (
-				41D0C01EC8D848B4B9AC4F23 /* CMake Rules */,
-				172598B86E274C0695E66D86 /* /Users/andrew/ace-lang/CMakeLists.txt */,
 			);
-			name = ALL_BUILD;
+			name = "CMake Rules";
 			sourceTree = "<group>";
 		};
-		92E2F84B15D344C997262441 /* Source Files */ = {
+		1B4B19D5FC0A4D7C95E9EAF9 /* ace-c */ = {
 			isa = PBXGroup;
 			children = (
-				62F89D15FCD94BFE81B17751 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */,
-				8C6D02D181144025A5431EF8 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */,
-				0AD1911B6A6A479DA1C10766 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */,
-				ACC3D9AC0B824ECDAB0EADFA /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */,
-				8A91CE19C606402B8E1D3616 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */,
-				BD9C05299CA44FC281B403D0 /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */,
-				D1934B67E70F4494B45968BF /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */,
-				5D5C93CFD77A4AB99D9E2902 /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */,
-				85903E2E38594211899A0E09 /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */,
-				F3CAA7580D794BE49D90C745 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */,
-				DBAE702057A447D3A5ABC70A /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */,
-				301263A873404226AAF00215 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */,
-				F847D3E192AA47298E92EE2F /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */,
-				25CEC5B459FE4A89B5F9D9CB /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */,
-			);
-			name = "Source Files";
-			sourceTree = "<group>";
-		};
-		9836E9F2D45B486091C81813 /* ace-c */ = {
-			isa = PBXGroup;
-			children = (
-				C68634095D4C4712AB27CC4E /* Source Files */,
-				E15CBEBE185B46ACB601F6E8 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */,
+				E765ED9926B54129BA7AFAC9 /* Source Files */,
+				28DB5DEF37EC482FA230CB54 /* /Users/andrew/ace-lang/src/ace-c/CMakeLists.txt */,
 			);
 			name = "ace-c";
 			sourceTree = "<group>";
 		};
-		AC95A8A53F48430481C33BE7 /* Source Files */ = {
+		2A0883016A3E4E70ADA192DB /* ALL_BUILD */ = {
 			isa = PBXGroup;
 			children = (
-				07B0FAEEDE8545DA83E01048 /* /Users/andrew/ace-lang/src/ace/api.cpp */,
-				45D61F78FF634F21AFD934E5 /* /Users/andrew/ace-lang/src/ace/main.cpp */,
-				1C19DA6C3C124FA6AD7BF892 /* /Users/andrew/ace-lang/src/ace/runtime.cpp */,
+				0C79D3C3C8B94252AE7F8E99 /* CMake Rules */,
+				1387082A15AC4EE0B21B17FE /* /Users/andrew/ace-lang/CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		336C94A352AD482693704983 /* ZERO_CHECK */ = {
+			isa = PBXGroup;
+			children = (
+				CCDDD27972534E60B94C875A /* CMake Rules */,
+				61ABB0F6A3814F9F961067AC /* /Users/andrew/ace-lang/CMakeLists.txt */,
+			);
+			name = ZERO_CHECK;
+			sourceTree = "<group>";
+		};
+		3BADA79027D149079EBD5051 /* ace-runtime */ = {
+			isa = PBXGroup;
+			children = (
+				809A7D4E9E4247658B4FB71D /* Source Files */,
+				7D1248B868164232A1A517A5 /* /Users/andrew/ace-lang/src/ace-runtime/CMakeLists.txt */,
+			);
+			name = "ace-runtime";
+			sourceTree = "<group>";
+		};
+		4E661AB6EE9F44F894AB90B1 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				2A0883016A3E4E70ADA192DB /* ALL_BUILD */,
+				336C94A352AD482693704983 /* ZERO_CHECK */,
+				1B4B19D5FC0A4D7C95E9EAF9 /* ace-c */,
+				09BF45E27AE74511A6D9D286 /* ace-vm */,
+				3BADA79027D149079EBD5051 /* ace-runtime */,
+				726368EF8B4C4F638801100D /* ace */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		726368EF8B4C4F638801100D /* ace */ = {
+			isa = PBXGroup;
+			children = (
+				7C397EC77E8D48C090957A5E /* Source Files */,
+				17A8602EFC5F4B25B0BA5DCE /* /Users/andrew/ace-lang/src/ace/CMakeLists.txt */,
+			);
+			name = ace;
+			sourceTree = "<group>";
+		};
+		7C397EC77E8D48C090957A5E /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				B8A99DDBB17B4BB691B653B4 /* /Users/andrew/ace-lang/src/ace/api.cpp */,
+				1EF2D5774766486C818104D1 /* /Users/andrew/ace-lang/src/ace/main.cpp */,
+				2B070A2E0DD24CCB8BD25EDE /* /Users/andrew/ace-lang/src/ace/runtime.cpp */,
 			);
 			name = "Source Files";
 			sourceTree = "<group>";
 		};
-		C0420BDE5881446CA17F8A98 /* Resources */ = {
+		809A7D4E9E4247658B4FB71D /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				F15452E3F3D54D65A32E7D4C /* /Users/andrew/ace-lang/src/ace-runtime/ace-runtime.cpp */,
+				944D72CF32754D4DADFCD302 /* /Users/andrew/ace-lang/src/ace-runtime/io.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		970F0C11FD7E4A9D866809E0 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				2CDB7885FA6349649281ED50 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */,
+				04E07455C7844A7683DB07E1 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */,
+				43D76B27395940198CDB85E3 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */,
+				153CC716FAAA46EBBEFAA20F /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */,
+				0CB3D8F09E864892BFBBC154 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */,
+				AE31F5C4F3A7472DB2E14A3C /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */,
+				4B84646C0EF74238808E519E /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */,
+				BE9D090101EA41CD9CEF340D /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */,
+				AF82BB219AA24E928F88EADB /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */,
+				AE3EDBAB5A374CB3BFEF2F65 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */,
+				103B048F61234AB599FA26D5 /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */,
+				6980ABC00DA340B29EA4BF88 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */,
+				D1632C558A36497997032C09 /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */,
+				F935E1999C3F4301985EBAA4 /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		BEF994E0FCE741569B729BEB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5FED40D231EC49248384B731 /* ace-c */,
+				9BA112A0AFF547AFBECC7875 /* ace-vm */,
+				0C7D4017C3414AF2B548F489 /* ace-runtime */,
+				D46318F6E0104CD6952113CF /* ace */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CCDDD27972534E60B94C875A /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		E765ED9926B54129BA7AFAC9 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				81D2B8141F834FD98A042F76 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */,
+				7F873AFA6CEE489FA74088ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */,
+				DEEB35AF3EA94C859DB0B343 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */,
+				FCCAFF0C7E0D44C8B669A67F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */,
+				0CD375041B4A4EFE84460E6F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */,
+				70CA5B6EDC304F66849F1A0B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */,
+				8504461DE0E5472685D8C5AA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */,
+				2320C4F70758486DB575889F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */,
+				7D4DDA5617B045F2A6FF1964 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */,
+				68E1BAE214784B22823B793B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */,
+				686FC9B942CD4C89A0DF4A8B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */,
+				31BD9BD180B94B9F942DDC94 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */,
+				EC8298511DFB43DDA17CC6E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */,
+				A37AFD7C3A8F4E859C522F3C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */,
+				16C7B33478904B77ABCF8C55 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */,
+				3D6FC1A0BD564087840B2A52 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */,
+				BAF6EBDE88544070BBE53734 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */,
+				8B517363CEAB40ABB0AE5E5A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */,
+				4A31984038C548C6998FB8E2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */,
+				60730BD4C3E94D2E806ABD76 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */,
+				812F1ADCE38A47F88FE0CC0A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */,
+				C52A0E731A6B40768A01476B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */,
+				9B9792713061492281503894 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */,
+				2F375591E3E8404BA7CF9E0B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */,
+				D032C40F52EA4390BFC31B4E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */,
+				A0FA0EC82EE7459190110856 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */,
+				DA4FF44F43C3415D9C381103 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */,
+				592651E8EC0B44358E422AF5 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */,
+				A262497BD83C43BEA0152015 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */,
+				D8F81A1B6216485B9253E16F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */,
+				EFEBB4FFCD8B4EB38555D09F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */,
+				A6026C4EED1046DFB8858A39 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */,
+				0DEAC056D0F44D95AC708498 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */,
+				16AAEF2F3E50434B9A43A829 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */,
+				E1CF4AAD231648E0BD32D57C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */,
+				9312FBEE003F442DAE4144DA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */,
+				7A330B5CB86F43A69A615136 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */,
+				28106C3301454A7CBC40AC45 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */,
+				88A85994A8DD479EA85A3599 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */,
+				0A4F75C31D924916981424CE /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */,
+				C11D486D6B934F9FAE4ABDB6 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */,
+				D3CB732DE60945C9850EA48D /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */,
+				17E0ADB025F64340821DD0A6 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */,
+				F749BEB1EA23432DB6C12737 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */,
+				01D745FFDB064CE98B9154C4 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */,
+				B3AE0462B97C446D8C9AE5AF /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */,
+				4A305524263849E291FCC482 /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */,
+				5BAC15694ECD419CA11B1FA1 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */,
+				83F153785F3F4A0BB49C49EC /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */,
+				97BFD87B4DC946B384DB0271 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */,
+				773F99B8EC0B4FBF8DD1E678 /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */,
+				93A438EFDF3448668F223AD6 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */,
+				A981607E13F5441ABCB63BB5 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */,
+				F06ED128BF4D4CC691981C57 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */,
+				B4311F7E41F1419999B91008 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */,
+				7B106157FFD94F03ADB4DE2F /* /Users/andrew/ace-lang/src/ace-c/module.cpp */,
+				69C17B17C4E74852B2DAF435 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */,
+				82CE57E147F842CA83F7831A /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */,
+				92709D56CEDF4BB3958AF5C8 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */,
+				0707A479BA714ACA9D45C8C7 /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */,
+				B4E6EA9520CC44018A471021 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */,
+				39A8F39B544A4656B6A05D32 /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */,
+				34F17132364F48F1B728C537 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */,
+				818827C638484700986040DC /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */,
+				849277D7201C4A84A59479AB /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */,
+				D2447453C9F64AF3A29554E6 /* /Users/andrew/ace-lang/src/ace-c/token.cpp */,
+				63DF18FD644D47DB97310200 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */,
+				B60F8D16D0704D9EB5B56D11 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		F36C7145C0EC4A6FBB386F70 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		C68634095D4C4712AB27CC4E /* Source Files */ = {
+		FC7367AEE0D142819059B632 = {
 			isa = PBXGroup;
 			children = (
-				20F72A9170E04ADF850275B7 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */,
-				4F0995F0E7C948CDBCDF92A0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */,
-				CEB8109B2D03402789FF04AA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */,
-				C6EEF7427F47469697F012C6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */,
-				BFD7B6C22BA2438BADF486E4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */,
-				30F6BD58CC744BBE88892AD0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */,
-				CACB221EE42F41239EA94A4C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */,
-				3F153D5BD3DA45E3A08628AF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */,
-				F574C3EDC0A04B9EBA2D2DA0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */,
-				AADDAF7AF27A4382AF9DF0DB /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */,
-				BE4430CCB25E4870B8AA54B6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */,
-				08F5B68D55064B6997061902 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */,
-				E0280BE43E094A4EAB1A530B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */,
-				AAB837FF712442E08F2EB327 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */,
-				0A540B1EBCA04F0E91F65353 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */,
-				804E54B36E6449C499335C93 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */,
-				487BC784E6B942669B06F297 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */,
-				26DF95C7F21E455B902066ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */,
-				6FE6A5DAE06D4A67837BAC12 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */,
-				05268C4EAECF4A3189C69408 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */,
-				7FE4DAECB5AD4A9697709225 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */,
-				BCC1028AE1F64678B9CB57A9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */,
-				9D275644A6374EE6AC1C59EF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */,
-				8506D07E76EA4B8A97214437 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */,
-				BA94266F9378477ABEFB2F19 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */,
-				5149C06A68EE487BBD1B28C9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */,
-				DC0AF4FA57FB4518BA7FDC4E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */,
-				CBC534DE288B49D2BD1F0346 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */,
-				7E21BC37B44142C8921FE59A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */,
-				23204611BEFC43299BA9A441 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */,
-				2518694121DC470BAF4EFC31 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */,
-				F8E5DF11D53A4A4489A23B7D /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */,
-				536DB991CFA24B909E2991E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */,
-				C51261F80163442ABD9BDBB8 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */,
-				F2A11B3F9A01448EADDA0581 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */,
-				FB90D440CE9042A288A22509 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */,
-				F09B2EAED28A40A7AF9FA4F2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */,
-				BE8451E455074678B8145603 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */,
-				A0FBB211F2DE4F46B1469405 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */,
-				7B76272D7CF94D09A0801637 /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */,
-				E2B3AD2264DA467A93E2AAA4 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */,
-				6F826DB075424E80A3354E4D /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */,
-				6CE9BB4CC79D4F11B60C88C6 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */,
-				268592B1A9D74827AF305DF9 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */,
-				B3B2967802664FACB83BDEB2 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */,
-				D203B63EF8654369A001A2C6 /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */,
-				C13B48305A7A4A798A3D71DD /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */,
-				871CCD85975C4A429B1BCE23 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */,
-				33436B24A5AD4D36AD381953 /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */,
-				3E2ACD5172074493A04AC547 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */,
-				0C036AE624724182A04946CA /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */,
-				0D0BE605CEB24C3281C7D843 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */,
-				ACB1F3E18DD24210AAC33E05 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */,
-				A87884E649E947688430DC77 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */,
-				E64F2C12A9D142E0ABC45AD2 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */,
-				D490F260510B4EA2A11AFE6C /* /Users/andrew/ace-lang/src/ace-c/module.cpp */,
-				6530723DF7E9445D8027D8C0 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */,
-				F0FC49ED2776429C92B855CE /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */,
-				8B4C2E4B2FBB4A1EAF404020 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */,
-				04FB358062364D8D84B92C97 /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */,
-				4A0F10BBAB4846E3A2205AB8 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */,
-				6C13D8D2B4184C31AD91D17C /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */,
-				ED2510EB927643268839D2B4 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */,
-				91EF23310E234DBDA7D2E877 /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */,
-				D4757568A6ED4899AF7A0651 /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */,
-				4BFC41300A704A63BE48113B /* /Users/andrew/ace-lang/src/ace-c/token.cpp */,
-				B1C454FB104548C9A2D0C3D9 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */,
-				4BB4A680C4544FFA9CF51594 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */,
+				4E661AB6EE9F44F894AB90B1 /* Sources */,
+				F36C7145C0EC4A6FBB386F70 /* Resources */,
+				BEF994E0FCE741569B729BEB /* Products */,
 			);
-			name = "Source Files";
-			sourceTree = "<group>";
-		};
-		CF9724A5AE414D2ABB568365 /* ace-jit */ = {
-			isa = PBXGroup;
-			children = (
-				4250418610D04342A1667DCA /* /Users/andrew/ace-lang/src/ace-jit/CMakeLists.txt */,
-			);
-			name = "ace-jit";
-			sourceTree = "<group>";
-		};
-		F7DE4ADD646B491BB3191131 /* ZERO_CHECK */ = {
-			isa = PBXGroup;
-			children = (
-				1A12DF3999504DD5BC736917 /* CMake Rules */,
-				DD1A068433FB4C70BD8F9D6A /* /Users/andrew/ace-lang/CMakeLists.txt */,
-			);
-			name = ZERO_CHECK;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -559,68 +587,72 @@
 /* Begin PBXNativeTarget section */
 		37F54568A5C34122BB5AA0F7 /* ace-vm */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F405EDF2B056435E896249FA /* Build configuration list for PBXNativeTarget "ace-vm" */;
+			buildConfigurationList = 0ABDAA2E55E14BEEB77A5391 /* Build configuration list for PBXNativeTarget "ace-vm" */;
 			buildPhases = (
-				4AB473E22F6144A9BDBE162D /* Sources */,
+				903E2669ADD34CC29BE08285 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				3EF7518F813149219245889B /* PBXTargetDependency */,
+				9C5FDFC644C94C69AF1A05F5 /* PBXTargetDependency */,
 			);
 			name = "ace-vm";
 			productName = "ace-vm";
-			productReference = 2E3A4563521F4C5993359764 /* ace-vm */;
-			productType = "com.apple.product-type.library.static";
-		};
-		78D2122C54E04EBFAD168870 /* ace-jit */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 2E16AE8444DE4817808F0192 /* Build configuration list for PBXNativeTarget "ace-jit" */;
-			buildPhases = (
-			);
-			buildRules = (
-			);
-			dependencies = (
-				2648F2E6F100479090B90945 /* PBXTargetDependency */,
-			);
-			name = "ace-jit";
-			productName = "ace-jit";
-			productReference = 9AE5766033504187A4B96E63 /* ace-jit */;
+			productReference = 9BA112A0AFF547AFBECC7875 /* ace-vm */;
 			productType = "com.apple.product-type.library.static";
 		};
 		8453CBBB4F204881834B4529 /* ace-c */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BBBAC4557A4D4F6BAF78197F /* Build configuration list for PBXNativeTarget "ace-c" */;
+			buildConfigurationList = 7610BFC2D0D7404BB5BD77F1 /* Build configuration list for PBXNativeTarget "ace-c" */;
 			buildPhases = (
-				7D7C7C37B28C4F0FA7DF74AE /* Sources */,
+				0C75E617335F4DAFB3CF4E5B /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				03699343501C41E3BAE225FB /* PBXTargetDependency */,
+				2529110224EE484E882FD69A /* PBXTargetDependency */,
 			);
 			name = "ace-c";
 			productName = "ace-c";
-			productReference = D11116CFA65F41148FAEB90E /* ace-c */;
+			productReference = 5FED40D231EC49248384B731 /* ace-c */;
 			productType = "com.apple.product-type.library.static";
 		};
 		B1FA60B496E84CEEBDA5824F /* ace */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F0CD2534F583403989549316 /* Build configuration list for PBXNativeTarget "ace" */;
+			buildConfigurationList = 181FC54D49A64387BA441E3C /* Build configuration list for PBXNativeTarget "ace" */;
 			buildPhases = (
-				E8658BBB76744C7B9621EED9 /* Sources */,
+				FED96A4C044449DEBF9499E1 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				5750162814B54708BBAF0738 /* PBXTargetDependency */,
-				7459284F06654B60985759D8 /* PBXTargetDependency */,
-				27086E601E4B4C9E9053B104 /* PBXTargetDependency */,
+				088E6C80BDF9488AA5ACA20F /* PBXTargetDependency */,
+				9D64ACCEF27C46D6AA4BC30F /* PBXTargetDependency */,
+				25EF5FEB43474FB49EF896C8 /* PBXTargetDependency */,
+				3493AA13F55F4EA0B440D6E3 /* PBXTargetDependency */,
 			);
 			name = ace;
 			productName = ace;
-			productReference = DEAB0338DE3549E981C657DB /* ace */;
+			productReference = D46318F6E0104CD6952113CF /* ace */;
 			productType = "com.apple.product-type.tool";
+		};
+		DA8911FF512F4E759A159B69 /* ace-runtime */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E7E5BBC51972454F82EDF0BF /* Build configuration list for PBXNativeTarget "ace-runtime" */;
+			buildPhases = (
+				EF4B156B033B454789683E7E /* Sources */,
+				8E320697FA4B4DC5BFE6554C /* CMake PostBuild Rules */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D1D2B723A82C4B7398BE6952 /* PBXTargetDependency */,
+				6E3EB00D14694D5DA31A6354 /* PBXTargetDependency */,
+			);
+			name = "ace-runtime";
+			productName = "ace-runtime";
+			productReference = 0C7D4017C3414AF2B548F489 /* ace-runtime */;
+			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
 
@@ -631,18 +663,18 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 0800;
 			};
-			buildConfigurationList = 81A85BEE92184630AF3056E4 /* Build configuration list for PBXProject "ace-lang" */;
+			buildConfigurationList = 7B911C1124514E4FA4E256AF /* Build configuration list for PBXProject "ace-lang" */;
 			buildSettings = {
 			};
 			buildStyles = (
-				FE1406F95BE84BCAB9567467 /* Debug */,
-				2147F62CD3DC4D20B61221EE /* Release */,
-				428CE2CFECC1481E8F3A7446 /* MinSizeRel */,
-				4AD863C52B054E4DBB554476 /* RelWithDebInfo */,
+				07FD01675B4D4FE18A7472CC /* Debug */,
+				8054D01B10314CD29F35B33D /* Release */,
+				728F9F2A98F042D8A2151B86 /* MinSizeRel */,
+				F827F9A0DD8A45779A274CF7 /* RelWithDebInfo */,
 			);
 			compatibilityVersion = "Xcode 3.2";
 			hasScannedForEncodings = 0;
-			mainGroup = 5DD3EAE675A545ECB5293B3D;
+			mainGroup = FC7367AEE0D142819059B632;
 			projectDirPath = ../;
 			projectRoot = "";
 			targets = (
@@ -650,14 +682,14 @@
 				063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */,
 				8453CBBB4F204881834B4529 /* ace-c */,
 				37F54568A5C34122BB5AA0F7 /* ace-vm */,
-				78D2122C54E04EBFAD168870 /* ace-jit */,
+				DA8911FF512F4E759A159B69 /* ace-runtime */,
 				B1FA60B496E84CEEBDA5824F /* ace */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0024EC4D54124A92BBA4F451 = {
+		3B2D32F4CD0D48109EC50277 = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -672,7 +704,18 @@
 exit 0";
 			showEnvVarsInLog = 0;
 		};
-		52BB90FAC22E41148565C155 = {
+		8E320697FA4B4DC5BFE6554C /* CMake PostBuild Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake PostBuild Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/andrew/ace-lang/bin/src/ace-runtime -f /Users/andrew/ace-lang/bin/src/ace-runtime/CMakeScripts/ace-runtime_postBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		9E7350AFC57342CEBFF6818D = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -687,18 +730,7 @@ exit 0";
 exit 0";
 			showEnvVarsInLog = 0;
 		};
-		88BFE3B4E8164E3A84FD3EF9 /* CMake Rules */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			name = "CMake Rules";
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "make -C /Users/andrew/ace-lang/bin -f /Users/andrew/ace-lang/bin/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
-			showEnvVarsInLog = 0;
-		};
-		A19B58273542419A8D5F9699 /* CMake Rules */ = {
+		BE2093D483A44D71811C383F /* CMake Rules */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -709,384 +741,207 @@ exit 0";
 			shellScript = "make -C /Users/andrew/ace-lang/bin -f /Users/andrew/ace-lang/bin/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
 			showEnvVarsInLog = 0;
 		};
+		F6AB1685AA6D47F99AA23AF1 /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/andrew/ace-lang/bin -f /Users/andrew/ace-lang/bin/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		4AB473E22F6144A9BDBE162D /* Sources */ = {
+		0C75E617335F4DAFB3CF4E5B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE8DB8C6BC36498185388284 /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */,
-				5817227856984102AE310655 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */,
-				7B4B7D4825564CAFB71B2551 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */,
-				4AA515B2C81346AFB7BD14D1 /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */,
-				95B1A477D30E43E3A8FBE780 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */,
-				EBD3899985624685ACF00856 /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */,
-				512BA56BBA094D2F8AB253B5 /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */,
-				4132A16DA5914F44B0C70C2A /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */,
-				6373462BEA904437A587A195 /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */,
-				DF45F5A3B33245EAB05DD5E9 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */,
-				7A71ED004B2D4615ABC4E881 /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */,
-				369CAB4D37654469AA175A5D /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */,
-				FE3B7829EC554874AAB6241E /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */,
-				86B8D16804614382B46A095A /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */,
+				DCF890C638E34581A9AC3478 /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */,
+				BA0EBDD90B3B423EA30668C5 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */,
+				A80B9625BF264559A1427161 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */,
+				50168D70DBA84475B7A69AB4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */,
+				E680E4EB575D42DE9898AA4C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */,
+				C6574D4C929B4EC4A299579E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */,
+				82538ACA4BD44206843F34F2 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */,
+				C9270E89F38C48638161188B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */,
+				132EB1A3BCF5443DB6726302 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */,
+				62D57EFA6B7E4F9EB7E7043F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */,
+				B37C314AD49E4867B79C4D60 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */,
+				ACD1B72062774641B6F9B1BE /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */,
+				C27368E305944F55ABDF3F67 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */,
+				20027FFF28244269839665D9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */,
+				5953E30014E54542A29ABB5E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */,
+				BC94C47CCB2C4EB38B551AA9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */,
+				BD2E205A61B242E0B79316F3 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */,
+				64571C92F3AF4492847FC11D /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */,
+				5B92A132132140F6A08E7A93 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */,
+				8187CFF7AA54415BA2983E4D /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */,
+				2EC5FA825EE141C28B9A1762 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */,
+				DD435642C67D40C5A82FB954 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */,
+				28B5B49A73E14395A828A6E6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */,
+				84AE2CCEF44548ABBA745D2C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */,
+				787FCD87106E4ED4B75D25C4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */,
+				2E84FCCEADDA4323B4005E61 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */,
+				D772750F85DA4B82A4D56AA4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */,
+				E4963307B0D649F7872DB684 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */,
+				4C8B025A6E554212A60F31FA /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */,
+				4A47D17E641C4EF6B3A04155 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */,
+				E1A97D7E3BE4459DA6511CE3 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */,
+				3D5DBEE839264E50BBF0DABB /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */,
+				5550AC13392046F4981F0C42 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */,
+				5D8A8259567A4FE9BEBC0843 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */,
+				C721B39C93DE4A6C90C27224 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */,
+				69D37CEA4DEF4CE4B91D9E40 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */,
+				33AB542586054368BC14C282 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */,
+				D1E9BA1D960645E09FF80FE0 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */,
+				36AB934DE34A4E0FA4570A89 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */,
+				A57AEC714FD54731990B3A06 /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */,
+				6F9FE8E202AA47E19696AC06 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */,
+				8CC32ACD5D9045F1BE201BCE /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */,
+				F7F1042459F543D7930B4F24 /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */,
+				E75A0F6179DB43A6B7EEE457 /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */,
+				576E5101F6A9468B923E56C2 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */,
+				C4762FF26F384BE6BDBA127B /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */,
+				AE9FE483681342ABBD4CA2A2 /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */,
+				C98298CE67CE4B69964BFD92 /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */,
+				D141B24FE2E34F7B9FD1078F /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */,
+				CB01FFDCF378402B86E19686 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */,
+				825F1F82FA78425CB372C2D1 /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */,
+				E012814E30D649009B8966B5 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */,
+				BC7C79B703114E349C4ABDCE /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */,
+				F1BBFF351A8F44AC96F677F7 /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */,
+				10EDCEE528A94461A5ECAB79 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */,
+				9D1359D70CF346E792F3E916 /* /Users/andrew/ace-lang/src/ace-c/module.cpp */,
+				E65671276ACE4198801816FC /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */,
+				8EA7CAC1B5BE4586904460A0 /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */,
+				6A4525F55A2A4762BA3AE21B /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */,
+				A6A4B264CFEB427C8FD0C8CC /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */,
+				32CD57AD6D9744529C86C9FA /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */,
+				268D7A3FB5824E5F80B8CF5F /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */,
+				E4FD16846E1B47E896605DC1 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */,
+				3EAF5AB308E249AC856E9A19 /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */,
+				8733FB2655A4464BBD48764A /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */,
+				4F29E18A09FA4BEB847CCBC8 /* /Users/andrew/ace-lang/src/ace-c/token.cpp */,
+				67F59CD96FAE4977916643F9 /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */,
+				EF44DDA96AFE4679B3BBBEDC /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7D7C7C37B28C4F0FA7DF74AE /* Sources */ = {
+		903E2669ADD34CC29BE08285 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				07A638011769414A9157374B /* /Users/andrew/ace-lang/src/ace-c/ace-c.cpp */,
-				AFBF7389BD8242819EC1A56F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_access.cpp */,
-				BC34AF6D2EAF48C392797603 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_array_expression.cpp */,
-				97192C1DBAF743AA8C8D5B94 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_binary_expression.cpp */,
-				9BF528D9B93D41B7914BC434 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_block.cpp */,
-				AD8B8E56C39D49B98050FEFD /* /Users/andrew/ace-lang/src/ace-c/ast/ast_constant.cpp */,
-				FBB92FC49E314858A7A13C0F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_declaration.cpp */,
-				AC6BA00ACCBB455ABDDCD44C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_expression.cpp */,
-				81392F5BFC9B416BA62EC2D1 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_false.cpp */,
-				A696F5CDDDA14F6D93CB05B6 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_float.cpp */,
-				D5008704CBBC4AD8A618872C /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_call.cpp */,
-				BF2859AB6818418294965174 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_definition.cpp */,
-				F6596FE236B74DF1B5A3A8ED /* /Users/andrew/ace-lang/src/ace-c/ast/ast_function_expression.cpp */,
-				D022F5233F9E4C3D94234483 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_generated_expression.cpp */,
-				1E25F4D815624399BD822C13 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_identifier.cpp */,
-				BC222D8F372B405498520C3F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_if_statement.cpp */,
-				D8BB42D6339B4E6FA585D914 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_import.cpp */,
-				9CB1F59DCC234B708A0136C8 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_integer.cpp */,
-				03ABDEBEDC904AB4BA62C1EB /* /Users/andrew/ace-lang/src/ace-c/ast/ast_local_import.cpp */,
-				198E8BE00A7F40529737BD79 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp */,
-				9FE68D57DDDB43CB80ABF2B3 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp */,
-				13B5D3A4857E47DFBAEAE242 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_null.cpp */,
-				D80FD3D9A1F54C5A96F7A05B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_object.cpp */,
-				7907D043BFB143F6B57D1215 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_parameter.cpp */,
-				E1E72FD9401F4F8F9583E1A4 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_print_statement.cpp */,
-				D00B83D710304332B6AC3D51 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_return_statement.cpp */,
-				A694454C2F2F4B22B1D38109 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_statement.cpp */,
-				8F76136AECE74643A475B43E /* /Users/andrew/ace-lang/src/ace-c/ast/ast_string.cpp */,
-				FFA3EB8A2D8C4AAD83AD4A90 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_true.cpp */,
-				2ACDB2B41A4B48A9948F9CC5 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_try_catch.cpp */,
-				6E3D9FB7CF294F519126176B /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_contract.cpp */,
-				56D0711BD5F043D899571C3A /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_definition.cpp */,
-				43C66A018C49408A810BD3B9 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_type_specification.cpp */,
-				A174DB7052F64F07A2E6E648 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_unary_expression.cpp */,
-				4E09CEFECF354B9983843A82 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_undefined.cpp */,
-				766CE70785F948F68AEFB4CF /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable.cpp */,
-				F6653A6693E44B978ED98950 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_variable_declaration.cpp */,
-				45C85417CB0A47B699189060 /* /Users/andrew/ace-lang/src/ace-c/ast/ast_void.cpp */,
-				50C6F2E58E83487E9392CF9F /* /Users/andrew/ace-lang/src/ace-c/ast/ast_while_loop.cpp */,
-				3F60C575BA26441E9D102FCD /* /Users/andrew/ace-lang/src/ace-c/ast_iterator.cpp */,
-				31DD4BFD4C504E81A5A78608 /* /Users/andrew/ace-lang/src/ace-c/ast_visitor.cpp */,
-				AA3251E9E020476A823E11FF /* /Users/andrew/ace-lang/src/ace-c/compilation_unit.cpp */,
-				5AE424FB9B6844128F851DBC /* /Users/andrew/ace-lang/src/ace-c/compiler.cpp */,
-				43A8B0191D82489D92510D6D /* /Users/andrew/ace-lang/src/ace-c/compiler_error.cpp */,
-				69478F48E70841E4A239D446 /* /Users/andrew/ace-lang/src/ace-c/configuration.cpp */,
-				13516BE565A749BE9510B4FD /* /Users/andrew/ace-lang/src/ace-c/dis/byte_stream.cpp */,
-				F923A4F63E55471BBB7B2AA3 /* /Users/andrew/ace-lang/src/ace-c/dis/decompilation_unit.cpp */,
-				299379D8DE324E33B5E3383C /* /Users/andrew/ace-lang/src/ace-c/emit/instruction_stream.cpp */,
-				40C5C4C994DB490FB57CF99E /* /Users/andrew/ace-lang/src/ace-c/emit/static_object.cpp */,
-				427D8419E8BF4EA8A7B711E3 /* /Users/andrew/ace-lang/src/ace-c/error_list.cpp */,
-				04BCD193B6B2429CA3A200F0 /* /Users/andrew/ace-lang/src/ace-c/identifier.cpp */,
-				A545DEB929DE43E7906EF9B9 /* /Users/andrew/ace-lang/src/ace-c/identifier_table.cpp */,
-				E2D19549A4A542B5AE38B804 /* /Users/andrew/ace-lang/src/ace-c/keywords.cpp */,
-				926B202024C6428382960F7A /* /Users/andrew/ace-lang/src/ace-c/lexer.cpp */,
-				20DEE07ADD93470894A50A50 /* /Users/andrew/ace-lang/src/ace-c/main.cpp */,
-				E224BF4CAAA84B58B9361A97 /* /Users/andrew/ace-lang/src/ace-c/module.cpp */,
-				46D89E7897E54E6084D06877 /* /Users/andrew/ace-lang/src/ace-c/object_type.cpp */,
-				725B96DF5EB34B348CA7937C /* /Users/andrew/ace-lang/src/ace-c/operator.cpp */,
-				F18897EDA5E44E9CA29E9C38 /* /Users/andrew/ace-lang/src/ace-c/optimizer.cpp */,
-				249779603125414DB262E03E /* /Users/andrew/ace-lang/src/ace-c/parser.cpp */,
-				E3F93E027380435182C8D615 /* /Users/andrew/ace-lang/src/ace-c/scope.cpp */,
-				63C59B28F01F4EDD8CF97AAC /* /Users/andrew/ace-lang/src/ace-c/semantic_analyzer.cpp */,
-				ECACF17AEF7741B196716BE8 /* /Users/andrew/ace-lang/src/ace-c/source_file.cpp */,
-				B996F7DBA4B64923807E1651 /* /Users/andrew/ace-lang/src/ace-c/source_location.cpp */,
-				B80A9A587EFC4BA894BA10B4 /* /Users/andrew/ace-lang/src/ace-c/source_stream.cpp */,
-				9FB567B6817C4F838FDFA636 /* /Users/andrew/ace-lang/src/ace-c/token.cpp */,
-				F833716340EC43279CB932AE /* /Users/andrew/ace-lang/src/ace-c/token_stream.cpp */,
-				CA6D52F1E51148399E009737 /* /Users/andrew/ace-lang/src/ace-c/type_contract.cpp */,
+				75993FDCFD5147CBBCD880DF /* /Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp */,
+				0F68B6DDBE1642DCA9F38D24 /* /Users/andrew/ace-lang/src/ace-vm/array.cpp */,
+				DD27A1D119EC4EB5BB9B4EB8 /* /Users/andrew/ace-lang/src/ace-vm/bytecode_stream.cpp */,
+				F15A54541D1A451698AF1C4E /* /Users/andrew/ace-lang/src/ace-vm/exception.cpp */,
+				8BEB84D0CB8D4B44A68D00E1 /* /Users/andrew/ace-lang/src/ace-vm/heap_memory.cpp */,
+				C43376608ABC45259A1BE13F /* /Users/andrew/ace-lang/src/ace-vm/heap_value.cpp */,
+				13AD132D87DF40D88CE6BC69 /* /Users/andrew/ace-lang/src/ace-vm/main.cpp */,
+				64254632F6A84745A84492EC /* /Users/andrew/ace-lang/src/ace-vm/object.cpp */,
+				DEB47E9FA1EF4F6094DE8154 /* /Users/andrew/ace-lang/src/ace-vm/stack_memory.cpp */,
+				64339B77FEBE4452B8949AD5 /* /Users/andrew/ace-lang/src/ace-vm/stack_value.cpp */,
+				F2F5FC919005464F84540B3A /* /Users/andrew/ace-lang/src/ace-vm/static_memory.cpp */,
+				DE92078D01C04937804F65F3 /* /Users/andrew/ace-lang/src/ace-vm/type_info.cpp */,
+				7830993E6AD94B2FB2560216 /* /Users/andrew/ace-lang/src/ace-vm/vm.cpp */,
+				FF341A41417C4FB887B4E41F /* /Users/andrew/ace-lang/src/ace-vm/vm_state.cpp */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E8658BBB76744C7B9621EED9 /* Sources */ = {
+		EF4B156B033B454789683E7E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4525903EFBF418591F3C27D /* /Users/andrew/ace-lang/src/ace/api.cpp */,
-				7523DF9A385C4F0280DFC537 /* /Users/andrew/ace-lang/src/ace/main.cpp */,
-				63D1F8E3259D45C4A9B7601C /* /Users/andrew/ace-lang/src/ace/runtime.cpp */,
+				4EEAC70F85364B4D910AC9FA /* /Users/andrew/ace-lang/src/ace-runtime/ace-runtime.cpp */,
+				FC809A555BF34C999F3167EF /* /Users/andrew/ace-lang/src/ace-runtime/io.cpp */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FED96A4C044449DEBF9499E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C661EA2494344FA1A33D6A5C /* /Users/andrew/ace-lang/src/ace/api.cpp */,
+				DF457B83AF2B4D399EC627F2 /* /Users/andrew/ace-lang/src/ace/main.cpp */,
+				1FB416E0AB42489DA7630316 /* /Users/andrew/ace-lang/src/ace/runtime.cpp */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		03699343501C41E3BAE225FB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
-			targetProxy = 7A72997741224C43BB92A120 /* PBXContainerItemProxy */;
-		};
-		2648F2E6F100479090B90945 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
-			targetProxy = 5321AE263C044E95A3F5E4A0 /* PBXContainerItemProxy */;
-		};
-		27086E601E4B4C9E9053B104 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
-			targetProxy = 0AC293AAF23A409D9C2B28E3 /* PBXContainerItemProxy */;
-		};
-		3EF7518F813149219245889B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
-			targetProxy = 5921341A48974BDF8F4E9504 /* PBXContainerItemProxy */;
-		};
-		457DDAB641C049BBAF1FF61E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 37F54568A5C34122BB5AA0F7 /* ace-vm */;
-			targetProxy = CC3EB611A1B348CC8C8C6BBF /* PBXContainerItemProxy */;
-		};
-		5750162814B54708BBAF0738 /* PBXTargetDependency */ = {
+		088E6C80BDF9488AA5ACA20F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8453CBBB4F204881834B4529 /* ace-c */;
-			targetProxy = AF77692D62EF4410B2D1FF36 /* PBXContainerItemProxy */;
+			targetProxy = 3C543CA59A1E41169F19A1D7 /* PBXContainerItemProxy */;
 		};
-		7459284F06654B60985759D8 /* PBXTargetDependency */ = {
+		0AC0A2A0CE7144A6AB83EDC6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DA8911FF512F4E759A159B69 /* ace-runtime */;
+			targetProxy = 08409D570A8D46708A656FC2 /* PBXContainerItemProxy */;
+		};
+		2529110224EE484E882FD69A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
+			targetProxy = 87EDBF7FA7924F518FFDA89F /* PBXContainerItemProxy */;
+		};
+		25EF5FEB43474FB49EF896C8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DA8911FF512F4E759A159B69 /* ace-runtime */;
+			targetProxy = 197FCD436E4949EBB30D8DF7 /* PBXContainerItemProxy */;
+		};
+		3493AA13F55F4EA0B440D6E3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
+			targetProxy = 4A0519B387DA42AA954D1077 /* PBXContainerItemProxy */;
+		};
+		6D7A227B80574EF1B2848699 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
+			targetProxy = 4ACAB935FBE6445795798159 /* PBXContainerItemProxy */;
+		};
+		6E3EB00D14694D5DA31A6354 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
+			targetProxy = 4C6BC5E1908A45EB91EB53F2 /* PBXContainerItemProxy */;
+		};
+		9C5FDFC644C94C69AF1A05F5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
+			targetProxy = 04C1A209E8B34780B7E8A7EA /* PBXContainerItemProxy */;
+		};
+		9D64ACCEF27C46D6AA4BC30F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 37F54568A5C34122BB5AA0F7 /* ace-vm */;
-			targetProxy = D78C6893F997419AAC5CCDA1 /* PBXContainerItemProxy */;
+			targetProxy = 124A2DF755054BBC9751997F /* PBXContainerItemProxy */;
 		};
-		8DE66875D35B4AD39E8EC788 /* PBXTargetDependency */ = {
+		D1D2B723A82C4B7398BE6952 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37F54568A5C34122BB5AA0F7 /* ace-vm */;
+			targetProxy = 19C7476D8A694DA2898642A3 /* PBXContainerItemProxy */;
+		};
+		DB28D52853974D4BBC6F9940 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37F54568A5C34122BB5AA0F7 /* ace-vm */;
+			targetProxy = C0403A4484B94AFDAF07DA10 /* PBXContainerItemProxy */;
+		};
+		EC3B81C6F7B84443BDBC7FC9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8453CBBB4F204881834B4529 /* ace-c */;
-			targetProxy = 779C1DC91BA846D38A1A9F9F /* PBXContainerItemProxy */;
+			targetProxy = D042EF1216A04A169D782F51 /* PBXContainerItemProxy */;
 		};
-		A7475684B5424BDFBE2A6AE6 /* PBXTargetDependency */ = {
+		F04A0729F9EA4F81B40E314F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B1FA60B496E84CEEBDA5824F /* ace */;
-			targetProxy = EB30CA4E0BC643609ED5ABFE /* PBXContainerItemProxy */;
-		};
-		DB0C38D9F6D44B95B64EE507 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 063F4CD9C64F44D4AE26A43C /* ZERO_CHECK */;
-			targetProxy = 14EE1A2C3BDD4F07AAEE661C /* PBXContainerItemProxy */;
-		};
-		E1DFFD6C4B5D409EA6EF7D01 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 78D2122C54E04EBFAD168870 /* ace-jit */;
-			targetProxy = 5EBEE51C4DB643B4A60122FE /* PBXContainerItemProxy */;
+			targetProxy = 07F316689F6E4BF3A36BD371 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		02A0F26C3F5B4A8DB34B8A99 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = lib;
-				EXECUTABLE_SUFFIX = .a;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 2;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				LIBRARY_STYLE = STATIC;
-				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG '-std=c++11'  ";
-				OTHER_LIBTOOLFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "ace-c";
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-c";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = RelWithDebInfo;
-		};
-		0877CFDCD9F54496B795C325 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk;
-				SYMROOT = "/Users/andrew/ace-lang/bin/build";
-			};
-			name = Debug;
-		};
-		0F60D7E480D44233BD26019A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk;
-				SYMROOT = "/Users/andrew/ace-lang/bin/build";
-			};
-			name = Release;
-		};
-		12A9D1FDB08F4F48B931F38C /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = lib;
-				EXECUTABLE_SUFFIX = .a;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				LIBRARY_STYLE = STATIC;
-				OTHER_CPLUSPLUSFLAGS = "   '-std=c++11'  ";
-				OTHER_LIBTOOLFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "ace-vm";
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-vm";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Debug;
-		};
-		1CB5FCCE66C64E4DA891CA43 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "";
-			};
-			name = RelWithDebInfo;
-		};
-		204EF589954E4EB3B7C8F917 /* MinSizeRel */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = lib;
-				EXECUTABLE_SUFFIX = .a;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = s;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				LIBRARY_STYLE = STATIC;
-				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
-				OTHER_LIBTOOLFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "ace-c";
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-c";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = MinSizeRel;
-		};
-		2EAE02A34FB347DF9105CE15 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk;
-				SYMROOT = "/Users/andrew/ace-lang/bin/build";
-			};
-			name = RelWithDebInfo;
-		};
-		35148A3CF0A945E1BB4113EA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Debug;
-		};
-		3585EA847AEC440C89C95745 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/Release/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/Release/libace-vm.a";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ace;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Release;
-		};
-		44F8E52B2D0D4D748B367BAB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Release;
-		};
-		5444CFB660B74836BD3C4680 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "";
-			};
-			name = Release;
-		};
-		5725E886FFA14EACA432CACD /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Debug;
-		};
-		5F4507D0D42C420B833C9DEF /* RelWithDebInfo */ = {
+		0397FEB900AE4A6D8CDF637C /* RelWithDebInfo */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1111,7 +966,33 @@ exit 0";
 			};
 			name = RelWithDebInfo;
 		};
-		6018175DB4B64CDA8C423834 /* Debug */ = {
+		08021D39E4FA4DBC9247DED7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				LD_RUNPATH_SEARCH_PATHS = "/Users/andrew/ace-lang/bin/src/ace-runtime/Release";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/Release/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/Release/libace-vm.a /Users/andrew/ace-lang/bin/src/ace-runtime/Release/libace-runtime.dylib /Users/andrew/ace-lang/bin/src/ace-vm/Release/libace-vm.a";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ace;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		0922723FA0C84B3D9FED6A02 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1128,36 +1009,50 @@ exit 0";
 				OTHER_CPLUSPLUSFLAGS = "   '-std=c++11'  ";
 				OTHER_LIBTOOLFLAGS = " ";
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "ace-c";
+				PRODUCT_NAME = "ace-vm";
 				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-c";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-vm";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
 			name = Debug;
 		};
-		6926EAA0AF244C87A1C47FC2 /* RelWithDebInfo */ = {
+		171B60C1109444E48749BBC0 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk;
+				SYMROOT = "/Users/andrew/ace-lang/bin/build";
+			};
+			name = RelWithDebInfo;
+		};
+		23108766AF62483C83281A8B /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
 				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
+				OTHER_LIBTOOLFLAGS = " ";
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
+				PRODUCT_NAME = "ace-vm";
 				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-vm";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
-			name = RelWithDebInfo;
+			name = MinSizeRel;
 		};
-		6DD02687AA024EFDA67B254A /* Release */ = {
+		3A547872D5934516A642EE83 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1176,41 +1071,9 @@ exit 0";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
-			name = Release;
-		};
-		6F7FABF8C2B04E2C9E78E9A0 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "   '-std=c++11'  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/Debug/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/Debug/libace-vm.a";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ace;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
 			name = Debug;
 		};
-		7655DD974AFA48C887FBD542 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "";
-			};
-			name = Debug;
-		};
-		78688482261F4BAEABB30020 /* MinSizeRel */ = {
+		52CD8FF1773D44F3BDFD5531 /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1231,7 +1094,118 @@ exit 0";
 			};
 			name = MinSizeRel;
 		};
-		7C231B3273D44E10A7A85A0F /* RelWithDebInfo */ = {
+		57366D93434A4B96B23129D7 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		58B9B41B9253496DA8E45940 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ace_runtime_EXPORTS);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "@rpath";
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC '-std=c++11'  ";
+				OTHER_LDFLAGS = " -dynamiclib -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-vm/MinSizeRel/libace-vm.a";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "ace-runtime";
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-runtime";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		5D4F9B5194B24E539F7A595F /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				LD_RUNPATH_SEARCH_PATHS = "/Users/andrew/ace-lang/bin/src/ace-runtime/MinSizeRel";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/MinSizeRel/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/MinSizeRel/libace-vm.a /Users/andrew/ace-lang/bin/src/ace-runtime/MinSizeRel/libace-runtime.dylib /Users/andrew/ace-lang/bin/src/ace-vm/MinSizeRel/libace-vm.a";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ace;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		642788BB986D498D99033A65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				LD_RUNPATH_SEARCH_PATHS = "/Users/andrew/ace-lang/bin/src/ace-runtime/Debug";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "   '-std=c++11'  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/Debug/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/Debug/libace-vm.a /Users/andrew/ace-lang/bin/src/ace-runtime/Debug/libace-runtime.dylib /Users/andrew/ace-lang/bin/src/ace-vm/Debug/libace-vm.a";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ace;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		6D581D81EE694A5D807FD86C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk;
+				SYMROOT = "/Users/andrew/ace-lang/bin/build";
+			};
+			name = Release;
+		};
+		756B2B30047B4891B76B6CBB /* RelWithDebInfo */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1244,9 +1218,10 @@ exit 0";
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
 				INSTALL_PATH = "";
+				LD_RUNPATH_SEARCH_PATHS = "/Users/andrew/ace-lang/bin/src/ace-runtime/RelWithDebInfo";
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG '-std=c++11'  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/RelWithDebInfo/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/RelWithDebInfo/libace-vm.a";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/RelWithDebInfo/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/RelWithDebInfo/libace-vm.a /Users/andrew/ace-lang/bin/src/ace-runtime/RelWithDebInfo/libace-runtime.dylib /Users/andrew/ace-lang/bin/src/ace-vm/RelWithDebInfo/libace-vm.a";
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = ace;
 				SECTORDER_FLAGS = "";
@@ -1256,14 +1231,35 @@ exit 0";
 			};
 			name = RelWithDebInfo;
 		};
-		AC0C14FDD5674456BD40DF3B /* MinSizeRel */ = {
+		7757BA69A63A4FEFBA635121 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LIBTOOLFLAGS = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ace_runtime_EXPORTS);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "@rpath";
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "   -fPIC '-std=c++11'  ";
+				OTHER_LDFLAGS = " -dynamiclib -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-vm/Debug/libace-vm.a";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "ace-runtime";
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-runtime";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
-			name = MinSizeRel;
+			name = Debug;
 		};
-		BEA4FE1688394BEAA3878182 /* MinSizeRel */ = {
+		78DDD0BD1A694EB1B0565D18 /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1280,15 +1276,46 @@ exit 0";
 				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
 				OTHER_LIBTOOLFLAGS = " ";
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "ace-vm";
+				PRODUCT_NAME = "ace-c";
 				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-vm";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-c";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
 			name = MinSizeRel;
 		};
-		CB1D5848964F44AB9989AAD8 /* MinSizeRel */ = {
+		7F4C9BC3F31743A989B2E1CF /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		80021E62F8D7475C81F5C77B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk;
+				SYMROOT = "/Users/andrew/ace-lang/bin/build";
+			};
+			name = Debug;
+		};
+		8874145913AF407B9DFC9FFD /* RelWithDebInfo */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1307,9 +1334,80 @@ exit 0";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
-			name = MinSizeRel;
+			name = RelWithDebInfo;
 		};
-		D25492F47AAF46F5A754AB1B /* Release */ = {
+		8C36F274E8EB4C17BB314C09 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
+				OTHER_LIBTOOLFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "ace-vm";
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-vm";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		906177BD5E5A4168AC8E0E79 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG '-std=c++11'  ";
+				OTHER_LIBTOOLFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "ace-c";
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-c";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		942313384E394F5BAD7F7A85 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		A2E4195C66DD4AA0A0EADF99 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1334,32 +1432,35 @@ exit 0";
 			};
 			name = Release;
 		};
-		D8DF3D8BF1AE4A659F321967 /* MinSizeRel */ = {
+		A9E6CA238216442D9ED6C729 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = s;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ace_runtime_EXPORTS);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
+				INSTALL_PATH = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-c/MinSizeRel/libace-c.a /Users/andrew/ace-lang/bin/src/ace-vm/MinSizeRel/libace-vm.a";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC '-std=c++11'  ";
+				OTHER_LDFLAGS = " -dynamiclib -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-vm/Release/libace-vm.a";
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ace;
+				PRODUCT_NAME = "ace-runtime";
 				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-runtime";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
-			name = MinSizeRel;
+			name = Release;
 		};
-		DAFACC4B8DC44152AF4F20C7 /* MinSizeRel */ = {
+		AA54ED767ED345EC9B561CB7 /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -1369,7 +1470,81 @@ exit 0";
 			};
 			name = MinSizeRel;
 		};
-		E69C1F06588942F482E7F62D /* RelWithDebInfo */ = {
+		DA46628E2FD04D058A26C6ED /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ace_runtime_EXPORTS);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "@rpath";
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG -fPIC '-std=c++11'  ";
+				OTHER_LDFLAGS = " -dynamiclib -Wl,-headerpad_max_install_names  /Users/andrew/ace-lang/bin/src/ace-vm/RelWithDebInfo/libace-vm.a";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "ace-runtime";
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-runtime";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		DE0FE69A4A2647E1B39FABE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CPLUSPLUSFLAGS = "   '-std=c++11'  ";
+				OTHER_LIBTOOLFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "ace-c";
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-c";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		ECF4EAF592C2478AB53F3572 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/andrew/ace-lang/bin";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		EF06913D04954DB3B7868FBA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -1385,31 +1560,6 @@ exit 0";
 				PRODUCT_NAME = ZERO_CHECK;
 				SECTORDER_FLAGS = "";
 				SYMROOT = "/Users/andrew/ace-lang/bin";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = RelWithDebInfo;
-		};
-		F8013D23E9A148FDADFBC603 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = lib;
-				EXECUTABLE_SUFFIX = .a;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = ("/Users/andrew/ace-lang/include");
-				INSTALL_PATH = "";
-				LIBRARY_STYLE = STATIC;
-				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=c++11'  ";
-				OTHER_LIBTOOLFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "ace-vm";
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/andrew/ace-lang/bin/src/ace-vm";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
@@ -1418,79 +1568,79 @@ exit 0";
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1A08B725E5D4442ABAB81D41 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+		0ABDAA2E55E14BEEB77A5391 /* Build configuration list for PBXNativeTarget "ace-vm" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5725E886FFA14EACA432CACD /* Debug */,
-				44F8E52B2D0D4D748B367BAB /* Release */,
-				78688482261F4BAEABB30020 /* MinSizeRel */,
-				6926EAA0AF244C87A1C47FC2 /* RelWithDebInfo */,
+				0922723FA0C84B3D9FED6A02 /* Debug */,
+				8C36F274E8EB4C17BB314C09 /* Release */,
+				23108766AF62483C83281A8B /* MinSizeRel */,
+				0397FEB900AE4A6D8CDF637C /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		2E16AE8444DE4817808F0192 /* Build configuration list for PBXNativeTarget "ace-jit" */ = {
+		181FC54D49A64387BA441E3C /* Build configuration list for PBXNativeTarget "ace" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				7655DD974AFA48C887FBD542 /* Debug */,
-				5444CFB660B74836BD3C4680 /* Release */,
-				AC0C14FDD5674456BD40DF3B /* MinSizeRel */,
-				1CB5FCCE66C64E4DA891CA43 /* RelWithDebInfo */,
+				642788BB986D498D99033A65 /* Debug */,
+				08021D39E4FA4DBC9247DED7 /* Release */,
+				5D4F9B5194B24E539F7A595F /* MinSizeRel */,
+				756B2B30047B4891B76B6CBB /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		78EA7C3AED8148D1AFC86062 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+		7610BFC2D0D7404BB5BD77F1 /* Build configuration list for PBXNativeTarget "ace-c" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				35148A3CF0A945E1BB4113EA /* Debug */,
-				6DD02687AA024EFDA67B254A /* Release */,
-				CB1D5848964F44AB9989AAD8 /* MinSizeRel */,
-				E69C1F06588942F482E7F62D /* RelWithDebInfo */,
+				DE0FE69A4A2647E1B39FABE1 /* Debug */,
+				A2E4195C66DD4AA0A0EADF99 /* Release */,
+				78DDD0BD1A694EB1B0565D18 /* MinSizeRel */,
+				906177BD5E5A4168AC8E0E79 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		81A85BEE92184630AF3056E4 /* Build configuration list for PBXProject "ace-lang" */ = {
+		7B911C1124514E4FA4E256AF /* Build configuration list for PBXProject "ace-lang" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0877CFDCD9F54496B795C325 /* Debug */,
-				0F60D7E480D44233BD26019A /* Release */,
-				DAFACC4B8DC44152AF4F20C7 /* MinSizeRel */,
-				2EAE02A34FB347DF9105CE15 /* RelWithDebInfo */,
+				80021E62F8D7475C81F5C77B /* Debug */,
+				6D581D81EE694A5D807FD86C /* Release */,
+				AA54ED767ED345EC9B561CB7 /* MinSizeRel */,
+				171B60C1109444E48749BBC0 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		BBBAC4557A4D4F6BAF78197F /* Build configuration list for PBXNativeTarget "ace-c" */ = {
+		C91763BA598D4AA0AC1F5ACD /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6018175DB4B64CDA8C423834 /* Debug */,
-				D25492F47AAF46F5A754AB1B /* Release */,
-				204EF589954E4EB3B7C8F917 /* MinSizeRel */,
-				02A0F26C3F5B4A8DB34B8A99 /* RelWithDebInfo */,
+				3A547872D5934516A642EE83 /* Debug */,
+				EF06913D04954DB3B7868FBA /* Release */,
+				57366D93434A4B96B23129D7 /* MinSizeRel */,
+				8874145913AF407B9DFC9FFD /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		F0CD2534F583403989549316 /* Build configuration list for PBXNativeTarget "ace" */ = {
+		E7E5BBC51972454F82EDF0BF /* Build configuration list for PBXNativeTarget "ace-runtime" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6F7FABF8C2B04E2C9E78E9A0 /* Debug */,
-				3585EA847AEC440C89C95745 /* Release */,
-				D8DF3D8BF1AE4A659F321967 /* MinSizeRel */,
-				7C231B3273D44E10A7A85A0F /* RelWithDebInfo */,
+				7757BA69A63A4FEFBA635121 /* Debug */,
+				A9E6CA238216442D9ED6C729 /* Release */,
+				58B9B41B9253496DA8E45940 /* MinSizeRel */,
+				DA46628E2FD04D058A26C6ED /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		F405EDF2B056435E896249FA /* Build configuration list for PBXNativeTarget "ace-vm" */ = {
+		F9C1C52D98DE49C3AB8BE61A /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				12A9D1FDB08F4F48B931F38C /* Debug */,
-				F8013D23E9A148FDADFBC603 /* Release */,
-				BEA4FE1688394BEAA3878182 /* MinSizeRel */,
-				5F4507D0D42C420B833C9DEF /* RelWithDebInfo */,
+				ECF4EAF592C2478AB53F3572 /* Debug */,
+				942313384E394F5BAD7F7A85 /* Release */,
+				52CD8FF1773D44F3BDFD5531 /* MinSizeRel */,
+				7F4C9BC3F31743A989B2E1CF /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

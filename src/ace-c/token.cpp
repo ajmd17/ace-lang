@@ -5,50 +5,28 @@ const Token Token::EMPTY = Token(Token::TokenType::Token_empty, "", SourceLocati
 std::string Token::TokenTypeToString(TokenType type)
 {
     switch (type) {
-    case Token_integer_literal:
-        return "int";
-    case Token_float_literal:
-        return "float";
-    case Token_string_literal:
-        return "string";
-    case Token_identifier:
-        return "identifier";
-    case Token_keyword:
-        return "keyword";
-    case Token_operator:
-        return "operator";
-    case Token_newline:
-        return "newline";
-    case Token_comma:
-        return ",";
-    case Token_semicolon:
-        return ";";
-    case Token_colon:
-        return ":";
-    case Token_dot:
-        return ".";
-    case Token_ellipsis:
-        return "...";
-    case Token_right_arrow:
-        return "->";
-    case Token_open_parenthesis:
-        return "(";
-    case Token_close_parenthesis:
-        return ")";
-    case Token_open_bracket:
-        return "[";
-    case Token_close_bracket:
-        return "]";
-    case Token_open_brace:
-        return "{";
-    case Token_close_brace:
-        return "}";
-    case Token_preprocessor_symbol:
-        return "#";
-    case Token_documentation:
-        return "/**";
-    default:
-        return "??";
+    case Token_integer_literal:     return "integer";
+    case Token_float_literal:       return "float";
+    case Token_string_literal:      return "string";
+    case Token_identifier:          return "identifier";
+    case Token_keyword:             return "keyword";
+    case Token_operator:            return "operator";
+    case Token_newline:             return "newline";
+    case Token_comma:               return ",";
+    case Token_semicolon:           return ";";
+    case Token_colon:               return ":";
+    case Token_dot:                 return ".";
+    case Token_ellipsis:            return "...";
+    case Token_right_arrow:         return "->";
+    case Token_open_parenthesis:    return "(";
+    case Token_close_parenthesis:   return ")";
+    case Token_open_bracket:        return "[";
+    case Token_close_bracket:       return "]";
+    case Token_open_brace:          return "{";
+    case Token_close_brace:         return "}";
+    case Token_preprocessor_symbol: return "#";
+    case Token_documentation:       return "doc-comment";
+    default:                        return "??";
     }
 }
 

@@ -181,6 +181,9 @@ ace-lang_BINARY_DIR:STATIC=/Users/andrew/ace-lang/bin
 //Value Computed by CMake
 ace-lang_SOURCE_DIR:STATIC=/Users/andrew/ace-lang
 
+//Dependencies for the target
+ace-runtime_LIB_DEPENDS:STATIC=general;ace-vm;
+
 //Dependencies for target
 ace-vm_LIB_DEPENDS:STATIC=
 
@@ -314,6 +317,8 @@ ZERO_CHECK_GUID_CMAKE:INTERNAL=063F4CD9C64F44D4AE26A43C
 ace-c_GUID_CMAKE:INTERNAL=8453CBBB4F204881834B4529
 //Stored Xcode object GUID
 ace-jit_GUID_CMAKE:INTERNAL=78D2122C54E04EBFAD168870
+//Stored Xcode object GUID
+ace-runtime_GUID_CMAKE:INTERNAL=DA8911FF512F4E759A159B69
 //Stored Xcode object GUID
 ace-vm_GUID_CMAKE:INTERNAL=37F54568A5C34122BB5AA0F7
 //Stored Xcode object GUID

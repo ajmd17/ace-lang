@@ -87,11 +87,12 @@ Token Lexer::NextToken()
     } else if (ch[0] == '/' && ch[1] == '/') {
         return ReadLineComment();
     } else if (ch[0] == '/' && ch[1] == '*') {
-        if (ch[2] == '*') {
+        return ReadBlockComment();
+        /*if (ch[2] == '*') {
             return ReadDocumentation();
         } else {
             return ReadBlockComment();
-        }
+        }*/
     } else if (ch[0] == '_' || utf32_isalpha(ch[0])) {
         return ReadIdentifier();
     } else if (ch[0] == '-' && ch[1] == '>') {
@@ -390,12 +391,12 @@ Token Lexer::ReadBlockComment()
 
     u32char previous = 0;
     while (HasNext()) {
-        if (m_source_stream.Peek() == (u32char)('/') && previous == (u32char)('*')) {
+        if (m_source_stream.Peek() == (u32char)'/' && previous == (u32char)'*') {
             int pos_change = 0;
             m_source_stream.Next(pos_change);
             m_source_location.GetColumn() += pos_change;
             break;
-        } else if (m_source_stream.Peek() == (u32char)('\n')) {
+        } else if (m_source_stream.Peek() == (u32char)'\n') {
             // just reset column and increment line
             m_source_location.GetColumn() = 0;
             m_source_location.GetLine()++;
@@ -423,11 +424,22 @@ Token Lexer::ReadDocumentation()
 
     u32char previous = 0;
     while (HasNext()) {
-        if (m_source_stream.Peek() == (u32char)('/') && previous == (u32char)('*')) {
+        if (m_source_stream.Peek() == (u32char)'/' && previous == (u32char)'*') {
             int pos_change = 0;
             m_source_stream.Next(pos_change);
             m_source_location.GetColumn() += pos_change;
             break;
+        } else {
+            char ch[4] = {'\0'};
+            utf::char32to8(m_source_stream.Peek(), ch);
+            // append value
+            value += ch;
+            
+            if (m_source_stream.Peek() == (u32char)'\n') {
+                // just reset column and increment line
+                m_source_location.GetColumn() = 0;
+                m_source_location.GetLine()++;
+            }
         }
         int pos_change = 0;
         previous = m_source_stream.Next(pos_change);

@@ -13,7 +13,12 @@ public:
     IdentifierTable(const IdentifierTable &other);
 
     int CountUsedVariables() const;
+    inline void PopIdentifier() { m_identifiers.pop_back(); m_identifier_index--; }
     inline int GetIdentifierIndex() const { return m_identifier_index; }
+    inline std::vector<std::shared_ptr<Identifier>> &GetIdentifiers()
+        { return m_identifiers; }
+    inline const std::vector<std::shared_ptr<Identifier>> &GetIdentifiers() const
+        { return m_identifiers; }
 
     /** Constructs an identifier with the given name, as an alias to the given identifier. */
     Identifier *AddAlias(const std::string &name, Identifier *aliasee);

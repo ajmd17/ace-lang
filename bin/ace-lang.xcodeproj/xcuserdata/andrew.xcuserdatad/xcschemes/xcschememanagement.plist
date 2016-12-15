@@ -24,6 +24,11 @@
 			<key>orderHint</key>
 			<integer>5</integer>
 		</dict>
+		<key>ace-runtime.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>6</integer>
+		</dict>
 		<key>ace-vm.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -73,6 +78,11 @@
 			<true/>
 		</dict>
 		<key>CFA071975ACD451FAF28E084</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DA8911FF512F4E759A159B69</key>
 		<dict>
 			<key>primary</key>
 			<true/>

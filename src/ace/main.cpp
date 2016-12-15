@@ -420,6 +420,18 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
         if (!wait_for_next) {
             // so we can rewind upon errors
             int old_pos = ast_iterator.GetPosition();
+            // store the number of identifiers in the global scope,
+            // so we can remove them on error
+            
+            compilation_unit.m_module_index++;
+            
+            ASSERT(compilation_unit.GetCurrentModule() != nullptr);
+            ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
+            
+            size_t num_identifiers = compilation_unit.GetCurrentModule()->m_scopes.Top()
+                .GetIdentifierTable().GetIdentifiers().size();
+            
+            compilation_unit.m_module_index--;
 
             // send code to be compiled
             SourceFile source_file("<stdin>", line.GetBufferSize());
@@ -553,6 +565,23 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
                     }
                 }
             } else {
+                // remove the identifiers that were since declared
+                compilation_unit.m_module_index++;
+                
+                ASSERT(compilation_unit.GetCurrentModule() != nullptr);
+                ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
+                
+                auto &tbl = compilation_unit.GetCurrentModule()->m_scopes.Top().GetIdentifierTable();
+                auto &idents = tbl.GetIdentifiers();
+                
+                size_t diff = idents.size() - num_identifiers;
+                
+                for (size_t i = 0; i < diff; i++) {
+                    tbl.PopIdentifier();
+                }
+                
+                compilation_unit.m_module_index--;
+                
                 for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
                     ast_iterator.Pop();
                 }

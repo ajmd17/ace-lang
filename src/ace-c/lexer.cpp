@@ -120,10 +120,19 @@ Token Lexer::NextToken()
         m_source_location.GetColumn() += pos_change;
         return Token(Token::TokenType::Token_semicolon, ";", location);
     } else if (ch[0] == ':') {
-        int pos_change = 0;
-        m_source_stream.Next(pos_change);
-        m_source_location.GetColumn() += pos_change;
-        return Token(Token::TokenType::Token_colon, ":", location);
+        if (ch[1] == ':') {
+            for (int i = 0; i < 2; i++) {
+                int pos_change = 0;
+                m_source_stream.Next(pos_change);
+                m_source_location.GetColumn() += pos_change;
+            }
+            return Token(Token::TokenType::Token_double_colon, "::", location);
+        } else {
+            int pos_change = 0;
+            m_source_stream.Next(pos_change);
+            m_source_location.GetColumn() += pos_change;
+            return Token(Token::TokenType::Token_colon, ":", location);
+        }
     } else if (ch[0] == '.') {
         if (ch[1] == '.' && ch[2] == '.') {
             for (int i = 0; i < 3; i++) {

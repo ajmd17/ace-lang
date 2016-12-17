@@ -1,6 +1,9 @@
 #include <ace-vm/type_info.hpp>
 #include <cstring>
 
+namespace ace {
+namespace vm {
+
 TypeInfo::TypeInfo(int size, uint32_t *hashes)
     : m_size(size), m_hashes(new uint32_t[size])
 {
@@ -50,3 +53,6 @@ bool TypeInfo::operator==(const TypeInfo &other) const
 
     return true;
 }
+
+} // namespace vm
+} // namespace ace

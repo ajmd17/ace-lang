@@ -1,17 +1,20 @@
 #include <ace-vm/array.hpp>
 #include <cmath>
 
+namespace ace {
+namespace vm {
+
 Array::Array(int size)
     : m_size(size),
       m_capacity(1 << (unsigned int)std::ceil(std::log(size) / std::log(2.0))),
-      m_buffer(new StackValue[size])
+      m_buffer(new Value[size])
 {
 }
 
 Array::Array(const Array &other)
     : m_size(other.m_size),
       m_capacity(other.m_capacity),
-      m_buffer(new StackValue[other.m_capacity])
+      m_buffer(new Value[other.m_capacity])
 {
     // copy all members
     for (int i = 0; i < m_size; i++) {
@@ -32,7 +35,7 @@ Array &Array::operator=(const Array &other)
 
     m_size = other.m_size;
     m_capacity = other.m_capacity;
-    m_buffer = new StackValue[other.m_capacity];
+    m_buffer = new Value[other.m_capacity];
 
     // copy all objects
     for (int i = 0; i < m_size; i++) {
@@ -42,13 +45,13 @@ Array &Array::operator=(const Array &other)
     return *this;
 }
 
-void Array::Push(const StackValue &value)
+void Array::Push(const Value &value)
 {
     int index = m_size;
     if (index >= m_capacity) {
         // delete and copy all over again
         m_capacity = 1 << (unsigned int)std::ceil(std::log(m_size + 1) / std::log(2.0));
-        StackValue *new_buffer = new StackValue[m_capacity];
+        Value *new_buffer = new Value[m_capacity];
         // copy all objects into new buffer
         for (int i = 0; i < m_size; i++) {
             new_buffer[i] = m_buffer[i];
@@ -69,3 +72,6 @@ void Array::Pop()
 {
     m_size--;
 }
+
+} // namespace vm
+} // namespace ace

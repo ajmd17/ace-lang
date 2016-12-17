@@ -7,6 +7,9 @@
 #include <iostream>
 #include <mutex>
 
+namespace ace {
+namespace vm {
+
 static std::mutex mtx;
 
 VMState::VMState()
@@ -144,3 +147,6 @@ void VMState::DestroyThread(int id)
         m_num_threads--;
     }
 }
+
+} // namespace vm
+} // namespace ace

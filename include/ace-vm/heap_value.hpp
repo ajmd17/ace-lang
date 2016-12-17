@@ -7,6 +7,9 @@
 #include <cstdlib>
 #include <stdio.h>
 
+namespace ace {
+namespace vm {
+
 enum HeapValueFlags {
     GC_MARKED = 0x01,
 };
@@ -101,5 +104,8 @@ private:
     template <typename T> struct Type { static void id() {} };
     template <typename T> static inline size_t GetTypeId() { /*return reinterpret_cast<size_t>(&Type<T>::id);*/ return typeid(T).hash_code(); }
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

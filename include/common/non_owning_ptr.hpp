@@ -10,6 +10,9 @@ public:
         : m_ptr(other.m_ptr) {}
     ~non_owning_ptr() = default;
 
+    inline T *get() { return m_ptr; }
+    inline const T *get() const { return m_ptr; }
+
     inline non_owning_ptr &operator=(const non_owning_ptr &other)
         { m_ptr = other.m_ptr; return *this; }
     inline bool operator==(const non_owning_ptr &other) const

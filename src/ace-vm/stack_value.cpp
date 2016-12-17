@@ -5,24 +5,27 @@
 #include <stdio.h>
 #include <cinttypes>
 
-StackValue::StackValue()
+namespace ace {
+namespace vm {
+
+Value::Value()
     : m_type(HEAP_POINTER)
 {
     // initialize to null reference
     m_value.ptr = nullptr;
 }
 
-StackValue::StackValue(const StackValue &other)
+Value::Value(const Value &other)
     : m_type(other.m_type),
       m_value(other.m_value)
 {
 }
 
-void StackValue::Mark()
+void Value::Mark()
 {
     HeapValue *ptr = m_value.ptr;
     
-    if (m_type == StackValue::HEAP_POINTER && ptr != nullptr && !(ptr->GetFlags() & GC_MARKED)) {
+    if (m_type == Value::HEAP_POINTER && ptr != nullptr && !(ptr->GetFlags() & GC_MARKED)) {
         Object *objptr = nullptr;
         Array *arrayptr = nullptr;
 
@@ -42,14 +45,14 @@ void StackValue::Mark()
     }
 }
 
-utf::Utf8String StackValue::ToString()
+utf::Utf8String Value::ToString()
 {
     const int buf_size = 256;
     char buf[buf_size];
     int n = 0;
 
     switch (m_type) {
-    case StackValue::I32: {
+    case Value::I32: {
         n = snprintf(buf, buf_size, "%d", m_value.i32);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
@@ -58,7 +61,7 @@ utf::Utf8String StackValue::ToString()
         }
         return utf::Utf8String(buf);
     }
-    case StackValue::I64:
+    case Value::I64:
         n = snprintf(buf, buf_size, "%" PRId64, m_value.i64);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
@@ -66,7 +69,7 @@ utf::Utf8String StackValue::ToString()
             return res;
         }
         return utf::Utf8String(buf);
-    case StackValue::F32:
+    case Value::F32:
         n = snprintf(buf, buf_size, "%g", m_value.f);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
@@ -74,7 +77,7 @@ utf::Utf8String StackValue::ToString()
             return res;
         }
         return utf::Utf8String(buf);
-    case StackValue::F64:
+    case Value::F64:
         n = snprintf(buf, buf_size, "%g", m_value.d);
         if (n >= buf_size) {
             utf::Utf8String res((size_t)n);
@@ -82,10 +85,10 @@ utf::Utf8String StackValue::ToString()
             return res;
         }
         return utf::Utf8String(buf);
-    case StackValue::BOOLEAN:
+    case Value::BOOLEAN:
         snprintf(buf, buf_size, "%s", m_value.b ? "true" : "false");
         return utf::Utf8String(buf);
-    case StackValue::HEAP_POINTER:
+    case Value::HEAP_POINTER:
     {
         utf::Utf8String *str = nullptr;
         Object *objptr = nullptr;
@@ -133,3 +136,6 @@ utf::Utf8String StackValue::ToString()
     default: return GetTypeString();
     }
 }
+
+} // namespace vm
+} // namespace ace

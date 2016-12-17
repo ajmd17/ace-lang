@@ -282,6 +282,9 @@
 		<Unit filename="/Users/andrew/ace-lang/src/ace-c/ast/ast_member_access.cpp">
 			<Option target="ace-c"/>
 		</Unit>
+		<Unit filename="/Users/andrew/ace-lang/src/ace-c/ast/ast_module_access.cpp">
+			<Option target="ace-c"/>
+		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace-c/ast/ast_module_declaration.cpp">
 			<Option target="ace-c"/>
 		</Unit>
@@ -432,9 +435,6 @@
 		<Unit filename="/Users/andrew/ace-lang/src/ace-runtime/io.cpp">
 			<Option target="ace-runtime"/>
 		</Unit>
-		<Unit filename="/Users/andrew/ace-lang/src/ace-vm/ace-vm.cpp">
-			<Option target="ace-vm"/>
-		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace-vm/array.cpp">
 			<Option target="ace-vm"/>
 		</Unit>
@@ -448,9 +448,6 @@
 			<Option target="ace-vm"/>
 		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace-vm/heap_value.cpp">
-			<Option target="ace-vm"/>
-		</Unit>
-		<Unit filename="/Users/andrew/ace-lang/src/ace-vm/main.cpp">
 			<Option target="ace-vm"/>
 		</Unit>
 		<Unit filename="/Users/andrew/ace-lang/src/ace-vm/object.cpp">

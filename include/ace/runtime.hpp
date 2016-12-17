@@ -15,7 +15,7 @@ struct Library {
         { return handle == other.handle; }
 
     inline const void *GetHandle() const { return handle; }
-    NativeFunctionPtr_t GetFunction(const char *name);
+    vm::NativeFunctionPtr_t GetFunction(const char *name);
 };
 
 class Runtime {

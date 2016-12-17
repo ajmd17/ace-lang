@@ -35,12 +35,9 @@ std::vector<std::thread> threads;
 
 void Runtime_gc(ace::sdk::Params params)
 {
-    size_t heap_size_before = params.state->GetHeap().Size();
+    ACE_CHECK_ARGS(==, 0);
 
-    if (params.nargs != 0) {
-        params.state->ThrowException(params.thread, Exception::InvalidArgsException(0, params.nargs));
-        return;
-    }
+    size_t heap_size_before = params.state->GetHeap().Size();
 
     params.state->GC();
 
@@ -50,43 +47,38 @@ void Runtime_gc(ace::sdk::Params params)
 
 void Runtime_load_library(ace::sdk::Params params)
 {
-    if (params.nargs != 1) {
-        params.state->ThrowException(params.thread, Exception::InvalidArgsException(1, params.nargs));
-        return;
-    }
+    ACE_CHECK_ARGS(==, 1);
 
-    StackValue *target_ptr = params.args[0];
+    vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
-    Exception e = Exception(utf::Utf8String("load_library() expects a String as the first argument"));
+    vm::Exception e = vm::Exception(utf::Utf8String("load_library() expects a String as the first argument"));
 
-    if (target_ptr->GetType() == StackValue::ValueType::HEAP_POINTER) {
-        utf::Utf8String *strptr = nullptr;
-
+    if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (target_ptr->GetValue().ptr == nullptr) {
-            params.state->ThrowException(params.thread, Exception::NullReferenceException());
-        } else if ((strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) != nullptr) {
+            params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
+        } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
             // load library from string
             Library lib = Runtime::LoadLibrary(strptr->GetData());
 
             if (!lib.GetHandle()) {
                 // could not load library
-                params.state->ThrowException(params.thread, Exception::LibraryLoadException(strptr->GetData()));
+                params.state->ThrowException(params.thread, vm::Exception::LibraryLoadException(strptr->GetData()));
             } else {
                 // store the library in a variable
 
                 // create heap value for the library
-                HeapValue *ptr = params.state->HeapAlloc(params.thread);
-                StackValue &res = params.thread->GetRegisters()[0];
-
+                vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
                 ASSERT(ptr != nullptr);
-
                 // assign it to the library
                 ptr->Assign(lib);
 
+                vm::Value res;
                 // assign register value to the allocated object
-                res.m_type = StackValue::HEAP_POINTER;
+                res.m_type = vm::Value::HEAP_POINTER;
                 res.m_value.ptr = ptr;
+
+                ACE_RETURN(res);
             }
         } else {
             params.state->ThrowException(params.thread, e);
@@ -98,42 +90,41 @@ void Runtime_load_library(ace::sdk::Params params)
 
 void Runtime_load_function(ace::sdk::Params params)
 {
-    if (params.nargs != 2) {
-        params.state->ThrowException(params.thread, Exception::InvalidArgsException(2, params.nargs));
-        return;
-    }
+    ACE_CHECK_ARGS(==, 2);
 
-    StackValue *arg0 = params.args[0];
+    vm::Value *arg0 = params.args[0];
     ASSERT(arg0 != nullptr);
 
-    StackValue *arg1 = params.args[1];
+    vm::Value *arg1 = params.args[1];
     ASSERT(arg1 != nullptr);
 
-    Exception e = Exception(utf::Utf8String("load_function() expects arguments of type Library and String"));
+    vm::Exception e = vm::Exception(utf::Utf8String("load_function() expects arguments of type Library and String"));
 
     Library *libptr = nullptr;
     utf::Utf8String *strptr = nullptr;
 
-    if (arg0->GetType() == StackValue::ValueType::HEAP_POINTER) {
+    if (arg0->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (arg0->GetValue().ptr == nullptr) {
-            params.state->ThrowException(params.thread, Exception::NullReferenceException());
+            params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
         } else if ((libptr = arg0->GetValue().ptr->GetPointer<Library>()) == nullptr) {
             params.state->ThrowException(params.thread, e);
         } else {
-            if (arg1->GetType() == StackValue::ValueType::HEAP_POINTER) {
+            if (arg1->GetType() == vm::Value::ValueType::HEAP_POINTER) {
                 if (arg1->GetValue().ptr == nullptr) {
-                    params.state->ThrowException(params.thread, Exception::NullReferenceException());
+                    params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
                 } else if ((strptr = arg1->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
                     params.state->ThrowException(params.thread, e);
                 } else {
-                    NativeFunctionPtr_t func = libptr->GetFunction(strptr->GetData());
+                    auto func = libptr->GetFunction(strptr->GetData());
                     if (!func) {
                         // could not load function from the library
-                        params.state->ThrowException(params.thread, Exception::LibraryFunctionLoadException(strptr->GetData()));
+                        params.state->ThrowException(params.thread, vm::Exception::LibraryFunctionLoadException(strptr->GetData()));
                     } else {
-                        StackValue &res = params.thread->GetRegisters()[0];
-                        res.m_type = StackValue::NATIVE_FUNCTION;
+                        vm::Value res;
+                        res.m_type = vm::Value::NATIVE_FUNCTION;
                         res.m_value.native_func = func;
+
+                        ACE_RETURN(res);
                     }
                 }
             } else {
@@ -147,56 +138,50 @@ void Runtime_load_function(ace::sdk::Params params)
 
 void Global_to_string(ace::sdk::Params params)
 {
-    if (params.nargs != 1) {
-        params.state->ThrowException(params.thread, Exception::InvalidArgsException(1, params.nargs));
-        return;
-    }
+    ACE_CHECK_ARGS(==, 1);
 
     // create heap value for string
-    HeapValue *ptr = params.state->HeapAlloc(params.thread);
-    StackValue &res = params.thread->GetRegisters()[0];
-    
+    vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
     ASSERT(ptr != nullptr);
-
     ptr->Assign(params.args[0]->ToString());
+
+    vm::Value res;
     // assign register value to the allocated object
-    res.m_type = StackValue::HEAP_POINTER;
+    res.m_type = vm::Value::HEAP_POINTER;
     res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
 }
 
 void Global_length(ace::sdk::Params params)
 {
-    if (params.nargs != 1) {
-        params.state->ThrowException(params.thread,
-            Exception::InvalidArgsException(1, params.nargs));
-        return;
-    }
+    ACE_CHECK_ARGS(==, 1);
 
     int len = 0;
 
-    StackValue *target_ptr = params.args[0];
+    vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
     const int buffer_size = 256;
     char buffer[buffer_size];
     std::snprintf(buffer, buffer_size, "length() is undefined for type '%s'",
         target_ptr->GetTypeString());
-    Exception e = Exception(utf::Utf8String(buffer));
+    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
 
-    if (target_ptr->GetType() == StackValue::ValueType::HEAP_POINTER) {
+    if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         utf::Utf8String *strptr = nullptr;
-        Array *arrayptr = nullptr;
-        Object *objptr = nullptr;
+        vm::Array *arrayptr = nullptr;
+        vm::Object *objptr = nullptr;
         
         if (target_ptr->GetValue().ptr == nullptr) {
-            params.state->ThrowException(params.thread, Exception::NullReferenceException());
+            params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
         } else if ((strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // get length of string
             len = strptr->GetLength();
-        } else if ((arrayptr = target_ptr->GetValue().ptr->GetPointer<Array>()) != nullptr) {
+        } else if ((arrayptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
             // get length of array
             len = arrayptr->GetSize();
-        } else if ((objptr = target_ptr->GetValue().ptr->GetPointer<Object>()) != nullptr) {
+        } else if ((objptr = target_ptr->GetValue().ptr->GetPointer<vm::Object>()) != nullptr) {
             // get number of members in object
             len = objptr->GetSize();
         } else {
@@ -206,38 +191,62 @@ void Global_length(ace::sdk::Params params)
         params.state->ThrowException(params.thread, e);
     }
 
-    StackValue &res = params.thread->GetRegisters()[0];
-
+    vm::Value res;
     // assign register value to the length
-    res.m_type = StackValue::I32;
+    res.m_type = vm::Value::I32;
     res.m_value.i32 = len;
+
+    ACE_RETURN(res);
+}
+
+void Global_call(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(>=, 1);
+
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    vm::Value target(*target_ptr);
+
+    const int buffer_size = 256;
+    char buffer[buffer_size];
+    std::snprintf(buffer, buffer_size, "call() is undefined for type '%s'",
+        target_ptr->GetTypeString());
+    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
+
+    // the position of the bytecode stream before thread execution
+    size_t pos = params.state->GetBytecodeStream()->Position();
+
+    if (target.GetType() == vm::Value::ValueType::FUNCTION ||
+        target.GetType() == vm::Value::ValueType::NATIVE_FUNCTION) {
+        // call the function
+        params.state->m_vm->Invoke(params.thread, params.state->GetBytecodeStream().get(), target, params.nargs - 1);
+    } else {
+        params.state->ThrowException(params.thread, e);
+    }
 }
 
 void Global_spawn_thread(ace::sdk::Params params)
 {
-    if (params.nargs < 1) {
-        params.state->ThrowException(params.thread,
-            Exception::InvalidArgsException(1, params.nargs));
-        return;
-    }
+    ACE_CHECK_ARGS(>=, 1);
 
-    StackValue *target_ptr = params.args[0];
+    vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
-    StackValue target(*target_ptr);
+    vm::Value target(*target_ptr);
 
     const int buffer_size = 256;
     char buffer[buffer_size];
     std::snprintf(buffer, buffer_size, "spawn_thread() is undefined for type '%s'",
         target_ptr->GetTypeString());
-    Exception e = Exception(utf::Utf8String(buffer));
+    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
 
     // the position of the bytecode stream before thread execution
     size_t pos = params.state->GetBytecodeStream()->Position();
 
-    if (target.GetType() == StackValue::ValueType::FUNCTION) {
+    if (target.GetType() == vm::Value::ValueType::FUNCTION) {
         // create the thread
-        ExecutionThread *new_thread = params.state->CreateThread();
+        vm::ExecutionThread *new_thread = params.state->CreateThread();
         ASSERT(new_thread != nullptr);
 
         // copy values to the new stack
@@ -251,7 +260,7 @@ void Global_spawn_thread(ace::sdk::Params params)
             ASSERT(params.state->GetBytecodeStream() != nullptr);
 
             // create copy of byte stream
-            BytecodeStream bs = *params.state->GetBytecodeStream();
+            vm::BytecodeStream bs = *params.state->GetBytecodeStream();
             bs.SetPosition(pos);
 
             // keep track of function depth so we can
@@ -290,7 +299,7 @@ static void LexLine(const utf::Utf8String &line, TokenStream &token_stream)
     lex.Analyze();
 }
 
-static int RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_time, int pos=0)
+static int RunBytecodeFile(vm::VM *vm, const utf::Utf8String &filename, bool record_time, int pos=0)
 {
     ASSERT(vm != nullptr);
 
@@ -313,9 +322,9 @@ static int RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_
     file.read(bytecodes, bytecode_size);
     file.close();
 
-    BytecodeStream bytecode_stream(non_owning_ptr<char>(bytecodes), (size_t)bytecode_size, pos);
+    vm::BytecodeStream bytecode_stream(non_owning_ptr<char>(bytecodes), (size_t)bytecode_size, pos);
 
-    vm->GetState().SetBytecodeStream(non_owning_ptr<BytecodeStream>(&bytecode_stream));
+    vm->GetState().SetBytecodeStream(non_owning_ptr<vm::BytecodeStream>(&bytecode_stream));
 
     // time how long execution took
     auto start = std::chrono::high_resolution_clock::now();
@@ -340,7 +349,7 @@ static int RunBytecodeFile(VM *vm, const utf::Utf8String &filename, bool record_
     return 0;
 }
 
-static int REPL(VM *vm, CompilationUnit &compilation_unit,
+static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
     const utf::Utf8String &template_code, bool first_time = true)
 {
     AstIterator ast_iterator;
@@ -498,7 +507,7 @@ static int REPL(VM *vm, CompilationUnit &compilation_unit,
                     if (bytecode_file_size - file_pos > 0) {
 
                         ASSERT(vm->GetState().GetNumThreads() > 0);
-                        ExecutionThread *main_thread = vm->GetState().m_threads[0];
+                        vm::ExecutionThread *main_thread = vm->GetState().m_threads[0];
                         ASSERT(main_thread != nullptr);
 
                         // store stack size so that we can revert on error
@@ -618,38 +627,38 @@ int main(int argc, char *argv[])
 {
     utf::init();
 
-    VM vm;
+    vm::VM vm;
     CompilationUnit compilation_unit;
     APIInstance api;
 
-    api.Module("Runtime")
+    api.Module("runtime")
         .Function("gc", ObjectType::type_builtin_void, {}, Runtime_gc)
         .Function("load_library", ObjectType::type_builtin_any, {}, Runtime_load_library)
         .Function("load_function", ObjectType::type_builtin_any, {}, Runtime_load_function)
-        .Variable("version", ObjectType::type_builtin_string, [](VMState *state, ExecutionThread *thread, StackValue *out) {
+        .Variable("version", ObjectType::type_builtin_any, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
             // allocate heap value
-            HeapValue *hv = state->HeapAlloc(thread);
+            vm::HeapValue *hv = state->HeapAlloc(thread);
 
             ASSERT(hv != nullptr);
 
             // create each version object
-            StackValue sv_major;
-            sv_major.m_type = StackValue::I32;
+            vm::Value sv_major;
+            sv_major.m_type = vm::Value::ValueType::I32;
             sv_major.m_value.i32 = Runtime::VERSION_MAJOR;
 
-            StackValue sv_minor;
-            sv_minor.m_type = StackValue::I32;
+            vm::Value sv_minor;
+            sv_minor.m_type = vm::Value::ValueType::I32;
             sv_minor.m_value.i32 = Runtime::VERSION_MINOR;
 
-            StackValue sv_patch;
-            sv_patch.m_type = StackValue::I32;
+            vm::Value sv_patch;
+            sv_patch.m_type = vm::Value::ValueType::I32;
             sv_patch.m_value.i32 = Runtime::VERSION_PATCH;
 
             // create array
-            Array res(3);
+            vm::Array res(3);
             res.AtIndex(0) = sv_major;
             res.AtIndex(1) = sv_minor;
             res.AtIndex(2) = sv_patch;
@@ -658,13 +667,14 @@ int main(int argc, char *argv[])
             hv->Assign(res);
 
             // assign the out value to this
-            out->m_type = StackValue::HEAP_POINTER;
+            out->m_type = vm::Value::ValueType::HEAP_POINTER;
             out->m_value.ptr = hv;
         });
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
         .Function("to_string", ObjectType::type_builtin_string, {}, Global_to_string)
         .Function("length", ObjectType::type_builtin_int, {}, Global_length)
+        .Function("call", ObjectType::type_builtin_any, {}, Global_call)
         .Function("spawn_thread", ObjectType::type_builtin_void, {}, Global_spawn_thread);
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
@@ -682,7 +692,7 @@ int main(int argc, char *argv[])
         // do not cull unused objects
         ace::compiler::Config::cull_unused_objects = false;
 
-        REPL(&vm, compilation_unit, "module repl    // to exit, type `quit`\n");
+        REPL(&vm, compilation_unit, "module repl    // type 'quit' to exit\n");
 
     } else if (argc >= 2) {
         enum {

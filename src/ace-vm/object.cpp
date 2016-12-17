@@ -1,6 +1,9 @@
 #include <ace-vm/object.hpp>
 #include <cstring>
 
+namespace ace {
+namespace vm {
+
 Object::Object(int size, uint32_t *hashes)
     : m_size(size),
       m_members(new Member[size])
@@ -56,3 +59,6 @@ Member *Object::LookupMemberFromHash(uint32_t hash) const
 
     return nullptr;
 }
+
+} // namespace vm
+} // namespace ace

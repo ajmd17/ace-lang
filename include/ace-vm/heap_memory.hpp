@@ -5,6 +5,9 @@
 
 #include <ostream>
 
+namespace ace {
+namespace vm {
+
 struct HeapNode {
     HeapValue value;
     HeapNode *before = nullptr;
@@ -31,5 +34,8 @@ private:
     HeapNode *m_head;
     size_t m_num_objects;
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

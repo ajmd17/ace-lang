@@ -3,7 +3,9 @@
 
 #include <ace-c/configuration.hpp>
 #include <ace-c/compilation_unit.hpp>
-#include <ace-vm/ace-vm.hpp>
+
+#include <ace-vm/stack_value.hpp>
+#include <ace-vm/vm.hpp>
 
 #include <string>
 #include <vector>
@@ -15,12 +17,12 @@ public:
     struct NativeVariableDefine {
         std::string name;
         ObjectType type;
-        NativeInitializerPtr_t initializer_ptr;
+        vm::NativeInitializerPtr_t initializer_ptr;
 
         NativeVariableDefine(
             const std::string &name,
             const ObjectType &type,
-            NativeInitializerPtr_t initializer_ptr)
+            vm::NativeInitializerPtr_t initializer_ptr)
             : name(name),
               type(type),
               initializer_ptr(initializer_ptr)
@@ -39,13 +41,13 @@ public:
         std::string function_name;
         ObjectType return_type;
         std::vector<ObjectType> param_types;
-        NativeFunctionPtr_t ptr;
+        vm::NativeFunctionPtr_t ptr;
 
         NativeFunctionDefine(
             const std::string &function_name,
             const ObjectType &return_type,
             const std::vector<ObjectType> &param_types,
-            NativeFunctionPtr_t ptr)
+            vm::NativeFunctionPtr_t ptr)
             : function_name(function_name),
               return_type(return_type),
               param_types(param_types),
@@ -70,12 +72,12 @@ public:
 
         TypeDefine &Member(const std::string &member_name,
             const ObjectType &member_type,
-            NativeInitializerPtr_t ptr);
+            vm::NativeInitializerPtr_t ptr);
 
         TypeDefine &Method(const std::string &method_name,
             const ObjectType &return_type,
             const std::vector<ObjectType> &param_types,
-            NativeFunctionPtr_t ptr);
+            vm::NativeFunctionPtr_t ptr);
     };
 
     struct ModuleDefine {
@@ -89,24 +91,24 @@ public:
 
         ModuleDefine &Variable(const std::string &variable_name,
             const ObjectType &variable_type,
-            NativeInitializerPtr_t ptr);
+            vm::NativeInitializerPtr_t ptr);
 
         ModuleDefine &Function(const std::string &function_name,
             const ObjectType &return_type,
             const std::vector<ObjectType> &param_types,
-            NativeFunctionPtr_t ptr);
+            vm::NativeFunctionPtr_t ptr);
 
-        void BindAll(VM *vm, CompilationUnit *compilation_unit);
+        void BindAll(vm::VM *vm, CompilationUnit *compilation_unit);
 
     private:
         void BindNativeVariable(const NativeVariableDefine &def,
-            VM *vm, CompilationUnit *compilation_unit);
+            vm::VM *vm, CompilationUnit *compilation_unit);
 
         void BindNativeFunction(const NativeFunctionDefine &def,
-            VM *vm, CompilationUnit *compilation_unit);
+            vm::VM *vm, CompilationUnit *compilation_unit);
 
         void BindType(const TypeDefine &def,
-            VM *vm, CompilationUnit *compilation_unit);
+            vm::VM *vm, CompilationUnit *compilation_unit);
     };
 };
 
@@ -118,7 +120,7 @@ public:
 
     API::ModuleDefine &Module(const std::string &name);
 
-    void BindAll(VM *vm, CompilationUnit *compilation_unit);
+    void BindAll(vm::VM *vm, CompilationUnit *compilation_unit);
 
 private:
     std::vector<API::ModuleDefine> m_module_defs;

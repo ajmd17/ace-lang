@@ -45,68 +45,57 @@ a_float AstTrue::FloatValue() const
     return 1.0f;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator+(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator+(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator-(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator-(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator*(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator*(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator/(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator/(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator%(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator%(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator^(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator^(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator&(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator|(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator|(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator<<(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator<<(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator>>(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator>>(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator&&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator&&(AstConstant *right) const
 {
     int right_true = right->IsTrue();
     if (right_true == 1) {
@@ -118,8 +107,7 @@ std::shared_ptr<AstConstant> AstTrue::operator&&(
     }
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator||(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::operator||(AstConstant *right) const
 {
     return std::shared_ptr<AstTrue>(new AstTrue(m_location));
 }

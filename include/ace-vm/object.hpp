@@ -5,9 +5,12 @@
 
 #include <cstdint>
 
+namespace ace {
+namespace vm {
+
 struct Member {
     uint32_t hash;
-    StackValue value;
+    Value value;
 };
 
 class Object {
@@ -29,5 +32,8 @@ private:
     int m_size;
     Member *m_members;
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

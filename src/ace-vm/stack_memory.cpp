@@ -1,9 +1,12 @@
 #include <ace-vm/stack_memory.hpp>
 
+namespace ace {
+namespace vm {
+
 const uint16_t Stack::stack_size = 20000;
 
 Stack::Stack()
-    : m_data(new StackValue[stack_size]),
+    : m_data(new Value[stack_size]),
       m_sp(0)
 {
 }
@@ -29,3 +32,6 @@ void Stack::MarkAll()
         m_data[i].Mark();
     }
 }
+
+} // namespace vm
+} // namespace ace

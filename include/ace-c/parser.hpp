@@ -24,6 +24,7 @@
 #include <ace-c/ast/ast_unary_expression.hpp>
 #include <ace-c/ast/ast_function_call.hpp>
 #include <ace-c/ast/ast_variable.hpp>
+#include <ace-c/ast/ast_module_access.hpp>
 #include <ace-c/ast/ast_member_access.hpp>
 #include <ace-c/ast/ast_array_access.hpp>
 #include <ace-c/ast/ast_true.hpp>
@@ -78,6 +79,7 @@ private:
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier();
     std::shared_ptr<AstFunctionCall> ParseFunctionCall();
+    std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstTrue> ParseTrue();

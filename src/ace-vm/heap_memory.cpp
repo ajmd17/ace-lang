@@ -1,6 +1,9 @@
 #include <ace-vm/heap_memory.hpp>
 #include <iostream>
 
+namespace ace {
+namespace vm {
+
 std::ostream &operator<<(std::ostream &os, const Heap &heap)
 {
     HeapNode *tmp_head = heap.m_head;
@@ -95,3 +98,6 @@ void Heap::Sweep()
         }
     }
 }
+
+} // namespace vm
+} // namespace ace

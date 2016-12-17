@@ -3,6 +3,9 @@
 
 #include <common/my_assert.hpp>
 
+namespace ace {
+namespace vm {
+
 class TypeInfo {
 public:
     TypeInfo(int size, uint32_t *hashes);
@@ -21,5 +24,8 @@ private:
     int m_size;
     uint32_t *m_hashes;
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

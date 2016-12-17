@@ -9,15 +9,19 @@
 #include <stdexcept>
 #include <cstdint>
 
+namespace ace {
+namespace vm {
+
 // forward declarations
-struct StackValue;
+struct Value;
 struct VMState;
 struct ExecutionThread;
 
+// native typedefs
 typedef void(*NativeFunctionPtr_t)(ace::sdk::Params);
-typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, StackValue*);
+typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, Value*);
 
-struct StackValue {
+struct Value {
     enum ValueType {
         /* These first four types are listed in order of precedence */
         I32,
@@ -54,11 +58,11 @@ struct StackValue {
         } try_catch_info;
     } m_value;
 
-    StackValue();
-    explicit StackValue(const StackValue &other);
+    Value();
+    explicit Value(const Value &other);
 
-    inline StackValue::ValueType GetType() const { return m_type; }
-    inline StackValue::ValueData GetValue() const { return m_value; }
+    inline Value::ValueType GetType() const { return m_type; }
+    inline Value::ValueData GetValue() const { return m_value; }
 
     void Mark();
     utf::Utf8String ToString();
@@ -87,5 +91,8 @@ struct StackValue {
         }
     }
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

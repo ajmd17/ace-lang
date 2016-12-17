@@ -1,5 +1,8 @@
 #include <ace-vm/heap_value.hpp>
 
+namespace ace {
+namespace vm {
+
 HeapValue::HeapValue()
     : m_holder(nullptr),
       m_ptr(nullptr),
@@ -13,3 +16,6 @@ HeapValue::~HeapValue()
         delete m_holder;
     }
 }
+
+} // namespace vm
+} // namespace ace

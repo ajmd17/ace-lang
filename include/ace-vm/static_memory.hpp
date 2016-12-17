@@ -6,6 +6,9 @@
 
 #include <utility>
 
+namespace ace {
+namespace vm {
+
 class StaticMemory {
 public:
     static const uint16_t static_size;
@@ -18,28 +21,31 @@ public:
     /** Delete everything in static memory */
     void Purge();
 
-    inline StackValue &operator[](size_t index)
+    inline Value &operator[](size_t index)
     {
         ASSERT_MSG(index < static_size, "out of bounds");
         return m_data[index];
     }
 
-    inline const StackValue &operator[](size_t index) const
+    inline const Value &operator[](size_t index) const
     {
         ASSERT_MSG(index < static_size, "out of bounds");
         return m_data[index];
     }
 
     // move a value to static memory
-    inline void Store(StackValue &&value)
+    inline void Store(Value &&value)
     {
         ASSERT_MSG(m_sp < static_size, "not enough static memory");
         m_data[m_sp++] = std::move(value);
     }
 
 private:
-    StackValue *m_data;
+    Value *m_data;
     size_t m_sp;
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

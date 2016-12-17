@@ -5,6 +5,7 @@
 #include <ace-c/ast/ast_integer.hpp>
 #include <ace-c/ast/ast_true.hpp>
 #include <ace-c/ast/ast_false.hpp>
+#include <ace-c/ast/ast_module_access.hpp>
 #include <ace-c/ast/ast_member_access.hpp>
 #include <ace-c/ast/ast_array_access.hpp>
 #include <ace-c/operator.hpp>
@@ -138,11 +139,19 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
             }
 
             AstVariable *left_as_var = nullptr;
-            // check member access first
-            AstMemberAccess *left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get());
-            if (left_as_mem != nullptr) {
+
+            if (auto *left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get())) {
                 AstIdentifier *last = left_as_mem->GetLast().get();
                 left_as_var = dynamic_cast<AstVariable*>(last);
+            } else if (auto *left_as_mod = dynamic_cast<AstModuleAccess*>(m_left.get())) {
+                AstModuleAccess *target = left_as_mod;
+                // loop until null or found
+                while (left_as_var == nullptr && target != nullptr) {
+                    if (!(left_as_var = dynamic_cast<AstVariable*>(target->GetExpression().get()))) {
+                        // check if rhs of module access is also a module access
+                        target = dynamic_cast<AstModuleAccess*>(target->GetExpression().get());
+                    }
+                }
             } else {
                 left_as_var = dynamic_cast<AstVariable*>(m_left.get());
             }
@@ -747,17 +756,30 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             AstVariable *left_as_var = nullptr;
-            AstMemberAccess *left_as_mem = nullptr;
-            AstArrayAccess *left_as_array = nullptr;
+
             if ((left_as_var = dynamic_cast<AstVariable*>(m_left.get())) != nullptr && left_as_var->GetIdentifier() != nullptr) {
                 // we are storing the rhs into the left,
                 // so change access mode to store.
                 left_as_var->SetAccessMode(ACCESS_MODE_STORE);
                 left_as_var->Build(visitor, mod);
-            } else if ((left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get())) != nullptr) {
+            } else if (auto *left_as_mod = dynamic_cast<AstModuleAccess*>(m_left.get())) {
+                AstModuleAccess *target = left_as_mod;
+                // loop until null or found
+                while (left_as_var == nullptr && target != nullptr) {
+                    if (!(left_as_var = dynamic_cast<AstVariable*>(target->GetExpression().get()))) {
+                        // check if rhs of module access is also a module access
+                        target = dynamic_cast<AstModuleAccess*>(target->GetExpression().get());
+                    }
+                }
+
+                if (left_as_var) {
+                    left_as_var->SetAccessMode(ACCESS_MODE_STORE);
+                    left_as_var->Build(visitor, mod);
+                }
+            } else if (auto *left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get())) {
                 left_as_mem->SetAccessMode(ACCESS_MODE_STORE);
                 left_as_mem->Build(visitor, mod);
-            } else if ((left_as_array = dynamic_cast<AstArrayAccess*>(m_left.get())) != nullptr) {
+            } else if (auto *left_as_array = dynamic_cast<AstArrayAccess*>(m_left.get())) {
                 left_as_array->SetAccessMode(ACCESS_MODE_STORE);
                 left_as_array->Build(visitor, mod);
             }

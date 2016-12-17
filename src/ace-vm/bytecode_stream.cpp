@@ -1,5 +1,8 @@
 #include <ace-vm/bytecode_stream.hpp>
 
+namespace ace {
+namespace vm {
+
 BytecodeStream::BytecodeStream()
     : m_buffer(non_owning_ptr<char>()),
       m_size(0),
@@ -30,3 +33,6 @@ BytecodeStream &BytecodeStream::operator=(const BytecodeStream &other)
 
     return *this;
 }
+
+} // namespace vm
+} // namespace ace

@@ -15,6 +15,7 @@ std::string Token::TokenTypeToString(TokenType type)
     case Token_comma:               return ",";
     case Token_semicolon:           return ";";
     case Token_colon:               return ":";
+    case Token_double_colon:        return "::";
     case Token_dot:                 return ".";
     case Token_ellipsis:            return "...";
     case Token_right_arrow:         return "->";

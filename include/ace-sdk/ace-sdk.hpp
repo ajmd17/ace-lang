@@ -13,18 +13,36 @@
 
 #define ACE_FUNCTION(name) ACE_EXPORT void name(ace::sdk::Params params)
 
+#define ACE_CHECK_ARGS(cmp, amt) \
+    do { \
+        if (!(params.nargs cmp amt)) { \
+            params.state->ThrowException(params.thread, \
+                ace::vm::Exception::InvalidArgsException((#cmp != "==") ? (#cmp " " #amt) : (#amt), params.nargs)); \
+            return; \
+        } \
+    } while (false)
+
+#define ACE_RETURN(value) \
+    do { \
+        params.thread->GetRegisters()[0] = value; \
+        return; \
+    } while (false)
+
+namespace ace {
+
+namespace vm {
 // forward declarations
 struct VMState;
 struct ExecutionThread;
-struct StackValue;
+struct Value;
+} // namespace vm
 
-namespace ace {
 namespace sdk {
 
 struct Params {
-    VMState* state;
-    ExecutionThread* thread;
-    StackValue** args;
+    vm::VMState* state;
+    vm::ExecutionThread* thread;
+    vm::Value** args;
     int nargs;
 };
 

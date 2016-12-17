@@ -3,6 +3,9 @@
 
 #include <ace-vm/stack_value.hpp>
 
+namespace ace {
+namespace vm {
+
 class Array {
 public:
     Array(int size = 0);
@@ -13,16 +16,19 @@ public:
     inline bool operator==(const Array &other) const { return this == &other; }
 
     inline int GetSize() const { return m_size; }
-    inline StackValue &AtIndex(int index) { return m_buffer[index]; }
-    inline const StackValue &AtIndex(int index) const { return m_buffer[index]; }
+    inline Value &AtIndex(int index) { return m_buffer[index]; }
+    inline const Value &AtIndex(int index) const { return m_buffer[index]; }
 
-    void Push(const StackValue &value);
+    void Push(const Value &value);
     void Pop();
 
 private:
     int m_size;
     int m_capacity;
-    StackValue *m_buffer;
+    Value *m_buffer;
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

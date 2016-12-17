@@ -13,6 +13,8 @@
 
 namespace ace {
 
+using namespace vm;
+
 static Module *GetModule(CompilationUnit *compilation_unit, const std::string &module_name)
 {
     Module *mod = nullptr;
@@ -156,8 +158,8 @@ void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
     ExecutionThread *main_thread = vm->GetState().m_threads[0];
 
     // create the object that will be stored
-    StackValue obj;
-    obj.m_type = StackValue::HEAP_POINTER;
+    Value obj;
+    obj.m_type = Value::HEAP_POINTER;
     obj.m_value.ptr = nullptr;
 
     // call the initializer

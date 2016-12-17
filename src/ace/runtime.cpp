@@ -25,13 +25,13 @@ const int Runtime::VERSION_PATCH = 1;
 
 std::vector<Library> Runtime::libs = {};
 
-NativeFunctionPtr_t Library::GetFunction(const char *name)
+vm::NativeFunctionPtr_t Library::GetFunction(const char *name)
 {
     void *ptr = LOAD_LIB_FUNC(handle, name);
     if (!ptr) {
         return nullptr;
     }
-    return (NativeFunctionPtr_t)ptr;
+    return (vm::NativeFunctionPtr_t)ptr;
 }
 
 Library Runtime::LoadLibrary(const char *path)

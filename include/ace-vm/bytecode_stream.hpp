@@ -5,6 +5,9 @@
 
 #include <common/non_owning_ptr.hpp>
 
+namespace ace {
+namespace vm {
+
 class BytecodeStream {
 public:
     BytecodeStream();
@@ -38,5 +41,8 @@ private:
     size_t m_size;
     size_t m_position;
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

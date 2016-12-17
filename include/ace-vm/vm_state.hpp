@@ -14,14 +14,17 @@
 #define VM_MAX_THREADS 8
 #define VM_NUM_REGISTERS 8
 
+namespace ace {
+namespace vm {
+
 // forward declaration
 class VM;
 
 struct Registers {
-    StackValue m_reg[VM_NUM_REGISTERS];
+    Value m_reg[VM_NUM_REGISTERS];
     int m_flags = 0;
 
-    inline StackValue &operator[](uint8_t index) { return m_reg[index]; }
+    inline Value &operator[](uint8_t index) { return m_reg[index]; }
     inline void ResetFlags() { m_flags = 0; }
 };
 
@@ -90,11 +93,15 @@ struct VMState {
 
     inline Heap &GetHeap() { return m_heap; }
     inline StaticMemory &GetStaticMemory() { return m_static_memory; }
+    inline non_owning_ptr<BytecodeStream> &GetBytecodeStream() { return m_bs; }
     inline const non_owning_ptr<BytecodeStream> &GetBytecodeStream() const { return m_bs; }
     inline void SetBytecodeStream(const non_owning_ptr<BytecodeStream> &bs) { m_bs = bs; }
 
 private:
     int m_num_threads = 0;
 };
+
+} // namespace vm
+} // namespace ace
 
 #endif

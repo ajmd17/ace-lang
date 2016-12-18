@@ -8,5 +8,7 @@ foreach(f IN LISTS ace_SOURCES)
     COMPILE_DEFINITIONS "__FILENAME__=${b}")
 endforeach()
 
+find_package(Threads)
+
 add_executable(ace ${ace_SOURCES})
-target_link_libraries(ace ace-c ace-vm ace-runtime)
+target_link_libraries(ace ace-c ace-vm ace-runtime ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT})

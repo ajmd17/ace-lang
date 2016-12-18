@@ -14,7 +14,7 @@ AstFunctionCall::AstFunctionCall(const std::string &name,
     const SourceLocation &location)
     : AstIdentifier(name, location),
       m_args(args),
-      m_return_type(ObjectType::type_builtin_undefined),
+      m_return_type(ObjectType::type_builtin_any),
       m_has_self_object(false)
 {
 }

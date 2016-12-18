@@ -1,0 +1,16 @@
+module io
+
+open: Any
+write: Any
+close: Any
+
+stdout: Any
+
+{
+  lf = runtime::load_function
+  lib = runtime::load_library('acelib/lib/libace-runtime.so')
+  open = lf(lib,'io_open')
+  write = lf(lib,'io_write')
+  close = lf(lib, 'io_close')
+  stdout = call(lf(lib, 'io_get_stdout'))
+}

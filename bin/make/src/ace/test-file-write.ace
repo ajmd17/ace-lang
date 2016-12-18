@@ -1,0 +1,14 @@
+module test
+import 'acelib/io'
+
+// test writing to file
+testfile = io::open('test.txt', 'w+')
+
+i = 0
+while i < 1000 {
+  io::write(testfile, 'this is loop number ', i, '\n')
+  i += 1
+}
+
+io::close(testfile)
+  

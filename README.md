@@ -3,6 +3,9 @@
 Ace is a dynamic programming language created in C++. 
 It features optional typing and is inspired by languages such as C++, JavaScript, Rust and Ruby.
 
+Statements in Ace do not require semicolons. 
+Don't use them unless you have to keep multiple statements on the same line (in which case, you should consider changing the code to be clearer anyway).
+
 ## Building
 
 Ace is set up with CMake, so you can just go into the 'build' directory and run the command `cmake ../src` to generate makefiles or project files.
@@ -33,6 +36,24 @@ module ace_example
 
 This `module` declaration will allow you to use your code from other files, using the syntax: `ace_example::some_global_variable`.
 
+In the near future, I will be adding the ability to create multiple modules within the same file.
+This will allow you to pack a whole library into one file for easy distribution.
+It will probably look like this:
+
+```
+module some_module {
+    // ...
+    // some code here
+    // ...
+}
+
+module other_module {
+    // ...
+    // some code for other module here
+    // ...
+}
+```
+
 #### Hello World
 
 Now that we've created our module 'ace_example', let's make it print something to the screen.
@@ -50,3 +71,36 @@ The print statement can also take multiple arguments, using commas:
 ```
 print 'Hello ', 'World'
 ```
+
+#### Variables
+
+Variables can be declared within a module, function, or any other block of code.
+Examples:
+* `let x = 5` will create a variable named `x` with a value of `5`. The type of `x` will be `Int`, which cannot be changed to a different type once it is created. Another way to write it is by manually telling the type of `x`, by writing it like this: `let x: Int = 5`.
+* `let x: Any = 5` will do the same thing as the code above, except for the fact that the type of `x` will be able to change to whatever you want, meaning the code `x = 'Hello'` is perfectly valid.
+* Alternatively, you can omit the `let` portion of the declaration. This is new functionality and may end up becoming the default. The only problem is you _must_ manually tell the type of the variable. It looks like this: `x: Int`.
+* To combat the above problem with having to write out the type of the variable, I added 'lazy declarations', which work the same way that declarations work in Python. Simply writing `x = 5` will do one of two things:
+  * If `x` is already declared, it will set `x` to have a value of `5`.
+  * If `x` has not been declared, it will declare it with the type `Int` and set it to have a value of `5`.
+
+When you create a variable, it will be set to the type of whatever you assign it to. If not, you must manually enter the type you want it to be after the `:` character. To let a variable be able to be fluid between types, you must manually tell it to be `Any`.
+
+Now that that's out of the way, let's see some example code!
+
+```
+b: Int       // creates 'b' (will be set to 0 by default)
+
+a = 5        // creates 'a' and sets it to be 5
+b = 10       // sets 'b' which was already declared to 10
+
+print a      // prints out the number 5
+print a + b  // prints out the number 15
+
+// a = 'Hello'    ERROR: cannot change the type from 'Int' to 'String'
+c: Any = 100  // creates 'c' and sets it to be 100
+
+print c       // prints out the number 100
+
+c = 'Hello, again'
+
+print c       // prints 'Hello, again' onto the screen

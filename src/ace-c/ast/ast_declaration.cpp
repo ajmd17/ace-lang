@@ -23,17 +23,7 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
         compilation_unit->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_redeclared_identifier, m_location, m_name));
     } else {
-        bool found_module = false;
-        // check all modules for one with the same name
-        for (const auto &it : visitor->GetCompilationUnit()->m_modules) {
-            if (it != nullptr && it->GetName() == m_name) {
-                // module with name found
-                found_module = true;
-                break;
-            }
-        }
-
-        if (found_module) {
+        if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_redeclared_identifier_module, m_location, m_name));
         } else {

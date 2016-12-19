@@ -71,7 +71,8 @@ private:
 
     int OperatorPrecedence(const Operator *&out);
 
-    std::shared_ptr<AstStatement> ParseStatement();
+    std::shared_ptr<AstStatement> ParseStatement(bool top_level = false);
+    std::shared_ptr<AstModuleDeclaration> ParseModuleDeclaration();
     std::shared_ptr<AstExpression> ParseTerm();
     std::shared_ptr<AstExpression> ParseParentheses();
     std::shared_ptr<AstInteger> ParseIntegerLiteral();

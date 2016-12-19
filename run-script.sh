@@ -1,9 +1,16 @@
 #!/bin/sh
-#go to the bin directory here
-cd bin
-#compile the source
-./ace-c test2.ace
-#run the vm
-./ace-vm out.bin
-#go back
-cd ../
+
+# create build folder
+mkdir -p build
+
+# go to build folder
+cd build
+
+# generate makefiles
+cmake ../src
+
+# run make
+make
+
+# go back
+cd ..

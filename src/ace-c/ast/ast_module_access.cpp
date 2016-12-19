@@ -25,17 +25,8 @@ AstModuleAccess::AstModuleAccess(const std::string &target,
 
 void AstModuleAccess::Visit(AstVisitor *visitor, Module *mod)
 {
-    // check all modules for one with the same name
-    for (int i = 0; i < visitor->GetCompilationUnit()->m_modules.size(); i++) {
-        auto &current = visitor->GetCompilationUnit()->m_modules[i];
-        if (current != nullptr && current->GetName() == m_target) {
-            // module with name found
-            m_mod_access = current.get();
-            break;
-        }
-    }
-
-    if (m_mod_access) {
+    // check modules for one with the same name
+    if ((m_mod_access = visitor->GetCompilationUnit()->LookupModule(m_target).get())) {
         m_expr->Visit(visitor, m_mod_access);
     } else {
         CompilerError err(Level_fatal, Msg_unknown_module, m_location, m_target);

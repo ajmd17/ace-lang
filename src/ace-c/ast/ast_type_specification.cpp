@@ -38,26 +38,13 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
             }
         } else {
             // module access type
-            Module *left_mod = nullptr;
+            if (Module *left_mod = visitor->GetCompilationUnit()->LookupModule(m_left).get()) {
+                // accept the right-hand side
+                m_right->Visit(visitor, left_mod);
 
-            // check if left is a module name
-            for (int i = 0; i < visitor->GetCompilationUnit()->m_modules.size(); i++) {
-                auto &found_mod = visitor->GetCompilationUnit()->m_modules[i];
-                if (found_mod != nullptr && found_mod->GetName() == m_left) {
-
-                    // module with name found
-                    left_mod = found_mod.get();
-                    // accept the right-hand side
-                    m_right->Visit(visitor, left_mod);
-
-                    // set m_object_type to be the right hand's calculated one
-                    m_object_type = m_right->GetObjectType();
-
-                    return;
-                }
-            }
-
-            if (left_mod == nullptr) {
+                // set m_object_type to be the right hand's calculated one
+                m_object_type = m_right->GetObjectType();
+            } else {
                 // did not find module
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
                     CompilerError(Level_fatal, Msg_unknown_module, m_location, m_left));

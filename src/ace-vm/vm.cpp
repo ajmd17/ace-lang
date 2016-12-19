@@ -18,7 +18,7 @@
 namespace ace {
 namespace vm {
 
-static ::std::mutex mtx;
+static std::mutex mtx;
 
 VM::VM()
 {
@@ -730,10 +730,20 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         // push a copy of the register value to the top of the stack
         thread->m_stack.Push(thread->m_regs[reg]);
+
         break;
     }
     case POP: {
         thread->m_stack.Pop();
+
+        break;
+    }
+    case POP_N: {
+        uint8_t n;
+        bs->Read(&n);
+
+        thread->m_stack.Pop(n);
+
         break;
     }
     case PUSH_ARRAY: {
@@ -912,15 +922,15 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         // allocate heap object
         HeapValue *hv = m_state.HeapAlloc(thread);
-        if (hv != nullptr) {
-            // create the Object from the info type_ptr provides us with.
-            hv->Assign(Object(type_ptr->GetSize(), type_ptr->GetHashes()));
+        ASSERT(hv != nullptr);
+        
+        // create the Object from the info type_ptr provides us with.
+        hv->Assign(Object(type_ptr->GetSize(), type_ptr->GetHashes()));
 
-            // assign register value to the allocated object
-            Value &sv = thread->m_regs[dst];
-            sv.m_type = Value::HEAP_POINTER;
-            sv.m_value.ptr = hv;
-        }
+        // assign register value to the allocated object
+        Value &sv = thread->m_regs[dst];
+        sv.m_type = Value::HEAP_POINTER;
+        sv.m_value.ptr = hv;
 
         break;
     }
@@ -933,14 +943,14 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         // allocate heap object
         HeapValue *hv = m_state.HeapAlloc(thread);
-        if (hv != nullptr) {
-            hv->Assign(Array(size));
+        ASSERT(hv != nullptr);
 
-            // assign register value to the allocated object
-            Value &sv = thread->m_regs[dst];
-            sv.m_type = Value::HEAP_POINTER;
-            sv.m_value.ptr = hv;
-        }
+        hv->Assign(Array(size));
+
+        // assign register value to the allocated object
+        Value &sv = thread->m_regs[dst];
+        sv.m_type = Value::HEAP_POINTER;
+        sv.m_value.ptr = hv;
 
         break;
     }

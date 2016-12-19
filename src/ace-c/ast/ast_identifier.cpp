@@ -23,7 +23,7 @@ void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
 
     // if the identifier was not found,
     // look in the global module to see if it is a global function.
-    if (m_identifier == nullptr) {
+    if (!m_identifier) {
         m_identifier = visitor->GetCompilationUnit()->
             GetGlobalModule()->LookUpIdentifier(m_name, false);
     }
@@ -31,24 +31,16 @@ void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
 
 void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
 {
-    if (m_identifier == nullptr) {
+    if (!m_identifier) {
         PerformLookup(visitor, mod);
     }
-
-    if (m_identifier == nullptr) {
+    
+    if (!m_identifier) {
         // not found by PerformLookup() so check for module names
         // here's where we'll add the errors
-        bool found_module = false;
-        // check all modules for one with the same name
-        for (const auto &it : visitor->GetCompilationUnit()->m_modules) {
-            if (it != nullptr && it->GetName() == m_name) {
-                // module with name found
-                found_module = true;
-                break;
-            }
-        }
 
-        if (found_module) {
+        // check if identifier is a module
+        if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_identifier_is_module, m_location, m_name));
         } else {
@@ -61,7 +53,7 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
 
     m_depth = 0;
     TreeNode<Scope> *top = mod->m_scopes.TopNode();
-    while (top != nullptr) {
+    while (top) {
         m_depth++;
         if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
             m_in_function = true;
@@ -73,7 +65,7 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
 
 ObjectType AstIdentifier::GetObjectType() const
 {
-    if (m_identifier != nullptr) {
+    if (m_identifier) {
         return m_identifier->GetObjectType();
     }
     return ObjectType::type_builtin_undefined;

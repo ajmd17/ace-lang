@@ -17,10 +17,10 @@ struct TreeNode {
 
     ~TreeNode()
     {
-        for (int i = 0; i < m_children.size(); i++) {
-            if (m_children[i] != nullptr) {
-                delete m_children[i];
-                m_children[i] = nullptr;
+        for (int i = 0; i < m_siblings.size(); i++) {
+            if (m_siblings[i]) {
+                delete m_siblings[i];
+                m_siblings[i] = nullptr;
             }
         }
     }
@@ -33,14 +33,14 @@ struct TreeNode {
         ss << m_value << "\n";
 
         indent_level++;
-        for (int i = 0; i < m_children.size(); i++) {
-            m_children[i]->PrintToStream(ss, indent_level);
+        for (int i = 0; i < m_siblings.size(); i++) {
+            m_siblings[i]->PrintToStream(ss, indent_level);
         }
         indent_level--;
     }
 
     TreeNode<T> *m_parent = nullptr;
-    std::vector<TreeNode<T>*> m_children;
+    std::vector<TreeNode<T>*> m_siblings;
     T m_value;
 };
 
@@ -62,11 +62,18 @@ public:
     }
 
 public:
-    Tree()
+    Tree() 
         : m_top(nullptr)
     {
         // open root
         Open(T());
+    }
+
+    Tree(const T &root) 
+        : m_top(nullptr)
+    {
+        // open root
+        Open(root);
     }
 
     ~Tree()
@@ -76,19 +83,17 @@ public:
 
         // first in, first out
         for (int i = m_nodes.size() - 1; i >= 0; i--) {
-            if (m_nodes[i] != nullptr) {
+            if (m_nodes[i]) {
                 delete m_nodes[i];
             }
         }
     }
 
-    inline TreeNode<T> *TopNode() {
-        return m_top;
-    }
+    inline std::vector<TreeNode<T>*> &GetNodes() { return m_nodes; }
+    inline const std::vector<TreeNode<T>*> &GetNodes() const { return m_nodes; }
 
-    inline const TreeNode<T> *TopNode() const {
-        return m_top;
-    }
+    inline TreeNode<T> *TopNode() { return m_top; }
+    inline const TreeNode<T> *TopNode() const { return m_top; }
 
     inline T &Top()
     {
@@ -106,13 +111,29 @@ public:
         return m_top->m_value;
     }
 
+    inline T &Root()
+    {
+        if (m_nodes.empty()) {
+            throw std::runtime_error("no root value");
+        }
+        return m_nodes.front()->m_value;
+    }
+
+    inline const T &Root() const
+    {
+        if (m_nodes.empty()) {
+            throw std::runtime_error("no root value");
+        }
+        return m_nodes.front()->m_value;
+    }
+
     void Open(const T &value)
     {
         TreeNode<T> *node = new TreeNode<T>(value);
         node->m_parent = m_top;
 
-        if (m_top != nullptr) {
-            m_top->m_children.push_back(node);
+        if (m_top) {
+            m_top->m_siblings.push_back(node);
         } else {
             m_nodes.push_back(node);
         }
@@ -122,7 +143,7 @@ public:
 
     void Close()
     {
-        if (m_top == nullptr) {
+        if (!m_top) {
             throw std::runtime_error("already closed!");
         }
 

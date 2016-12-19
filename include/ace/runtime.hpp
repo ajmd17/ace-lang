@@ -24,6 +24,8 @@ public:
     static const int VERSION_MINOR;
     static const int VERSION_PATCH;
 
+    static const char *OS_NAME;
+
 public:
     static Library LoadLibrary(const char *path);
     static void UnloadLibraries();

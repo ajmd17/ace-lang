@@ -8,6 +8,7 @@
 #include <locale>
 
 namespace str_util {
+
 inline std::string strip_extension(const std::string &filename) {
     auto pos = filename.find_last_of(".");
     if (pos == std::string::npos) {

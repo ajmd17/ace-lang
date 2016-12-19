@@ -71,8 +71,11 @@ enum Instructions : char {
     HAS_MEM_HASH, // has_mem_hash [% reg, % src, u32 hash]
 
     /* Push a value from register to the stack */
-    PUSH, // push [% src]
-    POP,  // pop
+    PUSH,  // push [% src]
+    /* Pop stack once */
+    POP,   // pop
+    /* Pop stack n amount of times */
+    POP_N, // pop_n [u8 n]
 
     /* Push a value to the array in %dst_array */
     PUSH_ARRAY, // push_array [% dst_array, % src]

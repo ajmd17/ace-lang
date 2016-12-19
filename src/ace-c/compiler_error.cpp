@@ -50,6 +50,8 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_module_not_imported, "module '%' was not imported" },
     { Msg_identifier_is_module, "'%' is the name of a module, expected an identifier" },
     { Msg_invalid_module_access, "'%' is a module, expected an identifier or function call" },
+    { Msg_statement_outside_module, "statement outside of module" },
+    { Msg_module_declared_in_block, "a module may not be declared within a conditional, loop or function" },
     { Msg_could_not_open_file, "could not open file '%'" },
     { Msg_import_outside_global, "import not allowed outside of global scope" },
     { Msg_import_current_file, "attempt to import current file" },

@@ -3,10 +3,10 @@
 namespace ace {
 namespace vm {
 
-const uint16_t Stack::stack_size = 20000;
+const uint16_t Stack::STACK_SIZE = 20000;
 
 Stack::Stack()
-    : m_data(new Value[stack_size]),
+    : m_data(new Value[STACK_SIZE]),
       m_sp(0)
 {
 }

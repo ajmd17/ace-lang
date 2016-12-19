@@ -56,7 +56,7 @@ void Optimizer::Optimize(bool expect_module_decl)
             auto first_statement = m_ast_iterator->Next();
             auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
 
-            if (module_declaration != nullptr) {
+            if (module_declaration) {
                 // all files must begin with a module declaration
                 module_declaration->Optimize(this, nullptr);
                 OptimizeInner();
@@ -69,14 +69,8 @@ void Optimizer::Optimize(bool expect_module_decl)
 
 void Optimizer::OptimizeInner()
 {
-    m_compilation_unit->m_module_index++;
-
-    Module *mod = m_compilation_unit->m_modules[m_compilation_unit->m_module_index].get();
-
+    Module *mod = m_compilation_unit->GetCurrentModule().get();
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Optimize(this, mod);
     }
-
-    // decrement the index to refer to the previous module
-    m_compilation_unit->m_module_index--;
 }

@@ -1,12 +1,14 @@
 #include <ace-c/ast/ast_function_call.hpp>
 #include <ace-c/ast/ast_function_expression.hpp>
+#include <ace-c/compiler.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/ast/ast_constant.hpp>
 #include <ace-c/emit/instruction.hpp>
 
 #include <common/instructions.hpp>
-
 #include <common/my_assert.hpp>
+
+#include <limits>
 #include <iostream>
 
 AstFunctionCall::AstFunctionCall(const std::string &name,
@@ -113,11 +115,8 @@ void AstFunctionCall::BuildArgumentsStart(AstVisitor *visitor, Module *mod)
 
 void AstFunctionCall::BuildArgumentsEnd(AstVisitor *visitor, Module *mod)
 {
-    for (int i = 0; i < m_args.size(); i++) {
-        // pop arguments from stack
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
-    }
+    // pop arguments from stack
+    Compiler::PopStack(visitor, m_args.size());
 }
 
 void AstFunctionCall::Build(AstVisitor *visitor, Module *mod)

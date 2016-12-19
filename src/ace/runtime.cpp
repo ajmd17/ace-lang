@@ -23,6 +23,17 @@ const int Runtime::VERSION_MAJOR = 0;
 const int Runtime::VERSION_MINOR = 1;
 const int Runtime::VERSION_PATCH = 1;
 
+const char *Runtime::OS_NAME = 
+#ifdef _WIN32
+"Windows";
+#elif __APPLE__
+"Mac";
+#elif __linux__
+"Linux";
+#else
+"Unknown";
+#endif
+
 std::vector<Library> Runtime::libs = {};
 
 vm::NativeFunctionPtr_t Library::GetFunction(const char *name)

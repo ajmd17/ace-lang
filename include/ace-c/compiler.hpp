@@ -2,6 +2,7 @@
 #define COMPILER_HPP
 
 #include <ace-c/ast_visitor.hpp>
+#include <common/my_assert.hpp>
 
 class Compiler : public AstVisitor {
 public:
@@ -36,6 +37,11 @@ public:
         and the result is computed.
     */
     static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ExprInfo info);
+    /** Pops from the stack N times. If N is greater than 1,
+        the POP_N instruction is generated. Otherwise, the POP
+        instruction is generated.
+    */
+    static void PopStack(AstVisitor *visitor, int amt);
 
 public:
     Compiler(AstIterator *ast_iterator, CompilationUnit *compilation_unit);

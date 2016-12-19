@@ -17,31 +17,26 @@ using namespace vm;
 
 static Module *GetModule(CompilationUnit *compilation_unit, const std::string &module_name)
 {
-    Module *mod = nullptr;
-
-    for (std::unique_ptr<Module> &it : compilation_unit->m_modules) {
-        if (it->GetName() == module_name) {
-            mod = it.get();
-            break;
-        }
+    if (Module *mod = compilation_unit->LookupModule(module_name).get()) {
+        return mod;
     }
 
-    if (!mod) {
-        // add this module to the compilation unit
-        std::unique_ptr<Module> this_module(new Module(module_name, SourceLocation::eof));
-        compilation_unit->m_modules.push_back(std::move(this_module));
-        compilation_unit->m_module_index++;
-        mod = compilation_unit->m_modules.back().get();
-    }
+    // add this module to the compilation unit
+    compilation_unit->m_module_tree.Open(
+        std::shared_ptr<Module>(new Module(module_name, SourceLocation::eof)));
 
-    return mod;
+    return compilation_unit->m_module_tree.Top().get();
+
+    //std::unique_ptr<Module> this_module(new Module(module_name, SourceLocation::eof));
+    //compilation_unit->m_modules.push_back(std::move(this_module));
+    //compilation_unit->m_module_index++;
+    //mod = compilation_unit->m_modules.back().get();
 }
 
 static Identifier *CreateIdentifier(CompilationUnit *compilation_unit,
     const std::string &module_name, const std::string &name)
 {
     Module *mod = GetModule(compilation_unit, module_name);
-
     ASSERT(mod != nullptr);
 
     // get global scope

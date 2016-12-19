@@ -794,6 +794,27 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
 
             break;
         }
+        case POP_N:
+        {
+            uint8_t n;
+            m_bs.Read(&n);
+
+            if (os != nullptr) {
+                os->setf(std::ios::hex, std::ios::basefield);
+                (*os) << is.GetPosition() << "\t";
+                os->unsetf(std::ios::hex);
+
+                (*os)
+                    << "pop_n ["
+                    << "u8(" << (int)n << ")"
+                    << "]"
+                    << std::endl;
+            }
+
+            is << Instruction<uint8_t>(code);
+
+            break;
+        }
         case PUSH_ARRAY:
         {
             uint8_t dst;

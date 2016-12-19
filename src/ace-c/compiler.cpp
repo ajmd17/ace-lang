@@ -190,6 +190,27 @@ void Compiler::LoadLeftAndStore(AstVisitor *visitor, Module *mod, Compiler::Expr
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
 }
 
+void Compiler::PopStack(AstVisitor *visitor, int amt)
+{
+    if (amt == 1) {
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t>(POP);
+    } else {
+        for (int i = 0; i < amt;) {
+            int j = 0;
+            while (j < std::numeric_limits<uint8_t>::max() && i < amt) {
+                j++, i++;
+            }
+            
+            if (j > 0) {
+                ASSERT(j <= std::numeric_limits<uint8_t>::max());
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t>(POP_N, (uint8_t)j);
+            }
+        }
+    }
+}
+
 Compiler::Compiler(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
     : AstVisitor(ast_iterator, compilation_unit)
 {
@@ -207,7 +228,7 @@ void Compiler::Compile(bool expect_module_decl)
             auto first_statement = m_ast_iterator->Next();
             auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
 
-            if (module_declaration != nullptr) {
+            if (module_declaration) {
                 // all files must begin with a module declaration
                 module_declaration->Build(this, nullptr);
                 CompileInner();
@@ -220,14 +241,8 @@ void Compiler::Compile(bool expect_module_decl)
 
 void Compiler::CompileInner()
 {
-    m_compilation_unit->m_module_index++;
-
-    Module *mod = m_compilation_unit->m_modules[m_compilation_unit->m_module_index].get();
-
+    Module *mod = m_compilation_unit->GetCurrentModule().get();
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Build(this, mod);
     }
-
-    // decrement the index to refer to the previous module
-    m_compilation_unit->m_module_index--;
 }

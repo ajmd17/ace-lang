@@ -62,6 +62,8 @@ enum ErrorMessage {
     Msg_module_already_defined,
     Msg_module_not_imported,
     Msg_invalid_module_access,
+    Msg_statement_outside_module,
+    Msg_module_declared_in_block,
     Msg_could_not_open_file,
     Msg_identifier_is_module,
     Msg_import_outside_global,
@@ -92,7 +94,7 @@ class CompilerError {
     static const std::map<ErrorMessage, std::string> error_message_strings;
 
 public:
-    template <typename ... Args>
+    template <typename...Args>
     CompilerError(ErrorLevel level, ErrorMessage msg,
         const SourceLocation &location, const Args &...args)
         : m_level(level),

@@ -885,11 +885,8 @@ std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaratio
             }
 
             // check all modules for one with the same name
-            for (const auto &it : visitor->GetCompilationUnit()->m_modules) {
-                if (it != nullptr && it->GetName() == var_name) {
-                    // module with name found, return false.
-                    return nullptr;
-                }
+            if (visitor->GetCompilationUnit()->LookupModule(var_name)) {
+                return nullptr;
             }
 
             return std::shared_ptr<AstVariableDeclaration>(

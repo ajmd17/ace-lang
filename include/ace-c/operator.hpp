@@ -67,9 +67,9 @@ public:
     Operator(const Operator &other) = delete;
 
     inline const std::string &ToString() const { return m_str; }
+    inline int GetType() const { return m_type; }
     inline int GetPrecedence() const { return m_precedence; }
     inline bool IsUnary() const { return m_precedence == 0; }
-    inline int GetType() const { return m_type; }
     inline bool ModifiesValue() const { return m_modifies_value; }
 
 private:

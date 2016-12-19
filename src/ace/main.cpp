@@ -33,6 +33,8 @@ std::mutex mtx;
 // all cpp threads
 std::vector<std::thread> threads;
 
+std::string exec_path;
+
 void Runtime_gc(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 0);
@@ -59,7 +61,7 @@ void Runtime_load_library(ace::sdk::Params params)
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
         } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
             // load library from string
-            Library lib = Runtime::LoadLibrary(strptr->GetData());
+            Library lib = Runtime::LoadLibrary((utf::Utf8String(exec_path.c_str()) + *strptr).GetData());
 
             if (!lib.GetHandle()) {
                 // could not load library
@@ -380,10 +382,10 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
         lex.Analyze();
 
         Parser parser(&ast_iterator, &token_stream, &compilation_unit);
-        parser.Parse(true);
+        parser.Parse(false);
 
         SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
-        semantic_analyzer.Analyze(true);
+        semantic_analyzer.Analyze(false);
     }
 
     utf::Utf8String line;
@@ -432,15 +434,11 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
             // store the number of identifiers in the global scope,
             // so we can remove them on error
             
-            compilation_unit.m_module_index++;
-            
             ASSERT(compilation_unit.GetCurrentModule() != nullptr);
             ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
             
             size_t num_identifiers = compilation_unit.GetCurrentModule()->m_scopes.Top()
                 .GetIdentifierTable().GetIdentifiers().size();
-            
-            compilation_unit.m_module_index--;
 
             // send code to be compiled
             SourceFile source_file("<stdin>", line.GetBufferSize());
@@ -575,8 +573,6 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                 }
             } else {
                 // remove the identifiers that were since declared
-                compilation_unit.m_module_index++;
-                
                 ASSERT(compilation_unit.GetCurrentModule() != nullptr);
                 ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
                 
@@ -584,12 +580,9 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                 auto &idents = tbl.GetIdentifiers();
                 
                 size_t diff = idents.size() - num_identifiers;
-                
                 for (size_t i = 0; i < diff; i++) {
                     tbl.PopIdentifier();
                 }
-                
-                compilation_unit.m_module_index--;
                 
                 for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
                     ast_iterator.Pop();
@@ -618,14 +611,18 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
     return 0;
 }
 
-void OnExit() {
-    utf::cout << ("exited\n");
-    utf::cout.flush();
-}
-
 int main(int argc, char *argv[])
 {
     utf::init();
+
+    if (argc >= 1) {
+        exec_path = argv[0];
+        // trim the exec name
+        size_t index = exec_path.find_last_of("/\\");
+        if (index != std::string::npos) {
+            exec_path = exec_path.substr(0, index) + "/";
+        }
+    }
 
     vm::VM vm;
     CompilationUnit compilation_unit;
@@ -669,6 +666,24 @@ int main(int argc, char *argv[])
             // assign the out value to this
             out->m_type = vm::Value::ValueType::HEAP_POINTER;
             out->m_value.ptr = hv;
+        })
+        .Variable("os_name", ObjectType::type_builtin_string, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+            ASSERT(state != nullptr);
+            ASSERT(out != nullptr);
+
+            // allocate heap value
+            vm::HeapValue *hv = state->HeapAlloc(thread);
+            ASSERT(hv != nullptr);
+
+            // create string and set to to hold the name
+            utf::Utf8String res = Runtime::OS_NAME;
+
+            // assign heap value to array
+            hv->Assign(res);
+
+            // assign the out value to this
+            out->m_type = vm::Value::ValueType::HEAP_POINTER;
+            out->m_value.ptr = hv;
         });
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
@@ -692,7 +707,7 @@ int main(int argc, char *argv[])
         // do not cull unused objects
         ace::compiler::Config::cull_unused_objects = false;
 
-        REPL(&vm, compilation_unit, "module repl    // type 'quit' to exit\n");
+        REPL(&vm, compilation_unit, "// type 'quit' to exit\n");
 
     } else if (argc >= 2) {
         enum {

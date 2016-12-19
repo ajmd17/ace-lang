@@ -11,7 +11,7 @@ namespace vm {
 
 class Stack {
 public:
-    static const uint16_t stack_size;
+    static const uint16_t STACK_SIZE;
 
 public:
     Stack();
@@ -29,13 +29,13 @@ public:
 
     inline Value &operator[](size_t index)
     {
-        ASSERT_MSG(index < stack_size, "out of bounds");
+        ASSERT_MSG(index < STACK_SIZE, "out of bounds");
         return m_data[index];
     }
 
     inline const Value &operator[](size_t index) const
     {
-        ASSERT_MSG(index < stack_size, "out of bounds");
+        ASSERT_MSG(index < STACK_SIZE, "out of bounds");
         return m_data[index];
     }
 
@@ -56,7 +56,7 @@ public:
     // push a value to the stack
     inline void Push(const Value &value)
     {
-        ASSERT_MSG(m_sp < stack_size, "stack overflow");
+        ASSERT_MSG(m_sp < STACK_SIZE, "stack overflow");
         m_data[m_sp++] = value;
     }
 
@@ -65,6 +65,13 @@ public:
     {
         ASSERT_MSG(m_sp > 0, "stack underflow");
         m_sp--;
+    }
+
+    // pop top n value(s) from the stack
+    inline void Pop(int n)
+    {
+        ASSERT_MSG(m_sp - n >= 0, "stack underflow");
+        m_sp -= n;
     }
 
 private:

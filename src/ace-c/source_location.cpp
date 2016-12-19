@@ -21,12 +21,10 @@ bool SourceLocation::operator<(const SourceLocation &other) const
     if (m_filename == other.m_filename) {
         if (m_line == other.m_line) {
             return m_column < other.m_column;
-        } else {
-            return m_line < other.m_line;
         }
-    } else {
-        return m_filename < other.m_filename;
+        return m_line < other.m_line;
     }
+    return m_filename < other.m_filename;
 }
 
 bool SourceLocation::operator==(const SourceLocation &other) const

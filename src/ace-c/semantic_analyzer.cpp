@@ -2,6 +2,8 @@
 #include <ace-c/ast/ast_module_declaration.hpp>
 #include <ace-c/module.hpp>
 
+#include <common/my_assert.hpp>
+
 SemanticAnalyzer::SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
     : AstVisitor(ast_iterator, compilation_unit)
 {
@@ -19,7 +21,7 @@ void SemanticAnalyzer::Analyze(bool expect_module_decl)
             auto first_statement = m_ast_iterator->Next();
             auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
 
-            if (module_declaration != nullptr) {
+            if (module_declaration) {
                 // all files must begin with a module declaration
                 module_declaration->Visit(this, nullptr);
                 AnalyzerInner();
@@ -32,10 +34,8 @@ void SemanticAnalyzer::Analyze(bool expect_module_decl)
 
 void SemanticAnalyzer::AnalyzerInner()
 {
-    m_compilation_unit->m_module_index++;
-
-    Module *mod = m_compilation_unit->m_modules[m_compilation_unit->m_module_index].get();
-
+    Module *mod = m_compilation_unit->GetCurrentModule().get();
+    
     // visit all built-in objects defined
     for (auto &decl : m_decls) {
         decl->Visit(this, mod);
@@ -44,7 +44,4 @@ void SemanticAnalyzer::AnalyzerInner()
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Visit(this, mod);
     }
-
-    // decrement the index to refer to the previous module
-    m_compilation_unit->m_module_index--;
 }

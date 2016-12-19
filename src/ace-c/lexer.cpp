@@ -246,7 +246,10 @@ Token Lexer::ReadStringLiteral()
     while (true) {
         m_source_location.GetColumn() += pos_change;
 
-        if (ch == (u32char)'\n' || !HasNext()) {
+        if (ch == delim) {
+            // end of string
+            break;
+        } else if (ch == (u32char)'\n' || !HasNext()) {
             // unterminated string literal
             m_compilation_unit->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_unterminated_string_literal,
@@ -258,9 +261,6 @@ Token Lexer::ReadStringLiteral()
                 m_source_location.GetLine()++;
             }
 
-            break;
-        } else if (ch == delim) {
-            // end of string
             break;
         }
 

@@ -22,21 +22,6 @@ typedef void(*NativeFunctionPtr_t)(ace::sdk::Params);
 typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, Value*);
 
 struct Value {
-    enum ValueType {
-        /* These first four types are listed in order of precedence */
-        I32,
-        I64,
-        F32,
-        F64,
-
-        BOOLEAN,
-        HEAP_POINTER,
-        FUNCTION,
-        NATIVE_FUNCTION,
-        ADDRESS,
-        TRY_CATCH_INFO
-    } m_type;
-
     union ValueData {
         int32_t i32;
         int64_t i64;
@@ -58,6 +43,21 @@ struct Value {
         } try_catch_info;
     } m_value;
 
+    enum ValueType {
+        /* These first four types are listed in order of precedence */
+        I32,
+        I64,
+        F32,
+        F64,
+
+        BOOLEAN,
+        HEAP_POINTER,
+        FUNCTION,
+        NATIVE_FUNCTION,
+        ADDRESS,
+        TRY_CATCH_INFO
+    } m_type;
+
     Value();
     explicit Value(const Value &other);
 
@@ -70,24 +70,15 @@ struct Value {
     inline const char *GetTypeString() const
     {
         switch (m_type) {
-        case I32:
-            return "Int32";
-        case I64:
-            return "Int64";
-        case F32:
-            return "Float32";
-        case F64:
-            return "Float64";
-        case BOOLEAN:
-            return "Boolean";
-        case HEAP_POINTER:
-            return "Object";
-        case FUNCTION:
-            return "Function";
-        case NATIVE_FUNCTION:
-            return "NativeFunction";
-        default:
-            return "??";
+        case I32: return "Int32";
+        case I64: return "Int64";
+        case F32: return "Float32";
+        case F64: return "Float64";
+        case BOOLEAN: return "Boolean";
+        case HEAP_POINTER: return "Object";
+        case FUNCTION: return "Function";
+        case NATIVE_FUNCTION: return "NativeFunction";
+        default: return "??";
         }
     }
 };

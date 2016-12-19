@@ -180,38 +180,56 @@ void Parser::SkipStatementTerminators()
 void Parser::Parse(bool expect_module_decl)
 {
     if (expect_module_decl) {
-        std::shared_ptr<AstModuleDeclaration> module_ast;
+        if (std::shared_ptr<AstModuleDeclaration> module_ast = ParseModuleDeclaration()) {
+            m_ast_iterator->Push(module_ast);
+            
+            while (m_token_stream->HasNext()) {
+                if (Match(Token::TokenType::Token_semicolon, true) ||
+                    Match(Token::TokenType::Token_newline, true)) {
+                    continue;
+                }
 
-        // all source code files must start with module declaration
-        const Token module_decl = ExpectKeyword(Keyword_module, true);
-        if (module_decl) {
-            const Token module_name = Expect(Token::TokenType::Token_identifier, true);
-            if (module_name) {
-                module_ast.reset(new AstModuleDeclaration(
-                    module_name.GetValue(), module_decl.GetLocation()));
+                // check for modules declared after the first
+                if (MatchKeyword(Keyword_module, false)) {
+                    m_ast_iterator->Push(ParseModuleDeclaration());
+                } else {
+                    SourceLocation location = CurrentLocation();
 
-                m_ast_iterator->Push(module_ast);
+                    // call ParseStatement() to read to next
+                    ParseStatement();
+
+                    // error, statement outside of module
+                    CompilerError error(Level_fatal, Msg_statement_outside_module, location);
+                    m_compilation_unit->GetErrorList().AddError(error);
+                }
             }
         }
-    }
+    } else {
+        while (m_token_stream->HasNext()) {
+            SourceLocation location = CurrentLocation();
 
-    while (m_token_stream->HasNext()) {
-        SourceLocation location = CurrentLocation();
+            // skip statement terminator tokens
+            if (Match(Token::TokenType::Token_semicolon, true) ||
+                Match(Token::TokenType::Token_newline, true)) {
+                continue;
+            }
 
-        // skip statement terminator tokens
-        if (Match(Token::TokenType::Token_semicolon, true) ||
-            Match(Token::TokenType::Token_newline, true)) {
-            continue;
-        }
+            std::shared_ptr<AstStatement> stmt;
 
-        std::shared_ptr<AstStatement> stmt = ParseStatement();
-        
-        if (stmt != nullptr) {
-            m_ast_iterator->Push(stmt);
-        } else {
-            // skip ahead to avoid endlessly looping
-            if (m_token_stream->HasNext()) {
-                m_token_stream->Next();
+            // check for module declaration
+            if (MatchKeyword(Keyword_module, false)) {
+                stmt = ParseModuleDeclaration();
+            } else {
+                stmt = ParseStatement();
+            }
+            
+            if (stmt) {
+                m_ast_iterator->Push(stmt);
+            } else {
+                // skip ahead to avoid endlessly looping
+                if (m_token_stream->HasNext()) {
+                    m_token_stream->Next();
+                }
             }
         }
     }
@@ -240,10 +258,23 @@ int Parser::OperatorPrecedence(const Operator *&out)
     }
 }
 
-std::shared_ptr<AstStatement> Parser::ParseStatement()
+std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
 {
     if (Match(Token::TokenType::Token_keyword, false)) {
-        if (MatchKeyword(Keyword_import, false)) {
+        if (MatchKeyword(Keyword_module, false)) {
+            auto module_decl = ParseModuleDeclaration();
+            
+            if (top_level) {
+                return module_decl;
+            }
+
+            // module may not be declared in a block
+            CompilerError error(Level_fatal, 
+                Msg_module_declared_in_block, m_token_stream->Next().GetLocation());
+            m_compilation_unit->GetErrorList().AddError(error);
+            
+            return nullptr;
+        } else if (MatchKeyword(Keyword_import, false)) {
             return ParseImport();
         } else if (MatchKeyword(Keyword_let, false)) {
             return ParseVariableDeclaration(true);
@@ -274,6 +305,37 @@ std::shared_ptr<AstStatement> Parser::ParseStatement()
     }
 
     return ParseExpression();
+}
+
+std::shared_ptr<AstModuleDeclaration> Parser::ParseModuleDeclaration()
+{
+    if (const Token module_decl = ExpectKeyword(Keyword_module, true)) {
+        if (const Token module_name = Expect(Token::TokenType::Token_identifier, true)) {
+            // expect open brace
+            if (Expect(Token::TokenType::Token_open_brace, true)) {
+                std::shared_ptr<AstModuleDeclaration> module_ast(
+                    new AstModuleDeclaration(module_name.GetValue(), module_decl.GetLocation()));
+
+                // build up the module declaration with statements
+                while (m_token_stream->HasNext() && !Match(Token::TokenType::Token_close_brace, false)) {
+                    // skip statement terminator tokens
+                    if (!Match(Token::TokenType::Token_semicolon, true) &&
+                        !Match(Token::TokenType::Token_newline, true)) {
+
+                        // parse at top level, to allow for nested modules
+                        module_ast->AddChild(ParseStatement(true));
+                    }
+                }
+
+                // expect close brace
+                if (Expect(Token::TokenType::Token_close_brace, true)) {
+                    return module_ast;
+                }
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<AstExpression> Parser::ParseTerm()

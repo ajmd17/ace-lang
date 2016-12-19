@@ -10,11 +10,11 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
 {
     TreeNode<Scope> *top = m_scopes.TopNode();
 
-    while (top != nullptr) {
+    while (top) {
         Identifier *result =
             top->m_value.GetIdentifierTable().LookUpIdentifier(name);
 
-        if (result != nullptr) {
+        if (result) {
             // a result was found
             return result;
         }
@@ -36,7 +36,7 @@ Identifier *Module::LookUpIdentifierDepth(const std::string &name, int depth_lev
     for (int i = 0; top != nullptr && i < depth_level; i++) {
         Identifier *result = top->m_value.GetIdentifierTable().LookUpIdentifier(name);
 
-        if (result != nullptr) {
+        if (result) {
             return result;
         }
 

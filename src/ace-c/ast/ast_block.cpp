@@ -1,9 +1,12 @@
 #include <ace-c/ast/ast_block.hpp>
 #include <ace-c/emit/instruction.hpp>
+#include <ace-c/compiler.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/ast/ast_return_statement.hpp>
 
 #include <common/instructions.hpp>
+
+#include <limits>
 
 AstBlock::AstBlock(const SourceLocation &location)
     : AstStatement(location),
@@ -41,15 +44,19 @@ void AstBlock::Build(AstVisitor *visitor, Module *mod)
         stmt->Build(visitor, mod);
     }
 
+    // how many times to pop the stack
+    int pop_times = 0;
+
     // pop all local variables off the stack
     for (int i = 0; i < m_num_locals; i++) {
         if (!m_last_is_return) {
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t>(POP);
+            pop_times++;
         }
 
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
     }
+
+    Compiler::PopStack(visitor, pop_times);
 }
 
 void AstBlock::Optimize(AstVisitor *visitor, Module *mod)

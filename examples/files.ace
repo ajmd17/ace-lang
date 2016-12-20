@@ -1,13 +1,12 @@
 module files {
     import '../acelib/io'
-    import 'test-imports/import-me.ace'
 
-    my_file = io::open('test.txt', 'w+')
+    my_file = io::file::open('test.txt', 'w+')
 
-    io::write(my_file, 'Ace version ', 
+    io::file::write(my_file, 'Ace version ', 
         runtime::version[0], '.', 
         runtime::version[1], '.', 
-        runtime::version[2], '\n')
+        runtime::version[2], '\n\n\n')
 
-    io::write(my_file, 'Running on OS: ', runtime::os_name)
+    io::file::write(my_file, 'Running on OS: ', runtime::os_name)
 }

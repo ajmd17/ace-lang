@@ -102,8 +102,8 @@ private:
     std::shared_ptr<AstTypeContractExpression> ParseTypeContractBinaryExpression(int expr_prec,
         std::shared_ptr<AstTypeContractExpression> left);
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true);
-    std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition();
-    std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool func_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});
+    std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition(bool require_keyword = true);
+    std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();

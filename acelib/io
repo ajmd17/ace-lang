@@ -1,17 +1,22 @@
 module io {
-    open: Any
-    write: Any
-    close: Any
-    stdout: Any
+    module file {
+        open: Any
+        write: Any
+        close: Any
+        stdout: Any
+    }
 
-    module _Detail {
+    module console {
+        println: Any
+        readln: Any
+    }
+
+    module _Detail_ {
         lib = runtime::load_library('lib/libace-runtime.so')
 
-        io::open = runtime::load_function(lib,'io_open')
-        io::write = runtime::load_function(lib,'io_write')
-        io::close = runtime::load_function(lib, 'io_close')
-        io::stdout = call(runtime::load_function(lib, 'io_get_stdout'))
+        io::file::open = runtime::load_function(lib,'io_open')
+        io::file::write = runtime::load_function(lib,'io_write')
+        io::file::close = runtime::load_function(lib, 'io_close')
+        io::file::stdout = call(runtime::load_function(lib, 'io_get_stdout'))
     }
 }
-
-module demo { demo_var = 62 }

@@ -22,7 +22,6 @@ void AstModuleDeclaration::PerformLookup(AstVisitor *visitor)
 
 void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
-    printf("name = %s, mod = %p\n", m_name.c_str(), (void*)mod);
     if (!m_module) {
         PerformLookup(visitor);
     }

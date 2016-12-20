@@ -278,7 +278,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             return ParseImport();
         } else if (MatchKeyword(Keyword_let, false)) {
             return ParseVariableDeclaration(true);
-        } else if (MatchKeyword(Keyword_func, false)) {
+        } else if (MatchKeyword(Keyword_fun, false)) {
             if (MatchAhead(Token::TokenType::Token_identifier, 1)) {
                 return ParseFunctionDefinition();
             } else {
@@ -375,7 +375,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         expr = ParseFalse();
     } else if (MatchKeyword(Keyword_null)) {
         expr = ParseNull();
-    } else if (MatchKeyword(Keyword_func)) {
+    } else if (MatchKeyword(Keyword_fun)) {
         expr = ParseFunctionExpression();
     } else if (Match(Token::TokenType::Token_operator)) {
         expr = ParseUnaryExpression();
@@ -405,9 +405,80 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 
 std::shared_ptr<AstExpression> Parser::ParseParentheses()
 {
+    SourceLocation location = CurrentLocation();
+
     Expect(Token::TokenType::Token_open_parenthesis, true);
     std::shared_ptr<AstExpression> expr = ParseExpression();
+/*
+    // if it's a function expression
+    bool is_function_expr = false;
+
+    std::vector<std::shared_ptr<AstParameter>> parameters;
+    bool found_variadic = false;
+
+    while (Match(Token::TokenType::Token_comma, true)) {
+        is_function_expr = true;
+
+        const Token param_token = Match(Token::TokenType::Token_identifier, true);
+        if (!param_token) {
+            break;
+        }
+
+        // TODO make use of the type specification
+        std::shared_ptr<AstTypeSpecification> type_spec;
+        std::shared_ptr<AstTypeContractExpression> type_contract;
+
+        // check if parameter type has been declared
+        if (Match(Token::TokenType::Token_colon, true)) {
+            // type contracts are denoted by <angle brackets>
+            if (MatchOperator(&Operator::operator_less, false)) {
+                // parse type contracts
+                type_contract = ParseTypeContract();
+            } else {
+                type_spec = ParseTypeSpecification();
+            }
+        }
+
+
+        if (found_variadic) {
+            // found another parameter after variadic
+            m_compilation_unit->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_argument_after_varargs, param_token.GetLocation()));
+        }
+
+        bool is_variadic = false;
+        if (Match(Token::TokenType::Token_ellipsis, true)) {
+            is_variadic = true;
+            found_variadic = true;
+        }
+
+        auto param = std::shared_ptr<AstParameter>(
+            new AstParameter(param_token.GetValue(), is_variadic, param_token.GetLocation()));
+
+        if (type_contract) {
+            param->SetTypeContract(type_contract);
+        }
+
+        parameters.push_back(param);
+    }*/
+
     Expect(Token::TokenType::Token_close_parenthesis, true);
+
+    /*if (is_function_expr) {
+        std::shared_ptr<AstTypeSpecification> return_type_spec;
+
+        // return type specification
+        if (Match(Token::TokenType::Token_colon, true)) {
+            // read return type for functions
+            return_type_spec = ParseTypeSpecification();
+        }
+
+        if (auto block = ParseBlock()) {
+            return std::shared_ptr<AstFunctionExpression>(
+                new AstFunctionExpression(parameters, return_type_spec, block, location));
+        }
+    }*/
+
     return expr;
 }
 
@@ -790,10 +861,11 @@ std::shared_ptr<AstExpression> Parser::ParseExpression()
 
 std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
 {
-    const Token left = Expect(Token::TokenType::Token_identifier, true);
-    if (left) {
+    if (const Token left = Expect(Token::TokenType::Token_identifier, true)) {
         std::shared_ptr<AstTypeSpecification> right(nullptr);
-        if (Match(Token::TokenType::Token_dot, true)) {
+
+        // module access of type
+        if (Match(Token::TokenType::Token_double_colon, true)) {
             // read next part
             right = ParseTypeSpecification();
         }
@@ -956,29 +1028,40 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool re
     return nullptr;
 }
 
-std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition()
+std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition(bool require_keyword)
 {
-    const Token token = ExpectKeyword(Keyword_func, true);
+    SourceLocation location = CurrentLocation();
+
+    if (require_keyword) {
+        if (!ExpectKeyword(Keyword_fun, true)) {
+            return nullptr;
+        }
+    } else {
+        // match and read in the case that it is found
+        MatchKeyword(Keyword_fun, true);
+    }
+
     const Token identifier = Expect(Token::TokenType::Token_identifier, true);
 
-    if (token && identifier) {
+    if (identifier) {
         auto expr = ParseFunctionExpression(false, ParseFunctionParameters());
         if (expr != nullptr) {
             return std::shared_ptr<AstFunctionDefinition>(
-                new AstFunctionDefinition(identifier.GetValue(), expr, token.GetLocation()));
+                new AstFunctionDefinition(identifier.GetValue(), expr, location));
         }
     }
 
     return nullptr;
 }
 
-std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool func_keyword,
+std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool require_keyword,
     std::vector<std::shared_ptr<AstParameter>> params)
 {
-    const Token token = func_keyword ? ExpectKeyword(Keyword_func, true) : Token::EMPTY;
+    const Token token = require_keyword ? ExpectKeyword(Keyword_fun, true) : Token::EMPTY;
     SourceLocation location = token ? token.GetLocation() : CurrentLocation();
-    if (func_keyword || !token) {
-        if (func_keyword) {
+
+    if (require_keyword || !token) {
+        if (require_keyword) {
             // read params
             params = ParseFunctionParameters();
         }

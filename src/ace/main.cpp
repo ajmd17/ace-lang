@@ -363,7 +363,7 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
     utf::Utf8String code;
     utf::Utf8String out_filename = "tmp.aex";
 
-    if (first_time) { // compile template code (expects module declaration)
+    if (first_time) {
         // truncate the file, overwriting any previous data
         std::ofstream out_file(out_filename.GetData(),
             std::ios::out | std::ios::binary | std::ios::trunc);
@@ -606,6 +606,11 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
             }
             utf::cout << "  ";
         }
+    }
+
+    // delete temporary bytecode file
+    if (std::remove(out_filename.GetData())) {
+        utf::cout << "Error deleting file " << out_filename << "\n";
     }
 
     return 0;

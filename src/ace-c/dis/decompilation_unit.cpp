@@ -93,7 +93,7 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                 os->unsetf(std::ios::hex);
 
                 os->setf(std::ios::hex, std::ios::basefield);
-                (*os) << "func [@(" << addr << "), "
+                (*os) << "function [@(" << addr << "), "
                       << "u8(" << (int)nargs << ")]" << std::endl;
                 os->unsetf(std::ios::hex);
             }

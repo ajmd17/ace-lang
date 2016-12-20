@@ -26,6 +26,9 @@ private:
 
     /** Set while analyzing */
     ObjectType m_object_type;
+
+    /** Is module access chained */
+    bool m_is_chained;
 };
 
 #endif

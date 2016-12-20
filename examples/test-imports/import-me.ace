@@ -3,5 +3,14 @@ module import_me {
 
     a = 91
 
+    module blah {
+
+
+        type TestType {
+            name: String
+            id: Int
+        }
+    }
+
     print 'Thanks'
 }

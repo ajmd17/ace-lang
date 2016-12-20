@@ -4,13 +4,14 @@ module io {
     close: Any
     stdout: Any
 
-    module detail {
-        lf = runtime::load_function
+    module _Detail {
         lib = runtime::load_library('lib/libace-runtime.so')
 
-        io::open = lf(lib,'io_open')
-        io::write = lf(lib,'io_write')
-        io::close = lf(lib, 'io_close')
-        io::stdout = call(lf(lib, 'io_get_stdout'))
+        io::open = runtime::load_function(lib,'io_open')
+        io::write = runtime::load_function(lib,'io_write')
+        io::close = runtime::load_function(lib, 'io_close')
+        io::stdout = call(runtime::load_function(lib, 'io_get_stdout'))
     }
 }
+
+module demo { demo_var = 62 }

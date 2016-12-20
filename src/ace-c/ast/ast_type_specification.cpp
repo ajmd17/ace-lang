@@ -38,7 +38,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
             }
         } else {
             // module access type
-            if (Module *left_mod = visitor->GetCompilationUnit()->LookupModule(m_left).get()) {
+            if (Module *left_mod = visitor->GetCompilationUnit()->LookupModule(m_left)) {
                 // accept the right-hand side
                 m_right->Visit(visitor, left_mod);
 

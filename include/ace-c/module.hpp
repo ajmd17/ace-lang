@@ -17,6 +17,10 @@ public:
 
     inline const std::string &GetName() const { return m_name; }
     inline const SourceLocation &GetLocation() const { return m_location; }
+    
+    inline TreeNode<Module*> *GetImportTreeLink() { return m_tree_link; }
+    inline const TreeNode<Module*> *GetImportTreeLink() const { return m_tree_link; }
+    inline void SetImportTreeLink(TreeNode<Module*> *tree_link) { m_tree_link = tree_link; }
 
     /** Check to see if the identifier exists in multiple scopes, starting
         from the currently opened scope.
@@ -41,6 +45,9 @@ private:
     std::string m_name;
     SourceLocation m_location;
     std::vector<ObjectType> m_user_types;
+
+    /** A link to where this module exists in the import tree */
+    TreeNode<Module*> *m_tree_link;
 };
 
 #endif

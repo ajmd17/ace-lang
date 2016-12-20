@@ -446,7 +446,7 @@ public:
     Utf8String(const Utf8String &other)
     {
         // copy raw bytes
-        m_size = std::strlen(other.m_data) + 1;
+        m_size = other.m_size;
         m_data = new char[m_size];
         std::strcpy(m_data, other.m_data);
         m_length = other.m_length;
@@ -473,11 +473,11 @@ public:
             m_length = utf8_strlen(m_data);
         } else {
             // must delete the data if not null
-            if (m_data != nullptr) {
+            if (m_data) {
                 delete[] m_data;
             }
 
-            if (str == nullptr) {
+            if (!str) {
                 m_size = 1;
                 m_data = new char[m_size];
                 m_data[0] = '\0';
@@ -602,8 +602,6 @@ public:
 
         if (new_size <= m_size) {
             std::strcat(m_data, str);
-            // calculate utf-8 length of string and add it
-            m_length += utf8_strlen(str);
         } else {
             // we must delete and recreate the array
             m_size = new_size;
@@ -613,9 +611,10 @@ public:
             std::strcat(new_data, str);
             delete[] m_data;
             m_data = new_data;
-            // recalculate length
-            m_length = utf8_strlen(m_data);
         }
+        
+        // recalculate length
+        m_length = utf8_strlen(m_data);
 
         return *this;
     }

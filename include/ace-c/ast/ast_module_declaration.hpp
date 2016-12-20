@@ -11,12 +11,13 @@ class AstModuleDeclaration : public AstDeclaration {
 public:
     AstModuleDeclaration(const std::string &name, const SourceLocation &location);
 
-    inline void AddChild(const std::shared_ptr<AstStatement> &child)
-        { m_children.push_back(child); }
-    inline std::vector<std::shared_ptr<AstStatement>> &GetChildren()
-        { return m_children; }
-    inline const std::vector<std::shared_ptr<AstStatement>> &GetChildren() const
-        { return m_children; }
+    inline void AddChild(const std::shared_ptr<AstStatement> &child) { m_children.push_back(child); }
+    inline std::vector<std::shared_ptr<AstStatement>> &GetChildren() { return m_children; }
+    inline const std::vector<std::shared_ptr<AstStatement>> &GetChildren() const { return m_children; }
+
+    inline const std::shared_ptr<Module> &GetModule() const { return m_module; }
+
+    void PerformLookup(AstVisitor *visitor);
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
@@ -24,7 +25,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<AstStatement>> m_children;
-    Module *m_this_module;
+    std::shared_ptr<Module> m_module;
 };
 
 #endif

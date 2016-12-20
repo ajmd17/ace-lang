@@ -15,17 +15,16 @@ namespace ace {
 
 using namespace vm;
 
+// modules that have been declared
+static std::vector<std::shared_ptr<Module>> declared_modules;
+
 static Module *GetModule(CompilationUnit *compilation_unit, const std::string &module_name)
 {
-    if (Module *mod = compilation_unit->LookupModule(module_name).get()) {
+    if (Module *mod = compilation_unit->LookupModule(module_name)) {
         return mod;
     }
 
-    // add this module to the compilation unit
-    compilation_unit->m_module_tree.Open(
-        std::shared_ptr<Module>(new Module(module_name, SourceLocation::eof)));
-
-    return compilation_unit->m_module_tree.Top().get();
+    return nullptr;
 
     //std::unique_ptr<Module> this_module(new Module(module_name, SourceLocation::eof));
     //compilation_unit->m_modules.push_back(std::move(this_module));
@@ -34,9 +33,9 @@ static Module *GetModule(CompilationUnit *compilation_unit, const std::string &m
 }
 
 static Identifier *CreateIdentifier(CompilationUnit *compilation_unit,
-    const std::string &module_name, const std::string &name)
+    Module *mod, const std::string &name)
 {
-    Module *mod = GetModule(compilation_unit, module_name);
+    ASSERT(compilation_unit != nullptr);
     ASSERT(mod != nullptr);
 
     // get global scope
@@ -119,26 +118,52 @@ API::ModuleDefine &API::ModuleDefine::Function(
 
 void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
 {
+    // bind module
+    Module *mod = GetModule(compilation_unit, m_name);
+
+    bool close_mod = false;
+
+    // create new module
+    if (!mod) {
+        close_mod = true;
+
+        std::shared_ptr<Module> new_mod(new Module(m_name, SourceLocation::eof));
+        declared_modules.push_back(new_mod);
+
+        mod = new_mod.get();
+
+        // add this module to the compilation unit
+        compilation_unit->m_module_tree.Open(mod);
+        // set the link to the module in the tree
+        mod->SetImportTreeLink(compilation_unit->m_module_tree.TopNode());
+    }
+
     for (auto &def : m_types) {
-        BindType(def, vm, compilation_unit);
+        BindType(def, mod, vm, compilation_unit);
     }
 
     for (auto &def : m_variable_defs) {
-        BindNativeVariable(def, vm, compilation_unit);
+        BindNativeVariable(def, mod, vm, compilation_unit);
     }
 
     for (auto &def : m_function_defs) {
-        BindNativeFunction(def, vm, compilation_unit);
+        BindNativeFunction(def, mod, vm, compilation_unit);
+    }
+
+    if (close_mod) {
+        // close this module
+        compilation_unit->m_module_tree.Close();
     }
 }
 
 void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
-    VM *vm, CompilationUnit *compilation_unit)
+    Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
+    ASSERT(mod != nullptr);
     ASSERT(vm != nullptr);
     ASSERT(compilation_unit != nullptr);
 
-    Identifier *ident = CreateIdentifier(compilation_unit, m_name, def.name);
+    Identifier *ident = CreateIdentifier(compilation_unit, mod, def.name);
 
     ASSERT(ident != nullptr);
 
@@ -165,12 +190,13 @@ void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
 }
 
 void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
-    VM *vm, CompilationUnit *compilation_unit)
+    Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
+    ASSERT(mod != nullptr);
     ASSERT(vm != nullptr);
     ASSERT(compilation_unit != nullptr);
 
-    Identifier *ident = CreateIdentifier(compilation_unit, m_name, def.function_name);
+    Identifier *ident = CreateIdentifier(compilation_unit, mod, def.function_name);
 
     ASSERT(ident != nullptr);
 
@@ -194,15 +220,11 @@ void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
 }
 
 void API::ModuleDefine::BindType(const TypeDefine &def,
-    VM *vm, CompilationUnit *compilation_unit)
+    Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
+    ASSERT(mod != nullptr);
     ASSERT(vm != nullptr);
     ASSERT(compilation_unit != nullptr);
-
-    // get this module in this compilation unit
-    Module *mod = GetModule(compilation_unit, m_name);
-
-    ASSERT(mod != nullptr);
 
     ObjectType object_type(def.m_name, nullptr);
 
@@ -224,7 +246,7 @@ void API::ModuleDefine::BindType(const TypeDefine &def,
         auto method_copy = method;
         method_copy.function_name = MangleName(def.m_name, method.function_name);
 
-        BindNativeFunction(method_copy, vm, compilation_unit);
+        BindNativeFunction(method_copy, mod, vm, compilation_unit);
     }
 
     // open the scope for data members

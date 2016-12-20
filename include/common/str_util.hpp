@@ -2,6 +2,7 @@
 #define STR_UTIL_HPP
 
 #include <string>
+#include <vector>
 #include <algorithm>
 #include <functional>
 #include <cctype>
@@ -35,6 +36,57 @@ inline std::string right_trim(std::string s) {
 
 inline std::string trim(std::string s) {
     return left_trim(right_trim(s));
+}
+
+inline std::vector<std::string> split_path(const std::string &str) {
+    std::vector<std::string> res;
+    
+    std::string tmp;
+    for (char ch : str) {
+        if (ch == '\\' || ch == '/') {
+            if (!tmp.empty()) {
+                res.emplace_back(tmp);
+                tmp.clear();
+            }
+            continue;
+        }
+
+        tmp += ch;
+    }
+
+    // add last
+    if (!tmp.empty()) {
+        res.emplace_back(tmp);
+    }
+
+    return res;
+}
+
+inline std::vector<std::string> canonicalize_path(const std::vector<std::string> &original) {
+    std::vector<std::string> res;
+
+    for (const auto &str : original) {
+        if (str == ".." && !res.empty()) {
+            res.pop_back();
+        } else if (str != ".") {
+            res.emplace_back(str);
+        }
+    }
+
+    return res;
+}
+
+inline std::string path_to_str(const std::vector<std::string> &path) {
+    std::string res;
+    
+    for (size_t i = 0; i < path.size(); i++) {
+        res += path[i];
+        if (i != path.size() - 1) {
+            res += "/";
+        }
+    }
+
+    return res;
 }
 
 } // str_util

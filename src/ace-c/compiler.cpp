@@ -241,7 +241,7 @@ void Compiler::Compile(bool expect_module_decl)
 
 void Compiler::CompileInner()
 {
-    Module *mod = m_compilation_unit->GetCurrentModule().get();
+    Module *mod = m_compilation_unit->GetCurrentModule();
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Build(this, mod);
     }

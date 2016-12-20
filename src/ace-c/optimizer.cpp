@@ -69,7 +69,7 @@ void Optimizer::Optimize(bool expect_module_decl)
 
 void Optimizer::OptimizeInner()
 {
-    Module *mod = m_compilation_unit->GetCurrentModule().get();
+    Module *mod = m_compilation_unit->GetCurrentModule();
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Optimize(this, mod);
     }

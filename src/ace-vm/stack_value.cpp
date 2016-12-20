@@ -48,7 +48,7 @@ void Value::Mark()
 utf::Utf8String Value::ToString()
 {
     const int buf_size = 256;
-    char buf[buf_size];
+    char buf[buf_size] = {'\0'};
     int n = 0;
 
     switch (m_type) {

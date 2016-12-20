@@ -2,34 +2,58 @@
 #include <ace-c/ast_visitor.hpp>
 
 #include <common/my_assert.hpp>
+#include <common/str_util.hpp>
 
 AstModuleDeclaration::AstModuleDeclaration(const std::string &name, const SourceLocation &location)
-    : AstDeclaration(name, location),
-      m_this_module(nullptr)
+    : AstDeclaration(name, location)
 {
 }
 
-void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
+void AstModuleDeclaration::PerformLookup(AstVisitor *visitor)
 {
     // make sure this module was not already declared/imported
     if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
         visitor->GetCompilationUnit()->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_module_already_defined, m_location, m_name));
     } else {
+        m_module.reset(new Module(m_name, m_location));
+    }
+}
+
+void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
+{
+    printf("name = %s, mod = %p\n", m_name.c_str(), (void*)mod);
+    if (!m_module) {
+        PerformLookup(visitor);
+    }
+
+    if (m_module) {
         // add this module to the compilation unit
-        visitor->GetCompilationUnit()->m_module_tree.Open(
-            std::shared_ptr<Module>(new Module(m_name, m_location)));
+        visitor->GetCompilationUnit()->m_module_tree.Open(m_module.get());
+        // set the link to the module in the tree
+        m_module->SetImportTreeLink(visitor->GetCompilationUnit()->m_module_tree.TopNode());
 
-        // TODO: we need another way to do the module index stuff,
-        // it's currently linear and won't work for nested modules.
-        // we'll have to do something like with my Tree template class
+        // add this module to list of imported modules,
+        // but only if mod == nullptr, that way we don't add nested modules
+        if (!mod) {
+            // parse filename
+            std::vector<std::string> path = str_util::split_path(m_location.GetFileName());
+            path = str_util::canonicalize_path(path);
+            // change it back to string
+            std::string canon_path = str_util::path_to_str(path);
 
-        // increment module index to enter the new module
-        visitor->GetCompilationUnit()->m_module_index++;
+            // map filepath to module
+            auto it = visitor->GetCompilationUnit()->m_imported_modules.find(canon_path);
+            if (it != visitor->GetCompilationUnit()->m_imported_modules.end()) {
+                it->second.push_back(m_module);
+            } else {
+                visitor->GetCompilationUnit()->m_imported_modules[canon_path] = { m_module };
+            }
+        }
 
         // update current module
-        m_this_module = visitor->GetCompilationUnit()->GetCurrentModule().get();
-        mod = m_this_module;
+        mod = m_module.get();
+        ASSERT(mod == visitor->GetCompilationUnit()->GetCurrentModule());
 
         // visit all children
         for (auto &child : m_children) {
@@ -38,9 +62,6 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
             }
         }
 
-        // decrement the index to refer to the previous module
-        visitor->GetCompilationUnit()->m_module_index--;
-
         // close this module
         visitor->GetCompilationUnit()->m_module_tree.Close();
     }
@@ -48,36 +69,24 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
 void AstModuleDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
-    // increment module index to enter the new module
-    visitor->GetCompilationUnit()->m_module_index++;
-
-    ASSERT(m_this_module != nullptr);
+    ASSERT(m_module != nullptr);
 
     // build all children
     for (auto &child : m_children) {
         if (child) {
-            child->Build(visitor, m_this_module);
+            child->Build(visitor, m_module.get());
         }
     }
-
-    // decrement the index to refer to the previous module
-    visitor->GetCompilationUnit()->m_module_index--;
 }
 
 void AstModuleDeclaration::Optimize(AstVisitor *visitor, Module *mod)
 {
-    // increment module index to enter the new module
-    visitor->GetCompilationUnit()->m_module_index++;
-
-    ASSERT(m_this_module != nullptr);
+    ASSERT(m_module != nullptr);
 
     // optimize all children
     for (auto &child : m_children) {
         if (child) {
-            child->Optimize(visitor, m_this_module);
+            child->Optimize(visitor, m_module.get());
         }
     }
-
-    // decrement the index to refer to the previous module
-    visitor->GetCompilationUnit()->m_module_index--;
 }

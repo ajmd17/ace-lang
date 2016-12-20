@@ -18,7 +18,7 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
     // only this scope matters, variables with the same name outside
     // of this scope are fine
     m_identifier = mod->LookUpIdentifier(m_name, true);
-    if (m_identifier != nullptr) {
+    if (m_identifier) {
         // a collision was found, add an error
         compilation_unit->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_redeclared_identifier, m_location, m_name));

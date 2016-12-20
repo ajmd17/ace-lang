@@ -28,6 +28,8 @@ private:
     std::string m_target;
     std::shared_ptr<AstExpression> m_expr;
     Module *m_mod_access;
+    // is this module access chained to another before it?
+    bool m_is_chained;
 };
 
 #endif

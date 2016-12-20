@@ -28,7 +28,7 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
     // visit each argument
     for (auto &arg : m_args) {
         ASSERT(arg != nullptr);
-        arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
+        arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
     }
     
     if (m_identifier != nullptr) {
@@ -90,7 +90,7 @@ void AstFunctionCall::BuildArgumentsStart(AstVisitor *visitor, Module *mod)
     for (auto &arg : m_args) {
         ASSERT(arg != nullptr);
 
-        arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
+        arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
 
         // get active register
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -159,7 +159,7 @@ void AstFunctionCall::Optimize(AstVisitor *visitor, Module *mod)
     // optimize each argument
     for (auto &arg : m_args) {
         if (arg != nullptr) {
-            arg->Optimize(visitor, visitor->GetCompilationUnit()->GetCurrentModule().get());
+            arg->Optimize(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
         }
     }
 }

@@ -6,6 +6,7 @@
 #include <ace-c/emit/instruction_stream.hpp>
 #include <ace-c/tree.hpp>
 
+#include <map>
 #include <vector>
 #include <memory>
 #include <string>
@@ -15,14 +16,14 @@ public:
     CompilationUnit();
     CompilationUnit(const CompilationUnit &other) = delete;
 
-    inline std::shared_ptr<Module> &GetGlobalModule() { return m_module_tree.Root(); /*return m_modules[0];*/ }
-    inline const std::shared_ptr<Module> &GetGlobalModule() const { return m_module_tree.Root();/*return m_modules[0];*/ }
+    inline Module *GetGlobalModule() { return m_global_module.get(); /*return m_modules[0];*/ }
+    inline const Module *GetGlobalModule() const { return m_global_module.get();/*return m_modules[0];*/ }
 
     //inline std::shared_ptr<Module> &GetModule(int i) { return m_modules[i]; }
     //inline const std::unique_ptr<Module> &GetModule(int i) const { return m_modules[i]; }
 
-    inline std::shared_ptr<Module> &GetCurrentModule() { return m_module_tree.Top();/*return m_modules[m_module_index];*/ }
-    inline const std::shared_ptr<Module> &GetCurrentModule() const { return m_module_tree.Top();/*return m_modules[m_module_index];*/ }
+    inline Module *GetCurrentModule() { return m_module_tree.Top();/*return m_modules[m_module_index];*/ }
+    inline const Module *GetCurrentModule() const { return m_module_tree.Top();/*return m_modules[m_module_index];*/ }
 
     inline ErrorList &GetErrorList() { return m_error_list; }
     inline const ErrorList &GetErrorList() const { return m_error_list; }
@@ -34,9 +35,13 @@ public:
         Modules with the name that are in the current module or any module
         above the current one will be considered.
     */
-    std::shared_ptr<Module> LookupModule(const std::string &name);
+    Module *LookupModule(const std::string &name);
 
-    Tree<std::shared_ptr<Module>> m_module_tree;
+    /** Maps filepath to a vector of modules, so that no module has to be parsed
+        and analyze more than once.
+    */
+    std::map<std::string, std::vector<std::shared_ptr<Module>>> m_imported_modules;
+    Tree<Module*> m_module_tree;
 
     /** all modules contained in the compilation unit */
     //std::vector<std::unique_ptr<Module>> m_modules;
@@ -46,6 +51,8 @@ public:
 private:
     ErrorList m_error_list;
     InstructionStream m_instruction_stream;
+    // the global module
+    std::shared_ptr<Module> m_global_module;
 };
 
 #endif

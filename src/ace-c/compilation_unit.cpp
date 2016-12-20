@@ -2,16 +2,15 @@
 #include <ace-c/configuration.hpp>
 
 CompilationUnit::CompilationUnit()
-    : m_module_index(0)
+    : m_module_index(0),
+      m_global_module(new Module(ace::compiler::Config::GLOBAL_MODULE_NAME, SourceLocation::eof))
 {
-    // set top to be global module
-    m_module_tree.Top().reset(
-        new Module(ace::compiler::Config::GLOBAL_MODULE_NAME, SourceLocation::eof));
+    m_module_tree.TopNode()->m_value = m_global_module.get();
 }
 
-std::shared_ptr<Module> CompilationUnit::LookupModule(const std::string &name)
+Module *CompilationUnit::LookupModule(const std::string &name)
 {
-    TreeNode<std::shared_ptr<Module>> *top = m_module_tree.TopNode();
+    TreeNode<Module*> *top = m_module_tree.TopNode();
 
     while (top) {
         if (top->m_value && top->m_value->GetName() == name) {

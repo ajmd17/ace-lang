@@ -136,7 +136,7 @@ private:
     template <typename T, typename ... Args>
     void MakeMessage(const char *format, T value, Args && ... args)
     {
-        for (; *format != '\0'; format++) {
+        for (; *format; format++) {
             if (*format == '%') {
                 std::stringstream sstream;
                 sstream << value;

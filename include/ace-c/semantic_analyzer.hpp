@@ -6,22 +6,18 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 class SemanticAnalyzer : public AstVisitor {
 public:
     SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit);
     SemanticAnalyzer(const SemanticAnalyzer &other);
 
-    inline void AddBuiltinObject(const std::shared_ptr<AstDeclaration> &decl)
-        { m_decls.push_back(decl); }
-
     /** Generates the compilation unit structure from the given statement iterator */
     void Analyze(bool expect_module_decl = true);
 
 private:
     void AnalyzerInner();
-
-    std::vector<std::shared_ptr<AstDeclaration>> m_decls;
 };
 
 #endif

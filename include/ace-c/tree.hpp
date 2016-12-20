@@ -30,7 +30,7 @@ struct TreeNode {
         for (int i = 0; i < indent_level; i++) {
             ss << "  ";
         }
-        ss << m_value << "\n";
+        ss << m_value->GetName() << "\n";
 
         indent_level++;
         for (int i = 0; i < m_siblings.size(); i++) {

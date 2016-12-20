@@ -102,13 +102,13 @@ public:
 
     private:
         void BindNativeVariable(const NativeVariableDefine &def,
-            vm::VM *vm, CompilationUnit *compilation_unit);
+            Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);
 
         void BindNativeFunction(const NativeFunctionDefine &def,
-            vm::VM *vm, CompilationUnit *compilation_unit);
+            Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);
 
         void BindType(const TypeDefine &def,
-            vm::VM *vm, CompilationUnit *compilation_unit);
+            Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);
     };
 };
 

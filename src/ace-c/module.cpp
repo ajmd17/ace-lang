@@ -2,7 +2,8 @@
 
 Module::Module(const std::string &name, const SourceLocation &location)
     : m_name(name),
-      m_location(location)
+      m_location(location),
+      m_tree_link(nullptr)
 {
 }
 

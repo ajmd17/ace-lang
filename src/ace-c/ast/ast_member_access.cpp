@@ -239,7 +239,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
     // it should be an instance of AstVariable
     if (AstVariable *first_as_var = dynamic_cast<AstVariable*>(m_target.get())) {
         // check all modules for one with the same name
-        m_mod_access = visitor->GetCompilationUnit()->LookupModule(first_as_var->GetName()).get();
+        m_mod_access = visitor->GetCompilationUnit()->LookupModule(first_as_var->GetName());
     }
 
     ASSERT(pos < m_parts.size());
@@ -288,7 +288,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                     for (auto &arg : field_as_call->GetArguments()) {
                         if (arg != nullptr) {
                             arg->Visit(visitor,
-                                visitor->GetCompilationUnit()->GetCurrentModule().get());
+                                visitor->GetCompilationUnit()->GetCurrentModule());
                         }
                     }
                 }
@@ -609,7 +609,7 @@ void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
                 for (auto &arg : field_as_call->GetArguments()) {
                     if (arg != nullptr) {
                         arg->Optimize(visitor,
-                            visitor->GetCompilationUnit()->GetCurrentModule().get());
+                            visitor->GetCompilationUnit()->GetCurrentModule());
                     }
                 }
             }

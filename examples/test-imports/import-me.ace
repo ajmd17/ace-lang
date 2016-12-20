@@ -1,0 +1,7 @@
+module import_me {
+    import 'another-import.ace'
+
+    a = 91
+
+    print 'Thanks'
+}

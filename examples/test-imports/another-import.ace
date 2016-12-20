@@ -1,0 +1,3 @@
+module another_import {
+    io::write(io::stdout, 'hello from another_import\n')
+}

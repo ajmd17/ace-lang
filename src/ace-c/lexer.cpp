@@ -194,39 +194,31 @@ u32char Lexer::ReadEscapeCode()
     // location of the start of the escape code
     SourceLocation location = m_source_location;
 
-    u32char esc = 0;
-
     if (HasNext()) {
         int pos_change = 0;
-        esc = m_source_stream.Next(pos_change);
+        u32char esc = m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;
 
         // TODO: add support for unicode escapes
         switch (esc) {
-        case 't':
-            esc = (u32char)'\t';
-        case 'b':
-            esc = (u32char)'\b';
-        case 'n':
-            esc = (u32char)'\n';
-        case 'r':
-            esc = (u32char)'\r';
-        case 'f':
-            esc = (u32char)'\f';
+        case 't': return '\t';
+        case 'b': return '\b';
+        case 'n': return '\n';
+        case 'r': return '\r';
+        case 'f': return '\f';
         case '\'':
         case '\"':
         case '\\':
             // return the escape itself
-            break;
+            return esc;
         default:
             m_compilation_unit->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_unrecognized_escape_sequence,
                     location, std::string("\\") + utf::get_bytes(esc)));
-            esc = (u32char)'\0';
         }
     }
 
-    return esc;
+    return 0;
 }
 
 Token Lexer::ReadStringLiteral()

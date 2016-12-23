@@ -1,7 +1,7 @@
 #ifndef STATIC_MEMORY_HPP
 #define STATIC_MEMORY_HPP
 
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 #include <common/my_assert.hpp>
 
 #include <utility>

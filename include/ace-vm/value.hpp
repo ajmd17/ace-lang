@@ -1,5 +1,5 @@
-#ifndef STACK_VALUE_HPP
-#define STACK_VALUE_HPP
+#ifndef VALUE_HPP
+#define VALUE_HPP
 
 #include <ace-vm/heap_value.hpp>
 #include <ace-sdk/ace-sdk.hpp>
@@ -21,13 +21,20 @@ struct ExecutionThread;
 typedef void(*NativeFunctionPtr_t)(ace::sdk::Params);
 typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, Value*);
 
+typedef int32_t aint32;
+typedef int64_t aint64;
+typedef float afloat32;
+typedef double afloat64;
+
 struct Value {
     union ValueData {
-        int32_t i32;
-        int64_t i64;
-        float f;
-        double d;
+        aint32 i32;
+        aint64 i64;
+        afloat32 f;
+        afloat64 d;
+
         bool b;
+
         HeapValue *ptr;
 
         struct {
@@ -51,6 +58,7 @@ struct Value {
         F64,
 
         BOOLEAN,
+
         HEAP_POINTER,
         FUNCTION,
         NATIVE_FUNCTION,
@@ -64,8 +72,34 @@ struct Value {
     inline Value::ValueType GetType() const { return m_type; }
     inline Value::ValueData GetValue() const { return m_value; }
 
-    void Mark();
-    utf::Utf8String ToString();
+    inline bool GetInteger(aint64 *out) const
+    {
+        switch (m_type) {
+            case I32: *out = m_value.i32; return true;
+            case I64: *out = m_value.i64; return true;
+            default: return false;
+        }
+    }
+
+    inline bool GetFloatingPoint(afloat64 *out) const
+    {
+        switch (m_type) {
+            case F32: *out = m_value.f; return true;
+            case F64: *out = m_value.d; return true;
+            default: return false;
+        }
+    }
+
+    inline bool GetNumber(afloat64 *out) const
+    {
+        switch (m_type) {
+            case I32: *out = m_value.i32; return true;
+            case I64: *out = m_value.i64; return true;
+            case F32: *out = m_value.f; return true;
+            case F64: *out = m_value.d; return true;
+            default: return false;
+        }
+    }
 
     inline const char *GetTypeString() const
     {
@@ -81,6 +115,9 @@ struct Value {
         default: return "??";
         }
     }
+
+    void Mark();
+    utf::Utf8String ToString();
 };
 
 } // namespace vm

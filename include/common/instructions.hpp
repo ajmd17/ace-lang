@@ -1,6 +1,73 @@
 #ifndef INSTRUCTIONS_HPP
 #define INSTRUCTIONS_HPP
 
+enum class DataStoreMode {
+    DataStoreString = 0x00,
+    DataStoreAddress = 0x01,
+    DataStoreFunction = 0x02,
+    DataStoreType = 0x03
+};
+
+enum class MovRegMode {
+    RegToStackOffset = 0x00,
+    StackOffsetToReg = 0x01,
+    RegToStackIndex = 0x02,
+    StackIndexToReg = 0x03
+};
+
+enum class MovIndexMode {
+    RegToIndex = 0x00,
+    IndexToReg = 0x01,
+};
+
+enum class JumpMode {
+    JumpEqual = 0x00,
+    JumpNotEqual = 0x01,
+    JumpGreater = 0x02,
+    JumpGreaterEqual = 0x03
+};
+
+enum class Instructions_2 {
+    NOP = 0x00,
+
+    STORE,
+
+    CONST_I32,
+    CONST_I64,
+    CONST_F32,
+    CONST_F64,
+    CONST_BOOLEAN,
+    CONST_NULL,
+
+    MOV_REG,
+    MOV_INDEX,
+
+    JMP,
+    JMP_IF,
+
+    PUSH,
+    POP,
+
+    CMP,
+    CMPZ,
+
+    CALL,
+    RET,
+
+    PRINT,
+
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    MOD,
+
+    NEG,
+    NOT,
+
+    HALT,
+};
+
 // arguments should be placed in the format:
 // dest, src
 

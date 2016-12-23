@@ -1,4 +1,4 @@
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 #include <ace-vm/object.hpp>
 #include <ace-vm/array.hpp>
 

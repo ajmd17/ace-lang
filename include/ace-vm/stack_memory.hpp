@@ -1,7 +1,7 @@
 #ifndef STACK_MEMORY_HPP
 #define STACK_MEMORY_HPP
 
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 #include <common/my_assert.hpp>
 
 #include <array>

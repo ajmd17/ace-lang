@@ -1,7 +1,7 @@
 #ifndef RUNTIME_HPP
 #define RUNTIME_HPP
 
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 
 #include <vector>
 #include <memory>

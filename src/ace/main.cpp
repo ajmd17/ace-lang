@@ -25,7 +25,7 @@
 #include <thread>
 #include <cstdio>
 #include <cstdlib>
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 
 using namespace ace;
 
@@ -753,8 +753,6 @@ int main(int argc, char *argv[])
 
         if (mode == COMPILE_SOURCE) {
             if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
-                compilation_unit.m_module_tree.operator<<(utf::cout);
-
                 // execute the compiled bytecode file
                 RunBytecodeFile(&vm, out_filename, true);
             }

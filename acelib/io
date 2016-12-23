@@ -4,10 +4,6 @@ module io {
     write: Any
     close: Any
     stdout: Any
-
-    // console
-    println: Any
-    readln: Any
     
     module _Detail_ {
         lib = runtime::load_library('lib/libace-runtime.so')

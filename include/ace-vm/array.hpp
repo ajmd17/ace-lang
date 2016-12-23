@@ -1,7 +1,7 @@
 #ifndef ARRAY_HPP
 #define ARRAY_HPP
 
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 
 namespace ace {
 namespace vm {

@@ -1,7 +1,7 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 
 #include <cstdint>
 

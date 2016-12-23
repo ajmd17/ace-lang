@@ -1,5 +1,5 @@
 #include <ace-vm/vm.hpp>
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 #include <ace-vm/heap_value.hpp>
 #include <ace-vm/array.hpp>
 #include <ace-vm/object.hpp>
@@ -188,8 +188,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
     switch (code) {
     case STORE_STATIC_STRING: {
         // get string length
-        uint32_t len;
-        bs->Read(&len);
+        uint32_t len; bs->Read(&len);
 
         // read string based on length
         char *str = new char[len + 1];
@@ -212,8 +211,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case STORE_STATIC_ADDRESS: {
-        uint32_t value;
-        bs->Read(&value);
+        uint32_t value; bs->Read(&value);
 
         Value sv;
         sv.m_type = Value::ADDRESS;
@@ -224,11 +222,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case STORE_STATIC_FUNCTION: {
-        uint32_t addr;
-        bs->Read(&addr);
-
-        uint8_t nargs;
-        bs->Read(&nargs);
+        uint32_t addr; bs->Read(&addr);
+        uint8_t nargs; bs->Read(&nargs);
 
         Value sv;
         sv.m_type = Value::FUNCTION;
@@ -240,8 +235,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case STORE_STATIC_TYPE: {
-        uint16_t size;
-        bs->Read(&size);
+        uint16_t size; bs->Read(&size);
 
         ASSERT(size > 0);
 
@@ -267,11 +261,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_I32: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        int32_t i32;
-        bs->Read(&i32);
+        uint8_t reg; bs->Read(&reg);
+        aint32 i32; bs->Read(&i32);
 
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -281,11 +272,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_I64: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        int64_t i64;
-        bs->Read(&i64);
+        uint8_t reg; bs->Read(&reg);
+        aint64 i64; bs->Read(&i64);
 
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -295,11 +283,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_F32: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        float f;
-        bs->Read(&f);
+        uint8_t reg; bs->Read(&reg);
+        afloat32 f; bs->Read(&f);
 
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -309,11 +294,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_F64: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        double d;
-        bs->Read(&d);
+        uint8_t reg; bs->Read(&reg);
+        afloat64 d; bs->Read(&d);
 
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -323,11 +305,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_OFFSET: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        uint16_t offset;
-        bs->Read(&offset);
+        uint8_t reg; bs->Read(&reg);
+        uint16_t offset; bs->Read(&offset);
 
         // read value from stack at (sp - offset)
         // into the the register
@@ -336,11 +315,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_INDEX: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        uint16_t idx;
-        bs->Read(&idx);
+        uint8_t reg; bs->Read(&reg);
+        uint16_t idx; bs->Read(&idx);
 
         // read value from stack at the index into the the register
         // NOTE: read from main thread
@@ -349,11 +325,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_STATIC: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        uint16_t index;
-        bs->Read(&index);
+        uint8_t reg; bs->Read(&reg);
+        uint16_t index; bs->Read(&index);
 
         // read value from static memory
         // at the index into the the register
@@ -362,17 +335,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_STRING: {
-        uint8_t reg;
-        bs->Read(&reg);
-
+        uint8_t reg; bs->Read(&reg);
         // get string length
-        uint32_t len;
-        bs->Read(&len);
+        uint32_t len; bs->Read(&len);
 
         // read string based on length
         char *str = new char[len + 1];
         str[len] = '\0';
-
         bs->Read(str, len);
 
         // allocate heap value
@@ -391,11 +360,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_ADDR: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        uint32_t value;
-        bs->Read(&value);
+        uint8_t reg; bs->Read(&reg);
+        uint32_t value; bs->Read(&value);
 
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::ADDRESS;
@@ -404,14 +370,9 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_FUNC: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        uint32_t addr;
-        bs->Read(&addr);
-
-        uint8_t nargs;
-        bs->Read(&nargs);
+        uint8_t reg; bs->Read(&reg);
+        uint32_t addr; bs->Read(&addr);
+        uint8_t nargs; bs->Read(&nargs);
 
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::FUNCTION;
@@ -421,11 +382,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_TYPE: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        uint16_t size;
-        bs->Read(&size);
+        uint8_t reg; bs->Read(&reg);
+        uint16_t size; bs->Read(&size);
 
         ASSERT(size > 0);
 
@@ -438,7 +396,6 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         // allocate heap value
         HeapValue *hv = m_state.HeapAlloc(thread);
-
         ASSERT(hv != nullptr);
 
         hv->Assign(TypeInfo(size, hashes));
@@ -453,14 +410,9 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_MEM: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t src;
-        bs->Read(&src);
-
-        uint8_t idx;
-        bs->Read(&idx);
+        uint8_t dst; bs->Read(&dst);
+        uint8_t src; bs->Read(&src);
+        uint8_t idx; bs->Read(&idx);
 
         Value &sv = thread->m_regs[src];
         ASSERT(sv.m_type == Value::HEAP_POINTER);
@@ -469,8 +421,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         if (hv == nullptr) {
             m_state.ThrowException(thread, Exception::NullReferenceException());
         } else {
-            Object *objptr = nullptr;
-            if ((objptr = hv->GetPointer<Object>()) != nullptr) {
+            if (Object *objptr = hv->GetPointer<Object>()) {
                 ASSERT_MSG(idx < objptr->GetSize(), "member index out of bounds");
                 thread->m_regs[dst] = objptr->GetMember(idx).value;
             } else {
@@ -482,14 +433,9 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_MEM_HASH: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t src;
-        bs->Read(&src);
-
-        uint32_t hash;
-        bs->Read(&hash);
+        uint8_t dst; bs->Read(&dst);
+        uint8_t src; bs->Read(&src);
+        uint32_t hash; bs->Read(&hash);
 
         Value &sv = thread->m_regs[src];
         ASSERT(sv.m_type == Value::HEAP_POINTER);
@@ -498,13 +444,11 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         if (hv == nullptr) {
             m_state.ThrowException(thread, Exception::NullReferenceException());
         } else {
-            Object *objptr = nullptr;
-            if ((objptr = hv->GetPointer<Object>()) != nullptr) {
-                Member *member = objptr->LookupMemberFromHash(hash);
-                if (member == nullptr) {
-                    m_state.ThrowException(thread, Exception::MemberNotFoundException());
-                } else {
+            if (Object *objptr = hv->GetPointer<Object>()) {
+                if (Member *member = objptr->LookupMemberFromHash(hash)) {
                     thread->m_regs[dst] = member->value;
+                } else {
+                    m_state.ThrowException(thread, Exception::MemberNotFoundException());
                 }
             } else {
                 m_state.ThrowException(thread,
@@ -515,36 +459,27 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_ARRAYIDX: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t src;
-        bs->Read(&src);
-
-        uint8_t idx_reg;
-        bs->Read(&idx_reg);
-
-        Value &idx_sv = thread->m_regs[idx_reg];
+        uint8_t dst; bs->Read(&dst);
+        uint8_t src; bs->Read(&src);
+        uint8_t idx_reg; bs->Read(&idx_reg);
 
         Value &sv = thread->m_regs[src];
         ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "source must be a pointer");
 
-        HeapValue *hv = sv.m_value.ptr;
+        Value &idx_sv = thread->m_regs[idx_reg];
 
-        utf::Utf8String *str_ptr = nullptr;
+        if (HeapValue *hv = sv.m_value.ptr) {
+            union {
+                aint64 index;
+                utf::Utf8String *str_ptr;
+            };
 
-        if (hv == nullptr) {
-            m_state.ThrowException(thread, Exception::NullReferenceException());
-        } else {
-            if (IS_VALUE_INTEGER(idx_sv)) {
-                int64_t idx_i = GetIntFast(idx_sv);
-
-                Array *arrayptr = nullptr;
-                if ((arrayptr = hv->GetPointer<Array>()) != nullptr) {
-                    if (idx_i >= arrayptr->GetSize()) {
+            if (idx_sv.GetInteger(&index)) {
+                if (Array *arrayptr = hv->GetPointer<Array>()) {
+                    if (index >= arrayptr->GetSize()) {
                         m_state.ThrowException(thread, Exception::OutOfBoundsException());
                     } else {
-                        thread->m_regs[dst] = arrayptr->AtIndex(idx_i);
+                        thread->m_regs[dst] = arrayptr->AtIndex(index);
                     }
                 } else {
                     m_state.ThrowException(thread,
@@ -557,13 +492,14 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
                 m_state.ThrowException(thread,
                     Exception(utf::Utf8String("array index must be of type Int or String")));
             }
+        } else {
+            m_state.ThrowException(thread, Exception::NullReferenceException());
         }
 
         break;
     }
     case LOAD_NULL: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::HEAP_POINTER;
@@ -572,8 +508,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_TRUE: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::BOOLEAN;
@@ -582,8 +517,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case LOAD_FALSE: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::BOOLEAN;
@@ -592,11 +526,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case MOV_OFFSET: {
-        uint16_t offset;
-        bs->Read(&offset);
-
-        uint8_t reg;
-        bs->Read(&reg);
+        uint16_t offset; bs->Read(&offset);
+        uint8_t reg; bs->Read(&reg);
 
         // copy value from register to stack value at (sp - offset)
         thread->m_stack[thread->m_stack.GetStackPointer() - offset] =
@@ -605,11 +536,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case MOV_INDEX: {
-        uint16_t idx;
-        bs->Read(&idx);
-
-        uint8_t reg;
-        bs->Read(&reg);
+        uint16_t idx; bs->Read(&idx);
+        uint8_t reg; bs->Read(&reg);
 
         // copy value from register to stack value at index
         // NOTE: storing on main thread
@@ -618,53 +546,37 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case MOV_MEM: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t idx;
-        bs->Read(&idx);
-
-        uint8_t src;
-        bs->Read(&src);
+        uint8_t dst; bs->Read(&dst);
+        uint8_t idx; bs->Read(&idx);
+        uint8_t src; bs->Read(&src);
 
         Value &sv = thread->m_regs[dst];
         ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
 
-        HeapValue *hv = sv.m_value.ptr;
-        if (hv == nullptr) {
-            m_state.ThrowException(thread, Exception::NullReferenceException());
-        } else {
-            Object *objptr = nullptr;
-            if ((objptr = hv->GetPointer<Object>()) != nullptr) {
+        if (HeapValue *hv = sv.m_value.ptr) {
+            if (Object *objptr = hv->GetPointer<Object>()) {
                 ASSERT_MSG(idx < objptr->GetSize(), "member index out of bounds");
                 objptr->GetMember(idx).value = thread->m_regs[src];
             } else {
                 m_state.ThrowException(thread,
                     Exception(utf::Utf8String("not a standard object")));
             }
+        } else {
+            m_state.ThrowException(thread, Exception::NullReferenceException());
         }
 
         break;
     }
     case MOV_ARRAYIDX: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint32_t idx;
-        bs->Read(&idx);
-
-        uint8_t src;
-        bs->Read(&src);
+        uint8_t dst; bs->Read(&dst);
+        uint32_t idx; bs->Read(&idx);
+        uint8_t src; bs->Read(&src);
 
         Value &sv = thread->m_regs[dst];
         ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
 
-        HeapValue *hv = sv.m_value.ptr;
-        if (hv == nullptr) {
-            m_state.ThrowException(thread, Exception::NullReferenceException());
-        } else {
-            Array *arrayptr = nullptr;
-            if ((arrayptr = hv->GetPointer<Array>()) != nullptr) {
+        if (HeapValue *hv = sv.m_value.ptr) {
+            if (Array *arrayptr = hv->GetPointer<Array>()) {
                 if (idx >= arrayptr->GetSize()) {
                     m_state.ThrowException(thread, Exception::OutOfBoundsException());
                 } else {
@@ -674,46 +586,32 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
                 m_state.ThrowException(thread,
                     Exception(utf::Utf8String("object is not an array")));
             }
+        } else {
+            m_state.ThrowException(thread, Exception::NullReferenceException());
         }
 
         break;
     }
     case MOV_REG: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t src;
-        bs->Read(&src);
-
+        uint8_t dst; bs->Read(&dst);
+        uint8_t src; bs->Read(&src);
         thread->m_regs[dst] = thread->m_regs[src];
-
         break;
     }
     case HAS_MEM_HASH: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t src;
-        bs->Read(&src);
-
-        uint32_t hash;
-        bs->Read(&hash);
+        uint8_t dst; bs->Read(&dst);
+        uint8_t src; bs->Read(&src);
+        uint32_t hash; bs->Read(&hash);
 
         Value &sv = thread->m_regs[src];
         Value &res = thread->m_regs[dst];
 
-        if (sv.m_type == Value::HEAP_POINTER) {
-            HeapValue *hv = sv.m_value.ptr;
-            if (hv != nullptr) {
-                Object *objptr = nullptr;
-                if ((objptr = hv->GetPointer<Object>()) != nullptr) {
-                    Member *member = objptr->LookupMemberFromHash(hash);
-                    if (member != nullptr) {
-                        res = member->value;
-
-                        // leave the statement
-                        break;
-                    }
+        if (sv.m_type == Value::HEAP_POINTER && sv.m_value.ptr != nullptr) {
+            if (Object *objptr = sv.m_value.ptr->GetPointer<Object>()) {
+                if (Member *member = objptr->LookupMemberFromHash(hash)) {
+                    res = member->value;
+                    // leave the statement
+                    break;
                 }
             }
         }
@@ -725,8 +623,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case PUSH: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         // push a copy of the register value to the top of the stack
         thread->m_stack.Push(thread->m_regs[reg]);
@@ -735,50 +632,38 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
     }
     case POP: {
         thread->m_stack.Pop();
-
         break;
     }
     case POP_N: {
-        uint8_t n;
-        bs->Read(&n);
-
+        uint8_t n; bs->Read(&n);
         thread->m_stack.Pop(n);
-
         break;
     }
     case PUSH_ARRAY: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t src;
-        bs->Read(&src);
+        uint8_t dst; bs->Read(&dst);
+        uint8_t src; bs->Read(&src);
 
         Value &sv = thread->m_regs[dst];
         ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
 
         HeapValue *hv = sv.m_value.ptr;
-        if (hv == nullptr) {
-            m_state.ThrowException(thread,
-                Exception::NullReferenceException());
-        } else {
-            Array *arrayptr = nullptr;
-            if ((arrayptr = hv->GetPointer<Array>()) != nullptr) {
+        if (HeapValue *hv = sv.m_value.ptr) {
+            if (Array *arrayptr = hv->GetPointer<Array>()) {
                 arrayptr->Push(thread->m_regs[src]);
             } else {
                 m_state.ThrowException(thread,
                     Exception(utf::Utf8String("object is not an array")));
             }
+        } else {
+            m_state.ThrowException(thread,
+                Exception::NullReferenceException());
         }
 
         break;
     }
     case ECHO: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        // print out the value of the item in the register
+        uint8_t reg; bs->Read(&reg);
         Print(thread->m_regs[reg]);
-        
         break;
     }
     case ECHO_NEWLINE: {
@@ -786,8 +671,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case JMP: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         const Value &addr = thread->m_regs[reg];
         ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
@@ -797,8 +681,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case JE: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         if (thread->m_regs.m_flags == EQUAL) {
             const Value &addr = thread->m_regs[reg];
@@ -810,8 +693,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case JNE: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         if (thread->m_regs.m_flags != EQUAL) {
             const Value &addr = thread->m_regs[reg];
@@ -823,8 +705,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case JG: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         if (thread->m_regs.m_flags == GREATER) {
             const Value &addr = thread->m_regs[reg];
@@ -836,8 +717,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case JGE: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         if (thread->m_regs.m_flags == GREATER || thread->m_regs.m_flags == EQUAL) {
             const Value &addr = thread->m_regs[reg];
@@ -849,11 +729,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case CALL: {
-        uint8_t reg;
-        bs->Read(&reg);
-
-        uint8_t num_args;
-        bs->Read(&num_args);
+        uint8_t reg; bs->Read(&reg);
+        uint8_t num_args; bs->Read(&num_args);
 
         Invoke(thread, bs, thread->m_regs[reg], num_args);
 
@@ -877,8 +754,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
     }
     case BEGIN_TRY: {
         // register that holds address of catch block
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         // copy the value of the address for the catch-block
         const Value &catch_address = thread->m_regs[reg];
@@ -907,11 +783,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case NEW: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint8_t src;
-        bs->Read(&src);
+        uint8_t dst; bs->Read(&dst);
+        uint8_t src; bs->Read(&src);
 
         // read value from register
         Value &type_sv = thread->m_regs[src];
@@ -935,11 +808,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case NEW_ARRAY: {
-        uint8_t dst;
-        bs->Read(&dst);
-
-        uint32_t size;
-        bs->Read(&size);
+        uint8_t dst; bs->Read(&dst);
+        uint32_t size; bs->Read(&size);
 
         // allocate heap object
         HeapValue *hv = m_state.HeapAlloc(thread);
@@ -955,11 +825,8 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case CMP: {
-        uint8_t lhs_reg;
-        bs->Read(&lhs_reg);
-
-        uint8_t rhs_reg;
-        bs->Read(&rhs_reg);
+        uint8_t lhs_reg; bs->Read(&lhs_reg);
+        uint8_t rhs_reg; bs->Read(&rhs_reg);
 
         // dropout early for comparing something against itself
         if (lhs_reg == rhs_reg) {
@@ -968,151 +835,98 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         }
 
         // load values from registers
-        const Value &lhs = thread->m_regs[lhs_reg];
-        const Value &rhs = thread->m_regs[rhs_reg];
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
+
+        union {
+            aint64 i;
+            afloat64 f;
+        } a, b;
 
         // compare integers
-        if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
-            int64_t left = GetValueInt64(thread, lhs);
-            int64_t right = GetValueInt64(thread, rhs);
-
-            if (left > right) {
-                // set GREATER flag
-                thread->m_regs.m_flags = GREATER;
-            } else if (left == right) {
-                // set EQUAL flag
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                // set NONE flag
-                thread->m_regs.m_flags = NONE;
-            }
-        // compare booleans
-        } else if (lhs.m_type == Value::BOOLEAN && rhs.m_type == Value::BOOLEAN) {
-            bool left = lhs.m_value.b;
-            bool right = rhs.m_value.b;
-
-            if (left > right) {
-                // set GREATER flag
-                thread->m_regs.m_flags = GREATER;
-            } else if (left == right) {
-                // set EQUAL flag
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                // set NONE flag
-                thread->m_regs.m_flags = NONE;
-            }
-        } else if (IS_VALUE_FLOATING_POINT(lhs)) {
-            CompareAsFloats(thread, lhs, rhs);
-        } else if (IS_VALUE_FLOATING_POINT(rhs)) {
-            CompareAsFloats(thread, rhs, lhs);
-        } else if (lhs.m_type == Value::HEAP_POINTER && rhs.m_type == Value::HEAP_POINTER) {
+        if (lhs->GetInteger(&a.i) && rhs->GetInteger(&b.i)) {
+            thread->m_regs.m_flags = (a.i == b.i) ? EQUAL : ((a.i > b.i) ? GREATER : NONE);
+        } else if (lhs->GetNumber(&a.f) && rhs->GetNumber(&b.f)) {
+            thread->m_regs.m_flags = (a.f == b.f) ? EQUAL : ((a.f > b.f) ? GREATER : NONE);
+        } else if (lhs->m_type == Value::BOOLEAN && rhs->m_type == Value::BOOLEAN) {
+            thread->m_regs.m_flags = (lhs->m_value.b == rhs->m_value.b) ? EQUAL 
+                : ((lhs->m_value.b > rhs->m_value.b) ? GREATER : NONE);
+        } else if (lhs->m_type == Value::HEAP_POINTER && rhs->m_type == Value::HEAP_POINTER) {
             CompareAsPointers(thread, lhs, rhs);
-        } else if (lhs.m_type == Value::FUNCTION && rhs.m_type == Value::FUNCTION) {
+        } else if (lhs->m_type == Value::FUNCTION && rhs->m_type == Value::FUNCTION) {
             CompareAsFunctions(thread, lhs, rhs);
-        } else if (lhs.m_type == Value::NATIVE_FUNCTION && rhs.m_type == Value::NATIVE_FUNCTION) {
+        } else if (lhs->m_type == Value::NATIVE_FUNCTION && rhs->m_type == Value::NATIVE_FUNCTION) {
             CompareAsNativeFunctions(thread, lhs, rhs);
         } else {
-            THROW_COMPARISON_ERROR(lhs, rhs);
+            THROW_COMPARISON_ERROR(lhs->GetTypeString(), rhs->GetTypeString());
         }
 
         break;
     }
     case CMPZ: {
-        uint8_t lhs_reg;
-        bs->Read(&lhs_reg);
+        uint8_t lhs_reg; bs->Read(&lhs_reg);
 
         // load values from registers
-        Value &lhs = thread->m_regs[lhs_reg];
+        Value *lhs = &thread->m_regs[lhs_reg];
 
-        if (IS_VALUE_INTEGER(lhs)) {
-            int64_t value = GetValueInt64(thread, lhs);
+        union {
+            aint64 i;
+            afloat64 f;
+        };
 
-            if (value == 0) {
-                // set EQUAL flag
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                // set NONE flag
-                thread->m_regs.m_flags = NONE;
-            }
-        } else if (IS_VALUE_FLOATING_POINT(lhs)) {
-            double value = GetValueDouble(thread, lhs);
-
-            if (value == 0.0) {
-                // set EQUAL flag
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                // set NONE flag
-                thread->m_regs.m_flags = NONE;
-            }
-        } else if (lhs.m_type == Value::BOOLEAN) {
-            if (!lhs.m_value.b) {
-                // set EQUAL flag
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                // set NONE flag
-                thread->m_regs.m_flags = NONE;
-            }
-        } else if (lhs.m_type == Value::HEAP_POINTER) {
-            if (lhs.m_value.ptr == nullptr) {
-                // set EQUAL flag
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                // set NONE flag
-                thread->m_regs.m_flags = NONE;
-            }
-        } else if (lhs.m_type == Value::FUNCTION) {
-            // set NONE flag
+        if (lhs->GetInteger(&i)) {
+            thread->m_regs.m_flags = !i ? EQUAL : NONE;
+        } else if (lhs->GetFloatingPoint(&f)) {
+            thread->m_regs.m_flags = !f ? EQUAL : NONE;
+        } else if (lhs->m_type == Value::BOOLEAN) {
+            thread->m_regs.m_flags = !lhs->m_value.b ? EQUAL : NONE;
+        } else if (lhs->m_type == Value::HEAP_POINTER) {
+            thread->m_regs.m_flags = !lhs->m_value.ptr ? EQUAL : NONE;
+        } else if (lhs->m_type == Value::FUNCTION) {
             thread->m_regs.m_flags = NONE;
         } else {
             char buffer[256];
-            std::sprintf(buffer, "cannot determine if type '%s' is nonzero",
-                lhs.GetTypeString());
+            std::sprintf(buffer, "cannot determine if type '%s' is non-zero", lhs->GetTypeString());
             m_state.ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
 
         break;
     }
     case ADD: {
-        uint8_t lhs_reg;
-        bs->Read(&lhs_reg);
-
-        uint8_t rhs_reg;
-        bs->Read(&rhs_reg);
-
-        uint8_t dst_reg;
-        bs->Read(&dst_reg);
+        uint8_t lhs_reg; bs->Read(&lhs_reg);
+        uint8_t rhs_reg; bs->Read(&rhs_reg);
+        uint8_t dst_reg; bs->Read(&dst_reg);
 
         // load values from registers
-        Value &lhs = thread->m_regs[lhs_reg];
-        Value &rhs = thread->m_regs[rhs_reg];
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
 
         Value result;
-        result.m_type = MATCH_TYPES(lhs, rhs);
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
 
-        if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
-            int64_t left = GetValueInt64(thread, lhs);
-            int64_t right = GetValueInt64(thread, rhs);
-            int64_t result_value = left + right;
+        union {
+            aint64 i;
+            afloat64 f;
+        } a, b;
 
+        if (lhs->GetInteger(&a.i) && rhs->GetInteger(&b.i)) {
+            aint64 result_value = a.i + b.i;
             if (result.m_type == Value::I32) {
-                result.m_value.i32 = (int32_t)result_value;
+                result.m_value.i32 = result_value;
             } else {
                 result.m_value.i64 = result_value;
             }
-        } else if (IS_VALUE_FLOATING_POINT(lhs) || IS_VALUE_FLOATING_POINT(rhs)) {
-            double left = GetValueDouble(thread, lhs);
-            double right = GetValueDouble(thread, rhs);
-            double result_value = left + right;
-
+        } else if (lhs->GetNumber(&a.f) && rhs->GetNumber(&b.f)) {
+            afloat64 result_value = a.f + b.f;
             if (result.m_type == Value::F32) {
-                result.m_value.f = (float)result_value;
+                result.m_value.f = result_value;
             } else {
                 result.m_value.d = result_value;
             }
         } else {
             char buffer[256];
             std::sprintf(buffer, "cannot add types '%s' and '%s'",
-                lhs.GetTypeString(), rhs.GetTypeString());
+                lhs->GetTypeString(), rhs->GetTypeString());
             m_state.ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
 
@@ -1122,47 +936,40 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case SUB: {
-        uint8_t lhs_reg;
-        bs->Read(&lhs_reg);
-
-        uint8_t rhs_reg;
-        bs->Read(&rhs_reg);
-
-        uint8_t dst_reg;
-        bs->Read(&dst_reg);
+        uint8_t lhs_reg; bs->Read(&lhs_reg);
+        uint8_t rhs_reg; bs->Read(&rhs_reg);
+        uint8_t dst_reg; bs->Read(&dst_reg);
 
         // load values from registers
-        Value &lhs = thread->m_regs[lhs_reg];
-        Value &rhs = thread->m_regs[rhs_reg];
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
 
         Value result;
-        result.m_type = MATCH_TYPES(lhs, rhs);
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
 
-        if (lhs.m_type == Value::HEAP_POINTER) {
-        } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
-            int64_t left = GetValueInt64(thread, lhs);
-            int64_t right = GetValueInt64(thread, rhs);
-            int64_t result_value = left - right;
+        union {
+            aint64 i;
+            afloat64 f;
+        } a, b;
 
+        if (lhs->GetInteger(&a.i) && rhs->GetInteger(&b.i)) {
+            aint64 result_value = a.i - b.i;
             if (result.m_type == Value::I32) {
-                result.m_value.i32 = (int32_t)result_value;
+                result.m_value.i32 = result_value;
             } else {
                 result.m_value.i64 = result_value;
             }
-        } else if (IS_VALUE_FLOATING_POINT(lhs) || IS_VALUE_FLOATING_POINT(rhs)) {
-            double left = GetValueDouble(thread, lhs);
-            double right = GetValueDouble(thread, rhs);
-            double result_value = left - right;
-
+        } else if (lhs->GetNumber(&a.f) && rhs->GetNumber(&b.f)) {
+            afloat64 result_value = a.f - b.f;
             if (result.m_type == Value::F32) {
-                result.m_value.f = (float)result_value;
+                result.m_value.f = result_value;
             } else {
                 result.m_value.d = result_value;
             }
         } else {
             char buffer[256];
             std::sprintf(buffer, "cannot subtract types '%s' and '%s'",
-                lhs.GetTypeString(), rhs.GetTypeString());
+                lhs->GetTypeString(), rhs->GetTypeString());
             m_state.ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
 
@@ -1172,47 +979,40 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case MUL: {
-        uint8_t lhs_reg;
-        bs->Read(&lhs_reg);
-
-        uint8_t rhs_reg;
-        bs->Read(&rhs_reg);
-
-        uint8_t dst_reg;
-        bs->Read(&dst_reg);
+        uint8_t lhs_reg; bs->Read(&lhs_reg);
+        uint8_t rhs_reg; bs->Read(&rhs_reg);
+        uint8_t dst_reg; bs->Read(&dst_reg);
 
         // load values from registers
-        Value &lhs = thread->m_regs[lhs_reg];
-        Value &rhs = thread->m_regs[rhs_reg];
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
 
         Value result;
-        result.m_type = MATCH_TYPES(lhs, rhs);
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
 
-        if (lhs.m_type == Value::HEAP_POINTER) {
-        } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
-            int64_t left = GetValueInt64(thread, lhs);
-            int64_t right = GetValueInt64(thread, rhs);
-            int64_t result_value = left * right;
+        union {
+            aint64 i;
+            afloat64 f;
+        } a, b;
 
+        if (lhs->GetInteger(&a.i) && rhs->GetInteger(&b.i)) {
+            aint64 result_value = a.i * b.i;
             if (result.m_type == Value::I32) {
-                result.m_value.i32 = (int32_t)result_value;
+                result.m_value.i32 = result_value;
             } else {
                 result.m_value.i64 = result_value;
             }
-        } else if (IS_VALUE_FLOATING_POINT(lhs) || IS_VALUE_FLOATING_POINT(rhs)) {
-            double left = GetValueDouble(thread, lhs);
-            double right = GetValueDouble(thread, rhs);
-            double result_value = left * right;
-
+        } else if (lhs->GetNumber(&a.f) && rhs->GetNumber(&b.f)) {
+            afloat64 result_value = a.f * b.f;
             if (result.m_type == Value::F32) {
-                result.m_value.f = (float)result_value;
+                result.m_value.f = result_value;
             } else {
                 result.m_value.d = result_value;
             }
         } else {
             char buffer[256];
             std::sprintf(buffer, "cannot multiply types '%s' and '%s'",
-                lhs.GetTypeString(), rhs.GetTypeString());
+                lhs->GetTypeString(), rhs->GetTypeString());
             m_state.ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
 
@@ -1222,51 +1022,42 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case DIV: {
-        uint8_t lhs_reg;
-        bs->Read(&lhs_reg);
-
-        uint8_t rhs_reg;
-        bs->Read(&rhs_reg);
-
-        uint8_t dst_reg;
-        bs->Read(&dst_reg);
+        uint8_t lhs_reg; bs->Read(&lhs_reg);
+        uint8_t rhs_reg; bs->Read(&rhs_reg);
+        uint8_t dst_reg; bs->Read(&dst_reg);
 
         // load values from registers
-        Value &lhs = thread->m_regs[lhs_reg];
-        Value &rhs = thread->m_regs[rhs_reg];
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
 
         Value result;
-        result.m_type = MATCH_TYPES(lhs, rhs);
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
 
-        if (lhs.m_type == Value::HEAP_POINTER) {
-        } else if (IS_VALUE_INTEGER(lhs) && IS_VALUE_INTEGER(rhs)) {
-            int64_t left = GetValueInt64(thread, lhs);
-            int64_t right = GetValueInt64(thread, rhs);
+        union {
+            aint64 i;
+            afloat64 f;
+        } a, b;
 
-            if (right == 0) {
+        if (lhs->GetInteger(&a.i) && rhs->GetInteger(&b.i)) {
+            if (b.i == 0) {
                 // division by zero
                 m_state.ThrowException(thread, Exception::DivisionByZeroException());
             } else {
-                int64_t result_value = left / right;
-
+                aint64 result_value = a.i / b.i;
                 if (result.m_type == Value::I32) {
-                    result.m_value.i32 = (int32_t)result_value;
+                    result.m_value.i32 = result_value;
                 } else {
                     result.m_value.i64 = result_value;
                 }
             }
-        } else if (IS_VALUE_FLOATING_POINT(lhs) || IS_VALUE_FLOATING_POINT(rhs)) {
-            double left = GetValueDouble(thread, lhs);
-            double right = GetValueDouble(thread, rhs);
-
-            if (right == 0.0) {
+        } else if (lhs->GetNumber(&a.f) && rhs->GetNumber(&b.f)) {
+            if (b.f == 0.0) {
                 // division by zero
                 m_state.ThrowException(thread, Exception::DivisionByZeroException());
             } else {
-                double result_value = left / right;
-
+                afloat64 result_value = a.f / b.f;
                 if (result.m_type == Value::F32) {
-                    result.m_value.f = (float)result_value;
+                    result.m_value.f = result_value;
                 } else {
                     result.m_value.d = result_value;
                 }
@@ -1274,7 +1065,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         } else {
             char buffer[256];
             std::sprintf(buffer, "cannot divide types '%s' and '%s'",
-                lhs.GetTypeString(), rhs.GetTypeString());
+                lhs->GetTypeString(), rhs->GetTypeString());
             m_state.ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
 
@@ -1284,29 +1075,31 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case NEG: {
-        uint8_t reg;
-        bs->Read(&reg);
+        uint8_t reg; bs->Read(&reg);
 
         // load value from register
-        Value &value = thread->m_regs[reg];
+        Value *value = &thread->m_regs[reg];
 
-        if (IS_VALUE_INTEGER(value)) {
-            int64_t i = GetValueInt64(thread, value);
-            if (value.m_type == Value::I32) {
-                value.m_value.i32 = (int32_t)-i;
+        union {
+            aint64 i;
+            afloat64 f;
+        };
+
+        if (value->GetInteger(&i)) {
+            if (value->m_type == Value::I32) {
+                value->m_value.i32 = -i;
             } else {
-                value.m_value.i64 = -i;
+                value->m_value.i64 = -i;
             }
-        } else if (IS_VALUE_FLOATING_POINT(value)) {
-            double d = GetValueDouble(thread, value);
-            if (value.m_type == Value::F32) {
-                value.m_value.f = (float)-d;
+        } else if (value->GetFloatingPoint(&f)) {
+            if (value->m_type == Value::F32) {
+                value->m_value.f = -f;
             } else {
-                value.m_value.d = -d;
+                value->m_value.d = -f;
             }
         } else {
             char buffer[256];
-            std::sprintf(buffer, "cannot negate type '%s'", value.GetTypeString());
+            std::sprintf(buffer, "cannot negate type '%s'", value->GetTypeString());
             m_state.ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
 

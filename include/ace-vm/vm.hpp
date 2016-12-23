@@ -11,11 +11,11 @@
 
 #define MAIN_THREAD m_state.m_threads[0]
 
-#define THROW_COMPARISON_ERROR(lhs, rhs) \
+#define THROW_COMPARISON_ERROR(left_type_str, right_type_str) \
     do { \
         char buffer[256]; \
-        ::std::sprintf(buffer, "cannot compare '%s' with '%s'", \
-            lhs.GetTypeString(), rhs.GetTypeString()); \
+        std::sprintf(buffer, "cannot compare '%s' with '%s'", \
+            (left_type_str), (right_type_str)); \
         m_state.ThrowException(thread, Exception(buffer)); \
     } while (0)
 
@@ -35,8 +35,8 @@
     ((value).m_type == Value::HEAP_POINTER && \
     (out = (value).m_value.ptr->GetPointer<Array>()))
 
-#define MATCH_TYPES(lhs, rhs) \
-    ((lhs).m_type < (rhs).m_type) ? (rhs).m_type : (lhs).m_type
+#define MATCH_TYPES(left_type, right_type) \
+    ((left_type) < (right_type)) ? (right_type) : (left_type)
 
 #define COMPARE_FLOATING_POINT(lhs, rhs) \
     do { \
@@ -87,60 +87,38 @@ public:
 private:
     VMState m_state;
 
-    inline void CompareAsFloats(ExecutionThread *thread, const Value &lhs, const Value &rhs)
+    inline void CompareAsPointers(ExecutionThread *thread, Value *lhs, Value *rhs)
     {
-        if (IS_VALUE_FLOATING_POINT(rhs) || IS_VALUE_INTEGER(rhs)) {
-            double left = GetValueDouble(thread, lhs);
-            double right = GetValueDouble(thread, rhs);
-            if (left > right) {
-                thread->m_regs.m_flags = GREATER;
-            } else if (left == right) {
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                thread->m_regs.m_flags = NONE;
-            }
-        } else {
-            THROW_COMPARISON_ERROR(lhs, rhs);
-        }
-    }
+        HeapValue *a = lhs->m_value.ptr;
+        HeapValue *b = rhs->m_value.ptr;
 
-    inline void CompareAsPointers(ExecutionThread *thread, const Value &lhs, const Value &rhs)
-    {
-        if (lhs.m_value.ptr == rhs.m_value.ptr) {
+        if (a == b) {
             // pointers equal, drop out early.
             thread->m_regs.m_flags = EQUAL;
-        } else if (lhs.m_value.ptr == nullptr || rhs.m_value.ptr == nullptr) {
+        } else if (!a || !b) {
             // one of them is null, not equal
             thread->m_regs.m_flags = NONE;
-        } else if (lhs.m_value.ptr->GetTypeId() == rhs.m_value.ptr->GetTypeId()) {
+        } else if (a->GetTypeId() == b->GetTypeId()) {
             // comparable types
-            if (lhs.m_value.ptr->operator==(*rhs.m_value.ptr)) {
-                thread->m_regs.m_flags = EQUAL;
-            } else {
-                thread->m_regs.m_flags = NONE;
-            }
+            thread->m_regs.m_flags = (a->operator==(*b)) ? EQUAL : NONE;
         } else {
-            THROW_COMPARISON_ERROR(lhs, rhs);
+            THROW_COMPARISON_ERROR(lhs->GetTypeString(), rhs->GetTypeString());
         }
     }
 
-    inline void CompareAsFunctions(ExecutionThread *thread, const Value &lhs, const Value &rhs)
+    inline void CompareAsFunctions(ExecutionThread *thread, Value *lhs, Value *rhs)
     {
-        if ((lhs.m_value.func.m_addr == rhs.m_value.func.m_addr) &&
-            (rhs.m_value.func.m_nargs == lhs.m_value.func.m_nargs)) {
+        if ((lhs->m_value.func.m_addr == rhs->m_value.func.m_addr) &&
+            (rhs->m_value.func.m_nargs == lhs->m_value.func.m_nargs)) {
             thread->m_regs.m_flags = EQUAL;
         } else {
             thread->m_regs.m_flags = NONE;
         }
     }
 
-    inline void CompareAsNativeFunctions(ExecutionThread *thread, const Value &lhs, const Value &rhs)
+    inline void CompareAsNativeFunctions(ExecutionThread *thread, Value *lhs, Value *rhs)
     {
-        if (lhs.m_value.native_func == rhs.m_value.native_func) {
-            thread->m_regs.m_flags = EQUAL;
-        } else {
-            thread->m_regs.m_flags = NONE;
-        }
+        thread->m_regs.m_flags = (lhs->m_value.native_func == rhs->m_value.native_func) ? EQUAL : NONE;
     }
 
     /** Returns the value as a 64-bit integer without checking if it is not of that type. */

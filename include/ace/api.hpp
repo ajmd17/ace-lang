@@ -4,7 +4,7 @@
 #include <ace-c/configuration.hpp>
 #include <ace-c/compilation_unit.hpp>
 
-#include <ace-vm/stack_value.hpp>
+#include <ace-vm/value.hpp>
 #include <ace-vm/vm.hpp>
 
 #include <string>

@@ -1,16 +1,3 @@
 module import_me {
     import 'another-import.ace'
-
-    a = 91
-
-    module blah {
-
-
-        type TestType {
-            name: String
-            id: Int
-        }
-    }
-
-    print 'Thanks'
 }

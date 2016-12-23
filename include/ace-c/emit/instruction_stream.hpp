@@ -8,6 +8,39 @@
 #include <ostream>
 #include <cstdint>
 
+/*struct BytecodeLabel {
+    int id;
+};
+
+class BytecodeOutputStream {
+public:
+    static unsigned char EncodeOpcode(unsigned char opcode, unsigned char data);
+
+    void Add_NOP();
+
+    void Add_STORE(const std::string &str);
+    void Add_STORE(uint32_t addr);
+    void Add_STORE(uint32_t addr, uint32_t nargs);
+    void Add_STORE(const std::string &type_name, const std::vector<uint32_t> &hashes);
+
+    void Add_CONST_I32(int32_t i);
+    void Add_CONST_I64(int64_t i);
+    void Add_CONST_F32(float f);
+    void Add_CONST_F64(double d);
+    void Add_CONST_BOOLEAN(bool b);
+    void Add_CONST_NULL();
+
+    void Add_MOV_REG(MovRegMode mode, int a, int b);
+    void Add_MOV_INDEX(MovIndexMode mode, int a, int b);
+
+    void Add_JMP(BytecodeLabel label);
+    void Add_JMP_IF(JumpMode mode, BytecodeLabel label);
+    
+
+private:
+    std::vector<std::vector<unsigned char>> m_data;
+};*/
+
 class InstructionStream {
     friend std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream);
 public:

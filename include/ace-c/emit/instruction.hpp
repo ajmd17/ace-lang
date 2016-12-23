@@ -9,6 +9,13 @@
 template <class...Ts>
 struct Instruction {
 public:
+    /** Encodes data into the byte.
+        opcode may be from 0-31,
+        data may be from 0-3.
+     */
+    static unsigned char Encode(unsigned char opcode, unsigned char data);
+
+public:
     Instruction() {}
     Instruction(const Instruction &other) : m_data(other.m_data) {}
 

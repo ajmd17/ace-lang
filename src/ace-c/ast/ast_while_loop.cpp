@@ -2,9 +2,11 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/emit/static_object.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
+#include <common/my_assert.hpp>
 
 AstWhileLoop::AstWhileLoop(const std::shared_ptr<AstExpression> &conditional,
         const std::shared_ptr<AstBlock> &block,
@@ -139,4 +141,12 @@ void AstWhileLoop::Optimize(AstVisitor *visitor, Module *mod)
     m_conditional->Optimize(visitor, mod);
     // optimize the body
     m_block->Optimize(visitor, mod);
+}
+
+void AstWhileLoop::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_conditional != nullptr && m_block != nullptr);
+    ss << Keyword::ToString(Keyword_while) << " ";
+    m_conditional->Recreate(ss);
+    m_block->Recreate(ss);
 }

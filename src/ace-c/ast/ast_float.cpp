@@ -27,6 +27,11 @@ void AstFloat::Build(AstVisitor *visitor, Module *mod)
         Instruction<uint8_t, uint8_t, float>(LOAD_F32, rp, m_value);
 }
 
+void AstFloat::Recreate(std::ostringstream &ss)
+{
+    ss << m_value;
+}
+
 int AstFloat::IsTrue() const
 {
     // any non-zero value is considered true

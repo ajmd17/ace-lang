@@ -11,6 +11,7 @@
 
 #include <ace-vm/object.hpp>
 #include <ace-vm/array.hpp>
+#include <ace-vm/value.hpp>
 
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
@@ -25,7 +26,6 @@
 #include <thread>
 #include <cstdio>
 #include <cstdlib>
-#include <ace-vm/value.hpp>
 
 using namespace ace;
 
@@ -481,6 +481,9 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                 Compiler compiler(&ast_iterator, &compilation_unit);
                 compiler.Compile(false);
 
+                // get active register
+                int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();
+
                 // emit bytecode instructions to file
                 std::ofstream temp_bytecode_file(out_filename.GetData(),
                     std::ios::out | std::ios::binary | std::ios::app | std::ios::ate);
@@ -512,6 +515,10 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                         size_t stack_size_before = main_thread->GetStack().GetStackPointer();
 
                         RunBytecodeFile(vm, out_filename, false, file_pos);
+
+                        // print whatever is in active_reg
+                        vm->Print(main_thread->GetRegisters()[active_reg]);
+                        utf::printf("\n");
 
                         if (!vm->GetState().good) {
                             // if an exception was unhandled go back to previous state

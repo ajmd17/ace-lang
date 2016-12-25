@@ -2,9 +2,9 @@
 #include <ace-c/optimizer.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/module.hpp>
+#include <ace-c/keywords.hpp>
 
 #include <common/instructions.hpp>
-
 #include <common/my_assert.hpp>
 
 AstReturnStatement::AstReturnStatement(const std::shared_ptr<AstExpression> &expr,
@@ -18,7 +18,6 @@ AstReturnStatement::AstReturnStatement(const std::shared_ptr<AstExpression> &exp
 void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-
     m_expr->Visit(visitor, mod);
 
     // transverse the scope tree to make sure we are in a function
@@ -48,6 +47,7 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
 
 void AstReturnStatement::Build(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(m_expr != nullptr);
     m_expr->Build(visitor, mod);
 
     // pop all variables in the way off of the stack
@@ -62,5 +62,13 @@ void AstReturnStatement::Build(AstVisitor *visitor, Module *mod)
 
 void AstReturnStatement::Optimize(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(m_expr != nullptr);
     m_expr->Optimize(visitor, mod);
+}
+
+void AstReturnStatement::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_expr != nullptr);
+    ss << Keyword::ToString(Keyword_return) << " ";
+    m_expr->Recreate(ss);
 }

@@ -29,7 +29,7 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
         } else {
             // check it it is a type
             bool found_type = false;
-            if (ObjectType::GetBuiltinType(m_name) != nullptr) {
+            if (ObjectType::GetBuiltinType(m_name)) {
                 found_type = true;
             } else {
                 // check non-builtin types
@@ -71,7 +71,7 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
 ObjectType AstDeclaration::GetObjectType() const
 {
-    if (m_identifier != nullptr) {
+    if (m_identifier) {
         return m_identifier->GetObjectType();
     }
     return ObjectType::type_builtin_undefined;

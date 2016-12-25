@@ -17,6 +17,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+    virtual void Recreate(std::ostringstream &ss) override;
 
     inline const ObjectType &GetObjectType() const { return m_object_type; }
 

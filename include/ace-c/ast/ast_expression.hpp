@@ -12,6 +12,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override = 0;
+    virtual void Recreate(std::ostringstream &ss) override = 0;
 
     /** Determine whether the expression would evaluate to true.
         Returns -1 if it cannot be evaluated at compile time.

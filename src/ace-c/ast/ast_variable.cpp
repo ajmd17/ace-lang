@@ -17,26 +17,43 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
 {
     AstIdentifier::Visit(visitor, mod);
 
-    if (m_identifier != nullptr) {
-        // NOTE: if whe're are in a function, and the variable we are loading is declared in a separate function,
-        // we will show an error message saying that the variable must be passed as a parameter to be captured.
-        // the reason for this is that any variables owned by the parent function will be immediately popped from the stack
-        // when the parent function returns. That will mean the variables used here will reference garbage.
-        // In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
-        // on the stack of /this/ function.
+    switch (m_identifier_type) {
+        case IDENTIFIER_TYPE_VARIABLE:
+            ASSERT(m_identifier != nullptr);
+            m_identifier->IncUseCount();
 
-        if (m_in_function && (m_identifier->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
-            // lookup the variable by depth to make sure it was declared in the current function
-            auto identifer_this_scope = mod->LookUpIdentifierDepth(m_name, m_depth);
+            // NOTE: if we are in a function, and the variable we are loading is declared in a separate function,
+            // we will show an error message saying that the variable must be passed as a parameter to be captured.
+            // the reason for this is that any variables owned by the parent function will be immediately popped from the stack
+            // when the parent function returns. That will mean the variables used here will reference garbage.
+            // In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
+            // on the stack of /this/ function.
+            if (m_in_function && (m_identifier->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
+                // lookup the variable by depth to make sure it was declared in the current function
+                auto identifer_this_scope = mod->LookUpIdentifierDepth(m_name, m_depth);
 
-            // we do this to make sure it was declared in this scope.
-            if (identifer_this_scope == nullptr) {
-                // add error that the variable must be passed as a parameter
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter,
-                        m_location, m_name));
+                // we do this to make sure it was declared in this scope.
+                if (!identifer_this_scope) {
+                    // add error that the variable must be passed as a parameter
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter,
+                            m_location, m_name));
+                }
             }
-        }
+            
+            break;
+        case IDENTIFIER_TYPE_MODULE:
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_identifier_is_module, m_location, m_name));
+            break;
+        case IDENTIFIER_TYPE_TYPE:
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_identifier_is_type, m_location, m_name));
+            break;
+        case IDENTIFIER_TYPE_NOT_FOUND:
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_undeclared_identifier, m_location, m_name));
+            break;
     }
 }
 
@@ -79,15 +96,20 @@ void AstVariable::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
+void AstVariable::Recreate(std::ostringstream &ss)
+{
+    ss << m_name;
+}
+
 int AstVariable::IsTrue() const
 {
-    if (m_identifier != nullptr) {
+    if (m_identifier) {
         // we can only check if this is true during
         // compile time if it is const literal
         if (m_identifier->GetFlags() & FLAG_CONST) {
             auto value_sp = m_identifier->GetCurrentValue();
             AstConstant *as_constant = dynamic_cast<AstConstant*>(value_sp.get());
-            if (as_constant != nullptr) {
+            if (as_constant) {
                 return as_constant->IsTrue();
             }
         }

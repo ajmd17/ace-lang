@@ -32,7 +32,7 @@ Heap::~Heap()
 void Heap::Purge()
 {
     // clean up all allocated objects
-    while (m_head != nullptr) {
+    while (m_head) {
         HeapNode *tmp = m_head;
         m_head = tmp->before;
         delete tmp;
@@ -45,7 +45,7 @@ HeapValue *Heap::Alloc()
 {
     HeapNode *node = new HeapNode;
 
-    if (m_head != nullptr) {
+    if (m_head) {
         m_head->after = node;
     }
     
@@ -60,18 +60,18 @@ HeapValue *Heap::Alloc()
 void Heap::Sweep()
 {
     HeapNode *last = m_head;
-    while (last != nullptr) {
+    while (last) {
         if (!(last->value.GetFlags() & GC_MARKED)) {
             // unmarked object, so delete it
 
             HeapNode *after = last->after;
             HeapNode *before = last->before;
 
-            if (before != nullptr) {
+            if (before) {
                 before->after = after;
             }
 
-            if (after != nullptr) {
+            if (after) {
                 // removing an item from the middle, so
                 // make the nodes to the other sides now
                 // point to each other

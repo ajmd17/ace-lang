@@ -15,6 +15,7 @@
 #include <ace-c/lexer.hpp>
 #include <ace-c/parser.hpp>
 #include <ace-c/compiler.hpp>
+#include <ace-c/minifier.hpp>
 #include <ace-c/dis/decompilation_unit.hpp>
 #include <ace-c/dis/byte_stream.hpp>
 

@@ -38,6 +38,11 @@ void AstTypeContractTerm::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
+void AstTypeContractTerm::Recreate(std::ostringstream &ss)
+{
+    ss << "??";
+}
+
 bool AstTypeContractTerm::Satisfies(AstVisitor *visitor, const ObjectType &object_type) const
 {
     switch (m_type) {
@@ -74,6 +79,11 @@ void AstTypeContractBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
 void AstTypeContractBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
+}
+
+void AstTypeContractBinaryExpression::Recreate(std::ostringstream &ss)
+{
+    ss << "??";
 }
 
 bool AstTypeContractBinaryExpression::Satisfies(AstVisitor *visitor, const ObjectType &object_type) const

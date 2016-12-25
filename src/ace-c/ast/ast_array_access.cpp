@@ -8,7 +8,6 @@
 #include <ace-c/module.hpp>
 
 #include <common/instructions.hpp>
-
 #include <common/my_assert.hpp>
 
 AstArrayAccess::AstArrayAccess(const std::shared_ptr<AstExpression> &target,
@@ -81,6 +80,17 @@ void AstArrayAccess::Optimize(AstVisitor *visitor, Module *mod)
 
     m_target->Optimize(visitor, mod);
     m_index->Optimize(visitor, mod);
+}
+
+void AstArrayAccess::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_target != nullptr);
+    ASSERT(m_index != nullptr);
+
+    m_target->Recreate(ss);
+    ss << "[";
+    m_index->Recreate(ss);
+    ss << "]";
 }
 
 int AstArrayAccess::IsTrue() const

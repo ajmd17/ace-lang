@@ -17,6 +17,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+    virtual void Recreate(std::ostringstream &ss) override = 0;
 
 protected:
     /** The AST iterator that will be used by the imported module */

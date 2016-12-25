@@ -4,6 +4,7 @@
 #include <ace-c/source_location.hpp>
 
 #include <memory>
+#include <sstream>
 
 // Forward declarations
 class AstVisitor;
@@ -21,6 +22,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) = 0;
     virtual void Build(AstVisitor *visitor, Module *mod) = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) = 0;
+    virtual void Recreate(std::ostringstream &ss) = 0;
 
 protected:
     SourceLocation m_location;

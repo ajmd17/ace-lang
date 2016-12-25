@@ -125,6 +125,11 @@ void AstObject::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
+void AstObject::Recreate(std::ostringstream &ss)
+{
+    ss << "??";
+}
+
 int AstObject::IsTrue() const
 {
     return 1;

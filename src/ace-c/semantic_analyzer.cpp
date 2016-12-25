@@ -1,10 +1,42 @@
 #include <ace-c/semantic_analyzer.hpp>
 #include <ace-c/ast/ast_module_declaration.hpp>
 #include <ace-c/module.hpp>
+#include <ace-c/object_type.hpp>
 
 #include <common/my_assert.hpp>
 
 #include <iostream>
+
+IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, Module *mod, const std::string &name)
+{
+    IdentifierLookupResult res;
+    res.type = IDENTIFIER_TYPE_UNKNOWN;
+
+    ObjectType *tmp;
+
+    // the variable must exist in the active scope or a parent scope
+    if (res.as_identifier = mod->LookUpIdentifier(name, false)) {
+        res.type = IDENTIFIER_TYPE_VARIABLE;
+    } else if (res.as_identifier = visitor->GetCompilationUnit()->GetGlobalModule()->LookUpIdentifier(name, false)) {
+        // if the identifier was not found,
+        // look in the global module to see if it is a global function.
+        res.type = IDENTIFIER_TYPE_VARIABLE;
+    } else if (res.as_module = visitor->GetCompilationUnit()->LookupModule(name)) {
+        res.type = IDENTIFIER_TYPE_MODULE;
+    } else if (tmp = ObjectType::GetBuiltinType(name)) {
+        res.as_type = *tmp;
+        res.type = IDENTIFIER_TYPE_TYPE;
+    } else if (mod->LookUpUserType(name, res.as_type)) {
+        res.type = IDENTIFIER_TYPE_TYPE;
+    } else if (visitor->GetCompilationUnit()->GetGlobalModule()->LookUpUserType(name, res.as_type)) {
+        res.type = IDENTIFIER_TYPE_TYPE;
+    } else {
+        // nothing was found
+        res.type = IDENTIFIER_TYPE_NOT_FOUND;
+    }
+    
+    return res;
+}
 
 SemanticAnalyzer::SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
     : AstVisitor(ast_iterator, compilation_unit)

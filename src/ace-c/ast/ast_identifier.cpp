@@ -8,71 +8,68 @@
 
 AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &location)
     : AstExpression(location),
-      m_name(name),
-      m_identifier(nullptr),
-      m_access_mode(ACCESS_MODE_LOAD),
-      m_in_function(false),
-      m_depth(0)
+      m_name(name)
 {
 }
 
 void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
 {
-    // the variable must exist in the active scope or a parent scope
-    m_identifier = mod->LookUpIdentifier(m_name, false);
+    ObjectType tmp;
 
-    // if the identifier was not found,
-    // look in the global module to see if it is a global function.
-    if (!m_identifier) {
-        m_identifier = visitor->GetCompilationUnit()->
-            GetGlobalModule()->LookUpIdentifier(m_name, false);
+    // the variable must exist in the active scope or a parent scope
+    if (m_properties.identifier = mod->LookUpIdentifier(m_name, false)) {
+        m_properties.identifier_type = IDENTIFIER_TYPE_VARIABLE;
+    } else if (m_properties.identifier = visitor->GetCompilationUnit()->GetGlobalModule()->LookUpIdentifier(m_name, false)) {
+        // if the identifier was not found,
+        // look in the global module to see if it is a global function.
+        m_properties.identifier_type = IDENTIFIER_TYPE_VARIABLE;
+    } else if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
+        m_properties.identifier_type = IDENTIFIER_TYPE_MODULE;
+    } else if (ObjectType::GetBuiltinType(m_name)) {
+        m_properties.identifier_type = IDENTIFIER_TYPE_TYPE;
+    } else if (mod->LookUpUserType(m_name, tmp)) {
+        m_properties.identifier_type = IDENTIFIER_TYPE_TYPE;
+    } else if (visitor->GetCompilationUnit()->GetGlobalModule()->LookUpUserType(m_name, tmp)) {
+        m_properties.identifier_type = IDENTIFIER_TYPE_TYPE;
+    } else {
+        // nothing was found
+        m_properties.identifier_type = IDENTIFIER_TYPE_NOT_FOUND;
     }
 }
 
-void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
+void AstIdentifier::CheckInFunction(AstVisitor *visitor, Module *mod)
 {
-    if (!m_identifier) {
-        PerformLookup(visitor, mod);
-    }
-    
-    if (!m_identifier) {
-        // not found by PerformLookup() so check for module names
-        // here's where we'll add the errors
-
-        // check if identifier is a module
-        if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_identifier_is_module, m_location, m_name));
-        } else {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_undeclared_identifier, m_location, m_name));
-        }
-    } else {
-        m_identifier->IncUseCount();
-    }
-
-    m_depth = 0;
+    m_properties.depth = 0;
     TreeNode<Scope> *top = mod->m_scopes.TopNode();
     while (top) {
-        m_depth++;
+        m_properties.depth++;
         if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
-            m_in_function = true;
+            m_properties.is_in_function = true;
             break;
         }
         top = top->m_parent;
     }
 }
 
+void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
+{
+    if (m_properties.identifier_type == IDENTIFIER_TYPE_UNKNOWN) {
+        PerformLookup(visitor, mod);
+    }
+
+    CheckInFunction(visitor, mod);
+}
+
 ObjectType AstIdentifier::GetObjectType() const
 {
-    if (m_identifier) {
-        return m_identifier->GetObjectType();
+    if (m_properties.identifier) {
+        return m_properties.identifier->GetObjectType();
     }
     return ObjectType::type_builtin_undefined;
 }
 
 int AstIdentifier::GetStackOffset(int stack_size) const
 {
-    ASSERT(m_identifier != nullptr);
-    return stack_size - m_identifier->GetStackLocation();
+    ASSERT(m_properties.identifier != nullptr);
+    return stack_size - m_properties.identifier->GetStackLocation();
 }

@@ -30,55 +30,73 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
         ASSERT(arg != nullptr);
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
     }
-    
-    if (m_identifier != nullptr) {
-        // NOTE: if whe're are in a function, and the variable we are loading is declared in a separate function,
-        // we will show an error message saying that the variable must be passed as a parameter to be captured.
-        // the reason for this is that any variables owned by the parent function will be immediately popped from the stack
-        // when the parent function returns. That will mean the variables used here will reference garbage.
-        // In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
-        // on the stack of /this/ function.
-        
-        if (m_in_function && (m_identifier->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
-            // lookup the variable by depth to make sure it was declared in the current function
-            auto identifer_this_scope = mod->LookUpIdentifierDepth(m_name, m_depth);
-            
-            // we do this to make sure it was declared in this scope.
-            if (identifer_this_scope == nullptr) {
-                // add error that the variable must be passed as a parameter
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter, m_location, m_name));
+
+    switch (m_identifier_type) {
+        case IDENTIFIER_TYPE_VARIABLE:
+            ASSERT(m_identifier != nullptr);
+            m_identifier->IncUseCount();
+
+            // NOTE: if we are in a function, and the variable we are loading is declared in a separate function,
+            // we will show an error message saying that the variable must be passed as a parameter to be captured.
+            // the reason for this is that any variables owned by the parent function will be immediately popped from the stack
+            // when the parent function returns. That will mean the variables used here will reference garbage.
+            // In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
+            // on the stack of /this/ function.
+            if (m_in_function && (m_identifier->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
+                // lookup the variable by depth to make sure it was declared in the current function
+                auto identifer_this_scope = mod->LookUpIdentifierDepth(m_name, m_depth);
+
+                // we do this to make sure it was declared in this scope.
+                if (!identifer_this_scope) {
+                    // add error that the variable must be passed as a parameter
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter,
+                            m_location, m_name));
+                }
             }
-        }
-        
-        const ObjectType &identifier_type = m_identifier->GetObjectType();
-        if (identifier_type != ObjectType::type_builtin_any) {
-            if (!identifier_type.IsFunctionType()) {
-                // not a function type
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
-            } else {
-                // TODO: check parameters
-                if (identifier_type.GetParamTypes().size() == m_args.size()) {
-                    for (int i = 0; i < m_args.size(); i++) {
-                        const ObjectType &param_type = identifier_type.GetParamTypes()[i];
-                        if (param_type.HasTypeContract()) {
-                            // make sure the argument of the function call satisfies the
-                            // function's required type contract.
-                            if (!param_type.GetTypeContract()->Satisfies(visitor, m_args[i]->GetObjectType())) {
-                                // error, unsatisfied type contract
-                                CompilerError error(Level_fatal, Msg_unsatisfied_type_contract, m_args[i]->GetLocation(), 
-                                    m_args[i]->GetObjectType().ToString());
-                                visitor->GetCompilationUnit()->GetErrorList().AddError(error);
+
+            const ObjectType &identifier_type = m_identifier->GetObjectType();
+            if (identifier_type != ObjectType::type_builtin_any) {
+                if (!identifier_type.IsFunctionType()) {
+                    // not a function type
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
+                } else {
+                    // TODO: check parameters
+                    if (identifier_type.GetParamTypes().size() == m_args.size()) {
+                        for (int i = 0; i < m_args.size(); i++) {
+                            const ObjectType &param_type = identifier_type.GetParamTypes()[i];
+                            if (param_type.HasTypeContract()) {
+                                // make sure the argument of the function call satisfies the
+                                // function's required type contract.
+                                if (!param_type.GetTypeContract()->Satisfies(visitor, m_args[i]->GetObjectType())) {
+                                    // error, unsatisfied type contract
+                                    CompilerError error(Level_fatal, Msg_unsatisfied_type_contract, m_args[i]->GetLocation(), 
+                                        m_args[i]->GetObjectType().ToString());
+                                    visitor->GetCompilationUnit()->GetErrorList().AddError(error);
+                                }
                             }
                         }
                     }
-                }
 
-                ASSERT(identifier_type.GetReturnType() != nullptr);
-                m_return_type = *identifier_type.GetReturnType().get();
+                    ASSERT(identifier_type.GetReturnType() != nullptr);
+                    m_return_type = *identifier_type.GetReturnType().get();
+                }
             }
-        }
+            
+            break;
+        case IDENTIFIER_TYPE_MODULE:
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_identifier_is_module, m_location, m_name));
+            break;
+        case IDENTIFIER_TYPE_TYPE:
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_identifier_is_type, m_location, m_name));
+            break;
+        case IDENTIFIER_TYPE_NOT_FOUND:
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_undeclared_identifier, m_location, m_name));
+            break;
     }
 }
 
@@ -158,10 +176,25 @@ void AstFunctionCall::Optimize(AstVisitor *visitor, Module *mod)
 {
     // optimize each argument
     for (auto &arg : m_args) {
-        if (arg != nullptr) {
+        if (arg) {
             arg->Optimize(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
         }
     }
+}
+
+void AstFunctionCall::Recreate(std::ostringstream &ss)
+{
+    ss << m_name << "(";
+    for (size_t i = 0; i < m_args.size(); i++) {
+        auto &arg = m_args[i];
+        if (arg) {
+            arg->Recreate(ss);
+            if (i != m_args.size() - 1) {
+                ss << ",";
+            }
+        }
+    }
+    ss << ")";
 }
 
 int AstFunctionCall::IsTrue() const

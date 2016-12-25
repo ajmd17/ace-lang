@@ -8,6 +8,7 @@ public:
     AstFalse(const SourceLocation &location);
 
     virtual void Build(AstVisitor *visitor, Module *mod) override;
+    virtual void Recreate(std::ostringstream &ss) override;
 
     virtual int IsTrue() const override;
     virtual ObjectType GetObjectType() const override;

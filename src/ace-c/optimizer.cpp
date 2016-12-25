@@ -17,13 +17,12 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
     if ((expr_as_var = dynamic_cast<AstVariable*>(expr.get())) != nullptr) {
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
-        if (expr_as_var->GetIdentifier() != nullptr) {
-            if (expr_as_var->GetIdentifier()->GetFlags() & FLAG_CONST) {
+        if (expr_as_var->GetProperties().identifier) {
+            if (expr_as_var->GetProperties().identifier->GetFlags() & FLAG_CONST) {
                 // the variable is a const, now we make sure that the current
                 // value is a literal value
-                auto value_sp = expr_as_var->GetIdentifier()->GetCurrentValue();
-                AstConstant *constant_sp = dynamic_cast<AstConstant*>(value_sp.get());
-                if (constant_sp != nullptr) {
+                auto value_sp = expr_as_var->GetProperties().identifier->GetCurrentValue();
+                if (AstConstant *constant_sp = dynamic_cast<AstConstant*>(value_sp.get())) {
                     // yay! we were able to retrieve the value that
                     // the variable is set to, so now we can use that
                     // at compile-time rather than using a variable.
@@ -32,7 +31,7 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
             }
         }
     } else if ((expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) != nullptr) {
-        if (expr_as_binop->GetRight() == nullptr) {
+        if (!expr_as_binop->GetRight()) {
             // right side has been optimized away, to just left side
             expr = expr_as_binop->GetLeft();
         }

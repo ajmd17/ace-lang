@@ -2,9 +2,11 @@
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/emit/static_object.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
+#include <common/my_assert.hpp>
 
 AstTryCatch::AstTryCatch(const std::shared_ptr<AstBlock> &try_block,
     const std::shared_ptr<AstBlock> &catch_block,
@@ -103,4 +105,14 @@ void AstTryCatch::Optimize(AstVisitor *visitor, Module *mod)
     m_try_block->Optimize(visitor, mod);
     // optimize the catch block
     m_catch_block->Optimize(visitor, mod);
+}
+
+void AstTryCatch::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_try_block != nullptr && m_catch_block != nullptr);
+    
+    ss << Keyword::ToString(Keyword_try);
+    m_try_block->Recreate(ss);
+    ss << Keyword::ToString(Keyword_catch);
+    m_catch_block->Recreate(ss);
 }

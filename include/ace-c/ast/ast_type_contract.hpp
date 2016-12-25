@@ -19,6 +19,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override = 0;
+    virtual void Recreate(std::ostringstream &ss) override = 0;
 
     virtual bool Satisfies(AstVisitor *visitor, const ObjectType &object_type) const = 0;
 };
@@ -33,6 +34,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+    virtual void Recreate(std::ostringstream &ss) override;
 
     virtual bool Satisfies(AstVisitor *visitor, const ObjectType &object_type) const override;
 
@@ -54,6 +56,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+    virtual void Recreate(std::ostringstream &ss) override;
 
     virtual bool Satisfies(AstVisitor *visitor, const ObjectType &object_type) const override;
 

@@ -10,18 +10,15 @@
 #include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
-
 #include <common/my_assert.hpp>
 
 /** Attempts to evaluate the optimized expression at compile-time. */
 static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &target, 
     const Operator *oper, AstVisitor *visitor)
 {
-    AstConstant *target_as_constant = dynamic_cast<AstConstant*>(target.get());
-
     std::shared_ptr<AstConstant> result;
 
-    if (target_as_constant != nullptr) {
+    if (AstConstant *target_as_constant = dynamic_cast<AstConstant*>(target.get())) {
         // perform operations on these constants
         if (oper == &Operator::operator_negative) {
             result = -(*target_as_constant);
@@ -194,6 +191,15 @@ void AstUnaryExpression::Optimize(AstVisitor *visitor, Module *mod)
             m_folded = true;
         }
     }
+}
+
+void AstUnaryExpression::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_target != nullptr);
+    if (!m_folded) {
+        ss << m_op->ToString();
+    }
+    m_target->Recreate(ss);
 }
 
 int AstUnaryExpression::IsTrue() const

@@ -1,6 +1,7 @@
 #include <ace-c/ast/ast_if_statement.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/compiler.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/emit/static_object.hpp>
 
@@ -26,7 +27,7 @@ void AstIfStatement::Visit(AstVisitor *visitor, Module *mod)
     // visit the body
     m_block->Visit(visitor, mod);
     // visit the else-block (if it exists)
-    if (m_else_block != nullptr) {
+    if (m_else_block) {
         m_else_block->Visit(visitor, mod);
     }
 }
@@ -63,7 +64,7 @@ void AstIfStatement::Build(AstVisitor *visitor, Module *mod)
             m_conditional->Build(visitor, mod);
         }
         // only visit the else-block (if it exists)
-        if (m_else_block != nullptr) {
+        if (m_else_block) {
             m_else_block->Build(visitor, mod);
         }
     }
@@ -76,7 +77,21 @@ void AstIfStatement::Optimize(AstVisitor *visitor, Module *mod)
     // optimize the body
     m_block->Optimize(visitor, mod);
     // optimize the else-block (if it exists)
-    if (m_else_block != nullptr) {
+    if (m_else_block) {
         m_else_block->Optimize(visitor, mod);
+    }
+}
+
+void AstIfStatement::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_conditional != nullptr && m_block != nullptr);
+
+    ss << Keyword::ToString(Keyword_if) << " ";
+    m_conditional->Recreate(ss);
+    m_block->Recreate(ss);
+
+    if (m_else_block) {
+        ss << Keyword::ToString(Keyword_else);
+        m_else_block->Recreate(ss);
     }
 }

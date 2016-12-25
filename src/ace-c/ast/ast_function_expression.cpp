@@ -2,6 +2,7 @@
 #include <ace-c/emit/instruction.hpp>
 #include <ace-c/emit/static_object.hpp>
 #include <ace-c/ast_visitor.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/module.hpp>
 #include <ace-c/object_type.hpp>
 #include <ace-c/configuration.hpp>
@@ -192,13 +193,32 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 void AstFunctionExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &param : m_parameters) {
-        if (param != nullptr) {
+        if (param) {
             param->Optimize(visitor, mod);
         }
     }
 
-    if (m_block != nullptr) {
+    if (m_block) {
         m_block->Optimize(visitor, mod);
+    }
+}
+
+void AstFunctionExpression::Recreate(std::ostringstream &ss)
+{
+    ss << Keyword::ToString(Keyword_func);
+    ss << "(";
+
+    for (auto &param : m_parameters) {
+        if (param) {
+            param->Recreate(ss);
+            ss << ",";
+        }
+    }
+
+    ss << ")";
+
+    if (m_block) {
+        m_block->Recreate(ss);
     }
 }
 

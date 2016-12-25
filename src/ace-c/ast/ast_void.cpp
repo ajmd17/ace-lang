@@ -10,6 +10,11 @@ void AstVoid::Build(AstVisitor *visitor, Module *mod)
 {
 }
 
+void AstVoid::Recreate(std::ostringstream &ss)
+{
+    ss << "??";
+}
+
 int AstVoid::IsTrue() const
 {
     return false;

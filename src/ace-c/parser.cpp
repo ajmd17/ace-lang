@@ -278,7 +278,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             return ParseImport();
         } else if (MatchKeyword(Keyword_let, false)) {
             return ParseVariableDeclaration(true);
-        } else if (MatchKeyword(Keyword_fun, false)) {
+        } else if (MatchKeyword(Keyword_func, false)) {
             if (MatchAhead(Token::TokenType::Token_identifier, 1)) {
                 return ParseFunctionDefinition();
             } else {
@@ -375,7 +375,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         expr = ParseFalse();
     } else if (MatchKeyword(Keyword_null)) {
         expr = ParseNull();
-    } else if (MatchKeyword(Keyword_fun)) {
+    } else if (MatchKeyword(Keyword_func)) {
         expr = ParseFunctionExpression();
     } else if (Match(Token::TokenType::Token_operator)) {
         expr = ParseUnaryExpression();
@@ -612,7 +612,7 @@ std::shared_ptr<AstArrayAccess> Parser::ParseArrayAccess(std::shared_ptr<AstExpr
     if (token) {
         auto expr = ParseExpression();
         Expect(Token::TokenType::Token_close_bracket, true);
-        if (expr != nullptr) {
+        if (expr) {
             return std::shared_ptr<AstArrayAccess>(
                 new AstArrayAccess(target, expr, token.GetLocation()));
         }
@@ -965,7 +965,7 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractBinaryExpres
         int next_prec = OperatorPrecedence(next_op);
         if (precedence < next_prec) {
             right = ParseTypeContractBinaryExpression(precedence + 1, right);
-            if (right == nullptr) {
+            if (!right) {
                 return nullptr;
             }
         }
@@ -1033,19 +1033,19 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition(bool requ
     SourceLocation location = CurrentLocation();
 
     if (require_keyword) {
-        if (!ExpectKeyword(Keyword_fun, true)) {
+        if (!ExpectKeyword(Keyword_func, true)) {
             return nullptr;
         }
     } else {
         // match and read in the case that it is found
-        MatchKeyword(Keyword_fun, true);
+        MatchKeyword(Keyword_func, true);
     }
 
     const Token identifier = Expect(Token::TokenType::Token_identifier, true);
 
     if (identifier) {
         auto expr = ParseFunctionExpression(false, ParseFunctionParameters());
-        if (expr != nullptr) {
+        if (expr) {
             return std::shared_ptr<AstFunctionDefinition>(
                 new AstFunctionDefinition(identifier.GetValue(), expr, location));
         }
@@ -1057,7 +1057,7 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition(bool requ
 std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool require_keyword,
     std::vector<std::shared_ptr<AstParameter>> params)
 {
-    const Token token = require_keyword ? ExpectKeyword(Keyword_fun, true) : Token::EMPTY;
+    const Token token = require_keyword ? ExpectKeyword(Keyword_func, true) : Token::EMPTY;
     SourceLocation location = token ? token.GetLocation() : CurrentLocation();
 
     if (require_keyword || !token) {
@@ -1075,7 +1075,7 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool requ
 
         // parse function block
         auto block = ParseBlock();
-        if (block != nullptr) {
+        if (block) {
             return std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression(
                 params, type_spec, block, location));
         }
@@ -1097,7 +1097,7 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
             }
 
             auto expr = ParseExpression();
-            if (expr != nullptr) {
+            if (expr) {
                 members.push_back(expr);
             }
 
@@ -1252,7 +1252,7 @@ std::shared_ptr<AstReturnStatement> Parser::ParseReturnStatement()
     if (token) {
         SourceLocation expr_location = CurrentLocation();
         auto expr = ParseExpression();
-        if (expr == nullptr) {
+        if (!expr) {
             CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
             m_compilation_unit->GetErrorList().AddError(error);
         }

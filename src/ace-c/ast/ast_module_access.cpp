@@ -20,11 +20,12 @@ AstModuleAccess::AstModuleAccess(const std::string &target,
       m_target(target),
       m_expr(expr),
       m_mod_access(nullptr),
-      m_is_chained(false)
+      m_is_chained(false),
+      m_looked_up(false)
 {
 }
 
-void AstModuleAccess::Visit(AstVisitor *visitor, Module *mod)
+void AstModuleAccess::PerformLookup(AstVisitor *visitor, Module *mod)
 {
     if (m_is_chained) {
         ASSERT(mod != nullptr);
@@ -35,13 +36,22 @@ void AstModuleAccess::Visit(AstVisitor *visitor, Module *mod)
         for (auto *sibling : mod->GetImportTreeLink()->m_siblings) {
             ASSERT(sibling != nullptr);
             ASSERT(sibling->m_value != nullptr);
-
+            
             if (sibling->m_value->GetName() == m_target) {
                 m_mod_access = sibling->m_value;
             }
         }
     } else {
         m_mod_access = visitor->GetCompilationUnit()->LookupModule(m_target);
+    }
+
+    m_looked_up = true;
+}
+
+void AstModuleAccess::Visit(AstVisitor *visitor, Module *mod)
+{
+    if (!m_looked_up) {
+        PerformLookup(visitor, mod);
     }
 
     if (AstModuleAccess *expr_mod_access = dynamic_cast<AstModuleAccess*>(m_expr.get())) {
@@ -68,6 +78,13 @@ void AstModuleAccess::Optimize(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_mod_access != nullptr);
     m_expr->Optimize(visitor, m_mod_access);
+}
+
+void AstModuleAccess::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_expr != nullptr);
+    ss << m_target << "::";
+    m_expr->Recreate(ss);
 }
 
 int AstModuleAccess::IsTrue() const

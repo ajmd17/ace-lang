@@ -14,18 +14,11 @@
 #define THROW_COMPARISON_ERROR(left_type_str, right_type_str) \
     do { \
         char buffer[256]; \
-        std::sprintf(buffer, "cannot compare '%s' with '%s'", \
+        buffer[255] = '\0'; \
+        std::snprintf(buffer, 255, "cannot compare '%s' with '%s'", \
             (left_type_str), (right_type_str)); \
         m_state.ThrowException(thread, Exception(buffer)); \
     } while (0)
-
-#define IS_VALUE_INTEGER(value) \
-    ((value).m_type == Value::I32 || \
-    (value).m_type == Value::I64)
-
-#define IS_VALUE_FLOATING_POINT(value) \
-    ((value).m_type == Value::F32 || \
-    (value).m_type == Value::F64)
 
 #define IS_VALUE_STRING(value, out) \
     ((value).m_type == Value::HEAP_POINTER && \
@@ -37,23 +30,6 @@
 
 #define MATCH_TYPES(left_type, right_type) \
     ((left_type) < (right_type)) ? (right_type) : (left_type)
-
-#define COMPARE_FLOATING_POINT(lhs, rhs) \
-    do { \
-        if (IS_VALUE_FLOATING_POINT(rhs) || IS_VALUE_INTEGER(rhs)) { \
-            double left = GetValueDouble(thread, lhs); \
-            double right = GetValueDouble(thread, rhs); \
-            if (left > right) { \
-                thread->m_regs.m_flags = GREATER; \
-            } else if (left == right) { \
-                thread->m_regs.m_flags = EQUAL; \
-            } else { \
-                thread->m_regs.m_flags = NONE; \
-            } \
-        } else { \
-            THROW_COMPARISON_ERROR(lhs, rhs); \
-        } \
-    } while (0) \
 
 namespace ace {
 namespace vm {
@@ -119,61 +95,6 @@ private:
     inline void CompareAsNativeFunctions(ExecutionThread *thread, Value *lhs, Value *rhs)
     {
         thread->m_regs.m_flags = (lhs->m_value.native_func == rhs->m_value.native_func) ? EQUAL : NONE;
-    }
-
-    /** Returns the value as a 64-bit integer without checking if it is not of that type. */
-    inline int64_t GetIntFast(const Value &value)
-    {
-        if (value.m_type == Value::I64) {
-            return value.m_value.i64;
-        }
-        return (int64_t)value.m_value.i32;
-    }
-
-    /** Returns the value as a 64-bit integer, throwing an error if the type is invalid. */
-    inline int64_t GetValueInt64(ExecutionThread *thread, const Value &value)
-    {
-        switch (value.m_type) {
-        case Value::I32:
-            return (int64_t)value.m_value.i32;
-        case Value::I64:
-            return value.m_value.i64;
-        case Value::F32:
-            return (int64_t)value.m_value.f;
-        case Value::F64:
-            return (int64_t)value.m_value.d;
-        default:
-        {
-            char buffer[256];
-            std::sprintf(buffer, "no conversion from '%s' to 'Int64'", value.GetTypeString());
-            m_state.ThrowException(thread, Exception(buffer));
-
-            return 0;
-        }
-        }
-    }
-
-    inline double GetValueDouble(ExecutionThread *thread, const Value &value)
-    {
-        switch (value.m_type) {
-        case Value::I32:
-            return (double)value.m_value.i32;
-        case Value::I64:
-            return (double)value.m_value.i64;
-        case Value::F32:
-            return (double)value.m_value.f;
-        case Value::F64:
-            return value.m_value.d;
-        default:
-        {
-            char buffer[256];
-            std::sprintf(buffer, "no conversion from '%s' to 'Float64'",
-                value.GetTypeString());
-            m_state.ThrowException(thread, Exception(buffer));
-
-            return std::numeric_limits<double>::quiet_NaN();
-        }
-        }
     }
 };
 

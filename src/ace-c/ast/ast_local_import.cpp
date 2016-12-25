@@ -4,6 +4,7 @@
 #include <ace-c/parser.hpp>
 #include <ace-c/semantic_analyzer.hpp>
 #include <ace-c/optimizer.hpp>
+#include <ace-c/minifier.hpp>
 
 #include <common/str_util.hpp>
 
@@ -92,4 +93,11 @@ void AstLocalImport::Visit(AstVisitor *visitor, Module *mod)
             semantic_analyzer.Analyze();
         }
     }
+}
+
+void AstLocalImport::Recreate(std::ostringstream &ss)
+{
+    m_ast_iterator.ResetPosition();
+    Minifier minifier(&m_ast_iterator);
+    minifier.Minify(ss);
 }

@@ -1,5 +1,6 @@
 #include <ace-c/ast/ast_print_statement.hpp>
 #include <ace-c/ast_visitor.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/emit/instruction.hpp>
 
 #include <common/instructions.hpp>
@@ -14,7 +15,7 @@ AstPrintStatement::AstPrintStatement(const std::vector<std::shared_ptr<AstExpres
 void AstPrintStatement::Visit(AstVisitor *visitor, Module *mod)
 {
     for (auto &arg : m_arguments) {
-        if (arg != nullptr) {
+        if (arg) {
             arg->Visit(visitor, mod);
         }
     }
@@ -43,8 +44,19 @@ void AstPrintStatement::Build(AstVisitor *visitor, Module *mod)
 void AstPrintStatement::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &arg : m_arguments) {
-        if (arg != nullptr) {
+        if (arg) {
             arg->Optimize(visitor, mod);
+        }
+    }
+}
+
+void AstPrintStatement::Recreate(std::ostringstream &ss)
+{
+    ss << Keyword::ToString(Keyword_print) << " ";
+    for (auto &arg : m_arguments) {
+        if (arg) {
+            arg->Recreate(ss);
+            ss << ",";
         }
     }
 }

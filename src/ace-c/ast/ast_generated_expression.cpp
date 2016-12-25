@@ -31,3 +31,8 @@ void AstGeneratedExpression::Optimize(AstVisitor *visitor, Module *mod)
         m_on_optimize(visitor, mod);
     }
 }
+
+void AstGeneratedExpression::Recreate(std::ostringstream &ss)
+{
+    ss << "??";
+}

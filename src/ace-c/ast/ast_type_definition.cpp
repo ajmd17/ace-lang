@@ -2,6 +2,7 @@
 #include <ace-c/ast/ast_null.hpp>
 #include <ace-c/ast/ast_object.hpp>
 #include <ace-c/ast_visitor.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/module.hpp>
 #include <ace-c/emit/static_object.hpp>
 #include <ace-c/configuration.hpp>
@@ -42,7 +43,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         hashes.reserve(m_members.size());
 
         for (const auto &mem : m_members) {
-            if (mem != nullptr) {
+            if (mem) {
                 mem->Visit(visitor, mod);
 
                 std::string mem_name = mem->GetName();
@@ -102,4 +103,19 @@ void AstTypeDefinition::Build(AstVisitor *visitor, Module *mod)
 
 void AstTypeDefinition::Optimize(AstVisitor *visitor, Module *mod)
 {
+}
+
+void AstTypeDefinition::Recreate(std::ostringstream &ss)
+{
+    ss << Keyword::ToString(Keyword_type) << " ";
+    ss << m_name;
+    ss << "{";
+
+    for (const auto &mem : m_members) {
+        if (mem) {
+            mem->Recreate(ss);
+        }
+    }
+
+    ss << "}";
 }

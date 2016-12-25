@@ -57,3 +57,9 @@ void AstFunctionDefinition::Optimize(AstVisitor *visitor, Module *mod)
 {
     m_expr->Optimize(visitor, mod);
 }
+
+void AstFunctionDefinition::Recreate(std::ostringstream &ss)
+{
+    ss << m_name << "=";
+    m_expr->Recreate(ss);
+}

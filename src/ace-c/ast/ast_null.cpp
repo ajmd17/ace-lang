@@ -4,6 +4,7 @@
 #include <ace-c/ast/ast_false.hpp>
 #include <ace-c/ast/ast_true.hpp>
 #include <ace-c/ast_visitor.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/emit/instruction.hpp>
 
 #include <common/instructions.hpp>
@@ -20,6 +21,11 @@ void AstNull::Build(AstVisitor *visitor, Module *mod)
     // load integer value into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(LOAD_NULL, rp);
+}
+
+void AstNull::Recreate(std::ostringstream &ss)
+{
+    ss << Keyword::ToString(Keyword_null);
 }
 
 int AstNull::IsTrue() const

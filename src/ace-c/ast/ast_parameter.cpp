@@ -38,3 +38,11 @@ void AstParameter::Build(AstVisitor *visitor, Module *mod)
 void AstParameter::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
+
+void AstParameter::Recreate(std::ostringstream &ss)
+{
+    ss << m_name;
+    if (m_is_variadic) {
+        ss << "...";
+    }
+}

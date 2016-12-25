@@ -116,8 +116,22 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
 void AstArrayExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &member : m_members) {
-        member->Optimize(visitor, mod);
+        if (member) {
+            member->Optimize(visitor, mod);
+        }
     }
+}
+
+void AstArrayExpression::Recreate(std::ostringstream &ss)
+{
+    ss << "[";
+    for (auto &member : m_members) {
+        if (member) {
+            member->Recreate(ss);
+            ss << ",";
+        }
+    }
+    ss << "]";
 }
 
 int AstArrayExpression::IsTrue() const

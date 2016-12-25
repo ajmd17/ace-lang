@@ -1,5 +1,6 @@
 #include <ace-c/ast/ast_module_declaration.hpp>
 #include <ace-c/ast_visitor.hpp>
+#include <ace-c/keywords.hpp>
 
 #include <common/my_assert.hpp>
 #include <common/str_util.hpp>
@@ -88,4 +89,23 @@ void AstModuleDeclaration::Optimize(AstVisitor *visitor, Module *mod)
             child->Optimize(visitor, m_module.get());
         }
     }
+}
+
+void AstModuleDeclaration::Recreate(std::ostringstream &ss)
+{
+    ss << Keyword::ToString(Keyword_module) << " ";
+    ss << m_name;
+    ss << "{";
+
+    for (size_t i = 0; i < m_children.size(); i++) {
+        auto &child = m_children[i];
+        if (child) {
+            child->Recreate(ss);
+            if (i != m_children.size() - 1) {
+                ss << ";";
+            }
+        }
+    }
+
+    ss << "}";
 }

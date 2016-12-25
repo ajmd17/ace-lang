@@ -9,6 +9,11 @@ void AstUndefined::Build(AstVisitor *visitor, Module *mod)
 {
 }
 
+void AstUndefined::Recreate(std::ostringstream &ss)
+{
+    ss << "??";
+}
+
 int AstUndefined::IsTrue() const
 {
     return false;

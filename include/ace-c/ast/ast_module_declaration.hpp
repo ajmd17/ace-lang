@@ -22,6 +22,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+    virtual void Recreate(std::ostringstream &ss) override;
 
 private:
     std::vector<std::shared_ptr<AstStatement>> m_children;

@@ -28,6 +28,11 @@ void AstInteger::Build(AstVisitor *visitor, Module *mod)
         Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, m_value);
 }
 
+void AstInteger::Recreate(std::ostringstream &ss)
+{
+    ss << m_value;
+}
+
 int AstInteger::IsTrue() const
 {
     // any non-zero value is considered true

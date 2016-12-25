@@ -812,6 +812,17 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
+void AstBinaryExpression::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_left != nullptr);
+    m_left->Recreate(ss);
+
+    if (m_right) {
+        ss << m_op->ToString();
+        m_right->Recreate(ss);
+    }
+}
+
 int AstBinaryExpression::IsTrue() const
 {
     if (m_member_access != nullptr) {

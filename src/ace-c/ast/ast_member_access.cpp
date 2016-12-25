@@ -629,6 +629,21 @@ void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
+void AstMemberAccess::Recreate(std::ostringstream &ss)
+{
+    ASSERT(m_target != nullptr);
+
+    m_target->Recreate(ss);
+    ss << ".";
+
+    for (auto &part : m_parts) {
+        if (part) {
+            part->Recreate(ss);
+            ss << ".";
+        }
+    }
+}
+
 int AstMemberAccess::IsTrue() const
 {
     return -1;

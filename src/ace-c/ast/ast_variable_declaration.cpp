@@ -2,12 +2,13 @@
 #include <ace-c/ast/ast_null.hpp>
 #include <ace-c/ast_visitor.hpp>
 #include <ace-c/emit/instruction.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/object_type.hpp>
 #include <ace-c/configuration.hpp>
 
 #include <common/instructions.hpp>
-
 #include <common/my_assert.hpp>
+
 #include <iostream>
 
 AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
@@ -99,7 +100,21 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 
 void AstVariableDeclaration::Optimize(AstVisitor *visitor, Module *mod)
 {
-    if (m_assignment != nullptr) {
+    if (m_assignment) {
         m_assignment->Optimize(visitor, mod);
+    }
+}
+
+void AstVariableDeclaration::Recreate(std::ostringstream &ss)
+{
+    if (m_assignment) {
+        ss << Keyword::ToString(Keyword_let) << " ";
+        ss << m_name << "=";
+        m_assignment->Recreate(ss);
+    } else if (m_type_specification) {
+        ss << m_name << ":";
+        m_type_specification->Recreate(ss);
+    } else {
+        ss << m_name << "=??";
     }
 }

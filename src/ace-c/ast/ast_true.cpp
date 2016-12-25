@@ -2,6 +2,7 @@
 #include <ace-c/ast/ast_false.hpp>
 #include <ace-c/ast/ast_integer.hpp>
 #include <ace-c/ast_visitor.hpp>
+#include <ace-c/keywords.hpp>
 #include <ace-c/emit/instruction.hpp>
 
 #include <common/instructions.hpp>
@@ -18,6 +19,11 @@ void AstTrue::Build(AstVisitor *visitor, Module *mod)
     // load value into register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
+}
+
+void AstTrue::Recreate(std::ostringstream &ss)
+{
+    ss << Keyword::ToString(Keyword_true);
 }
 
 int AstTrue::IsTrue() const

@@ -1,4 +1,4 @@
-#include <ace-vm/array.hpp>
+#include <ace-vm/Array.hpp>
 #include <cmath>
 
 namespace ace {
@@ -29,7 +29,7 @@ Array::~Array()
 
 Array &Array::operator=(const Array &other)
 {
-    if (m_buffer != nullptr) {
+    if (m_buffer) {
         delete[] m_buffer;
     }
 
@@ -57,7 +57,7 @@ void Array::Push(const Value &value)
             new_buffer[i] = m_buffer[i];
         }
         // delete old buffer
-        if (m_buffer != nullptr) {
+        if (m_buffer) {
             delete[] m_buffer;
         }
         // set internal buffer to the new one

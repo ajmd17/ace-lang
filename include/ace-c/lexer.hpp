@@ -1,10 +1,10 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
 
-#include <ace-c/source_stream.hpp>
-#include <ace-c/token_stream.hpp>
-#include <ace-c/source_location.hpp>
-#include <ace-c/compilation_unit.hpp>
+#include <ace-c/SourceStream.hpp>
+#include <ace-c/TokenStream.hpp>
+#include <ace-c/SourceLocation.hpp>
+#include <ace-c/CompilationUnit.hpp>
 
 #include <common/utf8.hpp>
 

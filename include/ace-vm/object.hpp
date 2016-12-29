@@ -1,7 +1,7 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
-#include <ace-vm/value.hpp>
+#include <ace-vm/Value.hpp>
 
 #include <cstdint>
 
@@ -51,8 +51,7 @@ public:
 
     inline bool operator==(const Object &other) const { return this == &other; }
     
-    inline Member *LookupMemberFromHash(uint32_t hash) const 
-        { return m_object_map->Get(hash); }
+    inline Member *LookupMemberFromHash(uint32_t hash) const { return m_object_map->Get(hash); }
     inline int GetSize() const { return m_size; }
     inline Member &GetMember(int index) { return m_members[index]; }
     inline const Member &GetMember(int index) const { return m_members[index]; }

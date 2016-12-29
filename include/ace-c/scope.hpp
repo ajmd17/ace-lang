@@ -1,9 +1,9 @@
 #ifndef SCOPE_HPP
 #define SCOPE_HPP
 
-#include <ace-c/identifier_table.hpp>
-#include <ace-c/object_type.hpp>
-#include <ace-c/source_location.hpp>
+#include <ace-c/IdentifierTable.hpp>
+#include <ace-c/ObjectType.hpp>
+#include <ace-c/SourceLocation.hpp>
 
 #include <vector>
 #include <utility>

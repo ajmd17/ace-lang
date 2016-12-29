@@ -1,14 +1,13 @@
 #ifndef MODULE_HPP
 #define MODULE_HPP
 
-#include <ace-c/scope.hpp>
-#include <ace-c/source_location.hpp>
-#include <ace-c/tree.hpp>
-#include <ace-c/object_type.hpp>
+#include <ace-c/Scope.hpp>
+#include <ace-c/SourceLocation.hpp>
+#include <ace-c/Tree.hpp>
+#include <ace-c/ObjectType.hpp>
 
 #include <vector>
 #include <string>
-#include <memory>
 
 class Module {
 public:

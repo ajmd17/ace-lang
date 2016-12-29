@@ -17,7 +17,7 @@ struct TreeNode {
 
     ~TreeNode()
     {
-        for (int i = 0; i < m_siblings.size(); i++) {
+        for (size_t i = 0; i < m_siblings.size(); i++) {
             if (m_siblings[i]) {
                 delete m_siblings[i];
                 m_siblings[i] = nullptr;

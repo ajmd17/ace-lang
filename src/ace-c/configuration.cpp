@@ -1,4 +1,4 @@
-#include <ace-c/configuration.hpp>
+#include <ace-c/Configuration.hpp>
 
 const int ace::compiler::Config::MAX_DATA_MEMBERS = 255;
 const std::string ace::compiler::Config::GLOBAL_MODULE_NAME = "_Global_";

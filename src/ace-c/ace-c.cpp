@@ -1,23 +1,23 @@
 #include <ace-c/ace-c.hpp>
 
-#include <ace-c/module.hpp>
-#include <ace-c/semantic_analyzer.hpp>
-#include <ace-c/optimizer.hpp>
-#include <ace-c/ast/ast_module_declaration.hpp>
-#include <ace-c/ast/ast_variable_declaration.hpp>
-#include <ace-c/ast/ast_variable.hpp>
-#include <ace-c/ast/ast_binary_expression.hpp>
-#include <ace-c/ast/ast_if_statement.hpp>
-#include <ace-c/ast/ast_true.hpp>
-#include <ace-c/ast/ast_null.hpp>
-#include <ace-c/ast/ast_block.hpp>
-#include <ace-c/emit/instruction.hpp>
-#include <ace-c/lexer.hpp>
-#include <ace-c/parser.hpp>
-#include <ace-c/compiler.hpp>
-#include <ace-c/minifier.hpp>
-#include <ace-c/dis/decompilation_unit.hpp>
-#include <ace-c/dis/byte_stream.hpp>
+#include <ace-c/Module.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
+#include <ace-c/Optimizer.hpp>
+#include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstVariableDeclaration.hpp>
+#include <ace-c/ast/AstVariable.hpp>
+#include <ace-c/ast/AstBinaryExpression.hpp>
+#include <ace-c/ast/AstIfStatement.hpp>
+#include <ace-c/ast/AstTrue.hpp>
+#include <ace-c/ast/AstNull.hpp>
+#include <ace-c/ast/AstBlock.hpp>
+#include <ace-c/emit/Instruction.hpp>
+#include <ace-c/Lexer.hpp>
+#include <ace-c/Parser.hpp>
+#include <ace-c/Compiler.hpp>
+#include <ace-c/Minifier.hpp>
+#include <ace-c/dis/DecompilationUnit.hpp>
+#include <ace-c/dis/ByteStream.hpp>
 
 #include <fstream>
 

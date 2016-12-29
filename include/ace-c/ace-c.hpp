@@ -1,7 +1,7 @@
 #ifndef ACE_C_HPP
 #define ACE_C_HPP
 
-#include <ace-c/compilation_unit.hpp>
+#include <ace-c/CompilationUnit.hpp>
 #include <common/utf8.hpp>
 
 namespace ace_compiler {

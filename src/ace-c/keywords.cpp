@@ -1,6 +1,4 @@
-#include <ace-c/keywords.hpp>
-
-#include <stdexcept>
+#include <ace-c/Keywords.hpp>
 
 const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "module",   Keyword_module },
@@ -17,6 +15,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "if",       Keyword_if },
     { "else",     Keyword_else },
     { "for",      Keyword_for },
+    { "each",     Keyword_each },
     { "while",    Keyword_while },
     { "do",       Keyword_do },
     { "try",      Keyword_try },

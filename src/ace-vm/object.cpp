@@ -1,10 +1,9 @@
-#include <ace-vm/object.hpp>
+#include <ace-vm/Object.hpp>
 
 #include <common/my_assert.hpp>
 
 #include <cstring>
 #include <cmath>
-#include <stdio.h>
 
 namespace ace {
 namespace vm {

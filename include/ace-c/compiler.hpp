@@ -1,7 +1,7 @@
 #ifndef COMPILER_HPP
 #define COMPILER_HPP
 
-#include <ace-c/ast_visitor.hpp>
+#include <ace-c/AstVisitor.hpp>
 #include <common/my_assert.hpp>
 
 class Compiler : public AstVisitor {

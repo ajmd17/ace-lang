@@ -1,11 +1,11 @@
 #ifndef API_HPP
 #define API_HPP
 
-#include <ace-c/configuration.hpp>
-#include <ace-c/compilation_unit.hpp>
+#include <ace-c/Configuration.hpp>
+#include <ace-c/CompilationUnit.hpp>
 
-#include <ace-vm/value.hpp>
-#include <ace-vm/vm.hpp>
+#include <ace-vm/Value.hpp>
+#include <ace-vm/VM.hpp>
 
 #include <string>
 #include <vector>

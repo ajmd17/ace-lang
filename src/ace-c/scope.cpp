@@ -1,4 +1,4 @@
-#include <ace-c/scope.hpp>
+#include <ace-c/Scope.hpp>
 
 Scope::Scope()
     : m_scope_type(SCOPE_TYPE_NORMAL)

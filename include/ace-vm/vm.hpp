@@ -1,8 +1,8 @@
 #ifndef VM_HPP
 #define VM_HPP
 
-#include <ace-vm/bytecode_stream.hpp>
-#include <ace-vm/vm_state.hpp>
+#include <ace-vm/BytecodeStream.hpp>
+#include <ace-vm/VMState.hpp>
 
 #include <array>
 #include <limits>

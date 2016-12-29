@@ -1,8 +1,8 @@
 #ifndef IDENTIFIER_HPP
 #define IDENTIFIER_HPP
 
-#include <ace-c/ast/ast_expression.hpp>
-#include <ace-c/object_type.hpp>
+#include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/ObjectType.hpp>
 
 #include <string>
 #include <memory>

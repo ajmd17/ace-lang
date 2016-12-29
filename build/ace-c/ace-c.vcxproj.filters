@@ -1,0 +1,459 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\AstIterator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\AstVisitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\CompilationUnit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\CompilerError.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ErrorList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Identifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\IdentifierTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Keywords.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Lexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Minifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Module.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ObjectType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Operator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Optimizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Scope.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\SemanticAnalyzer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\SourceFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\SourceLocation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\SourceStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\SymbolType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\Token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\TokenStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\TypeContract.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ace-c.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstArrayAccess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstArrayExpression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstBinaryExpression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstBlock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstConstant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstDeclaration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstExpression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstFalse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstFloat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstFunctionCall.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstFunctionDefinition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstFunctionExpression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstGeneratedExpression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstIdentifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstIfStatement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstImport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstInteger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstLocalImport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstMemberAccess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstModuleAccess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstModuleDeclaration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstNull.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstParameter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstPrintStatement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstReturnStatement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstStatement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTrue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTryCatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTypeContract.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTypeDefinition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTypeSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstUnaryExpression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstUndefined.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstUseStatement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstVariable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstVariableDeclaration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstVoid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstWhileLoop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\dis\ByteStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\dis\DecompilationUnit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\emit\InstructionStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\emit\StaticObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\AstIterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\AstVisitor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\CompilationUnit.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Compiler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\CompilerError.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Configuration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ErrorList.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Identifier.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\IdentifierTable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Keywords.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Lexer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Minifier.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Module.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ObjectType.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Operator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Optimizer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Scope.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\SemanticAnalyzer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\SourceFile.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\SourceLocation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\SourceStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\SymbolType.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Token.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\TokenStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\Tree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\TypeContract.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ace-c.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstArrayAccess.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstArrayExpression.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstBinaryExpression.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstBlock.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstConstant.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstDeclaration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstExpression.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstFalse.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstFloat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstFunctionCall.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstFunctionDefinition.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstFunctionExpression.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstGeneratedExpression.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstIdentifier.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstIfStatement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstImport.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstInteger.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstLocalImport.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstMemberAccess.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstModuleAccess.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstModuleDeclaration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstNull.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstParameter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstPrintStatement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstReturnStatement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstStatement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstString.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTrue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTryCatch.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTypeContract.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTypeDefinition.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTypeSpecification.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstUnaryExpression.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstUndefined.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstUseStatement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstVariable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstVariableDeclaration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstVoid.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstWhileLoop.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\dis\ByteStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\dis\DecompilationUnit.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\emit\Instruction.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\emit\InstructionStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\emit\StaticObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\enums.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\typedefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{3EF78EBC-02DB-327A-8758-DB9CB9675252}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{9111109B-FBA4-3667-8646-BC118664EA06}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

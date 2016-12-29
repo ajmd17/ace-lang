@@ -1,7 +1,7 @@
 #ifndef VALUE_HPP
 #define VALUE_HPP
 
-#include <ace-vm/heap_value.hpp>
+#include <ace-vm/HeapValue.hpp>
 #include <ace-sdk/ace-sdk.hpp>
 
 #include <common/utf8.hpp>
@@ -23,8 +23,8 @@ typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, Value*)
 
 typedef int32_t aint32;
 typedef int64_t aint64;
-typedef float afloat32;
-typedef double afloat64;
+typedef float   afloat32;
+typedef double  afloat64;
 
 struct Value {
     union ValueData {
@@ -69,7 +69,7 @@ struct Value {
     Value();
     explicit Value(const Value &other);
 
-    inline Value::ValueType GetType() const { return m_type; }
+    inline Value::ValueType GetType()  const { return m_type; }
     inline Value::ValueData GetValue() const { return m_value; }
 
     inline bool GetInteger(aint64 *out) const
@@ -77,7 +77,7 @@ struct Value {
         switch (m_type) {
             case I32: *out = m_value.i32; return true;
             case I64: *out = m_value.i64; return true;
-            default: return false;
+            default:                      return false;
         }
     }
 
@@ -86,7 +86,7 @@ struct Value {
         switch (m_type) {
             case F32: *out = m_value.f; return true;
             case F64: *out = m_value.d; return true;
-            default: return false;
+            default:                    return false;
         }
     }
 
@@ -95,9 +95,9 @@ struct Value {
         switch (m_type) {
             case I32: *out = m_value.i32; return true;
             case I64: *out = m_value.i64; return true;
-            case F32: *out = m_value.f; return true;
-            case F64: *out = m_value.d; return true;
-            default: return false;
+            case F32: *out = m_value.f;   return true;
+            case F64: *out = m_value.d;   return true;
+            default:                      return false;
         }
     }
 

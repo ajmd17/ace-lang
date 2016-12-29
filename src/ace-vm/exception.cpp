@@ -1,4 +1,4 @@
-#include <ace-vm/exception.hpp>
+#include <ace-vm/Exception.hpp>
 
 namespace ace {
 namespace vm {

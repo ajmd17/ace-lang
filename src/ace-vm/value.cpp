@@ -1,6 +1,6 @@
-#include <ace-vm/value.hpp>
-#include <ace-vm/object.hpp>
-#include <ace-vm/array.hpp>
+#include <ace-vm/Value.hpp>
+#include <ace-vm/Object.hpp>
+#include <ace-vm/Array.hpp>
 
 #include <stdio.h>
 #include <cinttypes>

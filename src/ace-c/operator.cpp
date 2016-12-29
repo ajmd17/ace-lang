@@ -1,4 +1,4 @@
-#include <ace-c/operator.hpp>
+#include <ace-c/Operator.hpp>
 
 #include <array>
 

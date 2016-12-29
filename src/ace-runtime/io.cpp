@@ -2,8 +2,8 @@
 
 #include <ace-sdk/ace-sdk.hpp>
 
-#include <ace-vm/vm_state.hpp>
-#include <ace-vm/exception.hpp>
+#include <ace-vm/VMState.hpp>
+#include <ace-vm/Exception.hpp>
 
 #include <cstdio>
 

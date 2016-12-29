@@ -1,7 +1,7 @@
 #ifndef RUNTIME_HPP
 #define RUNTIME_HPP
 
-#include <ace-vm/value.hpp>
+#include <ace-vm/Value.hpp>
 
 #include <vector>
 #include <memory>
@@ -27,7 +27,7 @@ public:
     static const char *OS_NAME;
 
 public:
-    static Library LoadLibrary(const char *path);
+    static Library Load(const char *path);
     static void UnloadLibraries();
 
 private:

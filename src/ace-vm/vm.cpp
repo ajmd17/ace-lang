@@ -1,9 +1,9 @@
-#include <ace-vm/vm.hpp>
-#include <ace-vm/value.hpp>
-#include <ace-vm/heap_value.hpp>
-#include <ace-vm/array.hpp>
-#include <ace-vm/object.hpp>
-#include <ace-vm/type_info.hpp>
+#include <ace-vm/VM.hpp>
+#include <ace-vm/Value.hpp>
+#include <ace-vm/HeapValue.hpp>
+#include <ace-vm/Array.hpp>
+#include <ace-vm/Object.hpp>
+#include <ace-vm/TypeInfo.hpp>
 #include <ace-c/typedefs.hpp>
 
 #include <common/instructions.hpp>
@@ -44,76 +44,71 @@ void VM::PushNativeFunctionPtr(NativeFunctionPtr_t ptr)
 void VM::Print(const Value &value)
 {
     switch (value.m_type) {
-    case Value::I32:
-        utf::printf(UTF8_CSTR("%d"), value.m_value.i32);
-        break;
-    case Value::I64:
-        utf::printf(UTF8_CSTR("%" PRId64), value.m_value.i64);
-        break;
-    case Value::F32:
-        utf::printf(UTF8_CSTR("%g"), value.m_value.f);
-        break;
-    case Value::F64:
-        utf::printf(UTF8_CSTR("%g"), value.m_value.d);
-        break;
-    case Value::BOOLEAN:
-        utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
-        break;
-    case Value::HEAP_POINTER:
-    {
-        utf::Utf8String *str = nullptr;
-        Object *objptr = nullptr;
-        Array *arrayptr = nullptr;
-        
-        if (value.m_value.ptr == nullptr) {
-            // special case for null pointers
-            utf::fputs(UTF8_CSTR("null"), stdout);
-        } else if ((str = value.m_value.ptr->GetPointer<utf::Utf8String>()) != nullptr) {
-            // print string value
-            utf::cout << *str;
-        } else if ((arrayptr = value.m_value.ptr->GetPointer<Array>()) != nullptr) {
-            // print array list
-            const char sep_str[] = ", ";
-            const size_t sep_str_len = std::strlen(sep_str);
+        case Value::I32:
+            utf::printf(UTF8_CSTR("%d"), value.m_value.i32);
+            break;
+        case Value::I64:
+            utf::printf(UTF8_CSTR("%" PRId64), value.m_value.i64);
+            break;
+        case Value::F32:
+            utf::printf(UTF8_CSTR("%g"), value.m_value.f);
+            break;
+        case Value::F64:
+            utf::printf(UTF8_CSTR("%g"), value.m_value.d);
+            break;
+        case Value::BOOLEAN:
+            utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
+            break;
+        case Value::HEAP_POINTER: {
+            if (!value.m_value.ptr) {
+                // special case for null pointers
+                utf::fputs(UTF8_CSTR("null"), stdout);
+            } else if (utf::Utf8String *str = value.m_value.ptr->GetPointer<utf::Utf8String>()) {
+                // print string value
+                utf::cout << *str;
+            } else if (Array *arrayptr = value.m_value.ptr->GetPointer<Array>()) {
+                // print array list
+                const char sep_str[] = ", ";
+                const size_t sep_str_len = std::strlen(sep_str);
 
-            int buffer_index = 1;
-            const int buffer_size = 256;
-            utf::Utf8String res("[", buffer_size);
+                int buffer_index = 1;
+                const int buffer_size = 256;
+                utf::Utf8String res("[", buffer_size);
 
-            // convert all array elements to string
-            const int size = arrayptr->GetSize();
-            for (int i = 0; i < size; i++) {
-                utf::Utf8String item_str = arrayptr->AtIndex(i).ToString();
-                size_t len = item_str.GetLength();
+                // convert all array elements to string
+                const int size = arrayptr->GetSize();
+                for (int i = 0; i < size; i++) {
+                    utf::Utf8String item_str = arrayptr->AtIndex(i).ToString();
+                    size_t len = item_str.GetLength();
 
-                bool last = i != size - 1;
-                if (last) {
-                    len += sep_str_len;
-                }
-
-                if (buffer_index + len < buffer_size - 5) {
-                    buffer_index += len;
-                    res += item_str;
+                    bool last = i != size - 1;
                     if (last) {
-                        res += sep_str;
+                        len += sep_str_len;
                     }
-                } else {
-                    res += "... ";
-                    break;
+
+                    if (buffer_index + len < buffer_size - 5) {
+                        buffer_index += len;
+                        res += item_str;
+                        if (last) {
+                            res += sep_str;
+                        }
+                    } else {
+                        res += "... ";
+                        break;
+                    }
                 }
+
+                res += "]";
+                utf::cout << res;
+            } else {
+                utf::fputs(UTF8_CSTR("Object"), stdout);
             }
 
-            res += "]";
-            utf::cout << res;
-        } else {
-            utf::fputs(UTF8_CSTR("Object"), stdout);
+            break;
         }
-
-        break;
-    }
-    case Value::FUNCTION: utf::fputs(UTF8_CSTR("Function"), stdout); break;
-    case Value::NATIVE_FUNCTION: utf::fputs(UTF8_CSTR("NativeFunction"), stdout); break;
-    default: utf::fputs(UTF8_CSTR("??"), stdout); break;
+        case Value::FUNCTION: utf::fputs(UTF8_CSTR("Function"), stdout); break;
+        case Value::NATIVE_FUNCTION: utf::fputs(UTF8_CSTR("NativeFunction"), stdout); break;
+        default: utf::fputs(UTF8_CSTR("??"), stdout); break;
     }
 }
 

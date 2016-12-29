@@ -1,17 +1,17 @@
-#include <ace/api.hpp>
-#include <ace/runtime.hpp>
+#include <ace/API.hpp>
+#include <ace/Runtime.hpp>
 
 #include <ace-c/ace-c.hpp>
-#include <ace-c/configuration.hpp>
-#include <ace-c/semantic_analyzer.hpp>
-#include <ace-c/optimizer.hpp>
-#include <ace-c/lexer.hpp>
-#include <ace-c/parser.hpp>
-#include <ace-c/compiler.hpp>
+#include <ace-c/Configuration.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
+#include <ace-c/Optimizer.hpp>
+#include <ace-c/Lexer.hpp>
+#include <ace-c/Parser.hpp>
+#include <ace-c/Compiler.hpp>
 
-#include <ace-vm/object.hpp>
-#include <ace-vm/array.hpp>
-#include <ace-vm/value.hpp>
+#include <ace-vm/Object.hpp>
+#include <ace-vm/Array.hpp>
+#include <ace-vm/Value.hpp>
 
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
@@ -61,7 +61,7 @@ void Runtime_load_library(ace::sdk::Params params)
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
         } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
             // load library from string
-            Library lib = Runtime::LoadLibrary((utf::Utf8String(exec_path.c_str()) + *strptr).GetData());
+            Library lib = Runtime::Load((utf::Utf8String(exec_path.c_str()) + *strptr).GetData());
 
             if (!lib.GetHandle()) {
                 // could not load library
@@ -518,7 +518,7 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
 
                         // print whatever is in active_reg
                         vm->Print(main_thread->GetRegisters()[active_reg]);
-                        utf::printf("\n");
+                        utf::printf(UTF8_CSTR("\n"));
 
                         if (!vm->GetState().good) {
                             // if an exception was unhandled go back to previous state

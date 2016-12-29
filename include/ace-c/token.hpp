@@ -1,60 +1,58 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
-#include <ace-c/source_location.hpp>
+#include <ace-c/SourceLocation.hpp>
 
 #include <string>
 
+enum TokenClass {
+    TK_EMPTY,
+    TK_INTEGER,
+    TK_FLOAT,
+    TK_STRING,
+    TK_IDENT,
+    TK_KEYWORD,
+    TK_OPERATOR,
+    TK_NEWLINE,
+    TK_COMMA,
+    TK_SEMICOLON,
+    TK_COLON,
+    TK_DOUBLE_COLON,
+    TK_DOT,
+    TK_ELLIPSIS,
+    TK_RIGHT_ARROW,
+    TK_OPEN_PARENTH,
+    TK_CLOSE_PARENTH,
+    TK_OPEN_BRACKET,
+    TK_CLOSE_BRACKET,
+    TK_OPEN_BRACE,
+    TK_CLOSE_BRACE
+};
+
 class Token {
 public:
-    enum TokenType {
-        Token_empty,
-        Token_integer_literal,
-        Token_float_literal,
-        Token_string_literal,
-        Token_identifier,
-        Token_keyword,
-        Token_operator,
-        Token_newline,
-        Token_comma,
-        Token_semicolon,
-        Token_colon,
-        Token_double_colon,
-        Token_dot,
-        Token_ellipsis,
-        Token_right_arrow,
-        Token_open_parenthesis,
-        Token_close_parenthesis,
-        Token_open_bracket,
-        Token_close_bracket,
-        Token_open_brace,
-        Token_close_brace,
-        Token_preprocessor_symbol,
-        Token_documentation
-    };
-
-    static std::string TokenTypeToString(Token::TokenType type);
+    static std::string TokenTypeToString(TokenClass token_class);
     
     static const Token EMPTY;
 
 public:
-    Token(TokenType type, const std::string &value,
+    Token(TokenClass token_class, const std::string &value,
         const SourceLocation &location);
     
     Token(const Token &other);
 
-    inline TokenType GetType() const { return m_type; }
+    inline TokenClass GetTokenClass() const { return m_token_class; }
     inline const std::string &GetValue() const { return m_value; }
     inline const SourceLocation &GetLocation() const { return m_location; }
-    inline bool Empty() const { return m_type == Token_empty; }
+    inline bool Empty() const { return m_token_class == TK_EMPTY; }
     
     // return true if not empty
-    inline explicit operator bool() const { return m_type != TokenType::Token_empty; }
+    inline explicit operator bool() const { return m_token_class != TK_EMPTY; }
 
     bool IsContinuationToken() const;
 
 private:
-    TokenType m_type;
+    TokenClass m_token_class;
     std::string m_value;
     SourceLocation m_location;
 };

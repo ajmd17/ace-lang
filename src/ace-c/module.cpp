@@ -1,4 +1,4 @@
-#include <ace-c/module.hpp>
+#include <ace-c/Module.hpp>
 
 Module::Module(const std::string &name, const SourceLocation &location)
     : m_name(name),
@@ -12,10 +12,7 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
     TreeNode<Scope> *top = m_scopes.TopNode();
 
     while (top) {
-        Identifier *result =
-            top->m_value.GetIdentifierTable().LookUpIdentifier(name);
-
-        if (result) {
+        if (Identifier *result = top->m_value.GetIdentifierTable().LookUpIdentifier(name)) {
             // a result was found
             return result;
         }

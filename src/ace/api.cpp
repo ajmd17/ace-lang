@@ -1,9 +1,8 @@
-#include <ace/api.hpp>
+#include <ace/API.hpp>
 
-#include <ace-c/parser.hpp>
-#include <ace-c/configuration.hpp>
-#include <ace-c/ast/ast_object.hpp>
-#include <ace-c/ast/ast_generated_expression.hpp>
+#include <ace-c/Parser.hpp>
+#include <ace-c/Configuration.hpp>
+#include <ace-c/ast/AstObject.hpp>
 
 #include <common/my_assert.hpp>
 #include <common/hasher.hpp>
@@ -25,11 +24,6 @@ static Module *GetModule(CompilationUnit *compilation_unit, const std::string &m
     }
 
     return nullptr;
-
-    //std::unique_ptr<Module> this_module(new Module(module_name, SourceLocation::eof));
-    //compilation_unit->m_modules.push_back(std::move(this_module));
-    //compilation_unit->m_module_index++;
-    //mod = compilation_unit->m_modules.back().get();
 }
 
 static Identifier *CreateIdentifier(CompilationUnit *compilation_unit,
@@ -55,10 +49,7 @@ static Identifier *CreateIdentifier(CompilationUnit *compilation_unit,
 
 static std::string MangleName(const std::string &type_name, const std::string &name)
 {
-    std::string res;
-    res += "_" + type_name;
-    res += "_" + name;
-    return res;
+    return "__" + type_name + "_" + name;
 }
 
 API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
@@ -159,9 +150,7 @@ void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
 void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
     Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
-    ASSERT(mod != nullptr);
-    ASSERT(vm != nullptr);
-    ASSERT(compilation_unit != nullptr);
+    ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
 
     Identifier *ident = CreateIdentifier(compilation_unit, mod, def.name);
 
@@ -192,9 +181,7 @@ void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
 void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
     Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
-    ASSERT(mod != nullptr);
-    ASSERT(vm != nullptr);
-    ASSERT(compilation_unit != nullptr);
+    ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
 
     Identifier *ident = CreateIdentifier(compilation_unit, mod, def.function_name);
 
@@ -222,9 +209,7 @@ void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
 void API::ModuleDefine::BindType(const TypeDefine &def,
     Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
-    ASSERT(mod != nullptr);
-    ASSERT(vm != nullptr);
-    ASSERT(compilation_unit != nullptr);
+    ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
 
     ObjectType object_type(def.m_name, nullptr);
 
@@ -284,9 +269,8 @@ void API::ModuleDefine::BindType(const TypeDefine &def,
 
         ObjectType member_type = ObjectType::MakeFunctionType(method.return_type, method.param_types);
 
-        auto value = std::shared_ptr<AstVariable>(
-            new AstVariable(mangled_name, SourceLocation::eof));
-        value->SetIdentifier(mangled_ident);
+        auto value = std::shared_ptr<AstVariable>(new AstVariable(mangled_name, SourceLocation::eof));
+        value->GetProperties().SetIdentifier(mangled_ident);
 
         member_type.SetDefaultValue(value);
 
@@ -300,22 +284,6 @@ void API::ModuleDefine::BindType(const TypeDefine &def,
         // generate hash from method name
         hashes.push_back(hash_fnv_1(method.function_name.c_str()));
     }
-
-    /*for (const auto &mem : def.m_methods) {
-        Scope &scope = mod->m_scopes.Top();
-
-        ObjectType mem_type = ObjectType::MakeFunctionType(mem.return_type, mem.param_types);
-
-        ASSERT_MSG(!object_type.HasDataMember(mem.function_name), "Type has duplicate method");
-
-
-        DataMember dm(mem.function_name, mem_type);
-
-        object_type.AddDataMember(dm);
-
-        // generate hash from method name
-        hashes.push_back(hash_fnv_1(mem.function_name.c_str()));
-    }*/
 
     // close the scope for data members
     mod->m_scopes.Close();
@@ -349,7 +317,6 @@ void API::ModuleDefine::BindType(const TypeDefine &def,
     object_type.SetDefaultValue(std::shared_ptr<AstObject>(new AstObject(object_type, SourceLocation::eof)));
     mod->AddUserType(object_type);
 }
-
 
 API::ModuleDefine &APIInstance::Module(const std::string &name)
 {

@@ -1,43 +1,43 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include <ace-c/token_stream.hpp>
-#include <ace-c/source_location.hpp>
-#include <ace-c/compilation_unit.hpp>
-#include <ace-c/ast_iterator.hpp>
-#include <ace-c/keywords.hpp>
-#include <ace-c/object_type.hpp>
-#include <ace-c/ast/ast_module_declaration.hpp>
-#include <ace-c/ast/ast_variable_declaration.hpp>
-#include <ace-c/ast/ast_function_definition.hpp>
-#include <ace-c/ast/ast_function_expression.hpp>
-#include <ace-c/ast/ast_array_expression.hpp>
-#include <ace-c/ast/ast_type_definition.hpp>
-#include <ace-c/ast/ast_statement.hpp>
-#include <ace-c/ast/ast_expression.hpp>
-#include <ace-c/ast/ast_import.hpp>
-#include <ace-c/ast/ast_local_import.hpp>
-#include <ace-c/ast/ast_integer.hpp>
-#include <ace-c/ast/ast_float.hpp>
-#include <ace-c/ast/ast_string.hpp>
-#include <ace-c/ast/ast_binary_expression.hpp>
-#include <ace-c/ast/ast_unary_expression.hpp>
-#include <ace-c/ast/ast_function_call.hpp>
-#include <ace-c/ast/ast_variable.hpp>
-#include <ace-c/ast/ast_module_access.hpp>
-#include <ace-c/ast/ast_member_access.hpp>
-#include <ace-c/ast/ast_array_access.hpp>
-#include <ace-c/ast/ast_true.hpp>
-#include <ace-c/ast/ast_false.hpp>
-#include <ace-c/ast/ast_null.hpp>
-#include <ace-c/ast/ast_block.hpp>
-#include <ace-c/ast/ast_if_statement.hpp>
-#include <ace-c/ast/ast_while_loop.hpp>
-#include <ace-c/ast/ast_print_statement.hpp>
-#include <ace-c/ast/ast_try_catch.hpp>
-#include <ace-c/ast/ast_type_specification.hpp>
-#include <ace-c/ast/ast_type_contract.hpp>
-#include <ace-c/ast/ast_return_statement.hpp>
+#include <ace-c/TokenStream.hpp>
+#include <ace-c/SourceLocation.hpp>
+#include <ace-c/CompilationUnit.hpp>
+#include <ace-c/AstIterator.hpp>
+#include <ace-c/Keywords.hpp>
+#include <ace-c/ObjectType.hpp>
+#include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstVariableDeclaration.hpp>
+#include <ace-c/ast/AstFunctionDefinition.hpp>
+#include <ace-c/ast/AstFunctionExpression.hpp>
+#include <ace-c/ast/AstArrayExpression.hpp>
+#include <ace-c/ast/AstTypeDefinition.hpp>
+#include <ace-c/ast/AstStatement.hpp>
+#include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/ast/AstImport.hpp>
+#include <ace-c/ast/AstLocalImport.hpp>
+#include <ace-c/ast/AstInteger.hpp>
+#include <ace-c/ast/AstFloat.hpp>
+#include <ace-c/ast/AstString.hpp>
+#include <ace-c/ast/AstBinaryExpression.hpp>
+#include <ace-c/ast/AstUnaryExpression.hpp>
+#include <ace-c/ast/AstFunctionCall.hpp>
+#include <ace-c/ast/AstVariable.hpp>
+#include <ace-c/ast/AstModuleAccess.hpp>
+#include <ace-c/ast/AstMemberAccess.hpp>
+#include <ace-c/ast/AstArrayAccess.hpp>
+#include <ace-c/ast/AstTrue.hpp>
+#include <ace-c/ast/AstFalse.hpp>
+#include <ace-c/ast/AstNull.hpp>
+#include <ace-c/ast/AstBlock.hpp>
+#include <ace-c/ast/AstIfStatement.hpp>
+#include <ace-c/ast/AstWhileLoop.hpp>
+#include <ace-c/ast/AstPrintStatement.hpp>
+#include <ace-c/ast/AstTryCatch.hpp>
+#include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstTypeContract.hpp>
+#include <ace-c/ast/AstReturnStatement.hpp>
 
 #include <string>
 
@@ -55,11 +55,11 @@ private:
     TokenStream *m_token_stream;
     CompilationUnit *m_compilation_unit;
 
-    Token MatchAhead(Token::TokenType type, int n);
-    Token Match(Token::TokenType type, bool read = false);
+    Token MatchAhead(TokenClass token_class, int n);
+    Token Match(TokenClass token_class, bool read = false);
     Token MatchKeyword(Keywords keyword, bool read = false);
     Token MatchOperator(const Operator *op, bool read = false);
-    Token Expect(Token::TokenType type, bool read = false);
+    Token Expect(TokenClass token_class, bool read = false);
     Token ExpectKeyword(Keywords keyword, bool read = false);
     Token ExpectOperator(const Operator *op, bool read = false);
     SourceLocation CurrentLocation() const;

@@ -1,7 +1,7 @@
-#include <ace-c/compiler.hpp>
-#include <ace-c/module.hpp>
-#include <ace-c/ast/ast_module_declaration.hpp>
-#include <ace-c/configuration.hpp>
+#include <ace-c/Compiler.hpp>
+#include <ace-c/Module.hpp>
+#include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/Configuration.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>

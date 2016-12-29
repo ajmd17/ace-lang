@@ -1,4 +1,4 @@
-#include <ace-c/minifier.hpp>
+#include <ace-c/Minifier.hpp>
 
 Minifier::Minifier(AstIterator *ast_iterator)
     : AstVisitor(ast_iterator, nullptr)

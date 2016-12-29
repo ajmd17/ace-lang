@@ -1,9 +1,9 @@
 #ifndef OPTIMIZER_HPP
 #define OPTIMIZER_HPP
 
-#include <ace-c/ast_visitor.hpp>
-#include <ace-c/module.hpp>
-#include <ace-c/ast/ast_expression.hpp>
+#include <ace-c/AstVisitor.hpp>
+#include <ace-c/Module.hpp>
+#include <ace-c/ast/AstExpression.hpp>
 
 #include <memory>
 

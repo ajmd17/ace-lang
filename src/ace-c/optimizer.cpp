@@ -1,36 +1,32 @@
-#include <ace-c/optimizer.hpp>
-#include <ace-c/ast/ast_module_declaration.hpp>
-#include <ace-c/ast/ast_binary_expression.hpp>
-#include <ace-c/ast/ast_variable.hpp>
-#include <ace-c/ast/ast_constant.hpp>
+#include <ace-c/Optimizer.hpp>
+#include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstBinaryExpression.hpp>
+#include <ace-c/ast/AstVariable.hpp>
+#include <ace-c/ast/AstConstant.hpp>
 
 #include <common/my_assert.hpp>
 
 void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor, Module *mod)
 {
     ASSERT(expr != nullptr);
-
     expr->Optimize(visitor, mod);
 
-    AstVariable *expr_as_var = nullptr;
-    AstBinaryExpression *expr_as_binop = nullptr;
-    if ((expr_as_var = dynamic_cast<AstVariable*>(expr.get())) != nullptr) {
+    if (auto *expr_as_var = dynamic_cast<AstVariable*>(expr.get())) {
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
-        if (expr_as_var->GetProperties().identifier) {
-            if (expr_as_var->GetProperties().identifier->GetFlags() & FLAG_CONST) {
+        if (expr_as_var->GetProperties().GetIdentifier()) {
+            if (expr_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                 // the variable is a const, now we make sure that the current
                 // value is a literal value
-                auto value_sp = expr_as_var->GetProperties().identifier->GetCurrentValue();
-                if (AstConstant *constant_sp = dynamic_cast<AstConstant*>(value_sp.get())) {
+                if (auto *constant = dynamic_cast<AstConstant*>(expr_as_var->GetProperties().GetIdentifier()->GetCurrentValue().get())) {
                     // yay! we were able to retrieve the value that
                     // the variable is set to, so now we can use that
                     // at compile-time rather than using a variable.
-                    expr.reset(constant_sp);
+                    expr.reset(constant);
                 }
             }
         }
-    } else if ((expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) != nullptr) {
+    } else if (auto *expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) {
         if (!expr_as_binop->GetRight()) {
             // right side has been optimized away, to just left side
             expr = expr_as_binop->GetLeft();

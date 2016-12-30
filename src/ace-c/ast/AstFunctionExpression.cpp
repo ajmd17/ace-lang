@@ -72,8 +72,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         if (!function_scope.GetReturnTypes().empty()) {
             // search through return types for ambiguities
             for (const auto &it : function_scope.GetReturnTypes()) {
-                if (m_return_type == ObjectType::type_builtin_any || 
-                    m_return_type == ObjectType::type_builtin_undefined) {
+                if (m_return_type == ObjectType::type_builtin_any || m_return_type == ObjectType::type_builtin_undefined) {
                     m_return_type = it.first;
                 } else if (ObjectType::TypeCompatible(m_return_type, it.first, false)) {
                     m_return_type = ObjectType::FindCompatibleType(m_return_type, it.first, true);
@@ -240,11 +239,6 @@ bool AstFunctionExpression::MayHaveSideEffects() const
 {
     // changed to true because it affects registers
     return true;
-}
-
-ObjectType AstFunctionExpression::GetObjectType() const
-{
-    return m_object_type;
 }
 
 SymbolTypePtr_t AstFunctionExpression::GetSymbolType() const

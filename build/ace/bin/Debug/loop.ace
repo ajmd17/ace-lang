@@ -16,9 +16,13 @@ module loop {
 	type Range {
 		start: Any = null
 		end: Any = null
-		//next: Function(Any)->Any
+		next: Function(Any...)-> Any
 	}
 	
+	type Range(T) {
+		start: T
+		end: T
+	}
 	
 	
 	myrange: Range

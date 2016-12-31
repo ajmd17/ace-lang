@@ -8,10 +8,10 @@
 
 #include <iostream>
 
-AstObject::AstObject(const ObjectType &object_type,
+AstObject::AstObject(const SymbolTypePtr_t &symbol_type,
     const SourceLocation &location)
     : AstExpression(location),
-      m_object_type(object_type)
+      m_symbol_type(symbol_type)
 {
 }
 
@@ -21,7 +21,7 @@ void AstObject::Visit(AstVisitor *visitor, Module *mod)
 
 void AstObject::Build(AstVisitor *visitor, Module *mod)
 {
-    int static_id = m_object_type.GetStaticId();
+    int static_id = m_symbol_type->GetId();
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -37,7 +37,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     if (!ace::compiler::Config::use_static_objects) {
         // padding fill for LOAD_TYPE instruction!
         visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() +=
-            m_object_type.GetDataMembers().size() * sizeof(uint32_t);
+            m_symbol_type->GetMembers().size() * sizeof(uint32_t);
     }
 
     // store newly allocated object in same register
@@ -54,10 +54,11 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
     // for each data member, load the default value
     int i = 0;
-    for (const DataMember &dm : m_object_type.GetDataMembers()) {
-        ASSERT_MSG(dm.m_type.GetDefaultValue() != nullptr, "default value was nullptr");
+    for (const auto &dm : m_symbol_type->GetMembers()) {
+        ASSERT(dm.second != nullptr);
+        ASSERT(dm.second->GetDefaultValue() != nullptr);
 
-        if (!dm.m_type.GetDefaultValue() || !dm.m_type.GetDefaultValue()->MayHaveSideEffects()/*dm.m_type.IsRecordType()*/) {
+        if (!dm.second->GetDefaultValue()->MayHaveSideEffects()) {
             // the member is a record type, and there is no chance of the 
             // register being overwritten,  so just load the type from obj_reg
 
@@ -67,7 +68,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
             // load the data member's default value.
-            dm.m_type.GetDefaultValue()->Build(visitor, mod);
+            dm.second->GetDefaultValue()->Build(visitor, mod);
 
             // get active register
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -80,7 +81,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             // data member.
 
             // build the data member
-            dm.m_type.GetDefaultValue()->Build(visitor, mod);
+            dm.second->GetDefaultValue()->Build(visitor, mod);
 
             // claim register for the data member
             visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
@@ -149,7 +150,7 @@ bool AstObject::MayHaveSideEffects() const
     return false;
 }
 
-ObjectType AstObject::GetObjectType() const
+SymbolTypePtr_t AstObject::GetSymbolType() const
 {
-    return m_object_type;
+    return m_symbol_type;
 }

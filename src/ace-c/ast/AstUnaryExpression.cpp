@@ -44,21 +44,21 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
 {
     m_target->Visit(visitor, mod);
 
-    ObjectType type = m_target->GetObjectType();
+    SymbolTypePtr_t type = m_target->GetSymbolType();
     
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
         // do not allow right-hand side to be 'Any', because it might change the data type.
-        visitor->Assert((type == ObjectType::type_builtin_int || 
-            type == ObjectType::type_builtin_number || 
-            type == ObjectType::type_builtin_any),
-            CompilerError(Level_fatal, Msg_bitwise_operand_must_be_int, m_target->GetLocation(), type.ToString()));
+        visitor->Assert((type == SymbolType::Builtin::INT || 
+            type == SymbolType::Builtin::NUMBER ||
+            type == SymbolType::Builtin::ANY),
+            CompilerError(Level_fatal, Msg_bitwise_operand_must_be_int, m_target->GetLocation(), type->GetName()));
     } else if (m_op->GetType() & ARITHMETIC) {
-        visitor->Assert(type == ObjectType::type_builtin_int || 
-            type == ObjectType::type_builtin_float || 
-            type == ObjectType::type_builtin_number || 
-            type == ObjectType::type_builtin_any,
-            CompilerError(Level_fatal, Msg_invalid_operator_for_type, m_target->GetLocation(), m_op->ToString(), type.ToString()));
+        visitor->Assert(type == SymbolType::Builtin::INT ||
+            type == SymbolType::Builtin::FLOAT ||
+            type == SymbolType::Builtin::NUMBER ||
+            type == SymbolType::Builtin::ANY,
+            CompilerError(Level_fatal, Msg_invalid_operator_for_type, m_target->GetLocation(), m_op->ToString(), type->GetName()));
     }
 
     if (m_op->ModifiesValue()) {
@@ -213,11 +213,6 @@ int AstUnaryExpression::IsTrue() const
 bool AstUnaryExpression::MayHaveSideEffects() const
 {
     return m_target->MayHaveSideEffects();
-}
-
-ObjectType AstUnaryExpression::GetObjectType() const
-{
-    return m_target->GetObjectType();
 }
 
 SymbolTypePtr_t AstUnaryExpression::GetSymbolType() const

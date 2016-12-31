@@ -5,9 +5,12 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
-AstParameter::AstParameter(const std::string &name, bool is_variadic,
+AstParameter::AstParameter(const std::string &name, 
+    const std::shared_ptr<AstTypeSpecification> &type_spec, 
+    bool is_variadic,
     const SourceLocation &location)
     : AstDeclaration(name, location),
+      m_type_spec(type_spec),
       m_is_variadic(is_variadic)
 {
 }
@@ -15,9 +18,17 @@ AstParameter::AstParameter(const std::string &name, bool is_variadic,
 void AstParameter::Visit(AstVisitor *visitor, Module *mod)
 {
     AstDeclaration::Visit(visitor, mod);
-    
-    if (m_type_contract != nullptr) {
-        m_type_contract->Visit(visitor, mod);
+
+    // params are `Any` by default
+    SymbolTypePtr_t symbol_type = SymbolType::Builtin::ANY;
+
+    if (m_type_spec) {
+        m_type_spec->Visit(visitor, mod);
+        symbol_type = m_type_spec->GetSymbolType();
+    }
+
+    if (m_identifier) {
+        m_identifier->SetSymbolType(symbol_type);
     }
 }
 

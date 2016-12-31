@@ -12,6 +12,7 @@ CompilationUnit::CompilationUnit()
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::INT);
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::FLOAT);
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::NUMBER);
+    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::BOOLEAN);
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::STRING);
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::FUNCTION);
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::ARRAY);

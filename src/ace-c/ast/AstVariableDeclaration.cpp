@@ -24,47 +24,81 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
 
 void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
-    ObjectType object_type;
+    SymbolTypePtr_t symbol_type;
 
     if (m_type_specification == nullptr && m_assignment == nullptr) {
         // error; requires either type, or assignment.
         visitor->GetCompilationUnit()->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_missing_type_and_assignment, m_location, m_name));
     } else {
-        if (m_type_specification != nullptr) {
-            m_type_specification->Visit(visitor, mod);
-            object_type = m_type_specification->GetObjectType();
+        // the type_strict flag means that errors will be shown if
+        // the assignment type and the user-supplied type differ.
+        // it is to be turned off for built-in (default) values
+        // for example, the default type of Array is Any.
+        // this flag will allow an Array(Float) to be constructed 
+        // with an empty array of type Array(Any)
+        bool type_strict = true;
 
-            if (m_assignment == nullptr) {
+        if (m_type_specification) {
+            m_type_specification->Visit(visitor, mod);
+
+            symbol_type = m_type_specification->GetSymbolType();
+
+            // if no assignment provided, set the assignment to be the default value of the provided type
+            if (m_assignment == nullptr && symbol_type != nullptr) {
                 // Assign variable to the default value for the specified type.
-                m_assignment = object_type.GetDefaultValue();
+                m_assignment = symbol_type->GetDefaultValue();
+                // built-in assignment, turn off strict mode
+                type_strict = false;
             }
         }
 
-        ASSERT(m_assignment != nullptr);
+        if (m_assignment) {
+            if (!m_assignment_already_visited) {
+                // visit assignment
+                m_assignment->Visit(visitor, mod);
+            }
 
-        if (!m_assignment_already_visited) {
-            // visit assignment
-            m_assignment->Visit(visitor, mod);
-        }
+            // make sure type is compatible with assignment
+            SymbolTypePtr_t assignment_type = m_assignment->GetSymbolType();
+            ASSERT(assignment_type != nullptr);
 
-        // make sure type is compatible with assignment
-        ObjectType assignment_type = m_assignment->GetObjectType();
+            if (m_type_specification) {
+                // symbol_type should be the user-specified type
+                ASSERT(symbol_type != nullptr);
 
-        if (m_type_specification != nullptr) {
-            visitor->Assert(ObjectType::TypeCompatible(object_type, assignment_type, true),
-                CompilerError(Level_fatal, Msg_mismatched_types, m_assignment->GetLocation(),
-                    object_type.ToString(), assignment_type.ToString()));
-        } else {
-            // Set the type to be the deduced type from the expression.
-            object_type = assignment_type;
+
+                if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
+                    // perform type promotion on incomplete generics.
+                    // i.e: let x: Array = [1,2,3]
+                    // will actually be of the type `Array(Int)`
+
+                    if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                        if (auto base = assignment_type->GetBaseType()) {
+                            if (symbol_type->TypeEqual(*base)) {
+                                // here is where type promotion is performed
+                                symbol_type = assignment_type;
+                            }
+                        }
+                    }
+                }
+
+                if (type_strict) {
+                    visitor->Assert(symbol_type->TypeCompatible(*assignment_type, true),
+                        CompilerError(Level_fatal, Msg_mismatched_types, m_assignment->GetLocation(),
+                            symbol_type->GetName(), assignment_type->GetName()));
+                }
+            } else {
+                // Set the type to be the deduced type from the expression.
+                symbol_type = assignment_type;
+            }
         }
     }
 
     AstDeclaration::Visit(visitor, mod);
 
-    if (m_identifier != nullptr) {
-        m_identifier->SetObjectType(object_type);
+    if (m_identifier) {
+        m_identifier->SetSymbolType(symbol_type);
         m_identifier->SetCurrentValue(m_assignment);
     }
 }
@@ -72,6 +106,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_assignment != nullptr);
+
     if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
         // get current stack size
         int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();

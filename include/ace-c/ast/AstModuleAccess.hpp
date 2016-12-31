@@ -29,7 +29,7 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual ObjectType GetObjectType() const override;
+    virtual SymbolTypePtr_t GetSymbolType() const override;
 
 private:
     std::string m_target;

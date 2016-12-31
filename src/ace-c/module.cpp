@@ -44,19 +44,18 @@ Identifier *Module::LookUpIdentifierDepth(const std::string &name, int depth_lev
     return nullptr;
 }
 
-bool Module::LookUpUserType(const std::string &type, ObjectType &out)
+SymbolTypePtr_t Module::LookupSymbolType(const std::string &name)
 {
-    for (ObjectType &it : m_user_types) {
-        if (it.ToString() == type) {
-            out = it;
-            return true;
+    TreeNode<Scope> *top = m_scopes.TopNode();
+
+    while (top) {
+        if (SymbolTypePtr_t result = top->m_value.GetIdentifierTable().LookupSymbolType(name)) {
+            // a result was found
+            return result;
         }
+
+        top = top->m_parent;
     }
 
-    return false;
-}
-
-void Module::AddUserType(const ObjectType &type)
-{
-    m_user_types.push_back(type);
+    return nullptr;
 }

@@ -96,7 +96,7 @@ bool AstModuleAccess::MayHaveSideEffects() const
     return m_expr->MayHaveSideEffects();
 }
 
-ObjectType AstModuleAccess::GetObjectType() const
+SymbolTypePtr_t AstModuleAccess::GetSymbolType() const
 {
-    return m_expr->GetObjectType();
+    return m_expr->GetSymbolType();
 }

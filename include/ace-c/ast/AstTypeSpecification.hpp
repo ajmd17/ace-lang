@@ -2,7 +2,7 @@
 #define AST_TYPE_SPECIFICATION_HPP
 
 #include <ace-c/ast/AstStatement.hpp>
-#include <ace-c/ObjectType.hpp>
+#include <ace-c/SymbolType.hpp>
 
 #include <string>
 #include <memory>
@@ -20,7 +20,7 @@ public:
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
 
-    inline const ObjectType &GetObjectType() const { return m_object_type; }
+    inline const SymbolTypePtr_t &GetSymbolType() const { return m_symbol_type; }
 
 private:
     std::string m_left;
@@ -28,7 +28,7 @@ private:
     std::shared_ptr<AstTypeSpecification> m_right;
 
     /** Set while analyzing */
-    ObjectType m_object_type;
+    SymbolTypePtr_t m_symbol_type;
 
     /** Is module access chained */
     bool m_is_chained;

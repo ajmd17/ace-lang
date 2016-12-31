@@ -25,13 +25,13 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual ObjectType GetObjectType() const override;
+    virtual SymbolTypePtr_t GetSymbolType() const override;
 
 private:
     std::shared_ptr<AstExpression> m_target;
     std::vector<std::shared_ptr<AstIdentifier>> m_parts;
     Module *m_mod_access;
-    std::vector<ObjectType> m_part_object_types;
+    std::vector<SymbolTypePtr_t> m_part_object_types;
     AccessMode m_access_mode;
     bool m_side_effects;
 };

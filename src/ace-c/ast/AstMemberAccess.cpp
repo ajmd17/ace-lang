@@ -230,7 +230,7 @@ AstMemberAccess::AstMemberAccess(const std::shared_ptr<AstExpression> &target,
 void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 {
     std::shared_ptr<AstExpression> real_target;
-    ObjectType target_type;
+    SymbolTypePtr_t target_type;
     int pos = 0;
     bool has_side_effects = false;
 
@@ -251,7 +251,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 
     // accept target
     real_target->Visit(visitor, (m_mod_access != nullptr) ? m_mod_access : mod);
-    target_type = real_target->GetObjectType();
+    target_type = real_target->GetSymbolType();
     m_part_object_types.push_back(target_type);
 
     for (; pos < m_parts.size(); pos++) {
@@ -260,7 +260,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 
         AstFunctionCall *field_as_call = dynamic_cast<AstFunctionCall*>(field.get());
 
-        if (target_type == ObjectType::type_builtin_any) {
+        if (target_type == SymbolType::Builtin::ANY) {
             if (field_as_call) {
                 has_side_effects = true;
                 // if it's a function, we'll have to check it anyway,
@@ -274,12 +274,12 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 
             // for the Any type, we will have to load the member from a hash
             // leave target_type as Any
-            target_type = ObjectType::type_builtin_any;
+            target_type = SymbolType::Builtin::ANY;
             m_part_object_types.push_back(target_type);
             real_target = field;
         } else {
             // first check if the target has the field
-            if (target_type.HasDataMember(field->GetName())) {
+            if (auto member_type = target_type->FindMember(field->GetName())) {
                 if (field_as_call) {
                     has_side_effects = true;
                     // visit all args even though this is not a free function
@@ -291,7 +291,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                     }
                 }
 
-                target_type = target_type.GetDataMemberType(field->GetName());
+                target_type = member_type;
                 m_part_object_types.push_back(target_type);
                 real_target = field;
             } else {
@@ -300,9 +300,17 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                 if (!field_as_call) {
                     // not a function call
                     // error; undefined data member.
+                    ASSERT(target_type != nullptr);
+
                     CompilerError err(Level_fatal, Msg_not_a_data_member, field->GetLocation(),
-                        field->GetName(), target_type.ToString());
+                        field->GetName(), target_type->GetName());
                     visitor->GetCompilationUnit()->GetErrorList().AddError(err);
+
+                    // set target to Undefined because member was not found
+                    target_type = SymbolType::Builtin::UNDEFINED;
+                    m_part_object_types.push_back(target_type);
+                    real_target = field;
+
                     break;
                 } else {
                     if (field_as_call->MayHaveSideEffects()) {
@@ -310,7 +318,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                     }
                     // in this case it would be usage of uniform call syntax.
                     field->Visit(visitor, mod);
-                    target_type = field->GetObjectType();
+                    target_type = field->GetSymbolType();
                     m_part_object_types.push_back(target_type);
                     real_target = field;
                 }
@@ -324,7 +332,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
 void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 {
     std::shared_ptr<AstExpression> real_target;
-    ObjectType target_type;
+    SymbolTypePtr_t target_type;
     int pos = 0;
 
     if (m_mod_access != nullptr) {
@@ -335,7 +343,7 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 
     // build target
     real_target->Build(visitor, (m_mod_access != nullptr) ? m_mod_access : mod);
-    target_type = real_target->GetObjectType();
+    target_type = real_target->GetSymbolType();
     uint8_t rp;
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -348,7 +356,7 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 
         std::string field_name = field->GetName();
 
-        if (target_type == ObjectType::type_builtin_any) {
+        if (target_type == SymbolType::Builtin::ANY) {
             // for Any type we will have to load from hash
             uint32_t hash = hash_fnv_1(field_name.c_str());
 
@@ -466,28 +474,36 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
             // get current register index
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-            target_type = ObjectType::type_builtin_any;
+            target_type = SymbolType::Builtin::ANY;
             real_target = field;
 
         } else {
-            int dm_index = target_type.GetDataMemberIndex(field_name);
-            if (dm_index != -1) {
+            std::pair<int, SymbolTypePtr_t> dm = { -1, nullptr };// = target_type.GetDataMemberIndex(field_name);
+
+            for (size_t i = 0; i < target_type->GetMembers().size(); i++) {
+                if (target_type->GetMembers()[i].first == field_name) {
+                    dm = { i, target_type->GetMembers()[i].second };
+                    break;
+                }
+            }
+
+            if (dm.first != -1) {
                 if (field_as_call != nullptr) {
-                    LoadMemberAtIndexAndCall(visitor, mod, field_as_call, dm_index);
+                    LoadMemberAtIndexAndCall(visitor, mod, field_as_call, dm.first);
                 } else {
                     if (m_access_mode == ACCESS_MODE_LOAD || pos != m_parts.size() - 1) {
                         // just load the data member.
-                        LoadMemberAtIndex(visitor, mod, dm_index);
+                        LoadMemberAtIndex(visitor, mod, dm.first);
                     } else if (m_access_mode == ACCESS_MODE_STORE) {
                         // we are in storing mode, so store to LAST item in the member expr.
-                        StoreMemberAtIndex(visitor, mod, dm_index);
+                        StoreMemberAtIndex(visitor, mod, dm.first);
                     }
                 }
 
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-                target_type = target_type.GetDataMemberType(field_name);
+                target_type = dm.second;
                 real_target = field;
             } else if (field_as_call != nullptr) {
                 BuildUCS(visitor, mod, field_as_call);
@@ -495,7 +511,7 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-                target_type = field->GetObjectType();
+                target_type = field->GetSymbolType();
                 real_target = field;
             } else {
                 break;
@@ -507,7 +523,7 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
 void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
 {
     std::shared_ptr<AstExpression> real_target;
-    ObjectType target_type;
+    SymbolTypePtr_t target_type;
     int pos = 0;
 
     ASSERT(pos < m_parts.size());
@@ -520,7 +536,7 @@ void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
 
     // accept target
     real_target->Optimize(visitor, (m_mod_access != nullptr) ? m_mod_access : mod);
-    target_type = real_target->GetObjectType();
+    target_type = real_target->GetSymbolType();
 
     for (; pos < m_parts.size(); pos++) {
         auto &field = m_parts[pos];
@@ -529,7 +545,7 @@ void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
         AstFunctionCall *field_as_call = dynamic_cast<AstFunctionCall*>(field.get());
 
         // first check if the target has the field
-        if (target_type.HasDataMember(field->GetName())) {
+        if (auto member_type = target_type->FindMember(field->GetName())) {
             if (field_as_call != nullptr) {
                 // optimize all args
                 for (auto &arg : field_as_call->GetArguments()) {
@@ -540,15 +556,15 @@ void AstMemberAccess::Optimize(AstVisitor *visitor, Module *mod)
                 }
             }
 
-            target_type = target_type.GetDataMemberType(field->GetName());
+            target_type = member_type;
             real_target = field;
         } else {
-            if (field_as_call == nullptr) {
+            if (!field_as_call) {
                 break;
             } else {
                 // in this case it would be usage of uniform call syntax
                 field->Optimize(visitor, mod);
-                target_type = field->GetObjectType();
+                target_type = field->GetSymbolType();
                 real_target = field;
             }
         }
@@ -580,9 +596,9 @@ bool AstMemberAccess::MayHaveSideEffects() const
     return m_side_effects;
 }
 
-ObjectType AstMemberAccess::GetObjectType() const
+SymbolTypePtr_t AstMemberAccess::GetSymbolType() const
 {
     return (!m_part_object_types.empty())
         ? m_part_object_types.back()
-        : ObjectType::type_builtin_undefined;
+        : SymbolType::Builtin::UNDEFINED;
 }

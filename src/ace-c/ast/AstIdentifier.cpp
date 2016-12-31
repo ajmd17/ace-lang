@@ -14,8 +14,6 @@ AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &loca
 
 void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
 {
-    ObjectType tmp;
-
     // the variable must exist in the active scope or a parent scope
     if ((m_properties.m_identifier = mod->LookUpIdentifier(m_name, false))) {
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_VARIABLE);
@@ -25,11 +23,7 @@ void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_VARIABLE);
     } else if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_MODULE);
-    } else if (ObjectType::GetBuiltinType(m_name)) {
-        m_properties.SetIdentifierType(IDENTIFIER_TYPE_TYPE);
-    } else if (mod->LookUpUserType(m_name, tmp)) {
-        m_properties.SetIdentifierType(IDENTIFIER_TYPE_TYPE);
-    } else if (visitor->GetCompilationUnit()->GetGlobalModule()->LookUpUserType(m_name, tmp)) {
+    } else if (mod->LookupSymbolType(m_name)) {
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_TYPE);
     } else {
         // nothing was found
@@ -60,20 +54,10 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
     CheckInFunction(visitor, mod);
 }
 
-ObjectType AstIdentifier::GetObjectType() const
-{
-    if (m_properties.GetIdentifier()) {
-        return m_properties.GetIdentifier()->GetObjectType();
-    }
-    return ObjectType::type_builtin_undefined;
-}
-
 SymbolTypePtr_t AstIdentifier::GetSymbolType() const
 {
     if (m_properties.GetIdentifier()) {
-        // TODO
-        return SymbolType::Builtin::ANY;
-        //return m_properties.GetIdentifier()->Ge
+        return m_properties.GetIdentifier()->GetSymbolType();
     }
 
     return SymbolType::Builtin::UNDEFINED;

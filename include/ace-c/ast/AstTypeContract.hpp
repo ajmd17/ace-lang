@@ -1,6 +1,8 @@
 #ifndef AST_TYPE_CONTRACT_HPP
 #define AST_TYPE_CONTRACT_HPP
 
+#if 0
+
 #include <ace-c/ast/AstIdentifier.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/ObjectType.hpp>
@@ -65,5 +67,7 @@ private:
     std::shared_ptr<AstTypeContractExpression> m_right;
     const Operator *m_op;
 };
+
+#endif
 
 #endif

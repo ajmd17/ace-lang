@@ -38,11 +38,6 @@ int AstFloat::IsTrue() const
     return m_value != 0.0f;
 }
 
-ObjectType AstFloat::GetObjectType() const
-{
-    return ObjectType::type_builtin_float;
-}
-
 bool AstFloat::IsNumber() const
 {
     return true;

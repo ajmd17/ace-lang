@@ -1,3 +1,5 @@
+#if 0
+
 #include <ace-c/ast/AstVoid.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
 
@@ -18,11 +20,6 @@ void AstVoid::Recreate(std::ostringstream &ss)
 int AstVoid::IsTrue() const
 {
     return false;
-}
-
-ObjectType AstVoid::GetObjectType() const
-{
-    return ObjectType::type_builtin_void;
 }
 
 bool AstVoid::IsNumber() const
@@ -139,3 +136,5 @@ std::shared_ptr<AstConstant> AstVoid::operator!() const
 {
     return std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof));
 }
+
+#endif

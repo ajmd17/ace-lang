@@ -21,20 +21,17 @@ AstTypeDefinition::AstTypeDefinition(const std::string &name,
 }
 
 void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
-{
-    ObjectType object_type(m_name, nullptr);
+{   
+    ASSERT(visitor != nullptr && mod != nullptr);
 
-    if (mod->LookUpUserType(m_name, object_type)) {
+    if (mod->LookupSymbolType(m_name)) {
         // error; redeclaration of type in module
         visitor->GetCompilationUnit()->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_redefined_type,
                 m_location, m_name));
-    } else if (ObjectType::GetBuiltinType(m_name)) {
-        // error; already a built-in type
-        visitor->GetCompilationUnit()->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_redefined_builtin_type,
-                m_location, m_name));
     } else {
+        std::vector<SymbolMember_t> member_types;
+
         // open the scope for data members
         mod->m_scopes.Open(Scope());
 
@@ -48,12 +45,14 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
                 std::string mem_name = mem->GetName();
 
-                if (!object_type.HasDataMember(mem_name)) {
-                    ObjectType mem_type = mem->GetObjectType();
-                    mem_type.SetDefaultValue(mem->GetAssignment());
+                if (mem->GetIdentifier()) {
+                    SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
 
-                    DataMember dm(mem_name, mem_type);
-                    object_type.AddDataMember(dm);
+                    // TODO find a better way to set up default assignment for members!
+                    // we can't  modify default values of types.
+                    //mem_type.SetDefaultValue(mem->GetAssignment());
+
+                    member_types.push_back({ mem_name, mem_type });
 
                     // generate hash from member name
                     hashes.push_back(hash_fnv_1(mem_name.c_str()));
@@ -80,20 +79,25 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         st.m_name[len] = '\0';
         std::strcpy(st.m_name, type_name.c_str());
 
+        int id;
+
         StaticObject so(st);
         int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
         if (found_id == -1) {
             so.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
-            object_type.SetStaticId(so.m_id);
+            id = so.m_id;
         } else {
-            object_type.SetStaticId(found_id);
+            id = found_id;
         }
 
         delete[] st.m_name;
 
-        object_type.SetDefaultValue(std::shared_ptr<AstObject>(new AstObject(object_type, SourceLocation::eof)));
-        mod->AddUserType(object_type);
+        auto symbol_type = SymbolType::Object(m_name, std::shared_ptr<AstNull>(new AstNull(SourceLocation::eof)), member_types);
+        symbol_type->SetId(id);
+
+        Scope &top_scope = mod->m_scopes.Top();
+        top_scope.GetIdentifierTable().AddSymbolType(symbol_type);
     }
 }
 

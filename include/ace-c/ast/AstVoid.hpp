@@ -1,6 +1,8 @@
 #ifndef AST_VOID_HPP
 #define AST_VOID_HPP
 
+#if 0
+
 #include <ace-c/ast/AstConstant.hpp>
 
 class AstVoid : public AstConstant {
@@ -11,7 +13,6 @@ public:
     virtual void Recreate(std::ostringstream &ss) override;
 
     virtual int IsTrue() const override;
-    virtual ObjectType GetObjectType() const override;
     virtual bool IsNumber() const override;
     virtual a_int IntValue() const override;
     virtual a_float FloatValue() const override;
@@ -46,5 +47,7 @@ public:
     virtual std::shared_ptr<AstConstant> operator~() const override;
     virtual std::shared_ptr<AstConstant> operator!() const override;
 };
+
+#endif
 
 #endif

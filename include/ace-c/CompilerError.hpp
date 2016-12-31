@@ -54,7 +54,9 @@ enum ErrorMessage {
     Msg_identifier_is_type,
     Msg_mismatched_types,
     Msg_type_not_generic,
+    Msg_generic_parameters_missing,
     Msg_not_a_data_member,
+
     Msg_bitwise_operands_must_be_int,
     Msg_bitwise_operand_must_be_int,
     Msg_expected_token,

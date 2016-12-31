@@ -16,7 +16,6 @@ public:
 
     virtual int IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override;
-    virtual ObjectType GetObjectType() const override = 0;
     virtual bool IsNumber() const = 0;
     virtual a_int IntValue() const = 0;
     virtual a_float FloatValue() const = 0;

@@ -15,7 +15,7 @@ AstFunctionCall::AstFunctionCall(const std::string &name,
     const SourceLocation &location)
     : AstIdentifier(name, location),
       m_args(args),
-      m_return_type(ObjectType::type_builtin_any),
+      m_return_type(SymbolType::Builtin::ANY),
       m_has_self_object(false)
 {
 }
@@ -53,33 +53,35 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 				}
 			}
 
-			const ObjectType &identifier_type = m_properties.GetIdentifier()->GetObjectType();
-			if (identifier_type != ObjectType::type_builtin_any) {
-				if (!identifier_type.IsFunctionType()) {
-					// not a function type
-					visitor->GetCompilationUnit()->GetErrorList().AddError(
-						CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
-				} else {
-					// TODO: check parameters
-					if (identifier_type.GetParamTypes().size() == m_args.size()) {
-						for (int i = 0; i < m_args.size(); i++) {
-							const ObjectType &param_type = identifier_type.GetParamTypes()[i];
-							if (param_type.HasTypeContract()) {
-								// make sure the argument of the function call satisfies the
-								// function's required type contract.
-								if (!param_type.GetTypeContract()->Satisfies(visitor, m_args[i]->GetObjectType())) {
-									// error, unsatisfied type contract
-									CompilerError error(Level_fatal, Msg_unsatisfied_type_contract, m_args[i]->GetLocation(),
-										m_args[i]->GetObjectType().ToString());
-									visitor->GetCompilationUnit()->GetErrorList().AddError(error);
-								}
-							}
-						}
-					}
+            // get the type of the referenced function we're calling
+			SymbolTypePtr_t identifier_type = m_properties.GetIdentifier()->GetSymbolType();
 
-					ASSERT(identifier_type.GetReturnType() != nullptr);
-					m_return_type = *identifier_type.GetReturnType().get();
-				}
+            // continue if it is `Any` because we can't really assure that it is a function
+			if (identifier_type != SymbolType::Builtin::ANY) {
+                if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                    auto base = identifier_type->GetBaseType();
+
+                    if (base == SymbolType::Builtin::FUNCTION) {
+                        if (identifier_type->GetGenericInstanceInfo().m_param_types.size() == m_args.size() + 1) {
+                            for (int i = 0; i < m_args.size(); i++) {
+                                auto param_type = identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
+                                
+                                // here is where argument types should be matched
+                            }
+                        }
+
+                        ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types.size() >= 1);
+                        ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types[0] != nullptr);
+
+                        m_return_type = identifier_type->GetGenericInstanceInfo().m_param_types[0];
+
+                        break;
+                    }
+                }
+
+				// not a function type
+				visitor->GetCompilationUnit()->GetErrorList().AddError(
+					CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
 			}
 
 			break;
@@ -209,7 +211,7 @@ bool AstFunctionCall::MayHaveSideEffects() const
     return true;
 }
 
-ObjectType AstFunctionCall::GetObjectType() const
+SymbolTypePtr_t AstFunctionCall::GetSymbolType() const
 {
     return m_return_type;
 }

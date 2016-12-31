@@ -32,11 +32,6 @@ int AstNull::IsTrue() const
     return false;
 }
 
-ObjectType AstNull::GetObjectType() const
-{
-    return ObjectType::type_builtin_any;
-}
-
 bool AstNull::IsNumber() const
 {
     /** Set it to be a number so we can perform logical operations */

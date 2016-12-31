@@ -12,8 +12,6 @@ IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, M
     IdentifierLookupResult res;
     res.type = IDENTIFIER_TYPE_UNKNOWN;
 
-    const ObjectType *tmp = nullptr;
-
     // the variable must exist in the active scope or a parent scope
     if (res.as_identifier = mod->LookUpIdentifier(name, false)) {
         res.type = IDENTIFIER_TYPE_VARIABLE;
@@ -23,12 +21,7 @@ IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, M
         res.type = IDENTIFIER_TYPE_VARIABLE;
     } else if (res.as_module = visitor->GetCompilationUnit()->LookupModule(name)) {
         res.type = IDENTIFIER_TYPE_MODULE;
-    } else if (tmp = ObjectType::GetBuiltinType(name)) {
-        res.as_type = *tmp;
-        res.type = IDENTIFIER_TYPE_TYPE;
-    } else if (mod->LookUpUserType(name, res.as_type)) {
-        res.type = IDENTIFIER_TYPE_TYPE;
-    } else if (visitor->GetCompilationUnit()->GetGlobalModule()->LookUpUserType(name, res.as_type)) {
+    } else if (res.as_type = mod->LookupSymbolType(name)) {
         res.type = IDENTIFIER_TYPE_TYPE;
     } else {
         // nothing was found

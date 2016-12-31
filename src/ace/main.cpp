@@ -641,10 +641,10 @@ int main(int argc, char *argv[])
     APIInstance api;
 
     api.Module("runtime")
-        .Function("gc", ObjectType::type_builtin_void, {}, Runtime_gc)
-        .Function("load_library", ObjectType::type_builtin_any, {}, Runtime_load_library)
-        .Function("load_function", ObjectType::type_builtin_any, {}, Runtime_load_function)
-        .Variable("version", ObjectType::type_builtin_any, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+        .Function("gc", SymbolType::Builtin::ANY, {}, Runtime_gc)
+        .Function("load_library", SymbolType::Builtin::ANY, {}, Runtime_load_library)
+        .Function("load_function", SymbolType::Builtin::ANY, {}, Runtime_load_function)
+        .Variable("version", SymbolType::Builtin::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
@@ -679,7 +679,7 @@ int main(int argc, char *argv[])
             out->m_type = vm::Value::ValueType::HEAP_POINTER;
             out->m_value.ptr = hv;
         })
-        .Variable("os_name", ObjectType::type_builtin_string, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+        .Variable("os_name", SymbolType::Builtin::STRING, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
@@ -699,16 +699,10 @@ int main(int argc, char *argv[])
         });
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
-        .Function("to_string", ObjectType::type_builtin_string, {}, Global_to_string)
-        .Function("length", ObjectType::type_builtin_int, {}, Global_length)
-        .Function("call", ObjectType::type_builtin_any, {}, Global_call)
-        .Function("spawn_thread", ObjectType::type_builtin_void, {}, Global_spawn_thread);
-
-    api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
-        .Type("Thread")
-        .Method("start", ObjectType::type_builtin_void, {}, [](ace::sdk::Params) {
-            utf::cout << "Thread.start called\n";
-        });
+        .Function("to_string", SymbolType::Builtin::STRING, {}, Global_to_string)
+        .Function("length", SymbolType::Builtin::INT, {}, Global_length)
+        .Function("call", SymbolType::Builtin::ANY, {}, Global_call)
+        .Function("spawn_thread", SymbolType::Builtin::ANY, {}, Global_spawn_thread);
 
     api.BindAll(&vm, &compilation_unit);
 
@@ -763,6 +757,7 @@ int main(int argc, char *argv[])
                 // execute the compiled bytecode file
                 RunBytecodeFile(&vm, out_filename, true);
             }
+            system("pause");
         } else if (mode == DECOMPILE_BYTECODE) {
             ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
         }

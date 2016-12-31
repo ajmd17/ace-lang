@@ -96,11 +96,13 @@ private:
     std::shared_ptr<AstExpression> ParseUnaryExpression();
     std::shared_ptr<AstExpression> ParseExpression();
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
+#if 0
     std::shared_ptr<AstTypeContractExpression> ParseTypeContract();
     std::shared_ptr<AstTypeContractExpression> ParseTypeContractExpression();
     std::shared_ptr<AstTypeContractExpression> ParseTypeContractTerm();
     std::shared_ptr<AstTypeContractExpression> ParseTypeContractBinaryExpression(int expr_prec,
         std::shared_ptr<AstTypeContractExpression> left);
+#endif
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true);
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition(bool require_keyword = true);
     std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});

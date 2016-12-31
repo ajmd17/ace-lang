@@ -62,7 +62,7 @@ Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
 SymbolTypePtr_t IdentifierTable::LookupSymbolType(const std::string &name) const
 {
     for (auto &type : m_symbol_types) {
-        if (type && type->GetName() == name) {
+        if (type != nullptr && type->GetName() == name) {
             return type;
         }
     }

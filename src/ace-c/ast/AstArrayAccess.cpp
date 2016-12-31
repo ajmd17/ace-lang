@@ -101,13 +101,20 @@ bool AstArrayAccess::MayHaveSideEffects() const
         m_access_mode == ACCESS_MODE_STORE;
 }
 
-ObjectType AstArrayAccess::GetObjectType() const
+SymbolTypePtr_t AstArrayAccess::GetSymbolType() const
 {
-    ObjectType target_type = m_target->GetObjectType();
-    if (target_type.IsArrayType()) {
-        const auto &held_type = target_type.GetArrayHeldType();
-        return held_type ? *held_type : ObjectType::type_builtin_undefined;
-    } else {
-        return ObjectType::type_builtin_any;
+    ASSERT(m_target != nullptr);
+
+    SymbolTypePtr_t target_type = m_target->GetSymbolType();
+
+    if (target_type->GetTypeClass() == TYPE_ARRAY) {
+        SymbolTypePtr_t held_type = SymbolType::Builtin::UNDEFINED;
+        if (target_type->GetGenericInstanceInfo().m_param_types.size() == 1) {
+            held_type = target_type->GetGenericInstanceInfo().m_param_types[0];
+            // todo: tuple?
+        }
+        return held_type;
     }
+
+    return SymbolType::Builtin::ANY;
 }

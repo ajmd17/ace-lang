@@ -82,26 +82,6 @@ AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &l
 {
 }
 
-bool AstBinaryExpression::VisitOperatorOverload(const ObjectType &left_type, const ObjectType &right_type)
-{
-   /* // TODO operator overloading
-    if (left_type == ObjectType::type_builtin_string && m_op == &Operator::operator_add) {
-        // 'concat' function in module 'str' handles concatenation
-        std::shared_ptr<AstVariable> target(new AstVariable("str", m_left->GetLocation()));
-        std::vector<std::shared_ptr<AstExpression>> args { m_left, m_right };
-        std::vector<std::shared_ptr<AstIdentifier>> parts {
-            std::shared_ptr<AstIdentifier>(new AstFunctionCall("concat", args, m_left->GetLocation()))
-        };
-
-        m_member_access = std::shared_ptr<AstMemberAccess>(
-            new AstMemberAccess(target, parts, target->GetLocation()));
-
-        return true;
-    }*/
-
-    return false;
-}
-
 void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 {
     // check for lazy declaration first
@@ -114,79 +94,66 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     m_left->Visit(visitor, mod);
     m_right->Visit(visitor, mod);
 
-    ObjectType left_type = m_left->GetObjectType();
-    ObjectType right_type = m_right->GetObjectType();
+    SymbolTypePtr_t left_type  = m_left->GetSymbolType();
+    SymbolTypePtr_t right_type = m_right->GetSymbolType();
 
-    if (VisitOperatorOverload(left_type, right_type)) {
-        m_member_access->Visit(visitor, mod);
-    } else {
-        if (m_op->ModifiesValue()) {
-            if (m_op->GetType() & BITWISE) {
-                // no bitwise operators on floats allowed.
-                // do not allow right-hand side to be 'Any', because it might change the data type.
-                visitor->Assert((left_type  == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any) &&
-                                (right_type == ObjectType::type_builtin_int),
-                    CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int, m_left->GetLocation(),
-                        left_type.ToString(), right_type.ToString()));
-            }
+    if (m_op->GetType() & BITWISE) {
+        // no bitwise operators on floats allowed.
+        visitor->Assert((left_type == SymbolType::Builtin::INT || left_type == SymbolType::Builtin::ANY) &&
+            (right_type == SymbolType::Builtin::INT || right_type == SymbolType::Builtin::ANY),
+            CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int, m_left->GetLocation(),
+                left_type->GetName(), right_type->GetName()));
+    }
 
-            if (!ObjectType::TypeCompatible(left_type, right_type, true)) {
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_mismatched_types,
-                        m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
-            }
+    if (m_op->ModifiesValue()) {
 
-            AstVariable *left_as_var = nullptr;
+        ASSERT(right_type != nullptr);
 
-            if (auto *left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get())) {
-                AstIdentifier *last = left_as_mem->GetLast().get();
-                left_as_var = dynamic_cast<AstVariable*>(last);
-            } else if (auto *left_as_mod = dynamic_cast<AstModuleAccess*>(m_left.get())) {
-                AstModuleAccess *target = left_as_mod;
-                // loop until null or found
-                while (left_as_var == nullptr && target != nullptr) {
-                    if (!(left_as_var = dynamic_cast<AstVariable*>(target->GetExpression().get()))) {
-                        // check if rhs of module access is also a module access
-                        target = dynamic_cast<AstModuleAccess*>(target->GetExpression().get());
-                    }
+        if (!left_type->TypeCompatible(*right_type, true)) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_mismatched_types,
+                    m_left->GetLocation(), left_type->GetName(), right_type->GetName()));
+        }
+
+        AstVariable *left_as_var = nullptr;
+
+        if (auto *left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get())) {
+            AstIdentifier *last = left_as_mem->GetLast().get();
+            left_as_var = dynamic_cast<AstVariable*>(last);
+        } else if (auto *left_as_mod = dynamic_cast<AstModuleAccess*>(m_left.get())) {
+            AstModuleAccess *target = left_as_mod;
+            // loop until null or found
+            while (left_as_var == nullptr && target != nullptr) {
+                if (!(left_as_var = dynamic_cast<AstVariable*>(target->GetExpression().get()))) {
+                    // check if rhs of module access is also a module access
+                    target = dynamic_cast<AstModuleAccess*>(target->GetExpression().get());
                 }
-            } else {
-                left_as_var = dynamic_cast<AstVariable*>(m_left.get());
-            }
-
-            if (left_as_var != nullptr) {
-                if (left_as_var->GetProperties().GetIdentifier()) {
-                    // make sure we are not modifying a const
-                    if (left_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(
-                            CompilerError(Level_fatal, Msg_const_modified,
-                                m_left->GetLocation(), left_as_var->GetName()));
-                    }
-                }
-            } else {
-                // cannot modify an rvalue
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_cannot_modify_rvalue,
-                        m_left->GetLocation()));
             }
         } else {
-            // allow 'Any' on right-hand side because we're not modifying value
-            if (m_op->GetType() & BITWISE) {
-                // no bitwise operators on floats allowed.
-                if (!((left_type  == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any) &&
-                      (right_type == ObjectType::type_builtin_int || left_type == ObjectType::type_builtin_any))) {
+            left_as_var = dynamic_cast<AstVariable*>(m_left.get());
+        }
+
+        if (left_as_var) {
+            if (left_as_var->GetProperties().GetIdentifier()) {
+                // make sure we are not modifying a const
+                if (left_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int,
-                            m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
+                        CompilerError(Level_fatal, Msg_const_modified,
+                            m_left->GetLocation(), left_as_var->GetName()));
                 }
             }
-
-            // compare both sides because assignment does not matter in this case
-            if (!(ObjectType::TypeCompatible(left_type,  right_type, false))) {
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_mismatched_types,
-                        m_left->GetLocation(), left_type.ToString(), right_type.ToString()));
-            }
+        } else {
+            // cannot modify an rvalue
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_cannot_modify_rvalue,
+                    m_left->GetLocation()));
+        }
+    } else {
+        // compare both sides because assignment does not matter in this case
+        if (!left_type->TypeCompatible(*right_type, false)) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_mismatched_types,
+                    m_left->GetLocation(), left_type->GetName(), right_type->GetName()));
         }
     }
 }
@@ -854,26 +821,6 @@ bool AstBinaryExpression::MayHaveSideEffects() const
         }
 
         return left_side_effects || right_side_effects;
-    }
-}
-
-ObjectType AstBinaryExpression::GetObjectType() const
-{
-    if (m_member_access != nullptr) {
-        return m_member_access->GetObjectType();
-    } else {
-        ObjectType left_type = m_left->GetObjectType();
-        ObjectType right_type = m_right->GetObjectType();
-
-        /*if (m_op->ModifiesValue() &&
-            (left_type.ToString() != ObjectType::type_builtin_any.ToString() &&
-            right_type.ToString() == ObjectType::type_builtin_any.ToString())) {
-            // special case for assignment operators.
-            // cannot set a strict type to 'Any'.
-           return ObjectType::type_builtin_undefined;
-        }*/
-
-        return ObjectType::FindCompatibleType(left_type, right_type);
     }
 }
 

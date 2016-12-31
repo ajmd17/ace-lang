@@ -29,8 +29,11 @@ protected:
     {
         // do not copy NUL byte
         size_t length = std::strlen(str);
-        std::vector<char> operand(length);
-        std::memcpy(&operand[0], str, length);
+        std::vector<char> operand;
+        if (length) {
+            operand.resize(length);
+            std::memcpy(&operand[0], str, length);
+        }
         m_data.push_back(operand);
     }
 

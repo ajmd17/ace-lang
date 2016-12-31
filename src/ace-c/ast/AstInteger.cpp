@@ -39,11 +39,6 @@ int AstInteger::IsTrue() const
     return m_value != 0;
 }
 
-ObjectType AstInteger::GetObjectType() const
-{
-    return ObjectType::type_builtin_int;
-}
-
 bool AstInteger::IsNumber() const
 {
     return true;
@@ -175,8 +170,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() ||
-         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
+    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
         return nullptr;
     }
 
@@ -187,8 +181,7 @@ std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() ||
-         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
+    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
         return nullptr;
     }
 
@@ -199,8 +192,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() ||
-         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
+    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
         return nullptr;
     }
 
@@ -211,8 +203,7 @@ std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() ||
-         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
+    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
         return nullptr;
     }
 
@@ -223,8 +214,7 @@ std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator>>(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() ||
-         right->GetObjectType().ToString() != ObjectType::type_builtin_int.ToString()) {
+    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
         return nullptr;
     }
 

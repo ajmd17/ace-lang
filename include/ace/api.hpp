@@ -3,6 +3,7 @@
 
 #include <ace-c/Configuration.hpp>
 #include <ace-c/CompilationUnit.hpp>
+#include <ace-c/SymbolType.hpp>
 
 #include <ace-vm/Value.hpp>
 #include <ace-vm/VM.hpp>
@@ -16,12 +17,12 @@ class API {
 public:
     struct NativeVariableDefine {
         std::string name;
-        ObjectType type;
+        SymbolTypePtr_t type;
         vm::NativeInitializerPtr_t initializer_ptr;
 
         NativeVariableDefine(
             const std::string &name,
-            const ObjectType &type,
+            const SymbolTypePtr_t &type,
             vm::NativeInitializerPtr_t initializer_ptr)
             : name(name),
               type(type),
@@ -39,14 +40,14 @@ public:
 
     struct NativeFunctionDefine {
         std::string function_name;
-        ObjectType return_type;
-        std::vector<ObjectType> param_types;
+        SymbolTypePtr_t return_type;
+        std::vector<SymbolTypePtr_t> param_types;
         vm::NativeFunctionPtr_t ptr;
 
         NativeFunctionDefine(
             const std::string &function_name,
-            const ObjectType &return_type,
-            const std::vector<ObjectType> &param_types,
+            const SymbolTypePtr_t &return_type,
+            const std::vector<SymbolTypePtr_t> &param_types,
             vm::NativeFunctionPtr_t ptr)
             : function_name(function_name),
               return_type(return_type),
@@ -71,12 +72,12 @@ public:
         std::vector<NativeVariableDefine> m_members;
 
         TypeDefine &Member(const std::string &member_name,
-            const ObjectType &member_type,
+            const SymbolTypePtr_t &member_type,
             vm::NativeInitializerPtr_t ptr);
 
         TypeDefine &Method(const std::string &method_name,
-            const ObjectType &return_type,
-            const std::vector<ObjectType> &param_types,
+            const SymbolTypePtr_t &return_type,
+            const std::vector<SymbolTypePtr_t> &param_types,
             vm::NativeFunctionPtr_t ptr);
     };
 
@@ -90,12 +91,12 @@ public:
         TypeDefine &Type(const std::string &type_name);
 
         ModuleDefine &Variable(const std::string &variable_name,
-            const ObjectType &variable_type,
+            const SymbolTypePtr_t &variable_type,
             vm::NativeInitializerPtr_t ptr);
 
         ModuleDefine &Function(const std::string &function_name,
-            const ObjectType &return_type,
-            const std::vector<ObjectType> &param_types,
+            const SymbolTypePtr_t &return_type,
+            const std::vector<SymbolTypePtr_t> &param_types,
             vm::NativeFunctionPtr_t ptr);
 
         void BindAll(vm::VM *vm, CompilationUnit *compilation_unit);
@@ -107,8 +108,8 @@ public:
         void BindNativeFunction(const NativeFunctionDefine &def,
             Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);
 
-        void BindType(const TypeDefine &def,
-            Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);
+        /*void BindType(const TypeDefine &def,
+            Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);*/
     };
 };
 

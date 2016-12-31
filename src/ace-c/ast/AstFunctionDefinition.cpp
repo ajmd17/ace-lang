@@ -23,10 +23,10 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
-    if (m_identifier != nullptr) {
+    if (m_identifier) {
         // functions are implicitly const
         m_identifier->GetFlags() |= FLAG_CONST;
-        m_identifier->SetObjectType(m_expr->GetObjectType());
+        m_identifier->SetSymbolType(m_expr->GetSymbolType());
         m_identifier->SetCurrentValue(m_expr);
     }
 }

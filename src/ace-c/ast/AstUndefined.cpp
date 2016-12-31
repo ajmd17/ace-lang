@@ -19,11 +19,6 @@ int AstUndefined::IsTrue() const
     return false;
 }
 
-ObjectType AstUndefined::GetObjectType() const
-{
-    return ObjectType::type_builtin_undefined;
-}
-
 bool AstUndefined::IsNumber() const
 {
     return false;

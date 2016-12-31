@@ -4,7 +4,7 @@
 #include <ace-c/Scope.hpp>
 #include <ace-c/SourceLocation.hpp>
 #include <ace-c/Tree.hpp>
-#include <ace-c/ObjectType.hpp>
+#include <ace-c/SymbolType.hpp>
 
 #include <vector>
 #include <string>
@@ -27,23 +27,21 @@ public:
         searched.
     */
     Identifier *LookUpIdentifier(const std::string &name, bool this_scope_only);
+    
     /** Check to see if the identifier exists in this scope or above this one.
         Will only search the number of depth levels it is given.
         Pass `1` for this scope only.
     */
     Identifier *LookUpIdentifierDepth(const std::string &name, int depth_level);
 
-    /** Check to see if a user has declared a type with this name */
-    bool LookUpUserType(const std::string &type, ObjectType &out);
-    /** Add this type to the list of user-defined types */
-    void AddUserType(const ObjectType &type);
+    /** Look up a symbol in this module by name */
+    SymbolTypePtr_t LookupSymbolType(const std::string &name);
 
     Tree<Scope> m_scopes;
 
 private:
     std::string m_name;
     SourceLocation m_location;
-    std::vector<ObjectType> m_user_types;
 
     /** A link to where this module exists in the import tree */
     TreeNode<Module*> *m_tree_link;

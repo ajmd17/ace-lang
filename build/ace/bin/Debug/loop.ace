@@ -27,14 +27,14 @@ module loop {
 	
 	myrange: Range
 	myrange.start = 0
-	myrange.end = 100
+	myrange.end = 1000
 	
 	myrange.foreach_range(func(it) {
 		print 'it(1) = ', it
 	})
 	
 	
-	myrange.start = 100
+	myrange.start = 1000
 	myrange.end = 0
 	
 	myrange.foreach_range(func(it) {

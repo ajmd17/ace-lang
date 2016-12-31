@@ -20,15 +20,13 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
       m_parameters(parameters),
       m_type_specification(type_specification),
       m_block(block),
-      m_return_type(ObjectType::type_builtin_undefined),
+      m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)
 {
 }
 
 void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-    std::vector<ObjectType> param_types;
-
     // first item will be return type
     std::vector<SymbolTypePtr_t> param_symbol_types;
 
@@ -40,22 +38,14 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             // add the identifier to the table
             param->Visit(visitor, mod);
 
-            ObjectType param_type = ObjectType::type_builtin_undefined;
-
             SymbolTypePtr_t param_symbol_type = SymbolType::Builtin::UNDEFINED;
 
             // add the param's type to param_types
             if (param->GetIdentifier()) {
-                param_type = param->GetIdentifier()->GetObjectType();
-                if (param->HasTypeContract()) {
-                    param_type.SetTypeContract(param->GetTypeContract());
-                }
-
-                // TODO: get type from identifier
-                param_symbol_type = SymbolType::Builtin::ANY;
+                param_symbol_type = param->GetIdentifier()->GetSymbolType();
             }
 
-            param_types.push_back(param_type);
+            param_symbol_types.push_back(param_symbol_type);
         }
     }
 
@@ -72,10 +62,10 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         if (!function_scope.GetReturnTypes().empty()) {
             // search through return types for ambiguities
             for (const auto &it : function_scope.GetReturnTypes()) {
-                if (m_return_type == ObjectType::type_builtin_any || m_return_type == ObjectType::type_builtin_undefined) {
+                if (m_return_type == SymbolType::Builtin::ANY || m_return_type == SymbolType::Builtin::UNDEFINED) {
                     m_return_type = it.first;
-                } else if (ObjectType::TypeCompatible(m_return_type, it.first, false)) {
-                    m_return_type = ObjectType::FindCompatibleType(m_return_type, it.first, true);
+                } else if (m_return_type->TypeCompatible(*it.first, false)) {
+                    m_return_type = SymbolType::TypePromotion(m_return_type, it.first, true);
                 } else {
                     // error; more than one possible return type.
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
@@ -83,27 +73,35 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 }
             }
         } else {
-            // return None.
-            m_return_type = ObjectType::type_builtin_void;
+            // return null
+            m_return_type = SymbolType::Builtin::ANY;
         }
     } else {
         m_type_specification->Visit(visitor, mod);
-        m_return_type = m_type_specification->GetObjectType();
+        m_return_type = m_type_specification->GetSymbolType();
 
         for (const auto &it : function_scope.GetReturnTypes()) {
-            if (!ObjectType::TypeCompatible(m_return_type, it.first, true)) {
+            // use strict numbers because user specified return type
+            if (!m_return_type->TypeCompatible(*it.first, true)) {
                 // error; more than one possible return type.
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
                     CompilerError(Level_fatal, Msg_mismatched_return_type, it.second,
-                        m_return_type.ToString(), it.first.ToString()));
+                        m_return_type->GetName(), it.first->GetName()));
             }
         }
     }
     // close parameter scope
     mod->m_scopes.Close();
 
-    // set object type
-    m_object_type = ObjectType::MakeFunctionType(m_return_type, param_types);
+    // set object type to be an instance of function
+    std::vector<SymbolTypePtr_t> generic_param_types;
+    generic_param_types.push_back(m_return_type);
+    for (auto &it : param_symbol_types) {
+        generic_param_types.push_back(it);
+    }
+
+    m_symbol_type = SymbolType::GenericInstance(SymbolType::Builtin::FUNCTION, 
+        GenericInstanceTypeInfo { generic_param_types });
 }
 
 void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
@@ -243,5 +241,5 @@ bool AstFunctionExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstFunctionExpression::GetSymbolType() const
 {
-
+    return m_symbol_type;
 }

@@ -16,8 +16,6 @@ public:
     inline const std::shared_ptr<AstExpression> &GetLeft() const { return m_left; }
     inline const std::shared_ptr<AstExpression> &GetRight() const { return m_right; }
 
-    bool VisitOperatorOverload(const ObjectType &left_type, const ObjectType &right_type);
-
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
@@ -25,7 +23,6 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual ObjectType GetObjectType() const override;
     virtual SymbolTypePtr_t GetSymbolType() const override;
 
 private:

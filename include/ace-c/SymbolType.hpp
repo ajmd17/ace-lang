@@ -47,6 +47,7 @@ class SymbolType {
 public:
     struct Builtin {
         static const SymbolTypePtr_t UNDEFINED;
+        static const SymbolTypePtr_t OBJECT;
         static const SymbolTypePtr_t ANY;
         static const SymbolTypePtr_t INT;
         static const SymbolTypePtr_t FLOAT;
@@ -62,6 +63,14 @@ public:
     static SymbolTypePtr_t Primitive(const std::string &name, 
         const std::shared_ptr<AstExpression> &default_value);
 
+    static SymbolTypePtr_t Primitive(const std::string &name,
+        const std::shared_ptr<AstExpression> &default_value,
+        const SymbolTypePtr_t &base);
+
+    static SymbolTypePtr_t Object(const std::string &name,
+        const std::shared_ptr<AstExpression> &default_value,
+        const std::vector<SymbolMember_t> &members);
+
     /** A generic type template. Members may have the type class TYPE_GENERIC_PARAMETER.
         They will be substituted when an instance of the generic type is created.
     */
@@ -70,8 +79,7 @@ public:
         const std::vector<SymbolMember_t> &members, 
         const GenericTypeInfo &info);
 
-    static SymbolTypePtr_t GenericInstance(const std::string &name,
-        const SymbolTypePtr_t &base,
+    static SymbolTypePtr_t GenericInstance(const SymbolTypePtr_t &base,
         const GenericInstanceTypeInfo &info);
 
     static SymbolTypePtr_t GenericParameter(const std::string &name);
@@ -79,14 +87,20 @@ public:
     static SymbolTypePtr_t TypePromotion(const SymbolTypePtr_t &lptr, const SymbolTypePtr_t &rptr, bool use_number);
 
 public:
-    SymbolType(const std::string &name, SymbolTypeClass type_class);
-    SymbolType(const std::string &name, SymbolTypeClass type_class,
+    SymbolType(const std::string &name, 
+        SymbolTypeClass type_class, 
+        const SymbolTypePtr_t &base);
+
+    SymbolType(const std::string &name, 
+        SymbolTypeClass type_class, 
+        const SymbolTypePtr_t &base,
         const std::shared_ptr<AstExpression> &default_value,
         const std::vector<SymbolMember_t> &members);
     SymbolType(const SymbolType &other);
 
     inline const std::string &GetName() const { return m_name; }
     inline SymbolTypeClass GetTypeClass() const { return m_type_class; }
+    inline SymbolTypePtr_t GetBaseType() const { return m_base.lock(); }
     inline const std::shared_ptr<AstExpression> &GetDefaultValue() const { return m_default_value; }
     inline const std::vector<SymbolMember_t> &GetMembers() const { return m_members; }
 
@@ -98,6 +112,9 @@ public:
 
     inline GenericInstanceTypeInfo &GetGenericInstanceInfo() { return m_generic_instance_info; }
     inline const GenericInstanceTypeInfo &GetGenericInstanceInfo() const { return m_generic_instance_info; }
+
+    inline int GetId() const { return m_id; }
+    inline void SetId(int id) { m_id = id; }
 
     bool TypeEqual(const SymbolType &other) const;
     bool TypeCompatible(const SymbolType &other, bool strict_numbers) const;
@@ -112,6 +129,9 @@ private:
     std::shared_ptr<AstExpression> m_default_value;
     std::vector<SymbolMember_t> m_members;
 
+    // type that this type is based off of
+    std::weak_ptr<SymbolType> m_base;
+
     // if this is an alias of another type
     AliasTypeInfo m_alias_info;
     // if this type is a function
@@ -120,6 +140,8 @@ private:
     GenericTypeInfo m_generic_info;
     // if this is an instance of a generic type
     GenericInstanceTypeInfo m_generic_instance_info;
+
+    int m_id;
 };
 
 #endif

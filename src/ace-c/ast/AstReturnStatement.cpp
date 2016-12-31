@@ -36,7 +36,7 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
     if (in_function) {
         ASSERT(top != nullptr);
         // add return type
-        top->m_value.AddReturnType(m_expr->GetObjectType(), m_location);
+        top->m_value.AddReturnType(m_expr->GetSymbolType(), m_location);
     } else {
         // error; 'return' not allowed outside of a function
         visitor->GetCompilationUnit()->GetErrorList().AddError(

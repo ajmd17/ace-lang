@@ -53,7 +53,7 @@ static std::string MangleName(const std::string &type_name, const std::string &n
 }
 
 API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
-    const ObjectType &member_type,
+    const SymbolTypePtr_t &member_type,
     NativeInitializerPtr_t ptr)
 {
     m_members.push_back(API::NativeVariableDefine(member_name, member_type, ptr));
@@ -61,8 +61,8 @@ API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
 }
 
 API::TypeDefine &API::TypeDefine::Method(const std::string &method_name,
-    const ObjectType &return_type,
-    const std::vector<ObjectType> &param_types,
+    const SymbolTypePtr_t &return_type,
+    const std::vector<SymbolTypePtr_t> &param_types,
     NativeFunctionPtr_t ptr)
 {
     m_methods.push_back(API::NativeFunctionDefine(method_name, return_type, param_types, ptr));
@@ -90,7 +90,7 @@ API::TypeDefine &API::ModuleDefine::Type(const std::string &type_name)
 
 API::ModuleDefine &API::ModuleDefine::Variable(
     const std::string &variable_name,
-    const ObjectType &variable_type,
+    const SymbolTypePtr_t &variable_type,
     NativeInitializerPtr_t ptr)
 {
     m_variable_defs.push_back(API::NativeVariableDefine(variable_name, variable_type, ptr));
@@ -99,8 +99,8 @@ API::ModuleDefine &API::ModuleDefine::Variable(
 
 API::ModuleDefine &API::ModuleDefine::Function(
     const std::string &function_name,
-    const ObjectType &return_type,
-    const std::vector<ObjectType> &param_types,
+    const SymbolTypePtr_t &return_type,
+    const std::vector<SymbolTypePtr_t> &param_types,
     NativeFunctionPtr_t ptr)
 {
     m_function_defs.push_back(API::NativeFunctionDefine(function_name, return_type, param_types, ptr));
@@ -129,10 +129,6 @@ void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
         mod->SetImportTreeLink(compilation_unit->m_module_tree.TopNode());
     }
 
-    for (auto &def : m_types) {
-        BindType(def, mod, vm, compilation_unit);
-    }
-
     for (auto &def : m_variable_defs) {
         BindNativeVariable(def, mod, vm, compilation_unit);
     }
@@ -157,8 +153,8 @@ void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
     ASSERT(ident != nullptr);
 
     // create the value (set it to the default value of the type)
-    ident->SetObjectType(def.type);
-    ident->SetCurrentValue(def.type.GetDefaultValue());
+    ident->SetSymbolType(def.type);
+    ident->SetCurrentValue(def.type->GetDefaultValue());
     ident->SetStackLocation(compilation_unit->GetInstructionStream().GetStackSize());
     compilation_unit->GetInstructionStream().IncStackSize();
 
@@ -195,9 +191,16 @@ void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
 
     value->SetReturnType(def.return_type);
 
+    std::vector<SymbolTypePtr_t> generic_param_types;
+    generic_param_types.push_back(def.return_type);
+    for (auto &it : def.param_types) {
+        generic_param_types.push_back(it);
+    }
+
     // set identifier info
     ident->SetFlags(FLAG_CONST);
-    ident->SetObjectType(ObjectType::MakeFunctionType(def.return_type, def.param_types));
+    ident->SetSymbolType(SymbolType::GenericInstance(SymbolType::Builtin::FUNCTION, 
+        GenericInstanceTypeInfo{ generic_param_types }));
     ident->SetCurrentValue(value);
     ident->SetStackLocation(compilation_unit->GetInstructionStream().GetStackSize());
     compilation_unit->GetInstructionStream().IncStackSize();
@@ -206,7 +209,7 @@ void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
     vm->PushNativeFunctionPtr(def.ptr);
 }
 
-void API::ModuleDefine::BindType(const TypeDefine &def,
+/*void API::ModuleDefine::BindType(const TypeDefine &def,
     Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
     ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
@@ -316,7 +319,7 @@ void API::ModuleDefine::BindType(const TypeDefine &def,
 
     object_type.SetDefaultValue(std::shared_ptr<AstObject>(new AstObject(object_type, SourceLocation::eof)));
     mod->AddUserType(object_type);
-}
+}*/
 
 API::ModuleDefine &APIInstance::Module(const std::string &name)
 {

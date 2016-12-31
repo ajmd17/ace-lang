@@ -16,7 +16,7 @@ struct IdentifierLookupResult {
     // union {
     Identifier *as_identifier = nullptr;
     Module *as_module = nullptr;
-    ObjectType as_type;
+    SymbolTypePtr_t as_type;
     // };
 
     IdentifierType type;

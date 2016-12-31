@@ -65,11 +65,6 @@ int AstString::IsTrue() const
     return 1;
 }
 
-ObjectType AstString::GetObjectType() const
-{
-    return ObjectType::type_builtin_string;
-}
-
 bool AstString::IsNumber() const
 {
     return false;

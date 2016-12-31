@@ -7,18 +7,46 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
+#include <unordered_set>
+
 AstArrayExpression::AstArrayExpression(
     const std::vector<std::shared_ptr<AstExpression>> &members,
     const SourceLocation &location)
     : AstExpression(location),
-      m_members(members)
+      m_members(members),
+      m_held_type(SymbolType::Builtin::ANY)
 {
 }
 
 void AstArrayExpression::Visit(AstVisitor *visitor, Module *mod)
 {
+    std::unordered_set<SymbolTypePtr_t> held_types;
+
     for (auto &member : m_members) {
-        member->Visit(visitor, mod);
+        if (member) {
+            member->Visit(visitor, mod);
+            held_types.insert(member->GetSymbolType());
+        }
+    }
+
+    for (const auto &it : held_types) {
+        if (it) {
+            if (m_held_type == SymbolType::Builtin::UNDEFINED) {
+                // `Undefined` invalidates the array type
+                break;
+            }
+            
+            if (m_held_type == SymbolType::Builtin::ANY) {
+                // take first item found that is not `Any`
+                m_held_type = it;
+            } else if (m_held_type->TypeCompatible(*it, false)) {
+                m_held_type = SymbolType::TypePromotion(m_held_type, it, true);
+            } else {
+                // more than one differing type, use Any.
+                m_held_type = SymbolType::Builtin::ANY;
+                break;
+            }
+        }
     }
 }
 
@@ -151,14 +179,9 @@ bool AstArrayExpression::MayHaveSideEffects() const
     return side_effects;
 }
 
-ObjectType AstArrayExpression::GetObjectType() const
-{
-    // TODO: determine the held type?
-    return ObjectType::MakeArrayType(ObjectType::type_builtin_any);
-}
-
 SymbolTypePtr_t AstArrayExpression::GetSymbolType() const
 {
-    // todo : determine held type
-    return SymbolType::Builtin::ARRAY;
+    // TODO: determine the held type?
+    return SymbolType::GenericInstance(SymbolType::Builtin::ARRAY,
+        GenericInstanceTypeInfo{ { m_held_type } });
 }

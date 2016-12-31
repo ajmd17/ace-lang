@@ -155,7 +155,9 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
 
     for (const Instruction<> &ins : instruction_stream.m_data) {
         for (int i = ins.m_data.size() - 1; i >= 0; i--) {
-            os.write(&ins.m_data[i][0], ins.m_data[i].size());
+            if (!ins.m_data[i].empty()) {
+                os.write(&ins.m_data[i][0], ins.m_data[i].size());
+            }
         }
     }
 

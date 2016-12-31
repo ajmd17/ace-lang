@@ -388,11 +388,13 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     }
 
     if (expr) {
-        if (Match(TK_DOT, false)) {
-            expr = ParseMemberAccess(expr);
-        }
-        if (Match(TK_OPEN_BRACKET, false)) {
-            expr = ParseArrayAccess(expr);
+        while (Match(TK_DOT, false) || Match(TK_OPEN_BRACKET, false)) {
+            if (Match(TK_DOT, false)) {
+                expr = ParseMemberAccess(expr);
+            }
+            if (Match(TK_OPEN_BRACKET, false)) {
+                expr = ParseArrayAccess(expr);
+            }
         }
     }
 
@@ -841,9 +843,17 @@ std::shared_ptr<AstExpression> Parser::ParseExpression()
 std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
 {
     if (Token left = Expect(TK_IDENT, true)) {
-        std::vector<std::shared_ptr<AstTypeSpecification>> generic_params;
+        std::string left_name = left.GetValue();
+
+        std::shared_ptr<AstTypeSpecification> right;
+        // module access of type
+        if (Match(TK_DOUBLE_COLON, true)) {
+            // read next part
+            right = ParseTypeSpecification();
+        }
 
         // check generics
+        std::vector<std::shared_ptr<AstTypeSpecification>> generic_params;
         if (Match(TK_OPEN_PARENTH, true)) {
             do {
                 if (auto generic_param = ParseTypeSpecification()) {
@@ -856,21 +866,26 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
             Expect(TK_CLOSE_PARENTH, true);
         }
 
-        std::shared_ptr<AstTypeSpecification> right;
+        // array braces at the end of a type are syntactical sugar for `Array(T)`
+        if (Match(TK_OPEN_BRACKET, true)) {
+            std::shared_ptr<AstTypeSpecification> inner(
+                new AstTypeSpecification(left_name, generic_params, right, left.GetLocation()));
 
-        // module access of type
-        if (Match(TK_DOUBLE_COLON, true)) {
-            // read next part
-            right = ParseTypeSpecification();
+            left_name = SymbolType::Builtin::ARRAY->GetName();
+            generic_params = { inner };
+            right = nullptr;
+
+            Expect(TK_CLOSE_BRACKET, true);
         }
 
         return std::shared_ptr<AstTypeSpecification>(
-            new AstTypeSpecification(left.GetValue(), generic_params, right, left.GetLocation()));
+            new AstTypeSpecification(left_name, generic_params, right, left.GetLocation()));
     }
 
     return nullptr;
 }
 
+#if 0
 std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContract()
 {
     std::shared_ptr<AstTypeContractExpression> expr;
@@ -967,6 +982,8 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractBinaryExpres
 
     return nullptr;
 }
+
+#endif
 
 std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool require_keyword)
 {
@@ -1072,9 +1089,7 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool requ
 
 std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
 {
-    Token token = Expect(TK_OPEN_BRACKET, true);
-
-    if (token) {
+    if (Token token = Expect(TK_OPEN_BRACKET, true)) {
         std::vector<std::shared_ptr<AstExpression>> members;
 
         while (true) {
@@ -1106,52 +1121,44 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
 
     if (Match(TK_OPEN_PARENTH, true)) {
         bool found_variadic = false;
+        bool keep_reading = true;
 
-        while (true) {
-            Token tok = Match(TK_IDENT, true);
-            if (tok) {
-                // TODO make use of the type specification
+        while (keep_reading) {
+            if (Token token = Match(TK_IDENT, true)) {
                 std::shared_ptr<AstTypeSpecification> type_spec;
-                std::shared_ptr<AstTypeContractExpression> type_contract;
+
                 // check if parameter type has been declared
                 if (Match(TK_COLON, true)) {
-                    //if (Match(Token::Token_open_angle_bracket, false)) {
-                        // parse type contracts
-                        type_contract = ParseTypeContract();
-                    //} else {
-                    //    type_spec = ParseTypeSpecification();
-                    //}
+                    type_spec = ParseTypeSpecification();
                 }
 
 
                 if (found_variadic) {
                     // found another parameter after variadic
                     CompilerError error(Level_fatal,
-                        Msg_argument_after_varargs, tok.GetLocation());
+                        Msg_argument_after_varargs, token.GetLocation());
 
                     m_compilation_unit->GetErrorList().AddError(error);
                 }
 
+                // if this parameter is variadic
                 bool is_variadic = false;
+
                 if (Match(TK_ELLIPSIS, true)) {
                     is_variadic = true;
                     found_variadic = true;
                 }
 
-                auto param = std::shared_ptr<AstParameter>(
-                    new AstParameter(tok.GetValue(), is_variadic, tok.GetLocation()));
-
-                if (type_contract != nullptr) {
-                    param->SetTypeContract(type_contract);
-                }
+                std::shared_ptr<AstParameter> param(new AstParameter(
+                    token.GetValue(), type_spec, is_variadic, token.GetLocation()));
 
                 parameters.push_back(param);
 
                 if (!Match(TK_COMMA, true)) {
-                    break;
+                    keep_reading = false;
                 }
             } else {
-                break;
+                keep_reading = false;
             }
         }
 

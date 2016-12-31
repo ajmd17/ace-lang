@@ -2,11 +2,10 @@
 #define AST_OBJECT_HPP
 
 #include <ace-c/ast/AstExpression.hpp>
-#include <ace-c/ObjectType.hpp>
 
 class AstObject : public AstExpression {
 public:
-    AstObject(const ObjectType &object_type, const SourceLocation &location);
+    AstObject(const SymbolTypePtr_t &symbol_type, const SourceLocation &location);
     virtual ~AstObject() = default;
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
@@ -16,10 +15,10 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual ObjectType GetObjectType() const override;
+    virtual SymbolTypePtr_t GetSymbolType() const override;
 
 private:
-    ObjectType m_object_type;
+    SymbolTypePtr_t m_symbol_type;
 };
 
 #endif

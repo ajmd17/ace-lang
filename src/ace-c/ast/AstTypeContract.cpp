@@ -1,3 +1,5 @@
+#if 0
+
 #include <ace-c/ast/AstTypeContract.hpp>
 
 AstTypeContractExpression::AstTypeContractExpression(const SourceLocation &location)
@@ -95,3 +97,5 @@ bool AstTypeContractBinaryExpression::Satisfies(AstVisitor *visitor, const Objec
     }
     return false;
 }
+
+#endif

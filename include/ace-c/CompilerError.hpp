@@ -42,12 +42,19 @@ enum ErrorMessage {
     Msg_invalid_constructor,
     Msg_expected_type_got_identifier,
     Msg_missing_type_and_assignment,
+
+    /* FUNCTIONS */
     Msg_multiple_return_types,
     Msg_mismatched_return_type,
     Msg_must_be_explicitly_marked_any,
     Msg_return_outside_function,
     Msg_not_a_function,
     Msg_closure_capture_must_be_parameter,
+
+    /* ARRAYS */
+    Msg_not_an_array,
+
+    /* TYPES */
     Msg_undefined_type,
     Msg_redefined_type,
     Msg_redefined_builtin_type,

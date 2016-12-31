@@ -867,7 +867,7 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
         }
 
         // array braces at the end of a type are syntactical sugar for `Array(T)`
-        if (Match(TK_OPEN_BRACKET, true)) {
+        while (Match(TK_OPEN_BRACKET, true)) {
             std::shared_ptr<AstTypeSpecification> inner(
                 new AstTypeSpecification(left_name, generic_params, right, left.GetLocation()));
 

@@ -22,7 +22,37 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
     m_target->Visit(visitor, mod);
     m_index->Visit(visitor, mod);
 
-    // TODO: check if target is an array
+    SymbolTypePtr_t target_type = m_target->GetSymbolType();
+
+
+    // check if target is an array
+    if (target_type != SymbolType::Builtin::ANY) {
+        bool is_array = false;
+
+        if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+            auto base = target_type->GetBaseType();
+
+            if (base == SymbolType::Builtin::ARRAY) {
+                is_array = true;
+
+                /*if (target_type->GetGenericInstanceInfo().m_param_types.size() == m_args.size() + 1) {
+                    for (int i = 0; i < m_args.size(); i++) {
+                        auto param_type = identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
+
+                        // here is where argument types should be matched
+                    }
+                }
+
+                m_return_type = identifier_type->GetGenericInstanceInfo().m_param_types[0];*/
+            }
+        }
+
+        if (!is_array) {
+            // not an array type
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_not_an_array, m_location, target_type->GetName()));
+        }
+    }
 }
 
 void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)

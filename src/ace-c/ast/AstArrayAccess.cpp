@@ -21,6 +21,8 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
 {
     m_target->Visit(visitor, mod);
     m_index->Visit(visitor, mod);
+
+    // TODO: check if target is an array
 }
 
 void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)

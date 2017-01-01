@@ -1,45 +1,52 @@
 module loop {
+	let hello = 'Hello'
+	print "hello == ", hello
+	
+	import 'testimport.ace'
+	
+	print "hello == ", hello
+
 	func foreach_range(range, callback) {
-		start = range.start
-		end = range.end
-		increment = 1
+		let start = range.start
+		let end = range.end
+		let increment = 1
+		
 		if start > end {
 			increment = -1
 		}
+		
 		while start != end {
 			callback(start)
 			start += increment
 		}
 	}
 	
-	
 	type Range {
-		start: Any = null
-		end: Any = null
-		next: Function(Any...)-> Any
+		start = nil
+		end   = nil
 	}
 	
-	type Range(T) {
+	/*type Range(T) {
 		start: T
-		end: T
-	}
+		end:   T
+	}*/
 	
 	
-	myrange: Range
-	myrange.start = 0
-	myrange.end = 1000
+	//print 'myrange = ', myrange
+	//myrange.start = 0
+	//myrange.end = 1000
 	
-	myrange.foreach_range(func(it) {
-		print 'it(1) = ', it
-	})
+	//myrange.foreach_range(func(it) {
+	//	print 'it(1) = ', it
+	//})
 	
 	
-	myrange.start = 1000
-	myrange.end = 0
+	//myrange.start = 1000
+	//myrange.end = 0
 	
-	myrange.foreach_range(func(it) {
-		print 'it(2) = ', it
-	})
+	//myrange.foreach_range(func(it) {
+	//	print 'it(2) = ', it
+	//})
 
 	/*while i = 10 {
 	  print i

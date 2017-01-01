@@ -1,6 +1,6 @@
 #include <ace-c/SymbolType.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
-#include <ace-c/ast/AstNull.hpp>
+#include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstInteger.hpp>
 #include <ace-c/ast/AstFloat.hpp>
 #include <ace-c/ast/AstFalse.hpp>
@@ -11,7 +11,7 @@
 #include <common/my_assert.hpp>
 
 const SymbolTypePtr_t SymbolType::Builtin::UNDEFINED = SymbolType::Primitive("Undefined", std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::ANY       = SymbolType::Primitive("Any", std::shared_ptr<AstNull>(new AstNull(SourceLocation::eof)));
+const SymbolTypePtr_t SymbolType::Builtin::ANY       = SymbolType::Primitive("Any", std::shared_ptr<AstNil>(new AstNil(SourceLocation::eof)));
 const SymbolTypePtr_t SymbolType::Builtin::OBJECT    = SymbolType::Primitive("Object", nullptr, nullptr);
 const SymbolTypePtr_t SymbolType::Builtin::INT       = SymbolType::Primitive("Int", std::shared_ptr<AstInteger>(new AstInteger(0, SourceLocation::eof)));
 const SymbolTypePtr_t SymbolType::Builtin::FLOAT     = SymbolType::Primitive("Float", std::shared_ptr<AstFloat>(new AstFloat(0.0, SourceLocation::eof)));

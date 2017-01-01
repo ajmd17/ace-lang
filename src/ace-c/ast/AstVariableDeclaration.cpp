@@ -1,5 +1,4 @@
 #include <ace-c/ast/AstVariableDeclaration.hpp>
-#include <ace-c/ast/AstNull.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/Keywords.hpp>

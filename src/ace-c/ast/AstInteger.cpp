@@ -1,6 +1,6 @@
 #include <ace-c/ast/AstInteger.hpp>
 #include <ace-c/ast/AstFloat.hpp>
-#include <ace-c/ast/AstNull.hpp>
+#include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstTrue.hpp>
 #include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
@@ -229,9 +229,8 @@ std::shared_ptr<AstConstant> AstInteger::operator&&(AstConstant *right) const
 
     if (!right->IsNumber()) {
         // this operator is valid to compare against null
-        AstNull *ast_null = dynamic_cast<AstNull*>(right);
-        if (ast_null != nullptr) {
-            // rhs is null, return false
+        if (dynamic_cast<AstNil*>(right)) {
+            // rhs is nil, return false
             return std::shared_ptr<AstFalse>(
                 new AstFalse(m_location));
         }
@@ -254,9 +253,8 @@ std::shared_ptr<AstConstant> AstInteger::operator||(AstConstant *right) const
     int right_true = right->IsTrue();
 
     if (!right->IsNumber()) {
-        // this operator is valid to compare against null
-        AstNull *ast_null = dynamic_cast<AstNull*>(right);
-        if (ast_null != nullptr) {
+        // this operator is valid to compare against nil
+        if (dynamic_cast<AstNil*>(right)) {
             if (this_true == 1) {
                 return std::shared_ptr<AstTrue>(new AstTrue(m_location));
             } else if (this_true == 0) {

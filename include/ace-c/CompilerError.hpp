@@ -90,9 +90,8 @@ enum ErrorMessage {
     Msg_unsatisfied_type_contract,
     Msg_unsupported_feature,
 
-    /* Warnings */
     Msg_unreachable_code,
-    Msg_expected_semicolon,
+    Msg_expected_end_of_statement,
 
     /* Info */
     Msg_unused_identifier,

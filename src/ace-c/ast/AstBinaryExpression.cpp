@@ -101,7 +101,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         // no bitwise operators on floats allowed.
         visitor->Assert((left_type == SymbolType::Builtin::INT || left_type == SymbolType::Builtin::ANY) &&
             (right_type == SymbolType::Builtin::INT || right_type == SymbolType::Builtin::ANY),
-            CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int, m_left->GetLocation(),
+            CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int, m_location,
                 left_type->GetName(), right_type->GetName()));
     }
 
@@ -112,7 +112,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         if (!left_type->TypeCompatible(*right_type, true)) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_mismatched_types,
-                    m_left->GetLocation(), left_type->GetName(), right_type->GetName()));
+                    m_location, left_type->GetName(), right_type->GetName()));
         }
 
         AstVariable *left_as_var = nullptr;
@@ -139,21 +139,21 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                 if (left_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
                         CompilerError(Level_fatal, Msg_const_modified,
-                            m_left->GetLocation(), left_as_var->GetName()));
+                            m_location, left_as_var->GetName()));
                 }
             }
         } else {
             // cannot modify an rvalue
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_cannot_modify_rvalue,
-                    m_left->GetLocation()));
+                    m_location));
         }
     } else {
         // compare both sides because assignment does not matter in this case
         if (!left_type->TypeCompatible(*right_type, false)) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_mismatched_types,
-                    m_left->GetLocation(), left_type->GetName(), right_type->GetName()));
+                    m_location, left_type->GetName(), right_type->GetName()));
         }
     }
 }

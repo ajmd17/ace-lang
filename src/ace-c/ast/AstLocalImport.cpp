@@ -18,6 +18,65 @@ AstLocalImport::AstLocalImport(const std::string &path, const SourceLocation &lo
 {
 }
 
+static void CopyModules(AstVisitor *visitor, std::shared_ptr<Module> &mod, bool check_lookup = false, bool update_tree_link = false)
+{
+    ASSERT(visitor != nullptr);
+    ASSERT(mod != nullptr);
+
+
+    if (check_lookup) {
+        if (visitor->GetCompilationUnit()->LookupModule(mod->GetName())) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                CompilerError(Level_fatal, Msg_module_already_defined,
+                    mod->GetLocation(), mod->GetName()));
+        }
+    }
+
+    // add this module to the compilation unit
+    visitor->GetCompilationUnit()->m_module_tree.Open(mod.get());
+
+    if (update_tree_link) {
+        mod->SetImportTreeLink(visitor->GetCompilationUnit()->m_module_tree.TopNode());
+    }
+
+
+
+    // function to copy nested modules 
+    std::function<void(TreeNode<Module*>*)> copy_nodes =
+
+    [visitor, &copy_nodes, &check_lookup, &update_tree_link]
+    (TreeNode<Module*> *link) {
+        ASSERT(link != nullptr);
+        ASSERT(link->m_value != nullptr);
+
+        for (auto *sibling : link->m_siblings) {
+            visitor->GetCompilationUnit()->m_module_tree.Open(sibling->m_value);
+
+            if (update_tree_link) {
+                sibling->m_value->SetImportTreeLink(sibling);
+            }
+
+            if (check_lookup) {
+                if (visitor->GetCompilationUnit()->LookupModule(sibling->m_value->GetName())) {
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_module_already_defined,
+                            sibling->m_value->GetLocation(), sibling->m_value->GetName()));
+                }
+            }
+
+            copy_nodes(sibling);
+
+            visitor->GetCompilationUnit()->m_module_tree.Close();
+        }
+    };
+
+    // copy all nested modules
+    copy_nodes(mod->GetImportTreeLink());
+
+    // close module
+    visitor->GetCompilationUnit()->m_module_tree.Close();
+}
+
 void AstLocalImport::Visit(AstVisitor *visitor, Module *mod)
 {
     // find the folder which the current file is in
@@ -42,28 +101,8 @@ void AstLocalImport::Visit(AstVisitor *visitor, Module *mod)
     if (it != visitor->GetCompilationUnit()->m_imported_modules.end()) {
         // imported file found, so just re-open all
         // modules that belong to the file into this scope
-        for (std::shared_ptr<Module> mod : it->second) {
-            // add this module to the compilation unit
-            visitor->GetCompilationUnit()->m_module_tree.Open(mod.get());
-
-            TreeNode<Module*> *new_link = visitor->GetCompilationUnit()->m_module_tree.TopNode();
-
-            // copy all nested modules
-
-            std::function<void(TreeNode<Module*>*)> copy_nodes = 
-                [visitor, &copy_nodes](TreeNode<Module*> *link) {
-                    ASSERT(link != nullptr);
-                    for (auto *sibling : link->m_siblings) {
-                        visitor->GetCompilationUnit()->m_module_tree.Open(sibling->m_value);
-                        copy_nodes(sibling);
-                        visitor->GetCompilationUnit()->m_module_tree.Close();
-                    }
-                };
-
-            copy_nodes(mod->GetImportTreeLink());
-
-            // close module
-            visitor->GetCompilationUnit()->m_module_tree.Close();
+        for (std::shared_ptr<Module> &mod : it->second) {
+            CopyModules(visitor, mod);
         }
     } else {
         // file hasn't been imported, so open it

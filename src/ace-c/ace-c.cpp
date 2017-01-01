@@ -4,13 +4,6 @@
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Optimizer.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
-#include <ace-c/ast/AstVariableDeclaration.hpp>
-#include <ace-c/ast/AstVariable.hpp>
-#include <ace-c/ast/AstBinaryExpression.hpp>
-#include <ace-c/ast/AstIfStatement.hpp>
-#include <ace-c/ast/AstTrue.hpp>
-#include <ace-c/ast/AstNull.hpp>
-#include <ace-c/ast/AstBlock.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/Lexer.hpp>
 #include <ace-c/Parser.hpp>

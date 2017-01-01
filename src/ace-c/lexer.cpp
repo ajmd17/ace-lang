@@ -179,8 +179,13 @@ Token Lexer::NextToken()
         return Token(TK_CLOSE_BRACE, "}", location);
     } else {
         int pos_change = 0;
+        utf::u32char bad_token = m_source_stream.Next(pos_change);
+
+        char bad_token_str[sizeof(bad_token)] = { '\0' };
+        utf::char32to8(bad_token, bad_token_str);
+
         CompilerError error(Level_fatal, Msg_unexpected_token,
-            location, m_source_stream.Next(pos_change));
+            location, std::string(bad_token_str));
 
         m_compilation_unit->GetErrorList().AddError(error);
         m_source_location.GetColumn() += pos_change;

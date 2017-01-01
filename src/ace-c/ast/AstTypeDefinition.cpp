@@ -1,5 +1,5 @@
 #include <ace-c/ast/AstTypeDefinition.hpp>
-#include <ace-c/ast/AstNull.hpp>
+#include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstObject.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/keywords.hpp>
@@ -93,7 +93,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
         delete[] st.m_name;
 
-        auto symbol_type = SymbolType::Object(m_name, std::shared_ptr<AstNull>(new AstNull(SourceLocation::eof)), member_types);
+        auto symbol_type = SymbolType::Object(m_name, std::shared_ptr<AstNil>(new AstNil(SourceLocation::eof)), member_types);
         symbol_type->SetId(id);
 
         Scope &top_scope = mod->m_scopes.Top();

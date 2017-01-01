@@ -29,7 +29,7 @@
 #include <ace-c/ast/AstArrayAccess.hpp>
 #include <ace-c/ast/AstTrue.hpp>
 #include <ace-c/ast/AstFalse.hpp>
-#include <ace-c/ast/AstNull.hpp>
+#include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstBlock.hpp>
 #include <ace-c/ast/AstIfStatement.hpp>
 #include <ace-c/ast/AstWhileLoop.hpp>
@@ -62,6 +62,7 @@ private:
     Token Expect(TokenClass token_class, bool read = false);
     Token ExpectKeyword(Keywords keyword, bool read = false);
     Token ExpectOperator(const Operator *op, bool read = false);
+    bool ExpectEndOfStmt();
     SourceLocation CurrentLocation() const;
 
     /** Skip past newlines and semicolons.
@@ -85,7 +86,7 @@ private:
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
-    std::shared_ptr<AstNull> ParseNull();
+    std::shared_ptr<AstNil> ParseNil();
     std::shared_ptr<AstBlock> ParseBlock();
     std::shared_ptr<AstIfStatement> ParseIfStatement();
     std::shared_ptr<AstWhileLoop> ParseWhileLoop();

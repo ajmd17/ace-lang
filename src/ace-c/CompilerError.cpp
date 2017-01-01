@@ -72,7 +72,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
 
     /* Warnings */
     { Msg_unreachable_code, "unreachable code detected" },
-    { Msg_expected_semicolon, "missing semicolon" },
+    { Msg_expected_end_of_statement, "end of statement expected (use a newline or semicolon to end a statement)" },
 
     /* Info */
     { Msg_unused_identifier, "'%' is not used" },

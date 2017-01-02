@@ -6,7 +6,7 @@ module loop {
 	
 	print "hello == ", hello
 
-	func foreach_range(range, callback) {
+	foreach_range: Function = (range, callback) {
 		let start = range.start
 		let end = range.end
 		let increment = 1
@@ -25,6 +25,7 @@ module loop {
 		start = nil
 		end   = nil
 	}
+
 	
 	/*type Range(T) {
 		start: T

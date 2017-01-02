@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-AstObject::AstObject(const SymbolTypePtr_t &symbol_type,
+AstObject::AstObject(const SymbolTypeWeakPtr_t &symbol_type,
     const SourceLocation &location)
     : AstExpression(location),
       m_symbol_type(symbol_type)
@@ -21,7 +21,10 @@ void AstObject::Visit(AstVisitor *visitor, Module *mod)
 
 void AstObject::Build(AstVisitor *visitor, Module *mod)
 {
-    int static_id = m_symbol_type->GetId();
+    auto sp = m_symbol_type.lock();
+    ASSERT(sp != nullptr);
+
+    int static_id = sp->GetId();
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -37,7 +40,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     if (!ace::compiler::Config::use_static_objects) {
         // padding fill for LOAD_TYPE instruction!
         visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() +=
-            m_symbol_type->GetMembers().size() * sizeof(uint32_t);
+            sp->GetMembers().size() * sizeof(uint32_t);
     }
 
     // store newly allocated object in same register
@@ -54,7 +57,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
     // for each data member, load the default value
     int i = 0;
-    for (const auto &dm : m_symbol_type->GetMembers()) {
+    for (const auto &dm : sp->GetMembers()) {
         ASSERT(dm.second != nullptr);
         ASSERT(dm.second->GetDefaultValue() != nullptr);
 
@@ -152,5 +155,7 @@ bool AstObject::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstObject::GetSymbolType() const
 {
-    return m_symbol_type;
+    auto sp = m_symbol_type.lock();
+    ASSERT(sp != nullptr);
+    return sp;
 }

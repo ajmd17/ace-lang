@@ -26,6 +26,7 @@ public:
     inline Token Last() const { ASSERT(!m_tokens.empty()); return m_tokens.back(); }
     inline size_t GetSize() const { return m_tokens.size(); }
     inline size_t GetPosition() const { return m_position; }
+    inline void SetPosition(size_t position) { m_position = position; }
     inline bool Eof() const { return m_position >= m_tokens.size(); }
 
     std::vector<Token> m_tokens;

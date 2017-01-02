@@ -12,6 +12,7 @@ class SymbolType;
 class AstExpression;
 
 typedef std::shared_ptr<SymbolType> SymbolTypePtr_t;
+typedef std::weak_ptr<SymbolType> SymbolTypeWeakPtr_t;
 typedef std::pair<std::string, SymbolTypePtr_t> SymbolMember_t;
 
 enum SymbolTypeClass {
@@ -26,7 +27,7 @@ enum SymbolTypeClass {
 };
 
 struct AliasTypeInfo {
-    std::weak_ptr<SymbolType> m_aliasee;
+    SymbolTypeWeakPtr_t m_aliasee;
 };
 
 struct FunctionTypeInfo {
@@ -102,6 +103,7 @@ public:
     inline SymbolTypeClass GetTypeClass() const { return m_type_class; }
     inline SymbolTypePtr_t GetBaseType() const { return m_base.lock(); }
     inline const std::shared_ptr<AstExpression> &GetDefaultValue() const { return m_default_value; }
+    inline void SetDefaultValue(const std::shared_ptr<AstExpression> &default_value) { m_default_value = default_value; }
     inline const std::vector<SymbolMember_t> &GetMembers() const { return m_members; }
 
     inline FunctionTypeInfo &GetFunctionInfo() { return m_function_info; }
@@ -130,7 +132,7 @@ private:
     std::vector<SymbolMember_t> m_members;
 
     // type that this type is based off of
-    std::weak_ptr<SymbolType> m_base;
+    SymbolTypeWeakPtr_t m_base;
 
     // if this is an alias of another type
     AliasTypeInfo m_alias_info;

@@ -1,5 +1,7 @@
 #include <ace-c/Parser.hpp>
 
+#include <common/utf8.hpp>
+
 #include <memory>
 #include <cstdlib>
 #include <cstdio>
@@ -427,9 +429,37 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
 std::shared_ptr<AstExpression> Parser::ParseParentheses()
 {
     SourceLocation location = CurrentLocation();
+    std::shared_ptr<AstExpression> expr;
+    size_t before_pos = m_token_stream->GetPosition();
 
     Expect(TK_OPEN_PARENTH, true);
-    std::shared_ptr<AstExpression> expr = ParseExpression();
+
+    if (Match(TK_CLOSE_PARENTH, true)) {
+        // if '()' found, it is a function with empty parameters
+        // allow ParseFunctionParameters() to handle parentheses
+        m_token_stream->SetPosition(before_pos);
+        expr = ParseFunctionExpression(false, ParseFunctionParameters());
+    } else {
+        expr = ParseExpression();
+
+        if (Match(TK_COMMA, true)) {
+            // go back to before open '(' found, 
+            // to allow ParseFunctionParameters() to handle it
+            m_token_stream->SetPosition(before_pos);
+
+            // parse function parameters
+            expr = ParseFunctionExpression(false, ParseFunctionParameters());
+        } else {
+            Expect(TK_CLOSE_PARENTH, true);
+
+            if (Match(TK_OPEN_BRACE, true)) {
+                // if '{' found after ')', it is a function
+                m_token_stream->SetPosition(before_pos);
+                expr = ParseFunctionExpression(false, ParseFunctionParameters());
+            }
+        }
+    }
+
 /*
     // if it's a function expression
     bool is_function_expr = false;
@@ -482,8 +512,6 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
 
         parameters.push_back(param);
     }*/
-
-    Expect(TK_CLOSE_PARENTH, true);
 
     /*if (is_function_expr) {
         std::shared_ptr<AstTypeSpecification> return_type_spec;

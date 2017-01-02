@@ -5,7 +5,7 @@
 
 class AstObject : public AstExpression {
 public:
-    AstObject(const SymbolTypePtr_t &symbol_type, const SourceLocation &location);
+    AstObject(const SymbolTypeWeakPtr_t &symbol_type, const SourceLocation &location);
     virtual ~AstObject() = default;
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
@@ -18,7 +18,7 @@ public:
     virtual SymbolTypePtr_t GetSymbolType() const override;
 
 private:
-    SymbolTypePtr_t m_symbol_type;
+    SymbolTypeWeakPtr_t m_symbol_type;
 };
 
 #endif

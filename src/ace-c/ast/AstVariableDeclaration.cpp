@@ -66,7 +66,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 // symbol_type should be the user-specified type
                 ASSERT(symbol_type != nullptr);
 
-
                 if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
                     // perform type promotion on incomplete generics.
                     // i.e: let x: Array = [1,2,3]

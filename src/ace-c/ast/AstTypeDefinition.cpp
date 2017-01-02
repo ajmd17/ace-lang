@@ -93,8 +93,10 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
         delete[] st.m_name;
 
-        auto symbol_type = SymbolType::Object(m_name, std::shared_ptr<AstNil>(new AstNil(SourceLocation::eof)), member_types);
+        auto symbol_type = SymbolType::Object(m_name, nullptr, member_types);
         symbol_type->SetId(id);
+        symbol_type->SetDefaultValue(std::shared_ptr<AstObject>(
+            new AstObject(symbol_type, SourceLocation::eof)));
 
         Scope &top_scope = mod->m_scopes.Top();
         top_scope.GetIdentifierTable().AddSymbolType(symbol_type);

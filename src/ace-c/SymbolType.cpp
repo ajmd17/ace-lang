@@ -325,10 +325,9 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
             ASSERT(base->GetGenericInfo().m_params.size() == info.m_param_types.size());
             
             // find parameter and substitute it
-            for (size_t i = 0; i < base->GetGenericInfo().m_params.size(); i++) {
+            for (size_t i = 0; i < !substituted && base->GetGenericInfo().m_params.size(); i++) {
                 auto &it = base->GetGenericInfo().m_params[i];
                 if (it->GetName() == std::get<1>(member)->GetName()) {
-
                     std::shared_ptr<AstExpression> default_value;
 
                     if ((default_value = std::get<2>(member))) {
@@ -338,10 +337,7 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
                     members.push_back(SymbolMember_t(
                         std::get<0>(member), info.m_param_types[i], default_value));
 
-                    // set substituted type
-
                     substituted = true;
-                    break;
                 }
             }
 
@@ -351,8 +347,9 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
                     std::get<0>(member), SymbolType::Builtin::UNDEFINED, std::get<2>(member)));
             }
         } else {
-            // push copy
-            members.push_back(member);
+            // push copy (clone assignment value)
+            members.push_back(SymbolMember_t(
+                std::get<0>(member), std::get<1>(member), CloneAstNode(std::get<2>(member))));
         }
     }
 

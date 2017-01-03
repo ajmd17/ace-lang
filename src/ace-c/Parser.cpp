@@ -434,28 +434,34 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
 
     Expect(TK_OPEN_PARENTH, true);
 
-    if (Match(TK_CLOSE_PARENTH, true)) {
-        // if '()' found, it is a function with empty parameters
-        // allow ParseFunctionParameters() to handle parentheses
-        m_token_stream->SetPosition(before_pos);
-        expr = ParseFunctionExpression(false, ParseFunctionParameters());
-    } else {
+    if (!Match(TK_CLOSE_PARENTH) && !Match(TK_IDENT)) {
         expr = ParseExpression();
-
-        if (Match(TK_COMMA, true) || Match(TK_COLON, true)) {
-            // go back to before open '(' found, 
-            // to allow ParseFunctionParameters() to handle it
+        Expect(TK_CLOSE_PARENTH, true);
+    } else {
+        if (Match(TK_CLOSE_PARENTH, true)) {
+            // if '()' found, it is a function with empty parameters
+            // allow ParseFunctionParameters() to handle parentheses
             m_token_stream->SetPosition(before_pos);
-
-            // parse function parameters
             expr = ParseFunctionExpression(false, ParseFunctionParameters());
         } else {
-            Expect(TK_CLOSE_PARENTH, true);
+            expr = ParseExpression();
 
-            if (Match(TK_OPEN_BRACE, true)) {
-                // if '{' found after ')', it is a function
+            if (Match(TK_COMMA) || Match(TK_COLON) ||
+                (Match(TK_CLOSE_PARENTH) && MatchAhead(TK_COLON, 1))) {
+                // go back to before open '(' found, 
+                // to allow ParseFunctionParameters() to handle it
                 m_token_stream->SetPosition(before_pos);
+
+                // parse function parameters
                 expr = ParseFunctionExpression(false, ParseFunctionParameters());
+            } else {
+                Expect(TK_CLOSE_PARENTH, true);
+
+                if (Match(TK_OPEN_BRACE, true)) {
+                    // if '{' found after ')', it is a function
+                    m_token_stream->SetPosition(before_pos);
+                    expr = ParseFunctionExpression(false, ParseFunctionParameters());
+                }
             }
         }
     }
@@ -1177,14 +1183,15 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
         bool keep_reading = true;
 
         while (keep_reading) {
-            if (Token token = Match(TK_IDENT, true)) {
+            if (Match(TK_CLOSE_PARENTH, false)) {
+                keep_reading = false;
+            } else if (Token token = Expect(TK_IDENT, true)) {
                 std::shared_ptr<AstTypeSpecification> type_spec;
 
                 // check if parameter type has been declared
                 if (Match(TK_COLON, true)) {
                     type_spec = ParseTypeSpecification();
                 }
-
 
                 if (found_variadic) {
                     // found another parameter after variadic
@@ -1223,10 +1230,7 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
 
 std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
 {
-    
-
     if (Token token = ExpectKeyword(Keyword_type, true)) {
-
         std::vector<std::string> generic_params;
         // parse generic parameters after '('
         if (Match(TK_OPEN_PARENTH, true)) {
@@ -1249,11 +1253,13 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
                     if (MatchKeyword(Keyword_let, false) || Match(TK_IDENT, false)) {
                         // do not require keyword for data members
                         members.push_back(ParseVariableDeclaration(false));
+                        ExpectEndOfStmt();
                     } else {
                         // error; unexpected token
                         CompilerError error(Level_fatal, Msg_unexpected_token,
                             m_token_stream->Peek().GetLocation(),
                             m_token_stream->Peek().GetValue());
+                            
                         m_compilation_unit->GetErrorList().AddError(error);
 
                         if (m_token_stream->HasNext()) {

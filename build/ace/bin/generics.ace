@@ -1,15 +1,38 @@
 module generics {
+    glob:Int = 5
 
     type (T) MyGeneric {
         printDefaultT = () {
-
-            t: Float
+            t: T
             print "default t == ", t
+            return t
         }
-
     }
 
-    myGeneric: MyGeneric(Int)
-    myGeneric.printDefaultT()
+    type HiSayer {
+        sayHi = ( ) : Int {
+            return (5)
+        }
+    }
 
+    myGeneric: MyGeneric(String)
+    x: String = myGeneric.printDefaultT()
+    print "x == ", x
+
+    print "\n\nmyGeneric2:"
+    myGeneric2: MyGeneric(Boolean)
+    myGeneric2.printDefaultT()
+
+    /*type NonGeneric {
+
+        printHi = () {
+
+            hi: String = "hi"
+            print hi
+
+        }
+    }
+
+    nonGeneric: NonGeneric
+    nonGeneric.printHi()*/
 }

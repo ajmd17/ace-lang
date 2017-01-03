@@ -80,7 +80,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     } else {
         m_type_specification->Visit(visitor, mod);
         m_return_type = m_type_specification->GetSymbolType();
-
+        
         for (const auto &it : function_scope.GetReturnTypes()) {
             // use strict numbers because user specified return type
             if (!m_return_type->TypeCompatible(*it.first, true)) {
@@ -96,7 +96,10 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
     // set object type to be an instance of function
     std::vector<SymbolTypePtr_t> generic_param_types;
+    generic_param_types.reserve(param_symbol_types.size() + 1);
+
     generic_param_types.push_back(m_return_type);
+
     for (auto &it : param_symbol_types) {
         generic_param_types.push_back(it);
     }

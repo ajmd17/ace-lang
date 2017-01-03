@@ -17,6 +17,8 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
 {
     AstIdentifier::Visit(visitor, mod);
 
+    ASSERT(m_properties.GetIdentifierType() != IDENTIFIER_TYPE_UNKNOWN);
+
     switch (m_properties.GetIdentifierType()) {
 		case IDENTIFIER_TYPE_VARIABLE: {
 			ASSERT(m_properties.GetIdentifier() != nullptr);

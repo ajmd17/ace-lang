@@ -30,6 +30,9 @@ protected:
     std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstExpression> m_assignment;
 
+    // set while analyzing
+    std::shared_ptr<AstExpression> m_real_assignment;
+
     inline Pointer<AstVariableDeclaration> CloneImpl() const
     {
         return Pointer<AstVariableDeclaration>(new AstVariableDeclaration(

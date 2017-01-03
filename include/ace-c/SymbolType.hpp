@@ -102,13 +102,17 @@ public:
         const SymbolTypePtr_t &base,
         const std::shared_ptr<AstExpression> &default_value,
         const std::vector<SymbolMember_t> &members);
+        
     SymbolType(const SymbolType &other);
 
     inline const std::string &GetName() const { return m_name; }
     inline SymbolTypeClass GetTypeClass() const { return m_type_class; }
     inline SymbolTypePtr_t GetBaseType() const { return m_base.lock(); }
+
     inline const std::shared_ptr<AstExpression> &GetDefaultValue() const { return m_default_value; }
     inline void SetDefaultValue(const std::shared_ptr<AstExpression> &default_value) { m_default_value = default_value; }
+    
+    inline std::vector<SymbolMember_t> &GetMembers() { return m_members; }
     inline const std::vector<SymbolMember_t> &GetMembers() const { return m_members; }
 
     inline FunctionTypeInfo &GetFunctionInfo() { return m_function_info; }

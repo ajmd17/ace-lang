@@ -31,6 +31,10 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_missing_type_and_assignment, m_location, m_name));
     } else {
+        if (m_assignment) {
+            m_real_assignment = m_assignment;
+        }
+
         // the type_strict flag means that errors will be shown if
         // the assignment type and the user-supplied type differ.
         // it is to be turned off for built-in (default) values
@@ -45,23 +49,23 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             symbol_type = m_type_specification->GetSymbolType();
 
             // if no assignment provided, set the assignment to be the default value of the provided type
-            if (!m_assignment && symbol_type) {
+            if (!m_real_assignment && symbol_type) {
                 // Assign variable to the default value for the specified type.
-                m_assignment = symbol_type->GetDefaultValue();
+                m_real_assignment = symbol_type->GetDefaultValue();
                 // built-in assignment, turn off strict mode
                 type_strict = false;
             }
         }
 
-        if (m_assignment) {
+        if (m_real_assignment) {
             if (!m_assignment_already_visited) {
                 // visit assignment
-                m_assignment->Visit(visitor, mod);
+                m_real_assignment->Visit(visitor, mod);
             }
 
             // make sure type is compatible with assignment
-            SymbolTypePtr_t assignment_type = m_assignment->GetSymbolType();
-            ASSERT(assignment_type != nullptr);
+            SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
+            ASSERT(m_real_assignment != nullptr);
 
             if (m_type_specification) {
                 // symbol_type should be the user-specified type
@@ -84,7 +88,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
                 if (type_strict) {
                     visitor->Assert(symbol_type->TypeCompatible(*assignment_type, true),
-                        CompilerError(Level_fatal, Msg_mismatched_types, m_assignment->GetLocation(),
+                        CompilerError(Level_fatal, Msg_mismatched_types, m_real_assignment->GetLocation(),
                             symbol_type->GetName(), assignment_type->GetName()));
                 }
             } else {
@@ -98,22 +102,21 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     if (m_identifier) {
         m_identifier->SetSymbolType(symbol_type);
-        m_identifier->SetCurrentValue(m_assignment);
+        m_identifier->SetCurrentValue(m_real_assignment);
     }
 }
 
 void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
-    ASSERT(m_assignment != nullptr);
+    ASSERT(m_real_assignment != nullptr);
 
     if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
         // get current stack size
         int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         // set identifier stack location
-        utf::cout << "`" << m_name.c_str() << "` location = " << stack_location << "\n";
         m_identifier->SetStackLocation(stack_location);
 
-        m_assignment->Build(visitor, mod);
+        m_real_assignment->Build(visitor, mod);
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -127,25 +130,25 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
     } else {
         // if assignment has side effects but variable is unused,
         // compile the assignment in anyway.
-        if (m_assignment->MayHaveSideEffects()) {
-            m_assignment->Build(visitor, mod);
+        if (m_real_assignment->MayHaveSideEffects()) {
+            m_real_assignment->Build(visitor, mod);
         }
     }
 }
 
 void AstVariableDeclaration::Optimize(AstVisitor *visitor, Module *mod)
 {
-    if (m_assignment) {
-        m_assignment->Optimize(visitor, mod);
+    if (m_real_assignment) {
+        m_real_assignment->Optimize(visitor, mod);
     }
 }
 
 void AstVariableDeclaration::Recreate(std::ostringstream &ss)
 {
-    if (m_assignment) {
+    if (m_real_assignment) {
         ss << Keyword::ToString(Keyword_let) << " ";
         ss << m_name << "=";
-        m_assignment->Recreate(ss);
+        m_real_assignment->Recreate(ss);
     } else if (m_type_specification) {
         ss << m_name << ":";
         m_type_specification->Recreate(ss);

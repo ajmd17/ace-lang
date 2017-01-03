@@ -74,19 +74,14 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++) {
 
                                 if (auto &gen = generic_types[i]) {
-                                    utf::cout << "sub `" << symbol_type->GetGenericInfo().m_params[i]->GetName().c_str() << "` for `" << gen->GetName().c_str() << "`\n";
-
                                     SymbolTypePtr_t param_type = SymbolType::GenericParameter(
                                         symbol_type->GetGenericInfo().m_params[i]->GetName(),
                                         gen /* set substitution to the given type */);
 
                                     visitor->GetCompilationUnit()->GetCurrentModule()->
-                                        m_scopes.Root().GetIdentifierTable().AddSymbolType(param_type);
+                                        m_scopes.Top().GetIdentifierTable().AddSymbolType(param_type);
                                 }
                             }
-
-                            // close the scope for data members
-                            mod->m_scopes.Close();
 
                             auto new_instance = SymbolType::GenericInstance(symbol_type,
                                 GenericInstanceTypeInfo{ generic_types });
@@ -94,11 +89,16 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                             // accept all members
                             for (auto &mem : new_instance->GetMembers()) {
                                 // accept assignment for new member instance
-                                if (auto mem_assignment = std::get<2>(mem)) {
+                                if (auto &mem_assignment = std::get<2>(mem)) {
                                     // mem_assignment->SubstituteGenerics(visitor, mod, new_instance);
                                     mem_assignment->Visit(visitor, mod);
+                                    // update held type to new symbol type
+                                    std::get<1>(mem) = mem_assignment->GetSymbolType();
                                 }
                             }
+
+                            // close the scope for data members
+                            mod->m_scopes.Close();
 
                             m_symbol_type = new_instance;
 

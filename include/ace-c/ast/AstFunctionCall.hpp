@@ -19,8 +19,11 @@ public:
     inline void AddArgument(const std::shared_ptr<AstExpression> &arg)
         { m_args.push_back(arg); }
     inline const std::vector<std::shared_ptr<AstExpression>> &GetArguments() const { return m_args; }
+    
     inline bool HasSelfObject() const { return m_has_self_object; }
     inline void SetHasSelfObject(bool has_self_object) { m_has_self_object = has_self_object; }
+
+    inline const SymbolTypePtr_t &GetReturnType() const { return m_return_type; }
 
     void BuildArgumentsStart(AstVisitor *visitor, Module *mod);
     void BuildArgumentsEnd(AstVisitor *visitor, Module *mod);

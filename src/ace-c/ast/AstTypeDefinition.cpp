@@ -2,8 +2,8 @@
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstObject.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/keywords.hpp>
-#include <ace-c/module.hpp>
+#include <ace-c/Keywords.hpp>
+#include <ace-c/Module.hpp>
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Configuration.hpp>
 
@@ -39,6 +39,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         std::vector<SymbolTypePtr_t> generic_param_types;
 
         const bool is_generic = !m_generic_params.empty();
+
         for (const std::string &generic_name : m_generic_params) {
             auto it = std::find_if(generic_param_types.begin(), generic_param_types.end(),
                 [&generic_name](SymbolTypePtr_t &item) {

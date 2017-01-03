@@ -289,6 +289,15 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                             arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
                         }
                     }
+
+                    if (member_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                        if (member_type->GetBaseType() == SymbolType::Builtin::FUNCTION) {
+                            ASSERT(member_type->GetGenericInstanceInfo().m_param_types.size() >= 1);
+                            ASSERT(member_type->GetGenericInstanceInfo().m_param_types[0] != nullptr);
+
+                            member_type = member_type->GetGenericInstanceInfo().m_param_types[0];
+                        }
+                    }
                 }
 
                 target_type = member_type;
@@ -316,6 +325,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                     if (field_as_call->MayHaveSideEffects()) {
                         has_side_effects = true;
                     }
+
                     // in this case it would be usage of uniform call syntax.
                     field->Visit(visitor, mod);
                     target_type = field->GetSymbolType();

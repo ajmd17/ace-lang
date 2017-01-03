@@ -5,6 +5,7 @@
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
+#include <common/utf8.hpp>
 
 #include <limits>
 #include <iostream>

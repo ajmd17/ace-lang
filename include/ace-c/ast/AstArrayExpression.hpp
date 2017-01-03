@@ -16,6 +16,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual std::shared_ptr<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
@@ -24,6 +25,14 @@ public:
 protected:
     std::vector<std::shared_ptr<AstExpression>> m_members;
     SymbolTypePtr_t m_held_type;
+
+    inline std::shared_ptr<AstArrayExpression> CloneImpl() const
+    {
+        return std::shared_ptr<AstArrayExpression>(
+            new AstArrayExpression(
+                CloneAllAstNodes(m_members),
+                m_location));
+    }
 };
 
 #endif

@@ -19,10 +19,18 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 private:
     std::shared_ptr<AstExpression> m_expr;
     int m_num_pops;
+
+    inline Pointer<AstReturnStatement> CloneImpl() const
+    {
+        return Pointer<AstReturnStatement>(new AstReturnStatement(
+            CloneAstNode(m_expr),
+            m_location));
+    }
 };
 
 

@@ -14,6 +14,11 @@ void AstUndefined::Recreate(std::ostringstream &ss)
     ss << "??";
 }
 
+Pointer<AstStatement> AstUndefined::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstUndefined::IsTrue() const
 {
     return false;

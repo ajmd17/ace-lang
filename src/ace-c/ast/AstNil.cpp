@@ -27,6 +27,11 @@ void AstNil::Recreate(std::ostringstream &ss)
     ss << Keyword::ToString(Keyword_nil);
 }
 
+Pointer<AstStatement> AstNil::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstNil::IsTrue() const
 {
     return false;

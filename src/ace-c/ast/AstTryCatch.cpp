@@ -116,3 +116,8 @@ void AstTryCatch::Recreate(std::ostringstream &ss)
     ss << Keyword::ToString(Keyword_catch);
     m_catch_block->Recreate(ss);
 }
+
+Pointer<AstStatement> AstTryCatch::Clone() const
+{
+    return CloneImpl();
+}

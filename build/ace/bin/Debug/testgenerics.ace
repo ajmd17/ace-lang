@@ -1,0 +1,21 @@
+module testgenerics {
+	type (T) MyGeneric {
+		sayHi = () {
+			t: T
+			print "t == ", t
+		}
+	}
+
+	myGeneric: MyGeneric(Float)
+	myGeneric.sayHi()
+	
+	type NonGeneric {
+		sayHi = () {
+			f: Float
+			print "f == ", f
+		}
+	}
+	
+	nonGeneric: NonGeneric
+	nonGeneric.sayHi()
+}

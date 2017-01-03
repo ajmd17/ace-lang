@@ -95,3 +95,8 @@ void AstIfStatement::Recreate(std::ostringstream &ss)
         m_else_block->Recreate(ss);
     }
 }
+
+Pointer<AstStatement> AstIfStatement::Clone() const
+{
+    return CloneImpl();
+}

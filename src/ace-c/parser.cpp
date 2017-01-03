@@ -442,7 +442,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
     } else {
         expr = ParseExpression();
 
-        if (Match(TK_COMMA, true)) {
+        if (Match(TK_COMMA, true) || Match(TK_COLON, true)) {
             // go back to before open '(' found, 
             // to allow ParseFunctionParameters() to handle it
             m_token_stream->SetPosition(before_pos);
@@ -1223,37 +1223,52 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
 
 std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
 {
-    Token token = ExpectKeyword(Keyword_type, true);
-    Token identifier = Expect(TK_IDENT, true);
+    
 
-    if (token && identifier) {
-        std::vector<std::shared_ptr<AstVariableDeclaration>> members;
+    if (Token token = ExpectKeyword(Keyword_type, true)) {
 
-        if (Expect(TK_OPEN_BRACE, true)) {
-            while (!Match(TK_CLOSE_BRACE, true)) {
-                SkipStatementTerminators();
-
-                if (MatchKeyword(Keyword_let, false) || Match(TK_IDENT, false)) {
-                    // do not require keyword for data members
-                    members.push_back(ParseVariableDeclaration(false));
-                } else {
-                    // error; unexpected token
-                    CompilerError error(Level_fatal, Msg_unexpected_token,
-                        m_token_stream->Peek().GetLocation(),
-                        m_token_stream->Peek().GetValue());
-                    m_compilation_unit->GetErrorList().AddError(error);
-
-                    if (m_token_stream->HasNext()) {
-                        m_token_stream->Next();
-                    }
+        std::vector<std::string> generic_params;
+        // parse generic parameters after '('
+        if (Match(TK_OPEN_PARENTH, true)) {
+            while (Token ident = Expect(TK_IDENT, true)) {
+                generic_params.push_back(ident.GetValue());
+                if (!Match(TK_COMMA, true)) {
+                    break;
                 }
-
-                SkipStatementTerminators();
             }
+            Expect(TK_CLOSE_PARENTH, true);
         }
 
-        return std::shared_ptr<AstTypeDefinition>(
-            new AstTypeDefinition(identifier.GetValue(), members, token.GetLocation()));
+        if (Token identifier = Expect(TK_IDENT, true)) {
+            std::vector<std::shared_ptr<AstVariableDeclaration>> members;
+
+            if (Expect(TK_OPEN_BRACE, true)) {
+                while (!Match(TK_CLOSE_BRACE, true)) {
+                    SkipStatementTerminators();
+
+                    if (MatchKeyword(Keyword_let, false) || Match(TK_IDENT, false)) {
+                        // do not require keyword for data members
+                        members.push_back(ParseVariableDeclaration(false));
+                    } else {
+                        // error; unexpected token
+                        CompilerError error(Level_fatal, Msg_unexpected_token,
+                            m_token_stream->Peek().GetLocation(),
+                            m_token_stream->Peek().GetValue());
+                        m_compilation_unit->GetErrorList().AddError(error);
+
+                        if (m_token_stream->HasNext()) {
+                            m_token_stream->Next();
+                        }
+                    }
+
+                    SkipStatementTerminators();
+                }
+            }
+
+            return std::shared_ptr<AstTypeDefinition>(
+                new AstTypeDefinition(identifier.GetValue(), 
+                    generic_params, members, token.GetLocation()));
+        }
     }
 
     return nullptr;

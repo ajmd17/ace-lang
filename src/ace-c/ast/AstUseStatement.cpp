@@ -113,3 +113,8 @@ void AstUseStatement::Recreate(std::ostringstream &ss)
 {
 
 }
+
+Pointer<AstStatement> AstUseStatement::Clone() const
+{
+    return CloneImpl();
+}

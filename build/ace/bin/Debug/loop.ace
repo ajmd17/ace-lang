@@ -5,8 +5,65 @@ module loop {
 	import 'testimport.ace'
 	
 	print "hello == ", hello
-
-	foreach_range: Function = (range, callback) {
+	
+	docall: Function = (fun: Function) {
+		lol: Function = (arg1) {
+			print "in lol() arg1 == ", arg1
+		}
+	
+		fun(lol)
+	}
+	
+	type (T, J) MyGeneric {
+		name: T
+		sayhi = () {
+			print "hi!!!"
+		}
+	}
+	
+	
+	type (T) Range {
+		start : T
+		end   : T
+		lol   : Int
+		
+		fun = () {
+		    t: T
+			print "t == ", t
+			print "Hi"
+		}
+	}
+	
+	range: Range(Int)
+	range.start = 50
+	range.end   = 1000
+	
+	range.fun()
+	
+	forloop : Function = (the_range: Range(Any)) {
+		let start = the_range.start
+		let end   = the_range.end
+		
+		print 'end - start == ', end - start
+	}
+	
+	forloop(range)
+	
+	myobj: MyGeneric(Int, String)
+	
+	print 'myobj == ', myobj
+	print 'myobj.j == ', myobj.name
+	myobj.sayhi()
+	
+	docall((arg1: Function) {
+		print "arg1 == ", arg1
+		print "hello"
+	})
+	
+	meow: String = docall.to_string()
+	print "meow == ", meow
+	
+	foreach_range: Function = (range, callback: Function) {
 		let start = range.start
 		let end = range.end
 		let increment = 1
@@ -21,10 +78,10 @@ module loop {
 		}
 	}
 	
-	type Range {
+	/*type Range {
 		start = nil
 		end   = nil
-	}
+	}*/
 
 	
 	/*type Range(T) {

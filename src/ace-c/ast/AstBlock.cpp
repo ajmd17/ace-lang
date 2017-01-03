@@ -4,9 +4,17 @@
 #include <ace-c/ast/AstReturnStatement.hpp>
 
 #include <common/instructions.hpp>
-#include <common/utf8.hpp>
 
 #include <limits>
+
+AstBlock::AstBlock(const std::vector<std::shared_ptr<AstStatement>> &children, 
+    const SourceLocation &location)
+    : AstStatement(location),
+      m_children(children),
+      m_num_locals(0),
+      m_last_is_return(false)
+{
+}
 
 AstBlock::AstBlock(const SourceLocation &location)
     : AstStatement(location),
@@ -81,4 +89,9 @@ void AstBlock::Recreate(std::ostringstream &ss)
         }
     }
     ss << "}";
+}
+
+Pointer<AstStatement> AstBlock::Clone() const
+{
+    return CloneImpl();
 }

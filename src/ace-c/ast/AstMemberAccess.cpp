@@ -335,7 +335,7 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t target_type;
     int pos = 0;
 
-    if (m_mod_access != nullptr) {
+    if (m_mod_access) {
         real_target = m_parts[pos++];
     } else {
         real_target = m_target;
@@ -481,14 +481,14 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
             std::pair<int, SymbolTypePtr_t> dm = { -1, nullptr };// = target_type.GetDataMemberIndex(field_name);
 
             for (size_t i = 0; i < target_type->GetMembers().size(); i++) {
-                if (target_type->GetMembers()[i].first == field_name) {
-                    dm = { i, target_type->GetMembers()[i].second };
+                if (std::get<0>(target_type->GetMembers()[i]) == field_name) {
+                    dm = { i, std::get<1>(target_type->GetMembers()[i]) };
                     break;
                 }
             }
 
             if (dm.first != -1) {
-                if (field_as_call != nullptr) {
+                if (field_as_call) {
                     LoadMemberAtIndexAndCall(visitor, mod, field_as_call, dm.first);
                 } else {
                     if (m_access_mode == ACCESS_MODE_LOAD || pos != m_parts.size() - 1) {
@@ -584,6 +584,11 @@ void AstMemberAccess::Recreate(std::ostringstream &ss)
             ss << ".";
         }
     }
+}
+
+Pointer<AstStatement> AstMemberAccess::Clone() const
+{
+    return CloneImpl();
 }
 
 int AstMemberAccess::IsTrue() const

@@ -18,10 +18,19 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 protected:
     std::shared_ptr<AstModuleAccess> m_target;
     std::string m_alias;
+
+    inline Pointer<AstUseStatement> CloneImpl() const
+    {
+        return Pointer<AstUseStatement>(new AstUseStatement(
+            CloneAstNode(m_target),
+            m_alias,
+            m_location));
+    }
 };
 
 #endif

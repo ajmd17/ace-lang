@@ -16,20 +16,22 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     bool IsVariadic() const { return m_is_variadic; }
-
-#if 0
-    inline const std::shared_ptr<AstTypeContractExpression> &GetTypeContract() const
-        { return m_type_contract; }
-    inline void SetTypeContract(const std::shared_ptr<AstTypeContractExpression> &type_contract)
-        { m_type_contract = type_contract; }
-    inline bool HasTypeContract() const { return m_type_contract != nullptr; }
-#endif
 
 private:
     bool m_is_variadic;
     std::shared_ptr<AstTypeSpecification> m_type_spec;
+
+    inline Pointer<AstParameter> CloneImpl() const
+    {
+        return Pointer<AstParameter>(new AstParameter(
+            m_name,
+            CloneAstNode(m_type_spec),
+            m_is_variadic,
+            m_location));
+    }
 };
 
 #endif

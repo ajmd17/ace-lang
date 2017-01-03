@@ -56,3 +56,8 @@ void AstParameter::Recreate(std::ostringstream &ss)
         ss << "...";
     }
 }
+
+Pointer<AstStatement> AstParameter::Clone() const
+{
+    return CloneImpl();
+}

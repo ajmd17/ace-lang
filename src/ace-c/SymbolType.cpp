@@ -1,4 +1,5 @@
 #include <ace-c/SymbolType.hpp>
+#include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstInteger.hpp>
@@ -7,8 +8,10 @@
 #include <ace-c/ast/AstString.hpp>
 #include <ace-c/ast/AstFunctionExpression.hpp>
 #include <ace-c/ast/AstArrayExpression.hpp>
+#include <ace-c/ast/AstObject.hpp>
 
 #include <common/my_assert.hpp>
+#include <common/utf8.hpp>
 
 const SymbolTypePtr_t SymbolType::Builtin::UNDEFINED = SymbolType::Primitive("Undefined", std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
 const SymbolTypePtr_t SymbolType::Builtin::ANY       = SymbolType::Primitive("Any", std::shared_ptr<AstNil>(new AstNil(SourceLocation::eof)));
@@ -101,12 +104,10 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
 
             // check each substituted parameter
             for (size_t i = 0; i < m_generic_instance_info.m_param_types.size(); i++) {
-                if (!m_generic_instance_info.m_param_types[i] || 
-                    !other.m_generic_instance_info.m_param_types[i]) {
-                    return false;
-                }
+                ASSERT(m_generic_instance_info.m_param_types[i] != nullptr);
+                ASSERT(other.m_generic_instance_info.m_param_types[i] != nullptr);
 
-                if ((*m_generic_instance_info.m_param_types[i]) != (*other.m_generic_instance_info.m_param_types[i])) {
+                if (!m_generic_instance_info.m_param_types[i]->TypeEqual(*other.m_generic_instance_info.m_param_types[i])) {
                     return false;
                 }
             }
@@ -124,12 +125,12 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
     }
 
     for (const SymbolMember_t &i : m_members) {
-        if (!i.second) {
-            return false;
-        }
+        ASSERT(std::get<1>(i) != nullptr);
 
         for (const SymbolMember_t &j : other.m_members) {
-            if (!j.second || !((*i.second) == (*j.second))) {
+            ASSERT(std::get<1>(j) != nullptr);
+
+            if (!(std::get<1>(i)->TypeEqual(*std::get<1>(j)))) {
                 return false;
             }
         }
@@ -144,6 +145,10 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
         return true;
     }*/
 
+    if (TypeEqual(right)) {
+        return true;
+    }
+
     switch (m_type_class) {
         case TYPE_ALIAS: {
             auto sp = m_alias_info.m_aliasee.lock();
@@ -153,13 +158,11 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
         }
         case TYPE_GENERIC: {
 
-            if (right.m_type_class == TYPE_GENERIC) {
-                return TypeEqual(right);
-            }
-
-            if (auto other_base = right.m_base.lock()) {
-                return TypeCompatible(*other_base, strict_numbers);
-            }
+            if (right.m_type_class != TYPE_GENERIC) {
+                if (auto other_base = right.m_base.lock()) {
+                    return TypeCompatible(*other_base, strict_numbers);
+                }
+            } // equality would have already been checked
 
             return false;
         }
@@ -173,7 +176,7 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
                 ASSERT(other_base != nullptr);
 
                 // check if bases are compatible
-                if (!base->TypeCompatible(*other_base, strict_numbers)) {
+                if (base != other_base && !base->TypeCompatible(*other_base, strict_numbers)) {
                     return false;
                 }
 
@@ -184,29 +187,28 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
 
                 // check each substituted parameter
                 for (size_t i = 0; i < m_generic_instance_info.m_param_types.size(); i++) {
-                    if (!m_generic_instance_info.m_param_types[i] ||
-                        !right.m_generic_instance_info.m_param_types[i]) {
-                        return false;
-                    }
+                    auto &param_type = m_generic_instance_info.m_param_types[i];
+                    auto &other_param_type = right.m_generic_instance_info.m_param_types[i];
 
-                    if (!((*m_generic_instance_info.m_param_types[i]).TypeCompatible(*right.m_generic_instance_info.m_param_types[i], strict_numbers))) {
+                    ASSERT(param_type != nullptr);
+                    ASSERT(other_param_type != nullptr);
+
+                    if (param_type != other_param_type && 
+                        !param_type->TypeCompatible(*other_param_type, strict_numbers)) {
                         return false;
                     }
                 }
 
                 return true;
             } else {
-                // check if this is an instance of the generic type
-                return base->TypeEqual(right);
+                return false;
             }
 
             break;
         }
         case TYPE_BUILTIN:
             if (!TypeEqual(*SymbolType::Builtin::UNDEFINED) && !right.TypeEqual(*SymbolType::Builtin::UNDEFINED)) {
-                if (TypeEqual(right)) {
-                    return true;
-                } else if (TypeEqual(*SymbolType::Builtin::ANY)) {
+                if (TypeEqual(*SymbolType::Builtin::ANY)) {
                     return true;
                 } else if (TypeEqual(*SymbolType::Builtin::NUMBER)) {
                     return right.TypeEqual(*SymbolType::Builtin::INT) ||
@@ -219,17 +221,25 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
                     }
                 }
             }
-            break;
+
+            return false;
+
+        case TYPE_GENERIC_PARAMETER: {
+            if (auto sp = m_generic_param_info.m_substitution.lock()) {
+                return sp->TypeCompatible(right, strict_numbers);
+            }
+            return true;
+        }
     }
 
-    return TypeEqual(right);
+    return true;
 }
 
 const SymbolTypePtr_t SymbolType::FindMember(const std::string &name) const
 {
     for (const SymbolMember_t &member : m_members) {
-        if (member.first == name) {
-            return member.second;
+        if (std::get<0>(member) == name) {
+            return std::get<1>(member);
         }
     }
 
@@ -265,10 +275,12 @@ SymbolTypePtr_t SymbolType::Primitive(const std::string &name,
 }
 
 SymbolTypePtr_t SymbolType::Object(const std::string &name,
-    const std::shared_ptr<AstExpression> &default_value,
     const std::vector<SymbolMember_t> &members)
 {
-    return SymbolTypePtr_t(new SymbolType(name, TYPE_BUILTIN, SymbolType::Builtin::OBJECT, default_value, members));
+    SymbolTypePtr_t symbol_type(new SymbolType(name, TYPE_BUILTIN, SymbolType::Builtin::OBJECT, nullptr, members));
+    symbol_type->SetDefaultValue(std::shared_ptr<AstObject>(
+        new AstObject(symbol_type, SourceLocation::eof)));
+    return symbol_type;
 }
 
 SymbolTypePtr_t SymbolType::Generic(const std::string &name, 
@@ -307,16 +319,27 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
     for (const SymbolMember_t &member : base->GetMembers()) {
         bool substituted = false;
 
-        if (member.second->GetTypeClass() == TYPE_GENERIC_PARAMETER) {
+        if (std::get<1>(member)->GetTypeClass() == TYPE_GENERIC_PARAMETER) {
             // if members of the generic/template class are of the type T (generic parameter)
             // we need to make sure that the number of parameters supplied are equal.
             ASSERT(base->GetGenericInfo().m_params.size() == info.m_param_types.size());
-
+            
             // find parameter and substitute it
             for (size_t i = 0; i < base->GetGenericInfo().m_params.size(); i++) {
                 auto &it = base->GetGenericInfo().m_params[i];
-                if (it->GetName() == member.second->GetName()) {
-                    members.push_back(SymbolMember_t(member.first, info.m_param_types[i]));
+                if (it->GetName() == std::get<1>(member)->GetName()) {
+
+                    std::shared_ptr<AstExpression> default_value;
+
+                    if ((default_value = std::get<2>(member))) {
+                        default_value = CloneAstNode(default_value);
+                    }
+
+                    members.push_back(SymbolMember_t(
+                        std::get<0>(member), info.m_param_types[i], default_value));
+
+                    // set substituted type
+
                     substituted = true;
                     break;
                 }
@@ -324,7 +347,8 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
 
             if (!substituted) {
                 // substitution error, set type to be undefined
-                members.push_back(SymbolMember_t(member.first, SymbolType::Builtin::UNDEFINED));
+                members.push_back(SymbolMember_t(
+                    std::get<0>(member), SymbolType::Builtin::UNDEFINED, std::get<2>(member)));
             }
         } else {
             // push copy
@@ -332,15 +356,32 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
         }
     }
 
-    SymbolTypePtr_t res(new SymbolType(name, TYPE_GENERIC_INSTANCE, base, 
-        base->GetDefaultValue(), members));
+    // if the generic's default value is nullptr,
+    // create a new default value for the instance of type AstObject
+    // the reason we do this is so that a new 'Type' is generated for user-defined
+    // generics, but built-in generics like Function and Array can play by
+    // their own rules
+
+    SymbolTypePtr_t res(new SymbolType(name, TYPE_GENERIC_INSTANCE, base,
+        nullptr, members));
+
+    auto default_value = base->GetDefaultValue();
+    if (!default_value) {
+        default_value.reset(new AstObject(res, SourceLocation::eof));
+    }
+
+    res->SetId(base->GetId());
+    res->SetDefaultValue(default_value);
     res->m_generic_instance_info = info;
     return res;
 }
 
-SymbolTypePtr_t SymbolType::GenericParameter(const std::string &name)
+SymbolTypePtr_t SymbolType::GenericParameter(const std::string &name, 
+    const SymbolTypePtr_t &substitution)
 {
-    return SymbolTypePtr_t(new SymbolType(name, TYPE_GENERIC_PARAMETER, nullptr));
+    SymbolTypePtr_t res(new SymbolType(name, TYPE_GENERIC_PARAMETER, nullptr));
+    res->m_generic_param_info.m_substitution = substitution;
+    return res;
 }
 
 SymbolTypePtr_t SymbolType::TypePromotion(const SymbolTypePtr_t &lptr, const SymbolTypePtr_t &rptr, bool use_number)

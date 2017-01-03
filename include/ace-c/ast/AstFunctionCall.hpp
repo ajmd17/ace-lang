@@ -29,6 +29,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
@@ -38,6 +39,14 @@ protected:
     std::vector<std::shared_ptr<AstExpression>> m_args;
     SymbolTypePtr_t m_return_type;
     bool m_has_self_object;
+
+    inline Pointer<AstFunctionCall> CloneImpl() const
+    {
+        return Pointer<AstFunctionCall>(
+            new AstFunctionCall(m_name,
+                CloneAllAstNodes(m_args),
+                m_location));
+    }
 };
 
 #endif

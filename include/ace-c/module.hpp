@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 class Module {
 public:
@@ -35,7 +36,10 @@ public:
     Identifier *LookUpIdentifierDepth(const std::string &name, int depth_level);
 
     /** Look up a symbol in this module by name */
-    SymbolTypePtr_t LookupSymbolType(const std::string &name);
+    SymbolTypePtr_t LookupSymbolType(const std::string &name); 
+    /** Look up an instance of a generic type with the given parameters */
+    SymbolTypePtr_t LookupGenericInstance(const SymbolTypePtr_t &base, 
+        const std::vector<SymbolTypePtr_t> &params);
 
     Tree<Scope> m_scopes;
 
@@ -45,6 +49,10 @@ private:
 
     /** A link to where this module exists in the import tree */
     TreeNode<Module*> *m_tree_link;
+
+    SymbolTypePtr_t PerformLookup(
+        std::function<SymbolTypePtr_t(TreeNode<Scope>*)>,
+        std::function<SymbolTypePtr_t(Module *mod)>);
 };
 
 #endif

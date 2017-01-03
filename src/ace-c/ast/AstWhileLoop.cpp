@@ -176,3 +176,8 @@ void AstWhileLoop::Recreate(std::ostringstream &ss)
     m_conditional->Recreate(ss);
     m_block->Recreate(ss);
 }
+
+Pointer<AstStatement> AstWhileLoop::Clone() const
+{
+    return CloneImpl();
+}

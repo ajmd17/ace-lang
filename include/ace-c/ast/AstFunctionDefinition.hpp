@@ -21,9 +21,18 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 protected:
     std::shared_ptr<AstFunctionExpression> m_expr;
+
+    inline Pointer<AstFunctionDefinition> CloneImpl() const
+    {
+        return Pointer<AstFunctionDefinition>(
+            new AstFunctionDefinition(m_name,
+                CloneAstNode(m_expr),
+                m_location));
+    }
 };
 
 #endif

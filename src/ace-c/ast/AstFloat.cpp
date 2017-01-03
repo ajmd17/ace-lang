@@ -32,6 +32,11 @@ void AstFloat::Recreate(std::ostringstream &ss)
     ss << m_value;
 }
 
+Pointer<AstStatement> AstFloat::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstFloat::IsTrue() const
 {
     // any non-zero value is considered true

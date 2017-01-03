@@ -9,6 +9,7 @@ public:
 
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool IsNumber() const override;
@@ -45,6 +46,13 @@ public:
     virtual std::shared_ptr<AstConstant> operator-() const override;
     virtual std::shared_ptr<AstConstant> operator~() const override;
     virtual std::shared_ptr<AstConstant> operator!() const override;
+
+private:
+    inline Pointer<AstTrue> CloneImpl() const
+    {
+        return Pointer<AstTrue>(new AstTrue(
+            m_location));
+    }
 };
 
 #endif

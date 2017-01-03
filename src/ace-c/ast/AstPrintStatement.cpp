@@ -60,3 +60,8 @@ void AstPrintStatement::Recreate(std::ostringstream &ss)
         }
     }
 }
+
+Pointer<AstStatement> AstPrintStatement::Clone() const
+{
+    return CloneImpl();
+}

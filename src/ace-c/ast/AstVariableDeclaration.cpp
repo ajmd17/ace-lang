@@ -7,6 +7,7 @@
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
+#include <common/utf8.hpp>
 
 #include <iostream>
 
@@ -25,7 +26,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     SymbolTypePtr_t symbol_type;
 
-    if (m_type_specification == nullptr && m_assignment == nullptr) {
+    if (!m_type_specification && !m_assignment) {
         // error; requires either type, or assignment.
         visitor->GetCompilationUnit()->GetErrorList().AddError(
             CompilerError(Level_fatal, Msg_missing_type_and_assignment, m_location, m_name));
@@ -44,7 +45,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             symbol_type = m_type_specification->GetSymbolType();
 
             // if no assignment provided, set the assignment to be the default value of the provided type
-            if (m_assignment == nullptr && symbol_type != nullptr) {
+            if (!m_assignment && symbol_type) {
                 // Assign variable to the default value for the specified type.
                 m_assignment = symbol_type->GetDefaultValue();
                 // built-in assignment, turn off strict mode
@@ -109,6 +110,7 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
         // get current stack size
         int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         // set identifier stack location
+        utf::cout << "`" << m_name.c_str() << "` location = " << stack_location << "\n";
         m_identifier->SetStackLocation(stack_location);
 
         m_assignment->Build(visitor, mod);
@@ -150,4 +152,9 @@ void AstVariableDeclaration::Recreate(std::ostringstream &ss)
     } else {
         ss << m_name << "=??";
     }
+}
+
+Pointer<AstStatement> AstVariableDeclaration::Clone() const
+{
+    return CloneImpl();
 }

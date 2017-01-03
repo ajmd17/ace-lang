@@ -22,6 +22,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
@@ -34,6 +35,14 @@ private:
     std::vector<SymbolTypePtr_t> m_part_object_types;
     AccessMode m_access_mode;
     bool m_side_effects;
+
+    inline Pointer<AstMemberAccess> CloneImpl() const
+    {
+        return Pointer<AstMemberAccess>(new AstMemberAccess(
+            CloneAstNode(m_target),
+            CloneAllAstNodes(m_parts),
+            m_location));
+    }
 };
 
 #endif

@@ -184,12 +184,9 @@ void AstUnaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 
     if (m_op == &Operator::operator_positive) {
         m_folded = true;
-    } else {
-        auto constant_value = ConstantFold(m_target, m_op, visitor);
-        if (constant_value != nullptr) {
-            m_target = constant_value;
-            m_folded = true;
-        }
+    } else if (auto constant_value = ConstantFold(m_target, m_op, visitor)) {
+        m_target = constant_value;
+        m_folded = true;
     }
 }
 
@@ -200,6 +197,11 @@ void AstUnaryExpression::Recreate(std::ostringstream &ss)
         ss << m_op->ToString();
     }
     m_target->Recreate(ss);
+}
+
+Pointer<AstStatement> AstUnaryExpression::Clone() const
+{
+    return CloneImpl();
 }
 
 int AstUnaryExpression::IsTrue() const

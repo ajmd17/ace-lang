@@ -36,7 +36,6 @@
 #include <ace-c/ast/AstPrintStatement.hpp>
 #include <ace-c/ast/AstTryCatch.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
-#include <ace-c/ast/AstTypeContract.hpp>
 #include <ace-c/ast/AstReturnStatement.hpp>
 
 #include <string>

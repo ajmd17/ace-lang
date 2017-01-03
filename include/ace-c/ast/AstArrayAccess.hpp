@@ -1,6 +1,6 @@
 #ifndef AST_ARRAY_ACCESS_HPP
 #define AST_ARRAY_ACCESS_HPP
-\
+
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/enums.hpp>
 
@@ -22,6 +22,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
@@ -31,6 +32,15 @@ private:
     std::shared_ptr<AstExpression> m_target;
     std::shared_ptr<AstExpression> m_index;
     AccessMode m_access_mode;
+
+    inline std::shared_ptr<AstArrayAccess> CloneImpl() const
+    {
+        return std::shared_ptr<AstArrayAccess>(
+            new AstArrayAccess(
+                CloneAstNode(m_target),
+                CloneAstNode(m_index),
+                m_location));
+    }
 };
 
 #endif

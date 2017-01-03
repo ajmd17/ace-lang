@@ -788,6 +788,11 @@ void AstBinaryExpression::Recreate(std::ostringstream &ss)
     }
 }
 
+Pointer<AstStatement> AstBinaryExpression::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstBinaryExpression::IsTrue() const
 {
     if (m_member_access != nullptr) {

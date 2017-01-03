@@ -9,6 +9,9 @@
 
 class AstModuleDeclaration : public AstDeclaration {
 public:
+    AstModuleDeclaration(const std::string &name, 
+        const std::vector<std::shared_ptr<AstStatement>> &children,
+        const SourceLocation &location);
     AstModuleDeclaration(const std::string &name, const SourceLocation &location);
 
     inline void AddChild(const std::shared_ptr<AstStatement> &child) { m_children.push_back(child); }
@@ -23,10 +26,19 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 private:
     std::vector<std::shared_ptr<AstStatement>> m_children;
     std::shared_ptr<Module> m_module;
+
+    inline Pointer<AstModuleDeclaration> CloneImpl() const
+    {
+        return Pointer<AstModuleDeclaration>(new AstModuleDeclaration(
+            m_name, 
+            CloneAllAstNodes(m_children), 
+            m_location));
+    }
 };
 
 #endif

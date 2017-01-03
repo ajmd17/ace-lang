@@ -19,6 +19,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     inline const SymbolTypePtr_t &GetSymbolType() const { return m_symbol_type; }
 
@@ -32,6 +33,15 @@ private:
 
     /** Is module access chained */
     bool m_is_chained;
+
+    inline Pointer<AstTypeSpecification> CloneImpl() const
+    {
+        return Pointer<AstTypeSpecification>(new AstTypeSpecification(
+            m_left,
+            CloneAllAstNodes(m_generic_params),
+            CloneAstNode(m_right),
+            m_location));
+    }
 };
 
 #endif

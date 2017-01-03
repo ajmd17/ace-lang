@@ -26,6 +26,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
@@ -38,6 +39,14 @@ private:
     // is this module access chained to another before it?
     bool m_is_chained;
     bool m_looked_up;
+
+    inline Pointer<AstModuleAccess> CloneImpl() const
+    {
+        return Pointer<AstModuleAccess>(new AstModuleAccess(
+            m_target,
+            CloneAstNode(m_expr),
+            m_location));
+    }
 };
 
 #endif

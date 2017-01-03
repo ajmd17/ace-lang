@@ -18,6 +18,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override = 0;
+    virtual Pointer<AstStatement> Clone() const override = 0;
 
 protected:
     /** The AST iterator that will be used by the imported module */

@@ -17,9 +17,17 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 private:
     std::vector<std::shared_ptr<AstExpression>> m_arguments;
+
+    inline Pointer<AstPrintStatement> CloneImpl() const
+    {
+        return Pointer<AstPrintStatement>(new AstPrintStatement(
+            CloneAllAstNodes(m_arguments),
+            m_location));
+    }
 };
 
 #endif

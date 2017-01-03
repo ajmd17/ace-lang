@@ -140,3 +140,8 @@ void AstLocalImport::Recreate(std::ostringstream &ss)
     Minifier minifier(&m_ast_iterator);
     minifier.Minify(ss);
 }
+
+Pointer<AstStatement> AstLocalImport::Clone() const
+{
+    return CloneImpl();
+}

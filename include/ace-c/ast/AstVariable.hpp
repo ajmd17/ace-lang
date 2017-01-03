@@ -12,9 +12,18 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
+
+private:
+    inline Pointer<AstVariable> CloneImpl() const
+    {
+        return Pointer<AstVariable>(new AstVariable(
+            m_name,
+            m_location));
+    }
 };
 
 #endif

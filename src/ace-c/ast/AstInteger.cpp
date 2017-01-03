@@ -33,6 +33,11 @@ void AstInteger::Recreate(std::ostringstream &ss)
     ss << m_value;
 }
 
+Pointer<AstStatement> AstInteger::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstInteger::IsTrue() const
 {
     // any non-zero value is considered true

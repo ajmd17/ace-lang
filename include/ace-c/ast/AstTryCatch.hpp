@@ -18,10 +18,19 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 private:
     std::shared_ptr<AstBlock> m_try_block;
     std::shared_ptr<AstBlock> m_catch_block;
+
+    inline Pointer<AstTryCatch> CloneImpl() const
+    {
+        return Pointer<AstTryCatch>(new AstTryCatch(
+            CloneAstNode(m_try_block),
+            CloneAstNode(m_catch_block),
+            m_location));
+    }
 };
 
 #endif

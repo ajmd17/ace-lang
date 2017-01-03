@@ -162,6 +162,11 @@ void AstArrayExpression::Recreate(std::ostringstream &ss)
     ss << "]";
 }
 
+std::shared_ptr<AstStatement> AstArrayExpression::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstArrayExpression::IsTrue() const
 {
     return 1;

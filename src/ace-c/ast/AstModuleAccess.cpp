@@ -86,6 +86,11 @@ void AstModuleAccess::Recreate(std::ostringstream &ss)
     m_expr->Recreate(ss);
 }
 
+Pointer<AstStatement> AstModuleAccess::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstModuleAccess::IsTrue() const
 {
     return m_expr->IsTrue();

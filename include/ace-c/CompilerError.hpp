@@ -33,6 +33,7 @@ enum ErrorMessage {
     Msg_argument_after_varargs,
     Msg_too_many_args,
     Msg_too_few_args,
+    Msg_arg_type_incompatible,
     Msg_redeclared_identifier,
     Msg_redeclared_identifier_module,
     Msg_redeclared_identifier_type,
@@ -62,6 +63,7 @@ enum ErrorMessage {
     Msg_mismatched_types,
     Msg_type_not_generic,
     Msg_generic_parameters_missing,
+    Msg_generic_parameter_redeclared,
     Msg_not_a_data_member,
 
     Msg_bitwise_operands_must_be_int,

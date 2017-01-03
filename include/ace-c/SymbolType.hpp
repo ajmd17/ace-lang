@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <tuple>
 
 // forward declaration
 class SymbolType;
@@ -13,7 +14,7 @@ class AstExpression;
 
 typedef std::shared_ptr<SymbolType> SymbolTypePtr_t;
 typedef std::weak_ptr<SymbolType> SymbolTypeWeakPtr_t;
-typedef std::pair<std::string, SymbolTypePtr_t> SymbolMember_t;
+typedef std::tuple<std::string, SymbolTypePtr_t, std::shared_ptr<AstExpression>> SymbolMember_t;
 
 enum SymbolTypeClass {
     TYPE_BUILTIN,
@@ -44,6 +45,10 @@ struct GenericInstanceTypeInfo {
     std::vector<SymbolTypePtr_t> m_param_types;
 };
 
+struct GenericParameterTypeInfo {
+    SymbolTypeWeakPtr_t m_substitution;
+};
+
 class SymbolType {
 public:
     struct Builtin {
@@ -69,7 +74,6 @@ public:
         const SymbolTypePtr_t &base);
 
     static SymbolTypePtr_t Object(const std::string &name,
-        const std::shared_ptr<AstExpression> &default_value,
         const std::vector<SymbolMember_t> &members);
 
     /** A generic type template. Members may have the type class TYPE_GENERIC_PARAMETER.
@@ -83,7 +87,8 @@ public:
     static SymbolTypePtr_t GenericInstance(const SymbolTypePtr_t &base,
         const GenericInstanceTypeInfo &info);
 
-    static SymbolTypePtr_t GenericParameter(const std::string &name);
+    static SymbolTypePtr_t GenericParameter(const std::string &name, 
+        const SymbolTypePtr_t &substitution);
 
     static SymbolTypePtr_t TypePromotion(const SymbolTypePtr_t &lptr, const SymbolTypePtr_t &rptr, bool use_number);
 
@@ -115,6 +120,9 @@ public:
     inline GenericInstanceTypeInfo &GetGenericInstanceInfo() { return m_generic_instance_info; }
     inline const GenericInstanceTypeInfo &GetGenericInstanceInfo() const { return m_generic_instance_info; }
 
+    inline GenericParameterTypeInfo &GetGenericParameterInfo() { return m_generic_param_info; }
+    inline const GenericParameterTypeInfo &GetGenericParameterInfo() const { return m_generic_param_info; }
+
     inline int GetId() const { return m_id; }
     inline void SetId(int id) { m_id = id; }
 
@@ -142,6 +150,8 @@ private:
     GenericTypeInfo m_generic_info;
     // if this is an instance of a generic type
     GenericInstanceTypeInfo m_generic_instance_info;
+    // if this is a generic param
+    GenericParameterTypeInfo m_generic_param_info;
 
     int m_id;
 };

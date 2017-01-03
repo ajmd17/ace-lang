@@ -9,6 +9,7 @@ public:
 
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool IsNumber() const override;
@@ -48,6 +49,11 @@ public:
 
 private:
     a_float m_value;
+
+    inline Pointer<AstFloat> CloneImpl() const
+    {
+        return Pointer<AstFloat>(new AstFloat(m_value, m_location));
+    }
 };
 
 #endif

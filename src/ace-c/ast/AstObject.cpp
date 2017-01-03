@@ -5,6 +5,7 @@
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
+#include <common/utf8.hpp>
 
 #include <iostream>
 
@@ -58,10 +59,10 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     // for each data member, load the default value
     int i = 0;
     for (const auto &dm : sp->GetMembers()) {
-        ASSERT(dm.second != nullptr);
-        ASSERT(dm.second->GetDefaultValue() != nullptr);
+        ASSERT(std::get<1>(dm) != nullptr);
+        ASSERT(std::get<1>(dm)->GetDefaultValue() != nullptr);
 
-        if (!dm.second->GetDefaultValue()->MayHaveSideEffects()) {
+        if (!std::get<1>(dm)->GetDefaultValue()->MayHaveSideEffects()) {
             // the member is a record type, and there is no chance of the 
             // register being overwritten,  so just load the type from obj_reg
 
@@ -70,8 +71,14 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             // get active register
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-            // load the data member's default value.
-            dm.second->GetDefaultValue()->Build(visitor, mod);
+            // if there has not been an assignment provided,
+            // use the default value of the members's type.
+            if (std::get<2>(dm)) {
+                std::get<2>(dm)->Build(visitor, mod);
+            } else {
+                // load the data member's default value.
+                std::get<1>(dm)->GetDefaultValue()->Build(visitor, mod);
+            }
 
             // get active register
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -83,8 +90,14 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             // from stack memory into a register /after/ loading the
             // data member.
 
-            // build the data member
-            dm.second->GetDefaultValue()->Build(visitor, mod);
+            // if there has not been an assignment provided,
+            // use the default value of the members's type.
+            if (std::get<2>(dm)) {
+                std::get<2>(dm)->Build(visitor, mod);
+            } else {
+                // load the data member's default value.
+                std::get<1>(dm)->GetDefaultValue()->Build(visitor, mod);
+            }
 
             // claim register for the data member
             visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
@@ -141,6 +154,44 @@ void AstObject::Optimize(AstVisitor *visitor, Module *mod)
 void AstObject::Recreate(std::ostringstream &ss)
 {
     ss << "??";
+}
+
+/*void AstObject::SubstituteGenerics(AstVisitor *visitor, Module *mod, 
+    const SymbolTypePtr_t &instance)
+{
+    if (auto sp = m_symbol_type.lock()) {
+        if (sp->GetTypeClass() == TYPE_GENERIC_PARAMETER) {
+            // substitute generic parameter
+            auto base = instance->GetBaseType();
+            ASSERT(base != nullptr);
+            ASSERT(base->GetTypeClass() == TYPE_GENERIC);
+            ASSERT(base->GetGenericInfo().m_params.size() == 
+                sp->GetGenericInstanceInfo().m_param_types.size());
+
+            size_t index = 0;
+            bool type_found = false;
+
+            for (auto &base_param : base->GetGenericInfo().m_params) {
+                ASSERT(base_param != nullptr);
+
+                if (base_param->GetName() == sp->GetName()) {
+                    // substitute in supplied type
+                    m_symbol_type = sp->GetGenericInstanceInfo().m_param_types[index];
+                    type_found = true;
+                    break;
+                }
+
+                index++;
+            }
+
+            ASSERT(type_found);
+        }
+    }
+}*/
+
+Pointer<AstStatement> AstObject::Clone() const
+{
+    return CloneImpl();
 }
 
 int AstObject::IsTrue() const

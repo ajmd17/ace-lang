@@ -122,6 +122,11 @@ void AstArrayAccess::Recreate(std::ostringstream &ss)
     ss << "]";
 }
 
+Pointer<AstStatement> AstArrayAccess::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstArrayAccess::IsTrue() const
 {
     return -1;

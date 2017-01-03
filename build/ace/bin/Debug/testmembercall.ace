@@ -1,0 +1,17 @@
+module testmembercall {
+	//sayhi:Function = (me) {
+	//	print "hello from glbl"
+	//}
+
+	type Test {
+		sayhi = () {
+			print "hello world"
+		}
+	}
+	
+	test: Test
+	test.sayhi()
+	
+	test2: Any = test
+	test2.sayhi()
+}

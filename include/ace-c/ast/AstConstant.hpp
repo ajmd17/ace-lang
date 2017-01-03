@@ -13,6 +13,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override = 0;
+    virtual Pointer<AstStatement> Clone() const override = 0;
 
     virtual int IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override;

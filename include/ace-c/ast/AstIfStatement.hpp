@@ -19,11 +19,21 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 private:
     std::shared_ptr<AstExpression> m_conditional;
     std::shared_ptr<AstBlock> m_block;
     std::shared_ptr<AstBlock> m_else_block;
+
+    inline Pointer<AstIfStatement> CloneImpl() const
+    {
+        return Pointer<AstIfStatement>(new AstIfStatement(
+            CloneAstNode(m_conditional),
+            CloneAstNode(m_block),
+            CloneAstNode(m_else_block),
+            m_location));
+    }
 };
 
 #endif

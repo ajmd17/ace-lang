@@ -63,3 +63,8 @@ void AstFunctionDefinition::Recreate(std::ostringstream &ss)
     ss << m_name << "=";
     m_expr->Recreate(ss);
 }
+
+Pointer<AstStatement> AstFunctionDefinition::Clone() const
+{
+    return CloneImpl();
+}

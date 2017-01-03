@@ -16,6 +16,7 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
@@ -25,6 +26,14 @@ private:
     std::shared_ptr<AstExpression> m_target;
     const Operator *m_op;
     bool m_folded;
+
+    inline Pointer<AstUnaryExpression> CloneImpl() const
+    {
+        return Pointer<AstUnaryExpression>(new AstUnaryExpression(
+            CloneAstNode(m_target),
+            m_op,
+            m_location));
+    }
 };
 
 #endif

@@ -9,6 +9,7 @@
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
+#include <common/utf8.hpp>
 
 #include <vector>
 
@@ -226,6 +227,11 @@ void AstFunctionExpression::Recreate(std::ostringstream &ss)
     if (m_block) {
         m_block->Recreate(ss);
     }
+}
+
+Pointer<AstStatement> AstFunctionExpression::Clone() const
+{
+    return CloneImpl();
 }
 
 int AstFunctionExpression::IsTrue() const

@@ -69,21 +69,45 @@ Identifier *Module::LookUpIdentifierDepth(const std::string &name, int depth_lev
 
 SymbolTypePtr_t Module::LookupSymbolType(const std::string &name)
 {
+    return PerformLookup(
+    [&name](TreeNode<Scope> *top) {
+        return top->m_value.GetIdentifierTable().LookupSymbolType(name);
+    },
+    [&name](Module *mod) {
+        return mod->LookupSymbolType(name);
+    });
+}
+
+SymbolTypePtr_t Module::LookupGenericInstance(const SymbolTypePtr_t &base,
+    const std::vector<SymbolTypePtr_t> &params)
+{
+    return PerformLookup(
+    [&base, &params](TreeNode<Scope> *top) {
+        return top->m_value.GetIdentifierTable().LookupGenericInstance(base, params);
+    },
+    [&base, &params](Module *mod) {
+        return mod->LookupGenericInstance(base, params);
+    });
+}
+
+SymbolTypePtr_t Module::PerformLookup(
+    std::function<SymbolTypePtr_t(TreeNode<Scope>*)> pred1,
+    std::function<SymbolTypePtr_t(Module *mod)> pred2)
+{
     TreeNode<Scope> *top = m_scopes.TopNode();
 
     while (top) {
-        if (SymbolTypePtr_t result = top->m_value.GetIdentifierTable().LookupSymbolType(name)) {
+        if (SymbolTypePtr_t result = pred1(top)) {
             // a result was found
             return result;
         }
-
         top = top->m_parent;
     }
 
     if (m_tree_link && m_tree_link->m_parent) {
         if (Module *other = m_tree_link->m_parent->m_value) {
             if (other->GetLocation().GetFileName() == m_location.GetFileName()) {
-                return other->LookupSymbolType(name);
+                return pred2(other);
             } else {
                 // we are outside of file scope, so loop until root/global module found
                 auto *link = m_tree_link->m_parent;
@@ -95,7 +119,7 @@ SymbolTypePtr_t Module::LookupSymbolType(const std::string &name)
                 ASSERT(link->m_value != nullptr);
                 ASSERT(link->m_value->GetName() == ace::compiler::Config::GLOBAL_MODULE_NAME);
 
-                return link->m_value->LookupSymbolType(name);
+                return pred2(link->m_value);
             }
         }
     }

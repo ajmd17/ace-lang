@@ -5,6 +5,14 @@
 #include <common/my_assert.hpp>
 #include <common/str_util.hpp>
 
+AstModuleDeclaration::AstModuleDeclaration(const std::string &name,
+    const std::vector<std::shared_ptr<AstStatement>> &children,
+    const SourceLocation &location)
+    : AstDeclaration(name, location),
+      m_children(children)
+{
+}
+
 AstModuleDeclaration::AstModuleDeclaration(const std::string &name, const SourceLocation &location)
     : AstDeclaration(name, location)
 {
@@ -108,4 +116,9 @@ void AstModuleDeclaration::Recreate(std::ostringstream &ss)
     }
 
     ss << "}";
+}
+
+Pointer<AstStatement> AstModuleDeclaration::Clone() const
+{
+    return CloneImpl();
 }

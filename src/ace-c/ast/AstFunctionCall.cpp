@@ -1,5 +1,4 @@
 #include <ace-c/ast/AstFunctionCall.hpp>
-#include <ace-c/ast/AstTypeContract.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/emit/Instruction.hpp>
@@ -64,9 +63,21 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
                     if (base == SymbolType::Builtin::FUNCTION) {
                         if (identifier_type->GetGenericInstanceInfo().m_param_types.size() == m_args.size() + 1) {
                             for (int i = 0; i < m_args.size(); i++) {
-                                auto param_type = identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
+                                SymbolTypePtr_t arg_type =
+                                    m_args[i]->GetSymbolType();
+
+                                const SymbolTypePtr_t &param_type = 
+                                    identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
+
+                                ASSERT(arg_type != nullptr);
+                                ASSERT(param_type != nullptr);
                                 
-                                // here is where argument types should be matched
+                                // make sure argument types are compatible
+                                if (!param_type->TypeCompatible(*arg_type, false)) {
+                                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                                        CompilerError(Level_fatal, Msg_arg_type_incompatible, 
+                                            m_args[i]->GetLocation(), arg_type->GetName(), param_type->GetName()));
+                                }
                             }
                         }
 
@@ -77,6 +88,10 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
                         break;
                     }
+                } else if (identifier_type == SymbolType::Builtin::FUNCTION) {
+                    // abstract function, allow any params
+                    m_return_type = SymbolType::Builtin::ANY;
+                    break;
                 }
 
 				// not a function type
@@ -196,6 +211,11 @@ void AstFunctionCall::Recreate(std::ostringstream &ss)
         }
     }
     ss << ")";
+}
+
+Pointer<AstStatement> AstFunctionCall::Clone() const
+{
+    return CloneImpl();
 }
 
 int AstFunctionCall::IsTrue() const

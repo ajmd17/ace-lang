@@ -26,6 +26,11 @@ void AstTrue::Recreate(std::ostringstream &ss)
     ss << Keyword::ToString(Keyword_true);
 }
 
+Pointer<AstStatement> AstTrue::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstTrue::IsTrue() const
 {
     return true;

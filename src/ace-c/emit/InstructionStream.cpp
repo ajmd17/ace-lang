@@ -43,7 +43,6 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                 Instruction<uint8_t, uint32_t> store_ins(STORE_STATIC_ADDRESS,
                     so.m_value.lbl + label_offset);
 
-
                 for (auto it = store_ins.m_data.rbegin(); it != store_ins.m_data.rend(); ++it) {
                     os.write(&(*it)[0], it->size());
                 }
@@ -51,9 +50,8 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                 Instruction<uint8_t, uint32_t, const char*> store_ins(STORE_STATIC_STRING,
                     std::strlen(so.m_value.str), so.m_value.str);
 
-
                 for (auto it = store_ins.m_data.rbegin(); it != store_ins.m_data.rend(); ++it) {
-                    os.write(&(*it)[0], it->size());
+                    if (!it->empty()) os.write(&(*it)[0], it->size());
                 }
             } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
                 Instruction<uint8_t, uint32_t, uint8_t> store_ins(STORE_STATIC_FUNCTION,

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\AstIterator.cpp">
@@ -118,9 +118,6 @@
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstFunctionExpression.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstGeneratedExpression.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstIdentifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -143,6 +140,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstModuleDeclaration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstNil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstObject.cpp">
@@ -169,9 +169,6 @@
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTryCatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTypeContract.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstTypeDefinition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -193,9 +190,6 @@
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstVariableDeclaration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstVoid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\ast\AstWhileLoop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -212,9 +206,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\andre\CodeProjects\ace-lang\src\ace-c\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ace-c\ast\AstNil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -339,9 +330,6 @@
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstFunctionExpression.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstGeneratedExpression.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstIdentifier.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -364,6 +352,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstModuleDeclaration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstNil.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstObject.hpp">
@@ -390,9 +381,6 @@
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTryCatch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTypeContract.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstTypeDefinition.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -412,9 +400,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstVariableDeclaration.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstVoid.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\ast\AstWhileLoop.hpp">
@@ -439,9 +424,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\andre\CodeProjects\ace-lang\include\ace-c\typedefs.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ace-c\ast\AstNil.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

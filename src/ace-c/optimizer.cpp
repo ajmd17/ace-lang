@@ -18,7 +18,8 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
             if (expr_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                 // the variable is a const, now we make sure that the current
                 // value is a literal value
-                if (auto *constant = dynamic_cast<AstConstant*>(expr_as_var->GetProperties().GetIdentifier()->GetCurrentValue().get())) {
+                if (auto *constant = dynamic_cast<AstConstant*>(
+                    expr_as_var->GetProperties().GetIdentifier()->GetCurrentValue().get())) {
                     // yay! we were able to retrieve the value that
                     // the variable is set to, so now we can use that
                     // at compile-time rather than using a variable.

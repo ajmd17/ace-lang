@@ -59,6 +59,11 @@ void AstString::Recreate(std::ostringstream &ss)
     ss << "\"";
 }
 
+Pointer<AstStatement> AstString::Clone() const
+{
+    return CloneImpl();
+}
+
 int AstString::IsTrue() const
 {
     // strings evaluate to true

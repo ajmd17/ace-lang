@@ -8,6 +8,8 @@
 
 class AstBlock : public AstStatement {
 public:
+    AstBlock(const std::vector<std::shared_ptr<AstStatement>> &children,
+        const SourceLocation &location);
     AstBlock(const SourceLocation &location);
 
     inline void AddChild(const std::shared_ptr<AstStatement> &stmt) { m_children.push_back(stmt); }
@@ -18,11 +20,18 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 protected:
     std::vector<std::shared_ptr<AstStatement>> m_children;
     int m_num_locals;
     bool m_last_is_return;
+
+    inline Pointer<AstBlock> CloneImpl() const
+    {
+        return std::shared_ptr<AstBlock>(
+            new AstBlock(CloneAllAstNodes(m_children), m_location));
+    }
 };
 
 #endif

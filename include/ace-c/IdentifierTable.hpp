@@ -27,8 +27,11 @@ public:
     Identifier *AddIdentifier(const std::string &name, int flags = 0);
     /** Look up an identifier by name. Returns nullptr if not found */
     Identifier *LookUpIdentifier(const std::string &name);
-
+    /** Look up symbol type by name */
     SymbolTypePtr_t LookupSymbolType(const std::string &name) const;
+    /** Look up an instance of a generic type, with the given parameters*/
+    SymbolTypePtr_t LookupGenericInstance(const SymbolTypePtr_t &base, 
+        const std::vector<SymbolTypePtr_t> &params) const;
     void AddSymbolType(const SymbolTypePtr_t &type);
 
 private:

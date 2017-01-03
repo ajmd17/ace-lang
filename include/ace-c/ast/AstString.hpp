@@ -11,6 +11,7 @@ public:
 
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool IsNumber() const override;
@@ -53,6 +54,13 @@ private:
 
     // set while compiling
     int m_static_id;
+
+    inline Pointer<AstString> CloneImpl() const
+    {
+        return Pointer<AstString>(new AstString(
+            m_value,
+            m_location));
+    }
 };
 
 #endif

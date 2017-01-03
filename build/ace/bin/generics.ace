@@ -1,0 +1,15 @@
+module generics {
+
+    type (T) MyGeneric {
+        printDefaultT = () {
+
+            t: Float
+            print "default t == ", t
+        }
+
+    }
+
+    myGeneric: MyGeneric(Int)
+    myGeneric.printDefaultT()
+
+}

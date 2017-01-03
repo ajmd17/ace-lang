@@ -1,0 +1,135 @@
+module loop {
+	let hello = 'Hello'
+	print "hello == ", hello
+	
+	import 'testimport.ace'
+	
+	print "hello == ", hello
+	
+	docall: Function = (fun: Function) {
+		lol: Function = (arg1) {
+			print "in lol() arg1 == ", arg1
+		}
+	
+		fun(lol)
+	}
+	
+	type (T, J) MyGeneric {
+		name: T
+		sayhi = () {
+			print "hi!!!"
+		}
+	}
+	
+	
+	type (T) Range {
+		start : T
+		end   : T
+		lol   : Int
+		
+		fun = () {
+		    t: T
+			print "t == ", t
+			print "Hi"
+		}
+	}
+	
+	range: Range(Int)
+	range.start = 50
+	range.end   = 1000
+	
+	range.fun()
+	
+	forloop : Function = (the_range: Range(Any)) {
+		let start = the_range.start
+		let end   = the_range.end
+		
+		print 'end - start == ', end - start
+	}
+	
+	forloop(range)
+	
+	myobj: MyGeneric(Int, String)
+	
+	print 'myobj == ', myobj
+	print 'myobj.j == ', myobj.name
+	myobj.sayhi()
+	
+	docall((arg1: Function) {
+		print "arg1 == ", arg1
+		print "hello"
+	})
+	
+	meow: String = docall.to_string()
+	print "meow == ", meow
+	
+	foreach_range: Function = (range, callback: Function) {
+		let start = range.start
+		let end = range.end
+		let increment = 1
+		
+		if start > end {
+			increment = -1
+		}
+		
+		while start != end {
+			callback(start)
+			start += increment
+		}
+	}
+	
+	/*type Range {
+		start = nil
+		end   = nil
+	}*/
+
+	
+	/*type Range(T) {
+		start: T
+		end:   T
+	}*/
+	
+	
+	//print 'myrange = ', myrange
+	//myrange.start = 0
+	//myrange.end = 1000
+	
+	//myrange.foreach_range(func(it) {
+	//	print 'it(1) = ', it
+	//})
+	
+	
+	//myrange.start = 1000
+	//myrange.end = 0
+	
+	//myrange.foreach_range(func(it) {
+	//	print 'it(2) = ', it
+	//})
+
+	/*while i = 10 {
+	  print i
+	}*/
+	
+	//lol = each i in Range(3, 5) where i != 2
+
+	
+	
+	/*io::write(io::stdout, 'fdsfdsjkkf')
+	
+	use io::stdout
+	
+	
+	
+	let x = each i in Range(0, 5) where i != 2
+	
+	
+	for each i in Range(0, 5) where i != 2 {
+	    print i
+	}
+	
+	print each i in 
+	
+	
+	database.push(each i in my_items where i.name != 'ethan')*/
+	
+}

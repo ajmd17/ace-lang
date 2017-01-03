@@ -1,3 +1,0 @@
-module test_import {
-    print "module test_import imported."
-}

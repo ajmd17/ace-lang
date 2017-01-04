@@ -41,12 +41,12 @@ bool AstTrue::IsNumber() const
     return false;
 }
 
-a_int AstTrue::IntValue() const
+ace::aint32 AstTrue::IntValue() const
 {
     return 1;
 }
 
-a_float AstTrue::FloatValue() const
+ace::afloat32 AstTrue::FloatValue() const
 {
     return 1.0f;
 }

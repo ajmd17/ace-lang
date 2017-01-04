@@ -1,0 +1,9 @@
+module functions {
+    // simple function to take 'name' as an input,
+    // and make use of it.
+    say_name: Function = (name) {
+        print "Hello, ", name, "!"
+    }
+
+    say_name("your name here")
+}

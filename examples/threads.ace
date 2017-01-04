@@ -1,0 +1,31 @@
+module threads_example {
+    count_up: Function = () {
+        print "Hello from thread #1, counting to 200"
+
+        i: Int
+        while i < 200 {
+            i += 1
+            print i
+        }
+
+        print "Goodbye from thread #1!"
+    }
+
+    count_down: Function = () {
+        print "Hello from thread #2, counting down from 200"
+
+        i: Int = 200
+        while i {
+            print i
+            i -= 1
+        }
+
+        print "Goodbye from thread #2!"
+    }
+
+
+    spawn_thread(count_up)
+    spawn_thread(count_down)
+
+    print "2 threads done spawning!"
+}

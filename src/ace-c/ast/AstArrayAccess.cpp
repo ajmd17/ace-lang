@@ -34,16 +34,6 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
 
             if (base == SymbolType::Builtin::ARRAY) {
                 is_array = true;
-
-                /*if (target_type->GetGenericInstanceInfo().m_param_types.size() == m_args.size() + 1) {
-                    for (int i = 0; i < m_args.size(); i++) {
-                        auto param_type = identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
-
-                        // here is where argument types should be matched
-                    }
-                }
-
-                m_return_type = identifier_type->GetGenericInstanceInfo().m_param_types[0];*/
             }
         }
 

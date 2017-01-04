@@ -2,7 +2,8 @@
 #define AST_CONSTANT_HPP
 
 #include <ace-c/ast/AstExpression.hpp>
-#include <ace-c/typedefs.hpp>
+
+#include <common/typedefs.hpp>
 
 class AstConstant : public AstExpression {
 public:
@@ -18,8 +19,8 @@ public:
     virtual int IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override;
     virtual bool IsNumber() const = 0;
-    virtual a_int IntValue() const = 0;
-    virtual a_float FloatValue() const = 0;
+    virtual ace::aint32 IntValue() const = 0;
+    virtual ace::afloat32 FloatValue() const = 0;
 
     // Arithmetic operators
     virtual std::shared_ptr<AstConstant> operator+(AstConstant *right) const = 0;

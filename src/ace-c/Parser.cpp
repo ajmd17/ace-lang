@@ -8,7 +8,7 @@
 #include <iostream>
 
 Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream,
-        CompilationUnit *compilation_unit)
+    CompilationUnit *compilation_unit)
     : m_ast_iterator(ast_iterator),
       m_token_stream(token_stream),
       m_compilation_unit(compilation_unit)
@@ -540,7 +540,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
 std::shared_ptr<AstInteger> Parser::ParseIntegerLiteral()
 {
     if (Token token = Expect(TK_INTEGER, true)) {
-        a_int value = (a_int)atoll(token.GetValue().c_str());
+        ace::aint32 value = atoll(token.GetValue().c_str());
         return std::shared_ptr<AstInteger>(
             new AstInteger(value, token.GetLocation()));
     }
@@ -551,7 +551,7 @@ std::shared_ptr<AstInteger> Parser::ParseIntegerLiteral()
 std::shared_ptr<AstFloat> Parser::ParseFloatLiteral()
 {
     if (Token token = Expect(TK_FLOAT, true)) {
-        a_float value = (a_float)atof(token.GetValue().c_str());
+        ace::afloat32 value = atof(token.GetValue().c_str());
         return std::shared_ptr<AstFloat>(
             new AstFloat(value, token.GetLocation()));
     }

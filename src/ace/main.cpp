@@ -772,7 +772,6 @@ int main(int argc, char *argv[])
                 // execute the compiled bytecode file
                 RunBytecodeFile(&vm, out_filename, true);
             }
-            system("pause");
         } else if (mode == DECOMPILE_BYTECODE) {
             ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
         }

@@ -19,20 +19,20 @@ module generics {
     // such as the compiler checking that types are compatible, etc.
 
     example("Boxing a type within a type")
-    
+
     type (BoxedType) BoxedValue {
         value: BoxedType
+        internal_array: Array(BoxedType)
     }
 
     boxed_int: BoxedValue(Int)
     boxed_int.value = 500
     print "boxed_int.value is ", boxed_int.value
+    ss: String =  boxed_int.internal_array
 
     boxed_boolean: BoxedValue(Boolean)
     boxed_boolean.value = true
-    print "boxed_boolean.value is ", boxed_boolean.value
-
-    print ""
+    print "boxed_boolean.value is ", boxed_boolean.value, "\n"
 
     // Here is another simple example, this time with more
     // than one generic parameter type. It allows you to

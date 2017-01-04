@@ -325,6 +325,7 @@ Token Lexer::ReadNumberLiteral()
                 }
             }
         }
+        
         ch = m_source_stream.Peek();
     }
 

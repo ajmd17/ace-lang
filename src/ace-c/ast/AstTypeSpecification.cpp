@@ -89,10 +89,13 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                             for (auto &mem : new_instance->GetMembers()) {
                                 // accept assignment for new member instance
                                 if (auto &mem_assignment = std::get<2>(mem)) {
-                                    // mem_assignment->SubstituteGenerics(visitor, mod, new_instance);
                                     mem_assignment->Visit(visitor, mod);
                                     // update held type to new symbol type
                                     std::get<1>(mem) = mem_assignment->GetSymbolType();
+                                } else if (auto &mem_default = std::get<1>(mem)->GetDefaultValue()) {
+                                    // assignment is null, update default value
+                                    mem_default->Visit(visitor, mod);
+                                    std::get<1>(mem) = mem_default->GetSymbolType();
                                 }
                             }
 

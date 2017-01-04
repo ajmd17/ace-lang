@@ -2,29 +2,14 @@
 #define VALUE_HPP
 
 #include <ace-vm/HeapValue.hpp>
-#include <ace-sdk/ace-sdk.hpp>
 
+#include <common/typedefs.hpp>
 #include <common/utf8.hpp>
 
 #include <stdexcept>
-#include <cstdint>
 
 namespace ace {
 namespace vm {
-
-// forward declarations
-struct Value;
-struct VMState;
-struct ExecutionThread;
-
-// native typedefs
-typedef void(*NativeFunctionPtr_t)(ace::sdk::Params);
-typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, Value*);
-
-typedef int32_t aint32;
-typedef int64_t aint64;
-typedef float   afloat32;
-typedef double  afloat64;
 
 struct Value {
     union ValueData {

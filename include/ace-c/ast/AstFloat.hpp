@@ -5,7 +5,7 @@
 
 class AstFloat : public AstConstant {
 public:
-    AstFloat(a_float value, const SourceLocation &location);
+    AstFloat(ace::afloat32 value, const SourceLocation &location);
 
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
@@ -13,8 +13,8 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool IsNumber() const override;
-    virtual a_int IntValue() const override;
-    virtual a_float FloatValue() const override;
+    virtual ace::aint32 IntValue() const override;
+    virtual ace::afloat32 FloatValue() const override;
     virtual SymbolTypePtr_t GetSymbolType() const override;
 
     // Arithmetic operators
@@ -48,7 +48,7 @@ public:
     virtual std::shared_ptr<AstConstant> operator!() const override;
 
 private:
-    a_float m_value;
+    ace::afloat32 m_value;
 
     inline Pointer<AstFloat> CloneImpl() const
     {

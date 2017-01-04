@@ -12,7 +12,7 @@
 #include <limits>
 #include <cmath>
 
-AstFloat::AstFloat(a_float value, const SourceLocation &location)
+AstFloat::AstFloat(ace::afloat32 value, const SourceLocation &location)
     : AstConstant(location),
       m_value(value)
 {
@@ -48,12 +48,12 @@ bool AstFloat::IsNumber() const
     return true;
 }
 
-a_int AstFloat::IntValue() const
+ace::aint32 AstFloat::IntValue() const
 {
-    return static_cast<a_int>(m_value);
+    return (ace::aint32)m_value;
 }
 
-a_float AstFloat::FloatValue() const
+ace::afloat32 AstFloat::FloatValue() const
 {
     return m_value;
 }
@@ -96,7 +96,7 @@ std::shared_ptr<AstConstant> AstFloat::operator/(AstConstant *right) const
         return nullptr;
     }
 
-    a_float right_float = right->FloatValue();
+    auto right_float = right->FloatValue();
     if (right_float == 0.0) {
         // division by zero
         return nullptr;
@@ -110,7 +110,7 @@ std::shared_ptr<AstConstant> AstFloat::operator%(AstConstant *right) const
         return nullptr;
     }
 
-    a_float right_float = right->FloatValue();
+    auto right_float = right->FloatValue();
     if (right_float == 0.0) {
         // division by zero
         return nullptr;

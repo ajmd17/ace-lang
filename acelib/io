@@ -6,7 +6,7 @@ module io {
     stdout: Any
     
     module _Detail_ {
-        lib = runtime::load_library('lib/libace-runtime.so')
+        lib: Any = runtime::load_library('lib/libace-runtime.dylib')
 
         // file
         io::open = runtime::load_function(lib,'io_open')

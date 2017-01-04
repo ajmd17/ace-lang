@@ -6,6 +6,57 @@
 
 #include <common/my_assert.hpp>
 
+std::shared_ptr<AstConstant> Optimizer::ConstantFold(std::shared_ptr<AstExpression> &left,
+    std::shared_ptr<AstExpression> &right, const Operator *oper, AstVisitor *visitor)
+{
+    AstConstant *left_as_constant  = dynamic_cast<AstConstant*>(left.get());
+    AstConstant *right_as_constant = dynamic_cast<AstConstant*>(right.get());
+
+    std::shared_ptr<AstConstant> result;
+
+    if (left_as_constant != nullptr && right_as_constant != nullptr) {
+        // perform operations on these constants
+        if (oper == &Operator::operator_add) {
+            result = (*left_as_constant) + right_as_constant;
+        } else if (oper == &Operator::operator_subtract) {
+            result = (*left_as_constant) - right_as_constant;
+        } else if (oper == &Operator::operator_multiply) {
+            result = (*left_as_constant) * right_as_constant;
+        } else if (oper == &Operator::operator_divide) {
+            result = (*left_as_constant) / right_as_constant;
+        } else if (oper == &Operator::operator_modulus) {
+            result = (*left_as_constant) % right_as_constant;
+        } else if (oper == &Operator::operator_bitwise_xor) {
+            result = (*left_as_constant) ^ right_as_constant;
+        } else if (oper == &Operator::operator_bitwise_and) {
+            result = (*left_as_constant) & right_as_constant;
+        } else if (oper == &Operator::operator_bitshift_left) {
+            result = (*left_as_constant) << right_as_constant;
+        } else if (oper == &Operator::operator_bitshift_right) {
+            result = (*left_as_constant) >> right_as_constant;
+        } else if (oper == &Operator::operator_logical_and) {
+            result = (*left_as_constant) && right_as_constant;
+        } else if (oper == &Operator::operator_logical_or) {
+            result = (*left_as_constant) || right_as_constant;
+        } else if (oper == &Operator::operator_less) {
+            result = (*left_as_constant) < right_as_constant;
+        } else if (oper == &Operator::operator_greater) {
+            result = (*left_as_constant) > right_as_constant;
+        } else if (oper == &Operator::operator_less_eql) {
+            result = (*left_as_constant) <= right_as_constant;
+        } else if (oper == &Operator::operator_greater_eql) {
+            result = (*left_as_constant) >= right_as_constant;
+        } else if (oper == &Operator::operator_equals) {
+            result = left_as_constant->Equals(right_as_constant);
+        }
+        // don't have to worry about assignment operations,
+        // because at this point both sides are const and literal.
+    }
+
+    // one or both of the sides are not a constant
+    return result;
+}
+
 void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor, Module *mod)
 {
     ASSERT(expr != nullptr);

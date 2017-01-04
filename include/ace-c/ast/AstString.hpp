@@ -15,8 +15,8 @@ public:
 
     virtual int IsTrue() const override;
     virtual bool IsNumber() const override;
-    virtual a_int IntValue() const override;
-    virtual a_float FloatValue() const override;
+    virtual ace::aint32 IntValue() const override;
+    virtual ace::afloat32 FloatValue() const override;
     virtual SymbolTypePtr_t GetSymbolType() const override;
 
     // Arithmetic operators

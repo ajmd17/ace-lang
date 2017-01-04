@@ -13,7 +13,7 @@
 #include <limits>
 #include <cmath>
 
-AstInteger::AstInteger(a_int value, const SourceLocation &location)
+AstInteger::AstInteger(ace::aint32 value, const SourceLocation &location)
     : AstConstant(location),
       m_value(value)
 {
@@ -49,14 +49,14 @@ bool AstInteger::IsNumber() const
     return true;
 }
 
-a_int AstInteger::IntValue() const
+ace::aint32 AstInteger::IntValue() const
 {
     return m_value;
 }
 
-a_float AstInteger::FloatValue() const
+ace::afloat32 AstInteger::FloatValue() const
 {
-    return static_cast<a_float>(m_value);
+    return (ace::afloat32)m_value;
 }
 
 SymbolTypePtr_t AstInteger::GetSymbolType() const
@@ -71,7 +71,7 @@ std::shared_ptr<AstConstant> AstInteger::operator+(AstConstant *right) const
     }
 
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right)) {
         return std::shared_ptr<AstFloat>(
             new AstFloat(FloatValue() + right->FloatValue(), m_location));
     } else {
@@ -87,7 +87,7 @@ std::shared_ptr<AstConstant> AstInteger::operator-(AstConstant *right) const
     }
 
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right)) {
         return std::shared_ptr<AstFloat>(
             new AstFloat(FloatValue() - right->FloatValue(), m_location));
     } else {
@@ -103,7 +103,7 @@ std::shared_ptr<AstConstant> AstInteger::operator*(AstConstant *right) const
     }
 
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
+    if (dynamic_cast<const AstFloat*>(right)) {
         return std::shared_ptr<AstFloat>(
             new AstFloat(FloatValue() * right->FloatValue(), m_location));
     } else {
@@ -119,9 +119,9 @@ std::shared_ptr<AstConstant> AstInteger::operator/(AstConstant *right) const
     }
 
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
-        a_float result;
-        a_float right_float = right->FloatValue();
+    if (dynamic_cast<const AstFloat*>(right)) {
+        ace::afloat32 result;
+        auto right_float = right->FloatValue();
         if (right_float == 0.0) {
             // division by zero, return Undefined
             return nullptr;
@@ -131,7 +131,7 @@ std::shared_ptr<AstConstant> AstInteger::operator/(AstConstant *right) const
         return std::shared_ptr<AstFloat>(
             new AstFloat(result, m_location));
     } else {
-        a_int right_int = right->IntValue();
+        auto right_int = right->IntValue();
         if (right_int == 0) {
             // division by zero, return Undefined
             return nullptr;
@@ -149,9 +149,9 @@ std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
     }
 
     // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right) != nullptr) {
-        a_float result;
-        a_float right_float = right->FloatValue();
+    if (dynamic_cast<const AstFloat*>(right)) {
+        ace::afloat32 result;
+        auto right_float = right->FloatValue();
         if (right_float == 0.0) {
             // division by zero, return Undefined
             return nullptr;
@@ -161,7 +161,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
         return std::shared_ptr<AstFloat>(
             new AstFloat(result, m_location));
     } else {
-        a_int right_int = right->IntValue();
+        auto right_int = right->IntValue();
         if (right_int == 0) {
             // division by zero, return Undefined
             return nullptr;

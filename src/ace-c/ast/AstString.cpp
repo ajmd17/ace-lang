@@ -75,13 +75,13 @@ bool AstString::IsNumber() const
     return false;
 }
 
-a_int AstString::IntValue() const
+ace::aint32 AstString::IntValue() const
 {
     // not valid
     return 0;
 }
 
-a_float AstString::FloatValue() const
+ace::afloat32 AstString::FloatValue() const
 {
     // not valid
     return 0.0f;

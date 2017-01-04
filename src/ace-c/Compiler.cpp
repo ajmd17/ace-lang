@@ -1,10 +1,212 @@
 #include <ace-c/Compiler.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstFunctionCall.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
+
+void Compiler::LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
+{
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(LOAD_MEM_HASH, rp, rp, hash);
+}
+
+void Compiler::LoadMemberFromHashAndCall(AstVisitor *visitor, Module *mod,
+    AstFunctionCall *field_as_call, uint32_t hash)
+{
+    uint8_t rp;
+
+    int stack_size_before = 0;
+
+    // push args
+    int nargs = field_as_call->GetArguments().size();
+    bool args_side_effects = false;
+
+    // check if any args have side effects
+    for (auto &arg : field_as_call->GetArguments()) {
+        if (arg->MayHaveSideEffects()) {
+            args_side_effects = true;
+            break;
+        }
+    }
+
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // load data member.
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+       Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(LOAD_MEM_HASH, rp, rp, hash);
+
+    if (!args_side_effects) {
+        // claim register for the loaded member
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+    } else {
+        // we have to push the member to the stack
+
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(PUSH, rp);
+
+        stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+    }
+
+    field_as_call->BuildArgumentsStart(visitor, mod);
+
+    if (!args_side_effects) {
+        // unclaim register for the member
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+    } else {
+        // get register usage
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // load from stack
+        int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        // we add nargs because the stack size would have increased by pushing the arguments
+        int diff = stack_size_after - stack_size_before + nargs;
+
+        ASSERT(diff == nargs + 1);
+
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
+    }
+
+    // invoke the member
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t>(CALL, rp, (uint8_t)nargs);
+
+    // pop args
+    field_as_call->BuildArgumentsEnd(visitor, mod);
+
+    // pop the member from the stack
+    if (args_side_effects) {
+        // pop from stack
+        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
+
+        // decrement stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+    }
+}
+
+void Compiler::LoadMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index)
+{
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(LOAD_MEM, rp, rp, (uint8_t)dm_index);
+}
+
+void Compiler::StoreMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index)
+{
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, rp, (uint8_t)dm_index, rp - 1);
+}
+
+void Compiler::LoadMemberAtIndexAndCall(AstVisitor *visitor, Module *mod,
+    AstFunctionCall *field_as_call, int dm_index)
+{
+    uint8_t rp;
+
+    int stack_size_before = 0;
+
+    // push args
+    int nargs = field_as_call->GetArguments().size();
+    bool args_side_effects = false;
+
+    // check if any args have side effects
+    for (auto &arg : field_as_call->GetArguments()) {
+        if (arg->MayHaveSideEffects()) {
+            args_side_effects = true;
+            break;
+        }
+    }
+
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // load data member.
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(LOAD_MEM, rp, rp, (uint8_t)dm_index);
+
+    if (!args_side_effects) {
+        // claim register for the loaded member
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+    } else {
+        // we have to push the member to the stack
+
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(PUSH, rp);
+
+        stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+    }
+
+    field_as_call->BuildArgumentsStart(visitor, mod);
+
+    if (!args_side_effects) {
+        // unclaim register for the member
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+    } else {
+        // get register usage
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // load from stack
+        int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        // we add nargs because the stack size would have increased by pushing the arguments
+        int diff = stack_size_after - stack_size_before + nargs;
+
+        ASSERT(diff == nargs + 1);
+
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
+    }
+
+    // invoke the member
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t>(CALL, rp, (uint8_t)nargs);
+
+    // pop args
+    field_as_call->BuildArgumentsEnd(visitor, mod);
+
+    // pop the member from the stack
+    if (args_side_effects) {
+        // pop from stack
+        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
+
+        // decrement stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+    }
+}
+
+void Compiler::BuildUCS(AstVisitor *visitor, Module *mod, AstFunctionCall *field_as_call)
+{
+    // allows functions to be used like they are
+    // members (uniform call syntax)
+    // in this case it would be usage of uniform call syntax.
+
+    // build what we have so far into the function
+    // get active register
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // make a copy of the data we already got from the member access
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(PUSH, rp);
+
+    // increment stack size
+    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
+    // build the function call
+    field_as_call->SetHasSelfObject(true);
+    field_as_call->Build(visitor, mod);
+
+    // decrement stack size
+    visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+
+    // pop argument from stack
+    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
+}
 
 void Compiler::CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info)
 {

@@ -19,58 +19,6 @@
 
 #include <iostream>
 
-/** Attemps to evaluate the optimized expression at compile-time. */
-static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &left,
-    std::shared_ptr<AstExpression> &right, const Operator *oper, AstVisitor *visitor)
-{
-    AstConstant *left_as_constant  = dynamic_cast<AstConstant*>(left.get());
-    AstConstant *right_as_constant = dynamic_cast<AstConstant*>(right.get());
-
-    std::shared_ptr<AstConstant> result;
-
-    if (left_as_constant != nullptr && right_as_constant != nullptr) {
-        // perform operations on these constants
-        if (oper == &Operator::operator_add) {
-            result = (*left_as_constant) + right_as_constant;
-        } else if (oper == &Operator::operator_subtract) {
-            result = (*left_as_constant) - right_as_constant;
-        } else if (oper == &Operator::operator_multiply) {
-            result = (*left_as_constant) * right_as_constant;
-        } else if (oper == &Operator::operator_divide) {
-            result = (*left_as_constant) / right_as_constant;
-        } else if (oper == &Operator::operator_modulus) {
-            result = (*left_as_constant) % right_as_constant;
-        } else if (oper == &Operator::operator_bitwise_xor) {
-            result = (*left_as_constant) ^ right_as_constant;
-        } else if (oper == &Operator::operator_bitwise_and) {
-            result = (*left_as_constant) & right_as_constant;
-        } else if (oper == &Operator::operator_bitshift_left) {
-            result = (*left_as_constant) << right_as_constant;
-        } else if (oper == &Operator::operator_bitshift_right) {
-            result = (*left_as_constant) >> right_as_constant;
-        } else if (oper == &Operator::operator_logical_and) {
-            result = (*left_as_constant) && right_as_constant;
-        } else if (oper == &Operator::operator_logical_or) {
-            result = (*left_as_constant) || right_as_constant;
-        } else if (oper == &Operator::operator_less) {
-            result = (*left_as_constant) < right_as_constant;
-        } else if (oper == &Operator::operator_greater) {
-            result = (*left_as_constant) > right_as_constant;
-        } else if (oper == &Operator::operator_less_eql) {
-            result = (*left_as_constant) <= right_as_constant;
-        } else if (oper == &Operator::operator_greater_eql) {
-            result = (*left_as_constant) >= right_as_constant;
-        } else if (oper == &Operator::operator_equals) {
-            result = left_as_constant->Equals(right_as_constant);
-        }
-        // don't have to worry about assignment operations,
-        // because at this point both sides are const and literal.
-    }
-
-    // one or both of the sides are not a constant
-    return result;
-}
-
 AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &left,
     const std::shared_ptr<AstExpression> &right,
     const Operator *op,
@@ -85,7 +33,7 @@ AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &l
 void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 {
     // check for lazy declaration first
-    if ((m_variable_declaration = CheckLazyDeclaration(visitor, mod)) != nullptr) {
+    if ((m_variable_declaration = CheckLazyDeclaration(visitor, mod))) {
         m_variable_declaration->Visit(visitor, mod);
         // return, our work here is done
         return;
@@ -106,7 +54,6 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     if (m_op->ModifiesValue()) {
-
         ASSERT(right_type != nullptr);
 
         if (!left_type->TypeCompatible(*right_type, true)) {
@@ -219,7 +166,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 }
             } else {
                 Compiler::LoadLeftThenRight(visitor, mod, info);
-                if (m_right != nullptr) {
+                if (m_right) {
                     // perform operation
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
@@ -259,8 +206,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     bool folded = false;
                     // attempt to constant fold the values
                     std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
-                    auto constant_folded = ConstantFold(first, tmp, &Operator::operator_equals, visitor);
-                    if (constant_folded != nullptr) {
+                    
+                    if (auto constant_folded = Optimizer::ConstantFold(first, tmp, &Operator::operator_equals, visitor)) {
                         int folded_value = constant_folded->IsTrue();
                         folded = folded_value == 1 || folded_value == 0;
 
@@ -308,12 +255,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 }
 
                 // if we are at this point then lhs is true, so now test the rhs
-                if (second != nullptr) {
+                if (second) {
                     bool folded = false;
                     // attempt to constant fold the values
                     std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
-                    auto constant_folded = ConstantFold(second, tmp, &Operator::operator_equals, visitor);
-                    if (constant_folded != nullptr) {
+                    
+                    if (auto constant_folded = Optimizer::ConstantFold(second, tmp, &Operator::operator_equals, visitor)) {
                         int folded_value = constant_folded->IsTrue();
                         folded = folded_value == 1 || folded_value == 0;
 
@@ -414,8 +361,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     bool folded = false;
                     // attempt to constant fold the values
                     std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
-                    auto constant_folded = ConstantFold(first, tmp, &Operator::operator_equals, visitor);
-                    if (constant_folded != nullptr) {
+                    
+                    if (auto constant_folded = Optimizer::ConstantFold(first, tmp, &Operator::operator_equals, visitor)) {
                         int folded_value = constant_folded->IsTrue();
                         folded = folded_value == 1 || folded_value == 0;
 
@@ -464,12 +411,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 }
 
                 // if we are at this point then lhs is true, so now test the rhs
-                if (second != nullptr) {
+                if (second) {
                     bool folded = false;
                     { // attempt to constant fold the values
                         std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
-                        auto constant_folded = ConstantFold(second, tmp, &Operator::operator_equals, visitor);
-                        if (constant_folded != nullptr) {
+                        
+                        if (auto constant_folded = Optimizer::ConstantFold(second, tmp, &Operator::operator_equals, visitor)) {
                             int folded_value = constant_folded->IsTrue();
                             folded = folded_value == 1 || folded_value == 0;
 
@@ -575,7 +522,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 swapped = true;
             }
 
-            if (m_right != nullptr) {
+            if (m_right) {
                 uint8_t r0, r1;
 
                 StaticObject true_label;
@@ -762,9 +709,9 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
 void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
-    if (m_member_access != nullptr) {
+    if (m_member_access) {
         m_member_access->Optimize(visitor, mod);
-    } else if (m_variable_declaration != nullptr) {
+    } else if (m_variable_declaration) {
         m_variable_declaration->Optimize(visitor, mod);
     } else {
         Optimizer::OptimizeExpr(m_left, visitor, mod);
@@ -774,8 +721,7 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
         // binary expression by optimizing away the right
         // side, and combining the resulting value into
         // the left side of the operation.
-        auto constant_value = ConstantFold(m_left, m_right, m_op, visitor);
-        if (constant_value != nullptr) {
+        if (auto constant_value = Optimizer::ConstantFold(m_left, m_right, m_op, visitor)) {
             // compile-time evaluation was successful
             m_left = constant_value;
             m_right = nullptr;
@@ -801,10 +747,10 @@ Pointer<AstStatement> AstBinaryExpression::Clone() const
 
 int AstBinaryExpression::IsTrue() const
 {
-    if (m_member_access != nullptr) {
+    if (m_member_access) {
         return m_member_access->IsTrue();
     } else {
-        if (m_right != nullptr) {
+        if (m_right) {
             // the right was not optimized away,
             // therefore we cannot determine whether or
             // not this expression would be true or false.
@@ -817,13 +763,13 @@ int AstBinaryExpression::IsTrue() const
 
 bool AstBinaryExpression::MayHaveSideEffects() const
 {
-    if (m_member_access != nullptr) {
+    if (m_member_access) {
         return m_member_access->MayHaveSideEffects();
     } else {
         bool left_side_effects = m_left->MayHaveSideEffects();
         bool right_side_effects = false;
 
-        if (m_right != nullptr) {
+        if (m_right) {
             right_side_effects = m_right->MayHaveSideEffects();
         }
 

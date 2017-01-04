@@ -39,16 +39,15 @@ int AstNil::IsTrue() const
 
 bool AstNil::IsNumber() const
 {
-    /** Set it to be a number so we can perform logical operations */
     return false;
 }
 
-a_int AstNil::IntValue() const
+ace::aint32 AstNil::IntValue() const
 {
     return 0;
 }
 
-a_float AstNil::FloatValue() const
+ace::afloat32 AstNil::FloatValue() const
 {
     return 0.0f;
 }
@@ -58,81 +57,68 @@ SymbolTypePtr_t AstNil::GetSymbolType() const
     return SymbolType::Builtin::ANY;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator+(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator+(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator-(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator-(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator*(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator*(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator/(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator/(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator%(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator%(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator^(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator^(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator&(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator|(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator|(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator<<(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator<<(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator>>(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator>>(AstConstant *right) const
 {
     return nullptr;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator&&(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator&&(AstConstant *right) const
 {
     // logical operations still work, so that we can do
     // things like testing for null in an if statement.
     return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }
 
-std::shared_ptr<AstConstant> AstNil::operator||(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::operator||(AstConstant *right) const
 {
     if (!right->IsNumber()) {
         // this operator is valid to compare against null
-        AstNil *ast_null = dynamic_cast<AstNil*>(right);
-        if (ast_null != nullptr) {
+        if (AstNil *ast_null = dynamic_cast<AstNil*>(right)) {
             return std::shared_ptr<AstFalse>(new AstFalse(m_location));
         }
         return nullptr;

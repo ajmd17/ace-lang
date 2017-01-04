@@ -4,8 +4,8 @@
 #include <ace-vm/Array.hpp>
 #include <ace-vm/Object.hpp>
 #include <ace-vm/TypeInfo.hpp>
-#include <ace-c/typedefs.hpp>
 
+#include <common/typedefs.hpp>
 #include <common/instructions.hpp>
 #include <common/utf8.hpp>
 #include <common/my_assert.hpp>

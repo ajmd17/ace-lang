@@ -29,12 +29,12 @@ bool AstUndefined::IsNumber() const
     return false;
 }
 
-a_int AstUndefined::IntValue() const
+ace::aint32 AstUndefined::IntValue() const
 {
     return 0;
 }
 
-a_float AstUndefined::FloatValue() const
+ace::afloat32 AstUndefined::FloatValue() const
 {
     return 0.0f;
 }

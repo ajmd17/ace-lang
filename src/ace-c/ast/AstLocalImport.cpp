@@ -23,7 +23,6 @@ static void CopyModules(AstVisitor *visitor, std::shared_ptr<Module> &mod, bool 
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
-
     if (check_lookup) {
         if (visitor->GetCompilationUnit()->LookupModule(mod->GetName())) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
@@ -38,8 +37,6 @@ static void CopyModules(AstVisitor *visitor, std::shared_ptr<Module> &mod, bool 
     if (update_tree_link) {
         mod->SetImportTreeLink(visitor->GetCompilationUnit()->m_module_tree.TopNode());
     }
-
-
 
     // function to copy nested modules 
     std::function<void(TreeNode<Module*>*)> copy_nodes =

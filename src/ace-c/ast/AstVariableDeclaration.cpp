@@ -87,9 +87,18 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 }
 
                 if (type_strict) {
-                    visitor->Assert(symbol_type->TypeCompatible(*assignment_type, true),
-                        CompilerError(Level_fatal, Msg_mismatched_types, m_real_assignment->GetLocation(),
-                            symbol_type->GetName(), assignment_type->GetName()));
+                    if (!symbol_type->TypeCompatible(*assignment_type, true)) {
+                        CompilerError error(Level_fatal, Msg_mismatched_types,
+                            m_real_assignment->GetLocation(),
+                            symbol_type->GetName(), assignment_type->GetName());
+
+                        if (assignment_type == SymbolType::Builtin::ANY) {
+                            error = CompilerError(Level_fatal, Msg_implicit_any_mismatch,
+                                m_real_assignment->GetLocation(), symbol_type->GetName());
+                        }
+
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(error);
+                    }
                 }
             } else {
                 // Set the type to be the deduced type from the expression.

@@ -50,6 +50,7 @@ enum ErrorMessage {
     Msg_must_be_explicitly_marked_any,
     Msg_return_outside_function,
     Msg_not_a_function,
+    Msg_member_not_a_method,
     Msg_closure_capture_must_be_parameter,
 
     /* ARRAYS */
@@ -61,6 +62,7 @@ enum ErrorMessage {
     Msg_redefined_builtin_type,
     Msg_identifier_is_type,
     Msg_mismatched_types,
+    Msg_implicit_any_mismatch,
     Msg_type_not_generic,
     Msg_generic_parameters_missing,
     Msg_generic_parameter_redeclared,

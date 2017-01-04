@@ -1,23 +1,12 @@
 module files {
     import '../acelib/io'
 
-    type T {
-        name: String = 'meow'
-    }
-
-    func a(t) {
-        print 't.name == ', t.name
-    }
-
-    t: T
-    a(t)
-
     my_file = io::open('test.txt', 'w+')
 
     io::write(my_file, 'Ace version ', 
         runtime::version[0], '.', 
         runtime::version[1], '.', 
-        runtime::version[2], '\n\n\n')
+        runtime::version[2], '\n\n')
 
     io::write(my_file, 'Running on OS: ', runtime::os_name)
 }

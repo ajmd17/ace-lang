@@ -478,11 +478,10 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                 std::string filename = error.GetLocation().GetFileName();
                 std::string error_text = error.GetText();
                 
-                utf::cout
-                        << utf::Utf8String(filename.c_str()) << " "
-                        << "[" << (error.GetLocation().GetLine() + 1)
-                        << ", " << (error.GetLocation().GetColumn() + 1)
-                        << "]: " << utf::Utf8String(error_text.c_str()) << "\n";
+                utf::cout << utf::Utf8String(filename.c_str()) << " "
+                          << "(Ln " << (error.GetLocation().GetLine() + 1)
+                          << ", Col " << (error.GetLocation().GetColumn() + 1)
+                          << "): " << utf::Utf8String(error_text.c_str()) << "\n";
             }
 
             if (!compilation_unit.GetErrorList().HasFatalErrors()) {

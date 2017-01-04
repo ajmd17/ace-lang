@@ -12,7 +12,10 @@
 #include <ace-c/dis/DecompilationUnit.hpp>
 #include <ace-c/dis/ByteStream.hpp>
 
+#include <common/str_util.hpp>
+
 #include <fstream>
+#include <unordered_set>
 
 namespace ace_compiler {
 
@@ -54,12 +57,22 @@ bool BuildSourceFile(const utf::Utf8String &filename,
         semantic_analyzer.Analyze();
 
         compilation_unit.GetErrorList().SortErrors();
+
+        std::unordered_set<std::string> error_filenames;
+
         for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
-            utf::cout
-                << utf::Utf8String(error.GetLocation().GetFileName().c_str()) << " "
-                << "[" << (error.GetLocation().GetLine() + 1)
-                << ", " << (error.GetLocation().GetColumn() + 1)
-                << "]: " << utf::Utf8String(error.GetText().c_str()) << "\n";
+            if (error_filenames.insert(error.GetLocation().GetFileName()).second) {
+                auto split = str_util::split_path(error.GetLocation().GetFileName());
+                std::string str = !split.empty() ? split.back() : error.GetLocation().GetFileName();
+                str = str_util::strip_extension(str);
+
+                utf::cout << "In file \"" << utf::Utf8String(str.c_str()) << "\":\n";
+            }
+
+            utf::cout << "  "
+                      << "Ln "    << (error.GetLocation().GetLine() + 1)
+                      << ", Col " << (error.GetLocation().GetColumn() + 1)
+                      << ":  "    << utf::Utf8String(error.GetText().c_str()) << "\n";
         }
 
         if (!compilation_unit.GetErrorList().HasFatalErrors()) {

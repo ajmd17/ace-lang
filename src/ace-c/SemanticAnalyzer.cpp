@@ -1,7 +1,7 @@
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
 #include <ace-c/Module.hpp>
-#include <ace-c/ObjectType.hpp>
+#include <ace-c/SymbolType.hpp>
 
 #include <common/my_assert.hpp>
 
@@ -13,15 +13,15 @@ IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, M
     res.type = IDENTIFIER_TYPE_UNKNOWN;
 
     // the variable must exist in the active scope or a parent scope
-    if (res.as_identifier = mod->LookUpIdentifier(name, false)) {
+    if ((res.as_identifier = mod->LookUpIdentifier(name, false))) {
         res.type = IDENTIFIER_TYPE_VARIABLE;
-    } else if (res.as_identifier = visitor->GetCompilationUnit()->GetGlobalModule()->LookUpIdentifier(name, false)) {
+    } else if ((res.as_identifier = visitor->GetCompilationUnit()->GetGlobalModule()->LookUpIdentifier(name, false))) {
         // if the identifier was not found,
         // look in the global module to see if it is a global function.
         res.type = IDENTIFIER_TYPE_VARIABLE;
-    } else if (res.as_module = visitor->GetCompilationUnit()->LookupModule(name)) {
+    } else if ((res.as_module = visitor->GetCompilationUnit()->LookupModule(name))) {
         res.type = IDENTIFIER_TYPE_MODULE;
-    } else if (res.as_type = mod->LookupSymbolType(name)) {
+    } else if ((res.as_type = mod->LookupSymbolType(name))) {
         res.type = IDENTIFIER_TYPE_TYPE;
     } else {
         // nothing was found
@@ -29,6 +29,48 @@ IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, M
     }
     
     return res;
+}
+
+SymbolTypePtr_t SemanticAnalyzer::SubstituteFunctionArgs(AstVisitor *visitor, Module *mod, 
+    const SymbolTypePtr_t &identifier_type, 
+    const std::vector<std::shared_ptr<AstExpression>> &args)
+{
+    if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+        auto base = identifier_type->GetBaseType();
+
+        if (base == SymbolType::Builtin::FUNCTION) {
+            if (identifier_type->GetGenericInstanceInfo().m_param_types.size() == args.size() + 1) {
+                for (int i = 0; i < args.size(); i++) {
+                    SymbolTypePtr_t arg_type =
+                        args[i]->GetSymbolType();
+
+                    const SymbolTypePtr_t &param_type = 
+                        identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
+
+                    ASSERT(arg_type != nullptr);
+                    ASSERT(param_type != nullptr);
+                    
+                    // make sure argument types are compatible
+                    // use strict numbers so that floats cannot be passed as explicit ints
+                    if (!param_type->TypeCompatible(*arg_type, true)) {
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(
+                            CompilerError(Level_fatal, Msg_arg_type_incompatible, 
+                                args[i]->GetLocation(), arg_type->GetName(), param_type->GetName()));
+                    }
+                }
+            }
+
+            ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types.size() >= 1);
+            ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types[0] != nullptr);
+
+            return identifier_type->GetGenericInstanceInfo().m_param_types[0];
+        }
+    } else if (identifier_type == SymbolType::Builtin::FUNCTION) {
+        // abstract function, allow any params
+        return SymbolType::Builtin::ANY;
+    }
+    
+    return nullptr;
 }
 
 SemanticAnalyzer::SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)

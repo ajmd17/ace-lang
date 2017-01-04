@@ -44,7 +44,6 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 //     set the type to be that.
                 //   else:
                 //     set the type to be the param itself.
-
                 if (auto sp = symbol_type->GetGenericParameterInfo().m_substitution.lock()) {
                     // set type to be substituted type
                     m_symbol_type = sp;

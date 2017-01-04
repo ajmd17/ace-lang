@@ -1,11 +1,4 @@
 module loop {
-	let hello = 'Hello'
-	print "hello == ", hello
-	
-	import 'testimport.ace'
-	
-	print "hello == ", hello
-	
 	docall: Function = (fun: Function) {
 		lol: Function = (arg1) {
 			print "in lol() arg1 == ", arg1
@@ -105,31 +98,4 @@ module loop {
 	//myrange.foreach_range(func(it) {
 	//	print 'it(2) = ', it
 	//})
-
-	/*while i = 10 {
-	  print i
-	}*/
-	
-	//lol = each i in Range(3, 5) where i != 2
-
-	
-	
-	/*io::write(io::stdout, 'fdsfdsjkkf')
-	
-	use io::stdout
-	
-	
-	
-	let x = each i in Range(0, 5) where i != 2
-	
-	
-	for each i in Range(0, 5) where i != 2 {
-	    print i
-	}
-	
-	print each i in 
-	
-	
-	database.push(each i in my_items where i.name != 'ethan')*/
-	
 }

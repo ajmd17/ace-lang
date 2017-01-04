@@ -1,0 +1,54 @@
+module generics {
+    example_counter: Int = 1
+
+    example: Function = (name: String) {
+        print "Example #", example_counter, ": ", name
+        example_counter += 1
+    }
+
+
+    // This is a simple example of a generic type.
+    // It holds a value internally of whatever type 
+    // it is given at compile time.
+    
+    // Note: this could still be achieved using the 'Any'
+    // type, but that would require for many errors to be
+    // checked at runtime rather than compile time.
+
+    // Also, using generics presents you with other advantages
+    // such as the compiler checking that types are compatible, etc.
+
+    example("Boxing a type within a type")
+    
+    type (BoxedType) BoxedValue {
+        value: BoxedType
+    }
+
+    boxed_int: BoxedValue(Int)
+    boxed_int.value = 500
+    print "boxed_int.value is ", boxed_int.value
+
+    boxed_boolean: BoxedValue(Boolean)
+    boxed_boolean.value = true
+    print "boxed_boolean.value is ", boxed_boolean.value
+
+    print ""
+
+    // Here is another simple example, this time with more
+    // than one generic parameter type. It allows you to
+    // 'pair' multiple types together.
+
+    example("A simple 'Pair' type")
+
+    type (KeyType, ValueType) Pair {
+        key: KeyType
+        value: ValueType
+    }
+
+    string_int_pair: Pair(String, Int)
+    string_int_pair.key = "Apples"
+    string_int_pair.value = 4
+
+    print "string_int_pair.key is ", string_int_pair.key
+    print "string_int_pair.value is ", string_int_pair.value
+}

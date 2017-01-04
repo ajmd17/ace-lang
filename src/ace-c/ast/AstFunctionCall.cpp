@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstFunctionCall.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/AstVisitor.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/emit/Instruction.hpp>
 
 #include <common/instructions.hpp>
@@ -58,46 +59,11 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
             // continue if it is `Any` because we can't really assure that it is a function
 			if (identifier_type != SymbolType::Builtin::ANY) {
-                if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                    auto base = identifier_type->GetBaseType();
-
-                    if (base == SymbolType::Builtin::FUNCTION) {
-                        if (identifier_type->GetGenericInstanceInfo().m_param_types.size() == m_args.size() + 1) {
-                            for (int i = 0; i < m_args.size(); i++) {
-                                SymbolTypePtr_t arg_type =
-                                    m_args[i]->GetSymbolType();
-
-                                const SymbolTypePtr_t &param_type = 
-                                    identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
-
-                                ASSERT(arg_type != nullptr);
-                                ASSERT(param_type != nullptr);
-                                
-                                // make sure argument types are compatible
-                                if (!param_type->TypeCompatible(*arg_type, false)) {
-                                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                                        CompilerError(Level_fatal, Msg_arg_type_incompatible, 
-                                            m_args[i]->GetLocation(), arg_type->GetName(), param_type->GetName()));
-                                }
-                            }
-                        }
-
-                        ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types.size() >= 1);
-                        ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types[0] != nullptr);
-
-                        m_return_type = identifier_type->GetGenericInstanceInfo().m_param_types[0];
-
-                        break;
-                    }
-                } else if (identifier_type == SymbolType::Builtin::FUNCTION) {
-                    // abstract function, allow any params
-                    m_return_type = SymbolType::Builtin::ANY;
-                    break;
+                if (!(m_return_type = SemanticAnalyzer::SubstituteFunctionArgs(visitor, mod, identifier_type, m_args))) {
+				    // not a function type
+				    visitor->GetCompilationUnit()->GetErrorList().AddError(
+					    CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
                 }
-
-				// not a function type
-				visitor->GetCompilationUnit()->GetErrorList().AddError(
-					CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
 			}
 
 			break;

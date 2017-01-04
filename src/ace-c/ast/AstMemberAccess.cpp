@@ -5,6 +5,7 @@
 #include <ace-c/ast/AstFunctionCall.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
@@ -289,17 +290,18 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                             arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
                         }
                     }
-
-                    if (member_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                        if (member_type->GetBaseType() == SymbolType::Builtin::FUNCTION) {
-                            ASSERT(member_type->GetGenericInstanceInfo().m_param_types.size() >= 1);
-                            ASSERT(member_type->GetGenericInstanceInfo().m_param_types[0] != nullptr);
-
-                            member_type = member_type->GetGenericInstanceInfo().m_param_types[0];
-                        }
+                    
+                    if (auto as_function_type = SemanticAnalyzer::SubstituteFunctionArgs(
+                            visitor, mod, member_type, field_as_call->GetArguments())) {
+                        member_type = as_function_type;
+                    } else {
+                        // member is not a function type
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(
+                            CompilerError(Level_fatal, Msg_member_not_a_method, 
+                                field->GetLocation(), field_as_call->GetName()));
                     }
                 }
-
+                
                 target_type = member_type;
                 m_part_object_types.push_back(target_type);
                 real_target = field;

@@ -147,6 +147,10 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
 
     if (TypeEqual(right)) {
         return true;
+    } else if (right.GetTypeClass() == TYPE_GENERIC_PARAMETER && 
+                (!right.GetGenericParameterInfo().m_substitution.lock())) {
+        // right is a generic paramter that has not yet been substituted
+        return true;
     }
 
     switch (m_type_class) {
@@ -325,7 +329,7 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
             ASSERT(base->GetGenericInfo().m_params.size() == info.m_param_types.size());
             
             // find parameter and substitute it
-            for (size_t i = 0; i < !substituted && base->GetGenericInfo().m_params.size(); i++) {
+            for (size_t i = 0; !substituted && i < base->GetGenericInfo().m_params.size(); i++) {
                 auto &it = base->GetGenericInfo().m_params[i];
                 if (it->GetName() == std::get<1>(member)->GetName()) {
                     std::shared_ptr<AstExpression> default_value;

@@ -1,5 +1,7 @@
 #include <ace-vm/Array.hpp>
+
 #include <cmath>
+#include <cstring>
 
 namespace ace {
 namespace vm {

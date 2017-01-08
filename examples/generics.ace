@@ -22,7 +22,7 @@ module generics {
 
     type (BoxedType) BoxedValue {
         value: BoxedType
-        internal_array: Array(BoxedType)
+        internal_array: Array(BoxedType) = [1.4,2,3] // bug
     }
 
     boxed_int: BoxedValue(Int)

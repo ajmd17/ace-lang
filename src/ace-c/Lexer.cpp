@@ -376,7 +376,7 @@ Token Lexer::ReadLineComment()
     }
 
     // read until newline or EOF is reached
-    while (m_source_stream.HasNext() && m_source_stream.Peek() != (u32char)'\n') {
+    while (m_source_stream.HasNext() && m_source_stream.Peek() != '\n') {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;

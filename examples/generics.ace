@@ -22,13 +22,13 @@ module generics {
 
     type (BoxedType) BoxedValue {
         value: BoxedType
-        internal_array: Array(BoxedType) = [1.4,2,3] // bug
+        internal_array: Array(BoxedType) = [1.4, 2, 3] // bug
     }
 
     boxed_int: BoxedValue(Int)
     boxed_int.value = 500
     print "boxed_int.value is ", boxed_int.value
-    ss: String =  boxed_int.internal_array
+    //ss: String =  boxed_int.internal_array
 
     boxed_boolean: BoxedValue(Boolean)
     boxed_boolean.value = true

@@ -1,7 +1,7 @@
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/module.hpp>
+#include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/instructions.hpp>

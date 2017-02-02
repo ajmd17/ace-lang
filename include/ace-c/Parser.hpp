@@ -61,6 +61,8 @@ private:
     Token Expect(TokenClass token_class, bool read = false);
     Token ExpectKeyword(Keywords keyword, bool read = false);
     Token ExpectOperator(const Operator *op, bool read = false);
+    Token MatchIdentifier(bool allow_keyword = false, bool read = false);
+    Token ExpectIdentifier(bool allow_keyword = false, bool read = false);
     bool ExpectEndOfStmt();
     SourceLocation CurrentLocation() const;
 
@@ -78,8 +80,8 @@ private:
     std::shared_ptr<AstInteger> ParseIntegerLiteral();
     std::shared_ptr<AstFloat> ParseFloatLiteral();
     std::shared_ptr<AstString> ParseStringLiteral();
-    std::shared_ptr<AstIdentifier> ParseIdentifier();
-    std::shared_ptr<AstFunctionCall> ParseFunctionCall();
+    std::shared_ptr<AstIdentifier> ParseIdentifier(bool allow_keyword = false);
+    std::shared_ptr<AstFunctionCall> ParseFunctionCall(bool allow_keyword = false);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
@@ -103,7 +105,7 @@ private:
     std::shared_ptr<AstTypeContractExpression> ParseTypeContractBinaryExpression(int expr_prec,
         std::shared_ptr<AstTypeContractExpression> left);
 #endif
-    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true);
+    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true, bool allow_keyword_names = false);
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition(bool require_keyword = true);
     std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();

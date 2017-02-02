@@ -26,6 +26,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_redeclared_identifier_type, "'%' is the name of a type and cannot be used as an identifier" },
     { Msg_undeclared_identifier, "'%' is not defined" },
     { Msg_expected_identifier, "expected an identifier" },
+    { Msg_keyword_cannot_be_used_as_identifier, "keyword '%' cannot be used as a name in this case" },
     { Msg_ambiguous_identifier, "identifier '%' is ambiguous" },
     { Msg_invalid_constructor, "invalid constructor" },
     { Msg_expected_type_got_identifier, "'%' is an identifier, expected a type" },

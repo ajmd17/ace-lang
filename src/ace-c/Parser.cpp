@@ -165,6 +165,50 @@ Token Parser::ExpectOperator(const Operator *op, bool read)
     return token;
 }
 
+Token Parser::MatchIdentifier(bool allow_keyword, bool read)
+{
+    Token ident = Match(TK_IDENT, read);
+
+    if (!ident) {
+        Token kw = Match(TK_KEYWORD, read);
+        if (kw) {
+            if (allow_keyword) {
+                return kw;
+            }
+            // keyword may not be used as an identifier here.
+            CompilerError error(Level_fatal,
+                Msg_keyword_cannot_be_used_as_identifier, 
+                kw.GetLocation(), kw.GetValue());
+            m_compilation_unit->GetErrorList().AddError(error);
+        }
+        return Token::EMPTY;
+    }
+
+    return ident;
+}
+
+Token Parser::ExpectIdentifier(bool allow_keyword, bool read)
+{
+    Token kw = Match(TK_KEYWORD, read);
+
+    if (!kw) {
+        // keyword not found, so must be identifier
+        return Expect(TK_IDENT, read);
+    }
+
+    // handle ident as keyword
+    if (allow_keyword) {
+        return kw;
+    }
+    
+    CompilerError error(Level_fatal,
+        Msg_keyword_cannot_be_used_as_identifier, 
+        kw.GetLocation(), kw.GetValue());
+    m_compilation_unit->GetErrorList().AddError(error);
+
+    return Token::EMPTY;
+}
+
 bool Parser::ExpectEndOfStmt()
 {
     SourceLocation location = CurrentLocation();
@@ -572,12 +616,12 @@ std::shared_ptr<AstString> Parser::ParseStringLiteral()
     return nullptr;
 }
 
-std::shared_ptr<AstIdentifier> Parser::ParseIdentifier()
+std::shared_ptr<AstIdentifier> Parser::ParseIdentifier(bool allow_keyword)
 {
-    if (Token token = Expect(TK_IDENT, false)) {
+    if (Token token = ExpectIdentifier(allow_keyword, false)) {
         if (MatchAhead(TK_OPEN_PARENTH, 1)) {
             // function call
-            return ParseFunctionCall();
+            return ParseFunctionCall(allow_keyword);
         } else {
             // read identifier token
             if (m_token_stream->HasNext()) {
@@ -593,9 +637,10 @@ std::shared_ptr<AstIdentifier> Parser::ParseIdentifier()
     return nullptr;
 }
 
-std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall()
+std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall(bool allow_keyword)
 {
-    Token token = Expect(TK_IDENT, true);
+    Token token = ExpectIdentifier(allow_keyword, true);
+
     Expect(TK_OPEN_PARENTH, true);
 
     std::vector<std::shared_ptr<AstExpression>> args;
@@ -651,7 +696,8 @@ std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstEx
     Expect(TK_DOT, true);
 
     do {
-        if (auto ident = ParseIdentifier()) {
+        // allow keywords to be used as identifiers in this context
+        if (auto ident = ParseIdentifier(true)) {
             parts.push_back(ident);
         } else {
             return nullptr;
@@ -1047,7 +1093,7 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractBinaryExpres
 
 #endif
 
-std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool require_keyword)
+std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool require_keyword, bool allow_keyword_names)
 {
     SourceLocation location = CurrentLocation();
 
@@ -1060,7 +1106,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool re
         MatchKeyword(Keyword_let, true);
     }
 
-    if (Token identifier = Expect(TK_IDENT, true)) {
+    if (Token identifier = ExpectIdentifier(allow_keyword_names, true)) {
         std::shared_ptr<AstTypeSpecification> type_spec;
 
         if (Match(TK_COLON, true)) {
@@ -1237,7 +1283,7 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
         std::vector<std::string> generic_params;
         // parse generic parameters after '('
         if (Match(TK_OPEN_PARENTH, true)) {
-            while (Token ident = Expect(TK_IDENT, true)) {
+            while (Token ident = ExpectIdentifier(false, true)) {
                 generic_params.push_back(ident.GetValue());
                 if (!Match(TK_COMMA, true)) {
                     break;
@@ -1246,16 +1292,18 @@ std::shared_ptr<AstTypeDefinition> Parser::ParseTypeDefinition()
             Expect(TK_CLOSE_PARENTH, true);
         }
 
-        if (Token identifier = Expect(TK_IDENT, true)) {
+        // type names may not be a keyword
+        if (Token identifier = ExpectIdentifier(false, true)) {
             std::vector<std::shared_ptr<AstVariableDeclaration>> members;
 
             if (Expect(TK_OPEN_BRACE, true)) {
                 while (!Match(TK_CLOSE_BRACE, true)) {
                     SkipStatementTerminators();
 
-                    if (MatchKeyword(Keyword_let, false) || Match(TK_IDENT, false)) {
-                        // do not require keyword for data members
-                        members.push_back(ParseVariableDeclaration(false));
+                    if (MatchKeyword(Keyword_let, false) || MatchIdentifier(true, false)) {
+                        // do not require declaration keyword for data members.
+                        // also, data members may be keywords.
+                        members.push_back(ParseVariableDeclaration(false, true));
                         ExpectEndOfStmt();
                     } else {
                         // error; unexpected token

@@ -39,6 +39,7 @@ enum ErrorMessage {
     Msg_redeclared_identifier_type,
     Msg_undeclared_identifier,
     Msg_expected_identifier,
+    Msg_keyword_cannot_be_used_as_identifier,
     Msg_ambiguous_identifier,
     Msg_invalid_constructor,
     Msg_expected_type_got_identifier,

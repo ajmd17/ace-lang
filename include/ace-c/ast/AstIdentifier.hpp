@@ -16,19 +16,19 @@ struct AstIdentifierProperties {
     bool m_is_in_function = false;
     int m_depth = 0;
 
-	// getters & setters
-	inline Identifier *GetIdentifier() { return m_identifier; }
-	inline const Identifier *GetIdentifier() const { return m_identifier; }
-	inline void SetIdentifier(Identifier *identifier) { m_identifier = identifier; }
+    // getters & setters
+    inline Identifier *GetIdentifier() { return m_identifier; }
+    inline const Identifier *GetIdentifier() const { return m_identifier; }
+    inline void SetIdentifier(Identifier *identifier) { m_identifier = identifier; }
 
-	inline AccessMode GetAccessMode() const { return m_access_mode; }
-	inline void SetAccessMode(AccessMode access_mode) { m_access_mode = access_mode; }
+    inline AccessMode GetAccessMode() const { return m_access_mode; }
+    inline void SetAccessMode(AccessMode access_mode) { m_access_mode = access_mode; }
 
-	inline IdentifierType GetIdentifierType() const { return m_identifier_type; }
-	inline void SetIdentifierType(IdentifierType identifier_type) { m_identifier_type = identifier_type; }
+    inline IdentifierType GetIdentifierType() const { return m_identifier_type; }
+    inline void SetIdentifierType(IdentifierType identifier_type) { m_identifier_type = identifier_type; }
 
-	inline bool IsInFunction() const { return m_is_in_function; }
-	inline int GetDepth() const { return m_depth; }
+    inline bool IsInFunction() const { return m_is_in_function; }
+    inline int GetDepth() const { return m_depth; }
 };
 
 class AstIdentifier : public AstExpression {

@@ -14,7 +14,7 @@ public:
         const SourceLocation &location);
     virtual ~AstModuleAccess() = default;
 
-	inline Module *GetModule() { return m_mod_access; }
+    inline Module *GetModule() { return m_mod_access; }
     inline const Module *GetModule() const { return m_mod_access; }
     inline const std::string &GetTarget() const { return m_target; }
     inline const std::shared_ptr<AstExpression> &GetExpression() const { return m_expr; }

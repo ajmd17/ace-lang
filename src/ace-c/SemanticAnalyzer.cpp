@@ -33,31 +33,65 @@ IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, M
 
 SymbolTypePtr_t SemanticAnalyzer::SubstituteFunctionArgs(AstVisitor *visitor, Module *mod, 
     const SymbolTypePtr_t &identifier_type, 
-    const std::vector<std::shared_ptr<AstExpression>> &args)
+    const std::vector<std::shared_ptr<AstExpression>> &args,
+    const SourceLocation &location)
 {
     if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
         auto base = identifier_type->GetBaseType();
 
         if (base == SymbolType::Builtin::FUNCTION) {
-            if (identifier_type->GetGenericInstanceInfo().m_param_types.size() == args.size() + 1) {
+
+            auto &param_types = identifier_type->GetGenericInstanceInfo().m_param_types;
+            // check for varargs (at end)
+            bool is_varargs = false;
+            SymbolTypePtr_t vararg_type;
+            if (!param_types.empty() && param_types.back()->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                auto base = param_types.back()->GetBaseType();
+                if (base == SymbolType::Builtin::VAR_ARGS) {
+                    is_varargs = true;
+                    ASSERT(!param_types.back()->GetGenericInstanceInfo().m_param_types.empty());
+                    vararg_type = param_types.back()->GetGenericInstanceInfo().m_param_types[0];
+                }
+            }
+
+            if (param_types.size() == args.size() + 1 || (is_varargs && param_types.size() - 1 < args.size() + 2)) {
                 for (int i = 0; i < args.size(); i++) {
                     SymbolTypePtr_t arg_type =
                         args[i]->GetSymbolType();
 
-                    const SymbolTypePtr_t &param_type = 
-                        identifier_type->GetGenericInstanceInfo().m_param_types[i + 1];
+                    const SymbolTypePtr_t &param_type = i + 1 < param_types.size()
+                        ? param_types[i + 1]
+                        : param_types.back();
 
                     ASSERT(arg_type != nullptr);
                     ASSERT(param_type != nullptr);
-                    
-                    // make sure argument types are compatible
-                    // use strict numbers so that floats cannot be passed as explicit ints
-                    if (!param_type->TypeCompatible(*arg_type, true)) {
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(
-                            CompilerError(Level_fatal, Msg_arg_type_incompatible, 
-                                args[i]->GetLocation(), arg_type->GetName(), param_type->GetName()));
+
+                    if (is_varargs && i + 2 >= param_types.size()) {
+                        // in varargs... check vararg base type
+                        ASSERT(vararg_type != nullptr);
+
+                        if (!vararg_type->TypeCompatible(*arg_type, true)) {
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                                CompilerError(Level_fatal, Msg_arg_type_incompatible, 
+                                    args[i]->GetLocation(), arg_type->GetName(), vararg_type->GetName()));
+                        }
+                    } else {
+                        // make sure argument types are compatible
+                        // use strict numbers so that floats cannot be passed as explicit ints
+                        if (!param_type->TypeCompatible(*arg_type, true)) {
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(
+                                CompilerError(Level_fatal, Msg_arg_type_incompatible, 
+                                    args[i]->GetLocation(), arg_type->GetName(), param_type->GetName()));
+                        }
                     }
                 }
+            } else {
+                // wrong number of args given
+                ErrorMessage msg = args.size() + 1 > identifier_type->GetGenericInstanceInfo().m_param_types.size()
+                    ? Msg_too_many_args : Msg_too_few_args;
+                
+                visitor->GetCompilationUnit()->GetErrorList().AddError(
+                    CompilerError(Level_fatal, msg, location));
             }
 
             ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types.size() >= 1);

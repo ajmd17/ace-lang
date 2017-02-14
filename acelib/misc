@@ -1,0 +1,11 @@
+module misc {
+  iterate: Function = (iterator, callback: Function) {
+    i: Int
+    len: Int = length(iterator)
+
+    while i < len {
+      callback(iterator[i])
+      i += 1
+    }
+  }
+}

@@ -27,47 +27,48 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
     // visit each argument
     for (auto &arg : m_args) {
-		if (arg) {
-			arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
-		}
+        if (arg) {
+            arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
+        }
     }
 
     switch (m_properties.GetIdentifierType()) {
-		case IDENTIFIER_TYPE_VARIABLE: {
-			ASSERT(m_properties.GetIdentifier() != nullptr);
-			m_properties.GetIdentifier()->IncUseCount();
+        case IDENTIFIER_TYPE_VARIABLE: {
+            ASSERT(m_properties.GetIdentifier() != nullptr);
+            m_properties.GetIdentifier()->IncUseCount();
 
-			// NOTE: if we are in a function, and the variable we are loading is declared in a separate function,
-			// we will show an error message saying that the variable must be passed as a parameter to be captured.
-			// the reason for this is that any variables owned by the parent function will be immediately popped from the stack
-			// when the parent function returns. That will mean the variables used here will reference garbage.
-			// In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
-			// on the stack of /this/ function.
-			if (m_properties.IsInFunction() && (m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
-				// lookup the variable by depth to make sure it was declared in the current function
-				// we do this to make sure it was declared in this scope.
-				if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
-					// add error that the variable must be passed as a parameter
-					visitor->GetCompilationUnit()->GetErrorList().AddError(
-						CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter,
-							m_location, m_name));
-				}
-			}
+            // NOTE: if we are in a function, and the variable we are loading is declared in a separate function,
+            // we will show an error message saying that the variable must be passed as a parameter to be captured.
+            // the reason for this is that any variables owned by the parent function will be immediately popped from the stack
+            // when the parent function returns. That will mean the variables used here will reference garbage.
+            // In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
+            // on the stack of /this/ function.
+            if (m_properties.IsInFunction() && (m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
+                // lookup the variable by depth to make sure it was declared in the current function
+                // we do this to make sure it was declared in this scope.
+                if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
+                    // add error that the variable must be passed as a parameter
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter,
+                            m_location, m_name));
+                }
+            }
 
             // get the type of the referenced function we're calling
-			SymbolTypePtr_t identifier_type = m_properties.GetIdentifier()->GetSymbolType();
+            SymbolTypePtr_t identifier_type = m_properties.GetIdentifier()->GetSymbolType();
 
             // continue if it is `Any` because we can't really assure that it is a function
-			if (identifier_type != SymbolType::Builtin::ANY) {
-                if (!(m_return_type = SemanticAnalyzer::SubstituteFunctionArgs(visitor, mod, identifier_type, m_args))) {
-				    // not a function type
-				    visitor->GetCompilationUnit()->GetErrorList().AddError(
-					    CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
+            if (identifier_type != SymbolType::Builtin::ANY) {
+                if (!(m_return_type = SemanticAnalyzer::SubstituteFunctionArgs(visitor, 
+                    mod, identifier_type, m_args, m_location))) {
+                    // not a function type
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
                 }
-			}
+            }
 
-			break;
-		}
+            break;
+        }
         case IDENTIFIER_TYPE_MODULE:
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_identifier_is_module, m_location, m_name));

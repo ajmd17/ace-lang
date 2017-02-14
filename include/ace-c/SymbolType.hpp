@@ -62,6 +62,7 @@ public:
         static const SymbolTypePtr_t STRING;
         static const SymbolTypePtr_t FUNCTION;
         static const SymbolTypePtr_t ARRAY;
+        static const SymbolTypePtr_t VAR_ARGS;
     };
 
     static SymbolTypePtr_t Alias(const std::string &name, const AliasTypeInfo &info);

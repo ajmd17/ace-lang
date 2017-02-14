@@ -491,7 +491,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
         } else {
             expr = ParseExpression();
 
-            if (Match(TK_COMMA) || Match(TK_COLON) ||
+            if (Match(TK_COMMA) || Match(TK_COLON) || Match(TK_ELLIPSIS) ||
                 (Match(TK_CLOSE_PARENTH) && MatchAhead(TK_COLON, 1))) {
                 // go back to before open '(' found, 
                 // to allow ParseFunctionParameters() to handle it

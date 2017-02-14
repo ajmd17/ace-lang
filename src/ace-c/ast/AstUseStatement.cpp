@@ -39,11 +39,11 @@ void AstUseStatement::Visit(AstVisitor *visitor, Module *mod)
                     found_mod = mod_access->GetModule();
                     target = mod_access->GetExpression().get();
 
-					// set chained flag for next module access
-					if (mod_chain) {
-						mod_access->SetChained(true);
-					}
-					mod_chain = true;
+                    // set chained flag for next module access
+                    if (mod_chain) {
+                        mod_access->SetChained(true);
+                    }
+                    mod_chain = true;
 
                     // module access, continue
                 } else {

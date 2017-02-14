@@ -24,10 +24,17 @@ struct Value {
 
         struct {
             uint32_t m_addr;
-            uint32_t m_nargs;
+            uint8_t m_nargs;
+            uint8_t m_is_variadic;
         } func;
 
         NativeFunctionPtr_t native_func;
+        
+        struct {
+            uint32_t addr;
+            uint32_t varargs_push;
+        } call;
+
         uint32_t addr;
 
         struct {
@@ -48,6 +55,7 @@ struct Value {
         FUNCTION,
         NATIVE_FUNCTION,
         ADDRESS,
+        FUNCTION_CALL,
         TRY_CATCH_INFO
     } m_type;
 

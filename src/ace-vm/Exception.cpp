@@ -13,10 +13,14 @@ Exception::Exception(const Exception &other)
 {
 }
 
-Exception Exception::InvalidArgsException(int expected, int received)
+Exception Exception::InvalidArgsException(int expected, int received, bool variadic)
 {
     char buffer[256];
-    std::sprintf(buffer, "invalid arguments: expected %d, received %d", expected, received);
+    if (variadic) {
+        std::sprintf(buffer, "invalid arguments: expected at least %d, received %d", expected, received);
+    } else {
+        std::sprintf(buffer, "invalid arguments: expected %d, received %d", expected, received);
+    }
     return Exception(utf::Utf8String(buffer));
 }
 

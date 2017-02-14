@@ -1,5 +1,7 @@
 module threads_example {
-    count_up: Function = () {
+    import "../acelib/thread"
+
+    count_up: Function = (args...) {
         print "Hello from thread #1, counting to 200"
 
         i: Int
@@ -11,7 +13,8 @@ module threads_example {
         print "Goodbye from thread #1!"
     }
 
-    count_down: Function = () {
+    count_down: Function = (args...) {
+        print "args = ", args
         print "Hello from thread #2, counting down from 200"
 
         i: Int = 200
@@ -23,9 +26,8 @@ module threads_example {
         print "Goodbye from thread #2!"
     }
 
-
-    spawn_thread(count_up)
-    spawn_thread(count_down)
+    thread::spawn(count_up, 2, 3, 5)
+    thread::spawn(count_down, nil, 1)
 
     print "2 threads done spawning!"
 }

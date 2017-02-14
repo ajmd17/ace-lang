@@ -32,7 +32,7 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
         if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
             auto base = target_type->GetBaseType();
 
-            if (base == SymbolType::Builtin::ARRAY) {
+            if (base == SymbolType::Builtin::ARRAY || base == SymbolType::Builtin::VAR_ARGS) {
                 is_array = true;
             }
         }

@@ -87,6 +87,9 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             uint8_t nargs;
             m_bs.Read(&nargs);
 
+            uint8_t is_variadic;
+            m_bs.Read(&is_variadic);
+
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
@@ -94,7 +97,9 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
 
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << "function [@(" << addr << "), "
-                      << "u8(" << (int)nargs << ")]" << std::endl;
+                      << "u8(" << (int)nargs << ")], "
+                      << "u8(" << (int)is_variadic << ")]"
+                      << std::endl;
                 os->unsetf(std::ios::hex);
             }
 
@@ -385,6 +390,9 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             uint8_t nargs;
             m_bs.Read(&nargs);
 
+            uint8_t is_variadic;
+            m_bs.Read(&is_variadic);
+
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
@@ -393,7 +401,9 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << "load_func [%" << (int)reg
                       << ", @(" << addr << "), "
-                      << "u8(" << (int)nargs << ")]" << std::endl;
+                      << "u8(" << (int)nargs << ")], "
+                      << "u8(" << (int)is_variadic << ")]"
+                      << std::endl;
                 os->unsetf(std::ios::hex);
             }
 

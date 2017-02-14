@@ -7,6 +7,7 @@
 struct StaticFunction {
     uint32_t m_addr;
     uint8_t m_nargs;
+    uint8_t m_is_variadic;
 };
 
 struct StaticTypeInfo {

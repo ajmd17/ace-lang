@@ -18,6 +18,7 @@ public:
     inline int GetSize() const { return m_size; }
     inline Value &AtIndex(int index) { return m_buffer[index]; }
     inline const Value &AtIndex(int index) const { return m_buffer[index]; }
+    inline void AtIndex(int index, const Value &value) { m_buffer[index] = value; }
 
     void Push(const Value &value);
     void Pop();

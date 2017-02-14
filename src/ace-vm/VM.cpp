@@ -132,15 +132,52 @@ void VM::Invoke(ExecutionThread *thread, BytecodeStream *bs, const Value &value,
                 value.GetTypeString());
             m_state.ThrowException(thread, Exception(buffer));
         }
-    } else if (value.m_value.func.m_nargs != num_args) {
+    } else if (value.m_value.func.m_is_variadic && num_args < value.m_value.func.m_nargs - 1) {
+        // if variadic, make sure the arg count is /at least/ what is required
+        m_state.ThrowException(thread,
+            Exception::InvalidArgsException(value.m_value.func.m_nargs, num_args, true));
+    } else if (!value.m_value.func.m_is_variadic && value.m_value.func.m_nargs != num_args) {
         m_state.ThrowException(thread,
             Exception::InvalidArgsException(value.m_value.func.m_nargs, num_args));
     } else {
-        // store current address
         Value previous_addr;
-        previous_addr.m_type = Value::ADDRESS;
-        previous_addr.m_value.addr = (uint32_t)bs->Position();
-        
+        previous_addr.m_type = Value::FUNCTION_CALL;
+        previous_addr.m_value.call.varargs_push = 0;
+
+        if (value.m_value.func.m_is_variadic) {
+            // for each argument that is over the expected size, we must pop it from
+            // the stack and add it to a new array.
+            int varargs_amt = num_args - value.m_value.func.m_nargs + 1;
+            // set varargs_push value so we know how to get back to the stack size before.
+            previous_addr.m_value.call.varargs_push = varargs_amt;
+            // store current address
+            previous_addr.m_value.call.addr = (uint32_t)bs->Position();
+
+            // allocate heap object
+            HeapValue *hv = m_state.HeapAlloc(thread);
+            ASSERT(hv != nullptr);
+
+            // create Array object to hold variadic args
+            Array arr(varargs_amt);
+
+            for (int i = varargs_amt - 1; i >= 0; i--) {
+                // push to array
+                arr.AtIndex(i, thread->GetStack().Top());
+                thread->GetStack().Pop();
+            }
+
+            // assign heap value to our array
+            hv->Assign(arr);
+
+            Value array_value;
+            array_value.m_type = Value::HEAP_POINTER;
+            array_value.m_value.ptr = hv;
+
+            // push the array to the stack
+            thread->GetStack().Push(array_value);
+        }
+
+        // push the address
         thread->GetStack().Push(previous_addr);
         
         // seek to the new address
@@ -219,11 +256,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
     case STORE_STATIC_FUNCTION: {
         uint32_t addr; bs->Read(&addr);
         uint8_t nargs; bs->Read(&nargs);
+        uint8_t is_variadic; bs->Read(&is_variadic);
 
         Value sv;
         sv.m_type = Value::FUNCTION;
         sv.m_value.func.m_addr = addr;
         sv.m_value.func.m_nargs = nargs;
+        sv.m_value.func.m_is_variadic = is_variadic;
 
         m_state.m_static_memory.Store(std::move(sv));
 
@@ -734,13 +773,15 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
     case RET: {
         // get top of stack (should be the address before jumping)
         Value &top = thread->GetStack().Top();
-        ASSERT(top.GetType() == Value::ADDRESS);
+        ASSERT(top.GetType() == Value::FUNCTION_CALL);
         
         // leave function and return to previous position
-        bs->Seek(top.GetValue().addr);
-        
-        // pop from stack
-        thread->GetStack().Pop();
+        bs->Seek(top.GetValue().call.addr);
+
+        // increase stack size by the amount required by the call
+        thread->GetStack().m_sp += top.GetValue().call.varargs_push - 1;
+        // NOTE: the -1 is because we will be popping the FUNCTION_CALL 
+        // object from the stack anyway...
 
         // decrease function depth
         thread->m_func_depth--;

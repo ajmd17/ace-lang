@@ -9,7 +9,7 @@ namespace vm {
 Array::Array(int size)
     : m_size(size),
       m_capacity(1 << (unsigned int)std::ceil(std::log(size) / std::log(2.0))),
-      m_buffer(new Value[size])
+      m_buffer(new Value[m_capacity])
 {
 }
 

@@ -31,6 +31,7 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
             } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
                 label_offset += sizeof(uint32_t); // address
                 label_offset += sizeof(uint8_t); // num args
+                label_offset += sizeof(uint8_t); // is variadic
             } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
                 label_offset += sizeof(uint16_t); // type size
                 label_offset += so.m_value.type_info.m_size * sizeof(uint32_t); // size of hashes
@@ -54,8 +55,8 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                     if (!it->empty()) os.write(&(*it)[0], it->size());
                 }
             } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
-                Instruction<uint8_t, uint32_t, uint8_t> store_ins(STORE_STATIC_FUNCTION,
-                    so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
+                Instruction<uint8_t, uint32_t, uint8_t, uint8_t> store_ins(STORE_STATIC_FUNCTION,
+                    so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs, so.m_value.func.m_is_variadic);
 
                 for (auto it = store_ins.m_data.rbegin(); it != store_ins.m_data.rend(); ++it) {
                     os.write(&(*it)[0], it->size());
@@ -139,8 +140,9 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                         LOAD_STRING, reg, std::strlen(so.m_value.str), so.m_value.str);
                     ins = tmp;
                 } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
-                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(
-                        LOAD_FUNC, reg, so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs);
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint32_t, uint8_t, uint8_t>(
+                        LOAD_FUNC, reg, so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs, 
+                            so.m_value.func.m_is_variadic);
                     ins = tmp;
                 } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
                     Instruction<> tmp = Instruction<uint8_t, uint8_t, uint16_t, std::vector<uint32_t>>(

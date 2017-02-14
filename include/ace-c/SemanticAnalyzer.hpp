@@ -28,7 +28,8 @@ public:
 
     static SymbolTypePtr_t SubstituteFunctionArgs(AstVisitor *visitor, Module *mod, 
         const SymbolTypePtr_t &identifier_type, 
-        const std::vector<std::shared_ptr<AstExpression>> &args);
+        const std::vector<std::shared_ptr<AstExpression>> &args,
+        const SourceLocation &location);
 
 public:
     SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit);

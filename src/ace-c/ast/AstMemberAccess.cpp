@@ -91,7 +91,8 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                     }
                     
                     if (auto as_function_type = SemanticAnalyzer::SubstituteFunctionArgs(
-                            visitor, mod, member_type, field_as_call->GetArguments())) {
+                        visitor, mod, member_type, field_as_call->GetArguments(), 
+                            field_as_call->GetLocation())) {
                         member_type = as_function_type;
                     } else {
                         // member is not a function type

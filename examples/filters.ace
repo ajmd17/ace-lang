@@ -1,0 +1,72 @@
+module filter {
+    type Filter {
+        state: Map(String, Any)
+
+
+        default_state() {
+            return {}
+        }
+
+        input(args...) {
+            throw 'Not implemented'
+        }
+
+        output() {
+            throw 'Not implemented'
+        }
+    }
+}
+
+module Demo_Filters {
+
+    type Splitter : Filter {
+        override default_state() {
+            return ('delimiter' => ' ')
+        }
+
+        override input(str: String) => String[] {
+            res: String[]
+            tmp: String
+
+            for i: Int = 0; i < str.length; i++ {
+                if str[i] == @state['delimiter'] {
+                    res.push(tmp)
+                    tmp = ''
+                } else {
+                    tmp.append(str[i])
+                }
+            }
+            res.push(tmp)
+
+            return res
+        }
+    }
+
+    type SplitBy : Filter {
+        override default_state() {
+            return ('delimiter' => ' ')
+        }
+
+        override input(by_what: Regex) {
+            self.state['delimiter'] = by_what
+        }
+
+        override output(next) {
+            next.state['delimiter'] = self.state['delimiter']
+        }
+    }
+
+    splitter: Splitter
+
+    myarray: String[]
+
+    x = 'hello world, this is a test' => splitter => x
+
+    
+    // translates to:
+    myarray = splitter.input('hello world, this is a test')
+
+
+    print myarray
+        // ['hello', 'world,', 'this', 'is', 'a', 'test']
+}

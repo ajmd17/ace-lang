@@ -13,7 +13,7 @@ public:
 
     inline const utf::Utf8String &ToString() const { return m_str; }
 
-    static Exception InvalidArgsException(int expected, int received);
+    static Exception InvalidArgsException(int expected, int received, bool variadic = false);
     static Exception InvalidArgsException(const char *expected_str, int received);
     static Exception NullReferenceException();
     static Exception DivisionByZeroException();

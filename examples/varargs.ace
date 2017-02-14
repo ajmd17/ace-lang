@@ -1,0 +1,24 @@
+module Example_Varargs {
+  meow: String = 'meow'
+  sum: Function = (args...) {
+    sum: Any = 0
+
+    i: Int = 0
+    len: Int = args.length()
+    
+    while i < len {
+      sum += args[i]
+      i += 1
+    }
+
+    return sum
+  }
+
+  hi: String = 'hi'
+
+  print "sum result: ", sum(2, 4, 6, 8, 10, 12, 14, 16, 18, 34, 34,32,3,3,4,5,6,4,3,2,3,3)
+  print "sum of nothing == ", sum()
+  print sum
+  print hi
+  print meow
+}

@@ -27,6 +27,12 @@ void AstParameter::Visit(AstVisitor *visitor, Module *mod)
         symbol_type = m_type_spec->GetSymbolType();
     }
 
+    // if variadic, then make it array of whatever type it is
+    if (m_is_variadic) {
+        symbol_type = SymbolType::GenericInstance(SymbolType::Builtin::VAR_ARGS,
+            GenericInstanceTypeInfo{ { symbol_type } });
+    }
+
     if (m_identifier) {
         m_identifier->SetSymbolType(symbol_type);
     }

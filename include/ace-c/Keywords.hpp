@@ -32,6 +32,7 @@ enum Keywords {
     Keyword_return,
     Keyword_break,
     Keyword_continue,
+    Keyword_async,
 };
 
 class Keyword {

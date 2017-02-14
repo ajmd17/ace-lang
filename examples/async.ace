@@ -1,0 +1,10 @@
+module Async_Examples {
+  addNumbers: Function = async (a, b) {
+    return a * b
+  }
+
+  // call function then do something w/ the result
+  addNumbers(5, 3) -> (result) {
+    print "the result is: ", result
+  }
+}

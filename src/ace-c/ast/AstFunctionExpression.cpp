@@ -16,10 +16,12 @@
 AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<AstParameter>> &parameters,
     const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstBlock> &block,
+    bool is_async,
     const SourceLocation &location)
     : AstExpression(location),
       m_parameters(parameters),
       m_type_specification(type_specification),
+      m_is_async(is_async),
       m_block(block),
       m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)

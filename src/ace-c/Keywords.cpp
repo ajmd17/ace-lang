@@ -28,6 +28,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "return",   Keyword_return },
     { "break",    Keyword_break },
     { "continue", Keyword_continue },
+    { "async",    Keyword_async },
 };
 
 bool Keyword::IsKeyword(const std::string &str)

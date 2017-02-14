@@ -107,8 +107,10 @@ private:
 #endif
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true, bool allow_keyword_names = false);
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition(bool require_keyword = true);
-    std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true, std::vector<std::shared_ptr<AstParameter>> params = {});
+    std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true,
+        std::vector<std::shared_ptr<AstParameter>> params = {}, bool is_async = false);
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();
+    std::shared_ptr<AstExpression> ParseAsyncExpression(); 
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();

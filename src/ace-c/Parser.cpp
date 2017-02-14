@@ -344,6 +344,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             } else {
                 res = ParseFunctionExpression();
             }
+        } else if (MatchKeyword(Keyword_async, false)) {
+            res = ParseAsyncExpression();
         } else if (MatchKeyword(Keyword_type, false)) {
             res = ParseTypeDefinition();
         } else if (MatchKeyword(Keyword_if, false)) {
@@ -443,6 +445,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         expr = ParseNil();
     } else if (MatchKeyword(Keyword_func)) {
         expr = ParseFunctionExpression();
+    } else if (MatchKeyword(Keyword_async)) {
+        expr = ParseAsyncExpression();
     } else if (Match(TK_OPERATOR)) {
         expr = ParseUnaryExpression();
     } else {
@@ -1166,7 +1170,7 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition(bool requ
 }
 
 std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool require_keyword,
-    std::vector<std::shared_ptr<AstParameter>> params)
+    std::vector<std::shared_ptr<AstParameter>> params, bool is_async)
 {
     Token token = require_keyword ? ExpectKeyword(Keyword_func, true) : Token::EMPTY;
 
@@ -1188,7 +1192,7 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool requ
         // parse function block
         if (auto block = ParseBlock()) {
             return std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression(
-                params, type_spec, block, location));
+                params, type_spec, block, is_async, location));
         }
     }
 
@@ -1218,6 +1222,16 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
 
         return std::shared_ptr<AstArrayExpression>(
             new AstArrayExpression(members, token.GetLocation()));
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstExpression> Parser::ParseAsyncExpression()
+{
+    if (Token token = ExpectKeyword(Keyword_async, true)) {
+        // for now, only functions are supported.
+        return ParseFunctionExpression(false, ParseFunctionParameters(), true);
     }
 
     return nullptr;

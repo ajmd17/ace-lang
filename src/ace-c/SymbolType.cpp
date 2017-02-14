@@ -22,7 +22,7 @@ const SymbolTypePtr_t SymbolType::Builtin::NUMBER    = SymbolType::Primitive("Nu
 const SymbolTypePtr_t SymbolType::Builtin::BOOLEAN   = SymbolType::Primitive("Boolean", std::shared_ptr<AstFalse>(new AstFalse(SourceLocation::eof)));
 const SymbolTypePtr_t SymbolType::Builtin::STRING    = SymbolType::Primitive("String", std::shared_ptr<AstString>(new AstString("", SourceLocation::eof)));
 const SymbolTypePtr_t SymbolType::Builtin::FUNCTION  = SymbolType::Generic("Function", std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression({}, nullptr, 
-    std::shared_ptr<AstBlock>(new AstBlock(SourceLocation::eof)), SourceLocation::eof)), {}, GenericTypeInfo{ -1 });
+    std::shared_ptr<AstBlock>(new AstBlock(SourceLocation::eof)), false, SourceLocation::eof)), {}, GenericTypeInfo{ -1 });
 const SymbolTypePtr_t SymbolType::Builtin::ARRAY     = SymbolType::Generic("Array", std::shared_ptr<AstArrayExpression>(new AstArrayExpression({}, SourceLocation::eof)), {}, GenericTypeInfo{ 1 });
 const SymbolTypePtr_t SymbolType::Builtin::VAR_ARGS  = SymbolType::Generic("Args", std::shared_ptr<AstArrayExpression>(new AstArrayExpression({}, SourceLocation::eof)), {}, GenericTypeInfo{ 1 });
 

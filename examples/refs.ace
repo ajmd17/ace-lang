@@ -1,0 +1,11 @@
+module Refs_Example {
+  i: Int = 42
+  ref j: Int = i
+  j += 1
+  // i is now 43
+  
+  ref k: Int = 5 // invalid, cannot assign ref to val
+
+  
+
+}

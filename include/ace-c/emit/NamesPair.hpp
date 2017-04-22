@@ -1,6 +1,7 @@
 #ifndef NAMES_PAIR_HPP
 #define NAMES_PAIR_HPP
 
+#include <cstdint>
 #include <vector>
 #include <utility>
 

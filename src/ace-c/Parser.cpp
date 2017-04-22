@@ -361,6 +361,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
         } else {
             res = ParseExpression();
         }
+    } else if (Match(TK_DIRECTIVE, false)) {
+        res = ParseDirective();
     } else if (Match(TK_IDENT, false) && MatchAhead(TK_COLON, 1)) {
         res = ParseVariableDeclaration(false);
     } else if (Match(TK_OPEN_BRACE, false)) {
@@ -400,6 +402,20 @@ std::shared_ptr<AstModuleDeclaration> Parser::ParseModuleDeclaration()
                     return module_ast;
                 }
             }
+        }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstDirective> Parser::ParseDirective()
+{
+    if (Token token = Expect(TK_DIRECTIVE, true)) {
+        Token value = Token::EMPTY;
+        if ((value = Match(TK_IDENT, true)) || (value = Expect(TK_STRING, true))) {
+            return std::shared_ptr<AstDirective>(
+                new AstDirective(token.GetValue(), value.GetValue(), token.GetLocation())
+            );
         }
     }
 

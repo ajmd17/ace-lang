@@ -8,6 +8,7 @@
 #include <ace-c/Keywords.hpp>
 #include <ace-c/ObjectType.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstDirective.hpp>
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/ast/AstFunctionDefinition.hpp>
 #include <ace-c/ast/AstFunctionExpression.hpp>
@@ -75,6 +76,7 @@ private:
 
     std::shared_ptr<AstStatement> ParseStatement(bool top_level = false);
     std::shared_ptr<AstModuleDeclaration> ParseModuleDeclaration();
+    std::shared_ptr<AstDirective> ParseDirective();
     std::shared_ptr<AstExpression> ParseTerm();
     std::shared_ptr<AstExpression> ParseParentheses();
     std::shared_ptr<AstInteger> ParseIntegerLiteral();

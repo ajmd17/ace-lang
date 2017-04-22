@@ -34,6 +34,8 @@ public:
     Token ReadDocumentation();
     /** Reads an operator and returns the token */
     Token ReadOperator();
+    /** Read a directive returns the token */
+    Token ReadDirective();
     /** Reads the name, and returns the either identifier or keyword token */
     Token ReadIdentifier();
 

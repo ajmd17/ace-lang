@@ -13,6 +13,7 @@ enum TokenClass {
     TK_IDENT,
     TK_KEYWORD,
     TK_OPERATOR,
+    TK_DIRECTIVE,
     TK_NEWLINE,
     TK_COMMA,
     TK_SEMICOLON,

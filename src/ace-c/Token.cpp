@@ -11,6 +11,7 @@ std::string Token::TokenTypeToString(TokenClass token_class)
         case TK_IDENT:         return "identifier";
         case TK_KEYWORD:       return "keyword";
         case TK_OPERATOR:      return "operator";
+        case TK_DIRECTIVE:     return "directive";
         case TK_NEWLINE:       return "newline";
         case TK_COMMA:         return ",";
         case TK_SEMICOLON:     return ";";
@@ -46,6 +47,7 @@ Token::Token(const Token &other)
 bool Token::IsContinuationToken() const
 {
     return m_token_class == TK_OPERATOR ||
+           m_token_class == TK_DIRECTIVE ||
            m_token_class == TK_COMMA ||
            m_token_class == TK_COLON ||
            m_token_class == TK_DOT ||

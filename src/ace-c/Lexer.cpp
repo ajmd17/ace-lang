@@ -93,7 +93,9 @@ Token Lexer::NextToken()
         } else {
             return ReadBlockComment();
         }*/
-    } else if (ch[0] == '_' || utf32_isalpha(ch[0])) {
+    } else if (ch[0] == '#') {
+        return ReadDirective();
+    }  else if (ch[0] == '_' || utf32_isalpha(ch[0])) {
         return ReadIdentifier();
     } else if (ch[0] == '-' && ch[1] == '>') {
         for (int i = 0; i < 2; i++) {
@@ -488,6 +490,34 @@ Token Lexer::ReadOperator()
     }
 
     return Token::EMPTY;
+}
+
+Token Lexer::ReadDirective()
+{
+    SourceLocation location = m_source_location;
+
+    // read '#'
+    int pos_change = 0;
+    m_source_stream.Next(pos_change);
+    m_source_location.GetColumn() += pos_change;
+
+    // store the name
+    std::string value;
+
+    // the character as a utf-32 character
+    u32char ch = m_source_stream.Peek();
+
+    while (utf32_isdigit(ch) || ch == (u32char)('_') || utf32_isalpha(ch)) {
+        int pos_change = 0;
+        ch = m_source_stream.Next(pos_change);
+        m_source_location.GetColumn() += pos_change;
+        // append the raw bytes
+        value.append(utf::get_bytes(ch));
+        // set ch to be the next character in the buffer
+        ch = m_source_stream.Peek();
+    }
+
+    return Token(TK_DIRECTIVE, value, location);
 }
 
 Token Lexer::ReadIdentifier()

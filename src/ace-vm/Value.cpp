@@ -42,6 +42,29 @@ void Value::Mark()
     }
 }
 
+const char *Value::GetTypeString() const
+{
+    switch (m_type) {
+        case I32: return "Int32";
+        case I64: return "Int64";
+        case F32: return "Float32";
+        case F64: return "Float64";
+        case BOOLEAN: return "Boolean";
+        case HEAP_POINTER: 
+            if (!m_value.ptr) {
+                return "NoType";
+            } else if (m_value.ptr->GetPointer<utf::Utf8String>()) {
+                return "String";
+            } else if (m_value.ptr->GetPointer<Array>()) {
+                return "Array";
+            }
+            return "Object";
+        case FUNCTION: return "Function";
+        case NATIVE_FUNCTION: return "NativeFunction";
+        default: return "??";
+    }
+}
+
 utf::Utf8String Value::ToString()
 {
     const int buf_size = 256;

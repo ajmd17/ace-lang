@@ -77,11 +77,12 @@ void Runtime_load_library(ace::sdk::Params params)
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
         } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
             // load library from string
-            Library lib = Runtime::Load((utf::Utf8String(exec_path.c_str()) + *strptr).GetData());
+            utf::Utf8String fullPath(utf::Utf8String(exec_path.c_str()) + *strptr);
+            Library lib = Runtime::Load(fullPath.GetData());
 
             if (!lib.GetHandle()) {
                 // could not load library
-                params.state->ThrowException(params.thread, vm::Exception::LibraryLoadException(strptr->GetData()));
+                params.state->ThrowException(params.thread, vm::Exception::LibraryLoadException(fullPath.GetData()));
             } else {
                 // store the library in a variable
 
@@ -154,7 +155,75 @@ void Runtime_load_function(ace::sdk::Params params)
     }
 }
 
-void Global_to_string(ace::sdk::Params params)
+void ObjectToJson(vm::Value *value, utf::Utf8String &out)
+{
+    if (value->GetType() == vm::Value::HEAP_POINTER) {
+        if (value->GetValue().ptr == nullptr) {
+            out += "null";
+
+            return;
+        } else if (vm::Object *obj = value->GetValue().ptr->GetPointer<vm::Object>()) {
+            out += "{";
+
+            for (size_t i = 0; i < obj->GetSize(); i++) {
+                vm::Member &mem = obj->GetMember(i);
+
+                out += "\"";
+                out += mem.name;
+                out += "\":";
+
+                ObjectToJson(&mem.value, out);
+
+                if (i != obj->GetSize() - 1) {
+                    out += ",";
+                }
+            }
+
+            out += "}";
+
+            // do not fall through
+            return;
+        }
+        // for strings
+        else if (utf::Utf8String *str = value->GetValue().ptr->GetPointer<utf::Utf8String>()) {
+            out += "\"";
+            out += *str;
+            out += "\"";
+
+            return;
+        } 
+    }
+
+    // fall through case
+    out += value->ToString();
+}
+
+void Global_tojson(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    // get value
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    // conver to json string
+    utf::Utf8String json_string(256);
+    ObjectToJson(target_ptr, json_string);
+
+    // store in memory
+    vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(json_string);
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
+void Global_tostring(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
 
@@ -169,6 +238,85 @@ void Global_to_string(ace::sdk::Params params)
     res.m_value.ptr = ptr;
 
     ACE_RETURN(res);
+}
+
+void Global_fmt(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(>=, 1);
+
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    vm::Exception e = vm::Exception(utf::Utf8String("fmt() expects a String as the first argument"));
+
+    if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
+        if (target_ptr->GetValue().ptr == nullptr) {
+            params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
+        } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
+            // scan through string and merge each argument where there is a '%'
+            size_t original_length = strptr->GetLength();
+            utf::Utf8String result_string(original_length);
+
+            const char *original_data = strptr->GetData();
+            ASSERT(original_data != nullptr);
+
+            const int buffer_size = 256;
+            char buffer[buffer_size + 1] = {'\0'};
+
+            // number of '%' characters handled
+            int num_fmts = 0;
+
+            int buffer_idx = 0;
+            
+            for (size_t i = 0; i < original_length; i++) {
+
+                if (original_data[i] == '%' && num_fmts < params.nargs - 1) {
+                    // set end of buffer to be NUL
+                    buffer[buffer_idx + 1] = '\0';
+                    // now upload to result string
+                    result_string += buffer;
+                    // clear buffer
+                    buffer_idx = 0;
+                    buffer[0] = '\0';
+
+                    result_string += params.args[++num_fmts]->ToString();
+
+                } else {
+
+                    buffer[buffer_idx] = original_data[i];
+
+                    if (buffer_idx == buffer_size - 1 || i == original_length - 1) {
+                        // set end of buffer to be NUL
+                        buffer[buffer_idx + 1] = '\0';
+                        // now upload to result string
+                        result_string += buffer;
+                        //clear buffer
+                        buffer_idx = 0;
+                        buffer[0] = '\0';
+                    } else {
+                        buffer_idx++;
+                    }
+                }
+            }
+
+            // store the result in a variable
+            vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
+            ASSERT(ptr != nullptr);
+            // assign it to the formatted string
+            ptr->Assign(result_string);
+
+            vm::Value res;
+            // assign register value to the allocated object
+            res.m_type = vm::Value::HEAP_POINTER;
+            res.m_value.ptr = ptr;
+
+            ACE_RETURN(res);
+        } else {
+            params.state->ThrowException(params.thread, e);
+        }
+    } else {
+        params.state->ThrowException(params.thread, e);
+    }
 }
 
 void Global_length(ace::sdk::Params params)
@@ -226,22 +374,11 @@ void Global_call(ace::sdk::Params params)
 
     vm::Value target(*target_ptr);
 
-    const int buffer_size = 256;
-    char buffer[buffer_size];
-    std::snprintf(buffer, buffer_size, "call() is undefined for type '%s'",
-        target_ptr->GetTypeString());
-    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
-
     // the position of the bytecode stream before thread execution
-    size_t pos = params.state->GetBytecodeStream()->Position();
+    size_t pos = params.bs->Position();
 
-    if (target.GetType() == vm::Value::ValueType::FUNCTION ||
-        target.GetType() == vm::Value::ValueType::NATIVE_FUNCTION) {
-        // call the function
-        params.state->m_vm->Invoke(params.thread, params.state->GetBytecodeStream().get(), target, params.nargs - 1);
-    } else {
-        params.state->ThrowException(params.thread, e);
-    }
+    // call the function
+    params.state->m_vm->Invoke(params.thread, params.bs, target, params.nargs - 1);
 }
 
 void Global_spawn_thread(ace::sdk::Params params)
@@ -260,7 +397,7 @@ void Global_spawn_thread(ace::sdk::Params params)
     vm::Exception e = vm::Exception(utf::Utf8String(buffer));
 
     // the position of the bytecode stream before thread execution
-    size_t pos = params.state->GetBytecodeStream()->Position();
+    size_t pos = params.bs->Position();
 
     if (target.GetType() == vm::Value::ValueType::FUNCTION) {
         // create the thread
@@ -274,25 +411,25 @@ void Global_spawn_thread(ace::sdk::Params params)
             }
         }
 
-        threads.emplace_back(std::thread([new_thread, params, target, pos]() {
-            ASSERT(params.state->GetBytecodeStream() != nullptr);
+        threads.emplace_back(std::thread([new_thread, params, target, pos] () {
+            ASSERT(params.bs != nullptr);
 
             // create copy of byte stream
-            vm::BytecodeStream bs = *params.state->GetBytecodeStream();
-            bs.SetPosition(pos);
+            vm::BytecodeStream newBs = *params.bs;
+            newBs.SetPosition(pos);
 
             // keep track of function depth so we can
             // quit the thread when the function returns
             const int func_depth_start = new_thread->m_func_depth;
             
             // call the function
-            params.state->m_vm->Invoke(new_thread, &bs, target, params.nargs - 1);
+            params.state->m_vm->Invoke(new_thread, &newBs, target, params.nargs - 1);
 
-            while (!bs.Eof() && params.state->good && (new_thread->m_func_depth - func_depth_start)) {
+            while (!newBs.Eof() && params.state->good && (new_thread->m_func_depth - func_depth_start)) {
                 uint8_t code;
-                bs.Read(&code, 1);
+                newBs.Read(&code, 1);
 
-                params.state->m_vm->HandleInstruction(new_thread, &bs, code);
+                params.state->m_vm->HandleInstruction(new_thread, &newBs, code);
             }
 
             // remove the thread
@@ -342,12 +479,10 @@ static int RunBytecodeFile(vm::VM *vm, const utf::Utf8String &filename, bool rec
 
     vm::BytecodeStream bytecode_stream(non_owning_ptr<char>(bytecodes), (size_t)bytecode_size, pos);
 
-    vm->GetState().SetBytecodeStream(non_owning_ptr<vm::BytecodeStream>(&bytecode_stream));
-
     // time how long execution took
     auto start = std::chrono::high_resolution_clock::now();
 
-    vm->Execute();
+    vm->Execute(&bytecode_stream);
 
     if (record_time) {
         auto end = std::chrono::high_resolution_clock::now();
@@ -657,9 +792,14 @@ int main(int argc, char *argv[])
 
     api.Module("runtime")
         .Function("gc", SymbolType::Builtin::ANY, {}, Runtime_gc)
-        .Function("load_library", SymbolType::Builtin::ANY, {}, Runtime_load_library)
-        .Function("load_function", SymbolType::Builtin::ANY, {}, Runtime_load_function)
-        .Variable("version", SymbolType::Builtin::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+        .Function("load_library", SymbolType::Builtin::ANY, {
+            SymbolType::Builtin::STRING
+        }, Runtime_load_library)
+        .Function("load_function", SymbolType::Builtin::FUNCTION, {
+            SymbolType::Builtin::ANY,
+            SymbolType::Builtin::STRING
+        }, Runtime_load_function)
+        .Variable("version", SymbolType::Builtin::ARRAY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
@@ -714,10 +854,34 @@ int main(int argc, char *argv[])
         });
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
-        .Function("to_string", SymbolType::Builtin::STRING, {}, Global_to_string)
-        .Function("length", SymbolType::Builtin::INT, {}, Global_length)
-        .Function("call", SymbolType::Builtin::ANY, {}, Global_call)
-        .Function("spawn_thread", SymbolType::Builtin::ANY, {}, Global_spawn_thread);
+        .Function("tostring", SymbolType::Builtin::STRING, {}, Global_tostring)
+        .Function("fmt", SymbolType::Builtin::STRING, {
+            SymbolType::Builtin::STRING,
+            SymbolType::GenericInstance(
+                SymbolType::Builtin::VAR_ARGS,
+                GenericInstanceTypeInfo{ { SymbolType::Builtin::ANY } }
+            )
+        }, Global_fmt)
+        .Function("tojson", SymbolType::Builtin::STRING, {
+            SymbolType::Builtin::ANY
+        }, Global_tojson)
+        .Function("length", SymbolType::Builtin::INT, {
+            SymbolType::Builtin::ANY
+        }, Global_length)
+        .Function("call", SymbolType::Builtin::ANY, {
+            SymbolType::Builtin::FUNCTION,
+            SymbolType::GenericInstance(
+                SymbolType::Builtin::VAR_ARGS,
+                GenericInstanceTypeInfo{ { SymbolType::Builtin::ANY } }
+            )
+        }, Global_call)
+        .Function("spawn_thread", SymbolType::Builtin::ANY, {
+            SymbolType::Builtin::FUNCTION,
+            SymbolType::GenericInstance(
+                SymbolType::Builtin::VAR_ARGS,
+                GenericInstanceTypeInfo{ { SymbolType::Builtin::ANY } }
+            )
+        }, Global_spawn_thread);
 
     api.BindAll(&vm, &compilation_unit);
 

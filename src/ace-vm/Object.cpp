@@ -1,6 +1,7 @@
 #include <ace-vm/Object.hpp>
 
 #include <common/my_assert.hpp>
+#include <common/hasher.hpp>
 
 #include <cstring>
 #include <cmath>
@@ -95,7 +96,7 @@ Member *ObjectMap::Get(uint32_t hash)
     return res;
 }
 
-Object::Object(int size, uint32_t *hashes)
+Object::Object(int size, char **names)
     : m_size(size)
 {
     ASSERT(m_size != 0);
@@ -104,8 +105,15 @@ Object::Object(int size, uint32_t *hashes)
     m_object_map = new ObjectMap(m_size);
 
     for (int i = 0; i < m_size; i++) {
-        m_members[i].hash = hashes[i];
-        m_object_map->Push(hashes[i], &m_members[i]);
+        size_t len = std::strlen(names[i]);
+        m_members[i].name = new char[len + 1];
+        m_members[i].name[len] = '\0';
+        std::memcpy(m_members[i].name, names[i], len);
+
+        uint32_t hash = hash_fnv_1(m_members[i].name);
+        m_members[i].hash = hash;
+        
+        m_object_map->Push(hash, &m_members[i]);
     }
 }
 
@@ -120,13 +128,26 @@ Object::Object(const Object &other)
     // copy all members
     for (int i = 0; i < m_size; i++) {
         m_members[i] = other.m_members[i];
-        m_object_map->Push(m_members[i].hash, &m_members[i]);
+
+        size_t len = std::strlen(other.m_members[i].name);
+        m_members[i].name = new char[len + 1];
+        m_members[i].name[len] = '\0';
+        std::memcpy(m_members[i].name, other.m_members[i].name, len);
+
+        uint32_t hash = hash_fnv_1(m_members[i].name);
+        m_members[i].hash = hash;
+
+        m_object_map->Push(hash, &m_members[i]);
     }
 }
 
 Object::~Object()
 {
     delete m_object_map;
+
+    for (size_t i = 0; i < m_size; i++) {
+        delete[] m_members[i].name;
+    }
     delete[] m_members;
 }
 

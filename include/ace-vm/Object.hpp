@@ -11,6 +11,7 @@ namespace ace {
 namespace vm {
 
 struct Member {
+    char *name;
     uint32_t hash;
     Value value;
 };
@@ -45,7 +46,7 @@ private:
 
 class Object {
 public:
-    Object(int size, uint32_t *hashes);
+    Object(int size, char **names);
     Object(const Object &other);
     ~Object();
 
@@ -53,6 +54,7 @@ public:
     
     inline Member *LookupMemberFromHash(uint32_t hash) const { return m_object_map->Get(hash); }
     inline int GetSize() const { return m_size; }
+    inline Member *GetMembers() const { return m_members; }
     inline Member &GetMember(int index) { return m_members[index]; }
     inline const Member &GetMember(int index) const { return m_members[index]; }
 

@@ -39,9 +39,11 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, obj_reg, static_id);
 
     if (!ace::compiler::Config::use_static_objects) {
-        // padding fill for LOAD_TYPE instruction!
-        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() +=
-            sp->GetMembers().size() * sizeof(uint32_t);
+        // fill with padding for LOAD_TYPE instruction
+        for (size_t i = 0; i < sp->GetMembers().size(); i++) {
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += std::get<0>(sp->GetMembers()[i]).size();
+        }
     }
 
     // store newly allocated object in same register

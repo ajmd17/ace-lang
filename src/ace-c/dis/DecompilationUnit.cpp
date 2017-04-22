@@ -112,14 +112,6 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             uint16_t size;
             m_bs.Read(&size);
 
-            std::vector<uint32_t> hashes;
-            hashes.resize(size);
-
-            // load (size) hashes.
-            for (int i = 0; i < size; i++) {
-                m_bs.Read(&hashes[i]);
-            }
-
             if (os != nullptr) {
                 os->setf(std::ios::hex, std::ios::basefield);
                 (*os) << is.GetPosition() << "\t";
@@ -128,21 +120,13 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                 (*os)
                     << "type ["
                         << "u16(" << (int)size << "), ";
-
-                for (int i = 0; i < size; i++) {
-                    (*os)
-                        << "u32(" << hashes[i] << ")";
-                    if (i != size - 1) {
-                        (*os) << ", ";
-                    }
-                }
                 
                 (*os)
                     << "]"
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint8_t, std::vector<uint32_t>>(code, size, hashes);
+            is << Instruction<uint8_t, uint8_t>(code, size);
 
             //delete[] name;
 
@@ -407,7 +391,7 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                 os->unsetf(std::ios::hex);
             }
 
-            is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(code, reg, addr, nargs);
+            is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t, uint8_t>(code, reg, addr, nargs, is_variadic);
 
             break;
         }
@@ -419,12 +403,16 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
             uint16_t size;
             m_bs.Read(&size);
 
-            std::vector<uint32_t> hashes;
-            hashes.resize(size);
-
-            // load (size) hashes.
+            std::vector<std::vector<uint8_t>> names;
+            names.resize(size);
+            
             for (int i = 0; i < size; i++) {
-                m_bs.Read(&hashes[i]);
+                uint16_t len;
+                m_bs.Read(&len);
+
+                names[i].resize(len + 1);
+                names[i][len] = '\0';
+                m_bs.Read(&names[i][0], len);
             }
 
             if (os != nullptr) {
@@ -436,10 +424,10 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                     << "load_type ["
                         << "%" << (int)reg << ", "
                         << "u16(" << (int)size << "), ";
-                
+
                 for (int i = 0; i < size; i++) {
                     (*os)
-                        << "u32(" << hashes[i] << ")";
+                        << "str(" << names[i].data() << ")";
                     if (i != size - 1) {
                         (*os) << ", ";
                     }
@@ -450,8 +438,8 @@ InstructionStream DecompilationUnit::Decompile(utf::utf8_ostream *os)
                     << std::endl;
             }
 
-            is << Instruction<uint8_t, uint8_t, uint8_t, std::vector<uint32_t>>
-                (code, reg, size, hashes);
+            is << Instruction<uint8_t, uint8_t, uint8_t, std::vector<std::vector<uint8_t>>>
+                (code, reg, size, names);
 
             break;
         }

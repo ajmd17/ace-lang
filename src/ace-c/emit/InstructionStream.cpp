@@ -5,6 +5,7 @@
 #include <common/my_assert.hpp>
 
 #include <algorithm>
+#include <iostream>
 #include <cstring>
 
 std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
@@ -34,7 +35,11 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                 label_offset += sizeof(uint8_t); // is variadic
             } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
                 label_offset += sizeof(uint16_t); // type size
-                label_offset += so.m_value.type_info.m_size * sizeof(uint32_t); // size of hashes
+                // names
+                for (size_t i = 0; i < so.m_value.type_info.m_names.size(); i++) {
+                    label_offset += sizeof(so.m_value.type_info.m_names[i].first);
+                    label_offset += so.m_value.type_info.m_names[i].second.size();
+                }
             }
         }
 
@@ -62,8 +67,9 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                     os.write(&(*it)[0], it->size());
                 }
             } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-                Instruction<uint8_t, uint16_t, std::vector<uint32_t>> store_ins(
-                    STORE_STATIC_TYPE, so.m_value.type_info.m_size, so.m_value.type_info.m_hashes);
+                Instruction<uint8_t, uint16_t, std::vector<NamesPair_t>> store_ins(
+                    STORE_STATIC_TYPE, so.m_value.type_info.m_size, so.m_value.type_info.m_names
+                );
 
                 for (auto it = store_ins.m_data.rbegin(); it != store_ins.m_data.rend(); ++it) {
                     os.write(&(*it)[0], it->size());
@@ -140,13 +146,15 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                         LOAD_STRING, reg, std::strlen(so.m_value.str), so.m_value.str);
                     ins = tmp;
                 } else if (so.m_type == StaticObject::TYPE_FUNCTION) {
+                    std::cout << so.m_value.func.m_is_variadic << "\n";
+                    
                     Instruction<> tmp = Instruction<uint8_t, uint8_t, uint32_t, uint8_t, uint8_t>(
                         LOAD_FUNC, reg, so.m_value.func.m_addr + label_offset, so.m_value.func.m_nargs, 
                             so.m_value.func.m_is_variadic);
                     ins = tmp;
                 } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint16_t, std::vector<uint32_t>>(
-                        LOAD_TYPE, reg, so.m_value.type_info.m_size, so.m_value.type_info.m_hashes);
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint16_t, std::vector<NamesPair_t>>(
+                        LOAD_TYPE, reg, so.m_value.type_info.m_size, so.m_value.type_info.m_names);
                     ins = tmp;
                 }
             }

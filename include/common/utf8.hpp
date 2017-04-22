@@ -391,6 +391,8 @@ inline u32char utf8_charat(const char *str, int index)
 inline void utf8_charat(const char *str, char *dst, int index)
     { char32to8(utf8_charat(str, index), dst); }
 
+
+
 class Utf8String {
 public:
     Utf8String()

@@ -35,6 +35,7 @@ namespace vm {
 struct VMState;
 struct ExecutionThread;
 struct Value;
+class BytecodeStream;
 } // namespace vm
 
 namespace sdk {
@@ -42,6 +43,7 @@ namespace sdk {
 struct Params {
     vm::VMState* state;
     vm::ExecutionThread* thread;
+    vm::BytecodeStream* bs;
     vm::Value** args;
     int nargs;
 };

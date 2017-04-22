@@ -32,7 +32,7 @@ struct Value {
         
         struct {
             uint32_t addr;
-            uint32_t varargs_push;
+            int32_t varargs_push;
         } call;
 
         uint32_t addr;
@@ -94,22 +94,9 @@ struct Value {
         }
     }
 
-    inline const char *GetTypeString() const
-    {
-        switch (m_type) {
-            case I32: return "Int32";
-            case I64: return "Int64";
-            case F32: return "Float32";
-            case F64: return "Float64";
-            case BOOLEAN: return "Boolean";
-            case HEAP_POINTER: return "Object";
-            case FUNCTION: return "Function";
-            case NATIVE_FUNCTION: return "NativeFunction";
-            default: return "??";
-        }
-    }
-
     void Mark();
+
+    const char *GetTypeString() const;
     utf::Utf8String ToString();
 };
 

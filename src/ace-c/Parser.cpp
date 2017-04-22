@@ -447,6 +447,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         expr = ParseFunctionExpression();
     } else if (MatchKeyword(Keyword_async)) {
         expr = ParseAsyncExpression();
+    } else if (MatchKeyword(Keyword_valueof)) {
+        expr = ParseValueOfExpression();
     } else if (Match(TK_OPERATOR)) {
         expr = ParseUnaryExpression();
     } else {
@@ -626,7 +628,15 @@ std::shared_ptr<AstIdentifier> Parser::ParseIdentifier(bool allow_keyword)
         if (MatchAhead(TK_OPEN_PARENTH, 1)) {
             // function call
             return ParseFunctionCall(allow_keyword);
-        } else {
+        }
+        // allow identifiers with identifiers directly after to be used as functions
+        // i.e: select x from y would be parsed as:
+        //      select(x).from(y)
+        else if (MatchAhead(TK_IDENT, 1) || MatchAhead(TK_STRING, 1)) {
+            return ParseFunctionCallNoParams(allow_keyword);
+        }
+        // return a variable
+        else {
             // read identifier token
             if (m_token_stream->HasNext()) {
                 m_token_stream->Next();
@@ -667,6 +677,29 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall(bool allow_keyword)
     }
 
     Expect(TK_CLOSE_PARENTH, true);
+
+    return std::shared_ptr<AstFunctionCall>(
+            new AstFunctionCall(token.GetValue(), args, token.GetLocation()));
+}
+
+std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCallNoParams(bool allow_keyword)
+{
+    Token token = ExpectIdentifier(allow_keyword, true);
+
+
+    std::vector<std::shared_ptr<AstExpression>> args;
+
+    do {
+        SourceLocation expr_location = CurrentLocation();
+
+        if (auto expr = ParseExpression()) {
+            args.push_back(expr);
+        } else {
+            CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
+            m_compilation_unit->GetErrorList().AddError(error);
+            return nullptr;
+        }
+    } while (Match(TK_COMMA, true));
 
     return std::shared_ptr<AstFunctionCall>(
             new AstFunctionCall(token.GetValue(), args, token.GetLocation()));
@@ -1232,6 +1265,33 @@ std::shared_ptr<AstExpression> Parser::ParseAsyncExpression()
     if (Token token = ExpectKeyword(Keyword_async, true)) {
         // for now, only functions are supported.
         return ParseFunctionExpression(false, ParseFunctionParameters(), true);
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstExpression> Parser::ParseValueOfExpression()
+{
+    if (Token token = ExpectKeyword(Keyword_valueof, true)) {
+        
+        
+        std::shared_ptr<AstExpression> expr;
+
+        if (!MatchAhead(TK_DOUBLE_COLON, 1)) {
+            Token ident = Expect(TK_IDENT, true);
+            expr.reset(
+                new AstVariable(ident.GetValue(), token.GetLocation())
+            );
+        } else {
+            do {
+                Token ident = Expect(TK_IDENT, true);
+                expr.reset(
+                    new AstModuleAccess(ident.GetValue(), expr, ident.GetLocation())
+                );
+            } while (Match(TK_DOUBLE_COLON, true));
+        }
+
+        return expr;
     }
 
     return nullptr;

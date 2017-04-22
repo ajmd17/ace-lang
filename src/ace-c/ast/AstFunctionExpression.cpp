@@ -199,7 +199,7 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 
     if (!ace::compiler::Config::use_static_objects) {
         // fill with padding, for LOAD_FUNC instruction.
-        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 3;
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 4;
     }
 }
 

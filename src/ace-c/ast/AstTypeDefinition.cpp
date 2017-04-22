@@ -5,6 +5,7 @@
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/emit/StaticObject.hpp>
+#include <ace-c/emit/NamesPair.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/hasher.hpp>
@@ -61,15 +62,16 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
         std::vector<SymbolMember_t> member_types;
 
-        // generate hashes for member names
-        std::vector<uint32_t> hashes;
-        hashes.reserve(m_members.size());
+        std::vector<NamesPair_t> names;
+        names.reserve(m_members.size());
 
         for (const auto &mem : m_members) {
             if (mem) {
                 mem->Visit(visitor, mod);
 
                 std::string mem_name = mem->GetName();
+                // add name
+                names.push_back({ mem_name.size(), std::vector<uint8_t>(mem_name.begin(), mem_name.end()) });
 
                 if (mem->GetIdentifier()) {
                     SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
@@ -81,7 +83,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                     member_types.push_back(std::make_tuple(mem_name, mem_type, mem->GetAssignment()));
 
                     // generate hash from member name
-                    hashes.push_back(hash_fnv_1(mem_name.c_str()));
+                    //hashes.push_back(hash_fnv_1(mem_name.c_str()));
 
                     m_num_members++;
                 }
@@ -100,7 +102,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         // create static object
         StaticTypeInfo st;
         st.m_size = m_num_members;
-        st.m_hashes = hashes;
+        st.m_names = names;
         st.m_name = new char[len + 1];
         st.m_name[len] = '\0';
         std::strcpy(st.m_name, type_name.c_str());

@@ -33,6 +33,7 @@ enum Keywords {
     Keyword_break,
     Keyword_continue,
     Keyword_async,
+    Keyword_valueof
 };
 
 class Keyword {

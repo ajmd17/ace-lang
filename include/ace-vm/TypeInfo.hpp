@@ -8,7 +8,7 @@ namespace vm {
 
 class TypeInfo {
 public:
-    TypeInfo(int size, uint32_t *hashes);
+    TypeInfo(int size, char **names);
     TypeInfo(const TypeInfo &other);
     TypeInfo &operator=(const TypeInfo &other);
     ~TypeInfo();
@@ -16,13 +16,13 @@ public:
     bool operator==(const TypeInfo &other) const;
 
     inline int GetSize() const { return m_size; }
-    inline uint32_t *GetHashes() const { return m_hashes; }
-    inline uint32_t GetMemberHash(int index) const
-        { ASSERT(index < m_size); return m_hashes[index]; }
+    inline char **const GetNames() const { return m_names; }
+    inline const char *GetMemberName(int index) const
+        { ASSERT(index < m_size); return m_names[index]; }
 
 private:
     int m_size;
-    uint32_t *m_hashes;
+    char **m_names;
 };
 
 } // namespace vm

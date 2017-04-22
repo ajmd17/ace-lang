@@ -1,6 +1,8 @@
 #ifndef STATIC_OBJECT_HPP
 #define STATIC_OBJECT_HPP
 
+#include <ace-c/emit/NamesPair.hpp>
+
 #include <string>
 #include <vector>
 
@@ -13,7 +15,7 @@ struct StaticFunction {
 struct StaticTypeInfo {
     uint8_t m_size;
     char *m_name;
-    std::vector<uint32_t> m_hashes;
+    std::vector<NamesPair_t> m_names;
 };
 
 struct StaticObject {

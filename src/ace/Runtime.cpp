@@ -20,7 +20,7 @@ namespace ace {
 
 const int Runtime::VERSION_MAJOR = 0;
 const int Runtime::VERSION_MINOR = 1;
-const int Runtime::VERSION_PATCH = 1;
+const int Runtime::VERSION_PATCH = 5;
 
 const char *Runtime::OS_NAME = 
 #ifdef _WIN32

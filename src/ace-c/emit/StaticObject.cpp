@@ -36,14 +36,14 @@ StaticObject::StaticObject(const StaticTypeInfo &type_info)
     : m_id(0),
       m_type(TYPE_TYPE_INFO)
 {
-    ASSERT_MSG(type_info.m_hashes.size() == type_info.m_size,
-        "number of hashes must be equal to the number of members");
+    ASSERT_MSG(type_info.m_names.size() == type_info.m_size,
+        "number of names must be equal to the number of members");
 
     int len = std::strlen(type_info.m_name);
     m_value.type_info.m_name = new char[len + 1];
     std::strcpy(m_value.type_info.m_name, type_info.m_name);
     m_value.type_info.m_size = type_info.m_size;
-    m_value.type_info.m_hashes = type_info.m_hashes;
+    m_value.type_info.m_names = type_info.m_names;
 }
 
 StaticObject::StaticObject(const StaticObject &other)
@@ -59,7 +59,7 @@ StaticObject::StaticObject(const StaticObject &other)
     } else if (other.m_type == TYPE_FUNCTION) {
         m_value.func = other.m_value.func;
     } else if (other.m_type == TYPE_TYPE_INFO) {
-        m_value.type_info.m_hashes = other.m_value.type_info.m_hashes;
+        m_value.type_info.m_names = other.m_value.type_info.m_names;
         m_value.type_info.m_size = other.m_value.type_info.m_size;
         int len = std::strlen(other.m_value.type_info.m_name);
         m_value.type_info.m_name = new char[len + 1];
@@ -96,7 +96,7 @@ StaticObject &StaticObject::operator=(const StaticObject &other)
     } else if (other.m_type == TYPE_FUNCTION) {
         m_value.func = other.m_value.func;
     } else if (other.m_type == TYPE_TYPE_INFO) {
-        m_value.type_info.m_hashes = other.m_value.type_info.m_hashes;
+        m_value.type_info.m_names = other.m_value.type_info.m_names;
         m_value.type_info.m_size = other.m_value.type_info.m_size;
         int len = std::strlen(other.m_value.type_info.m_name);
         m_value.type_info.m_name = new char[len + 1];

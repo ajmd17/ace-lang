@@ -4,38 +4,62 @@
 namespace ace {
 namespace vm {
 
-TypeInfo::TypeInfo(int size, uint32_t *hashes)
-    : m_size(size), m_hashes(new uint32_t[size])
+TypeInfo::TypeInfo(int size, char **names)
+    : m_size(size),
+      m_names(new char*[size])
 {
-    // copy all hashes
-    std::memcpy(m_hashes, hashes, sizeof(uint32_t) * m_size);
+    // copy all names
+    for (size_t i = 0; i < m_size; i++) {
+        size_t len = std::strlen(names[i]);
+        m_names[i] = new char[len + 1];
+        m_names[i][len] = '\0';
+        std::memcpy(m_names[i], names[i], len);
+    }
 }
 
 TypeInfo::TypeInfo(const TypeInfo &other)
-    : m_size(other.m_size), m_hashes(new uint32_t[other.m_size])
+    : m_size(other.m_size),
+      m_names(new char*[other.m_size])
 {
-    // copy all hashes
-    std::memcpy(m_hashes, other.m_hashes, sizeof(uint32_t) * m_size);
+    // copy all names
+    for (size_t i = 0; i < m_size; i++) {
+        size_t len = std::strlen(other.m_names[i]);
+        m_names[i] = new char[len + 1];
+        m_names[i][len] = '\0';
+        std::memcpy(m_names[i], other.m_names[i], len);
+    }
 }
 
 TypeInfo &TypeInfo::operator=(const TypeInfo &other)
 {
+    for (size_t i = 0; i < m_size; i++) {
+        delete[] m_names[i];
+    }
+
     if (m_size != other.m_size) {
-        delete[] m_hashes;
-        m_hashes = new uint32_t[other.m_size];
+        delete[] m_names;
+        m_names = new char*[other.m_size];
     }
 
     m_size = other.m_size;
 
-    // copy all hashes
-    std::memcpy(m_hashes, other.m_hashes, sizeof(uint32_t) * m_size);
+    // copy all names
+    for (size_t i = 0; i < m_size; i++) {
+        size_t len = std::strlen(other.m_names[i]);
+        m_names[i] = new char[len + 1];
+        m_names[i][len] = '\0';
+        std::memcpy(m_names[i], other.m_names[i], len);
+    }
 
     return *this;
 }
 
 TypeInfo::~TypeInfo()
 {
-    delete[] m_hashes;
+    for (size_t i = 0; i < m_size; i++) {
+        delete[] m_names[i];
+    }
+    delete[] m_names;
 }
 
 bool TypeInfo::operator==(const TypeInfo &other) const
@@ -44,9 +68,9 @@ bool TypeInfo::operator==(const TypeInfo &other) const
         return false;
     }
 
-    // compare hashes
+    // compare names
     for (int i = 0; i < m_size; i++) {
-        if (m_hashes[i] != other.m_hashes[i]) {
+        if (std::strcmp(m_names[i], other.m_names[i])) {
             return false;
         }
     }

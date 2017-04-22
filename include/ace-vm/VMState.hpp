@@ -67,7 +67,6 @@ struct VMState {
     ExecutionThread *m_threads[VM_MAX_THREADS];
     Heap m_heap;
     StaticMemory m_static_memory;
-    non_owning_ptr<BytecodeStream> m_bs;
     non_owning_ptr<VM> m_vm;
 
     bool good = true;
@@ -93,9 +92,6 @@ struct VMState {
 
     inline Heap &GetHeap() { return m_heap; }
     inline StaticMemory &GetStaticMemory() { return m_static_memory; }
-    inline non_owning_ptr<BytecodeStream> &GetBytecodeStream() { return m_bs; }
-    inline const non_owning_ptr<BytecodeStream> &GetBytecodeStream() const { return m_bs; }
-    inline void SetBytecodeStream(const non_owning_ptr<BytecodeStream> &bs) { m_bs = bs; }
 
 private:
     int m_num_threads = 0;

@@ -82,6 +82,7 @@ private:
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier(bool allow_keyword = false);
     std::shared_ptr<AstFunctionCall> ParseFunctionCall(bool allow_keyword = false);
+    std::shared_ptr<AstFunctionCall> ParseFunctionCallNoParams(bool allow_keyword = false);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
@@ -110,7 +111,8 @@ private:
     std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true,
         std::vector<std::shared_ptr<AstParameter>> params = {}, bool is_async = false);
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();
-    std::shared_ptr<AstExpression> ParseAsyncExpression(); 
+    std::shared_ptr<AstExpression> ParseAsyncExpression();
+    std::shared_ptr<AstExpression> ParseValueOfExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();

@@ -123,7 +123,7 @@ void VM::Invoke(ExecutionThread *thread, BytecodeStream *bs, const Value &value,
                 args[j] = &thread->m_stack[i];
             }
 
-            value.m_value.native_func(ace::sdk::Params { &m_state, thread, args, num_args });
+            value.m_value.native_func(ace::sdk::Params { &m_state, thread, bs, args, num_args });
 
             delete[] args;
         } else {
@@ -143,16 +143,17 @@ void VM::Invoke(ExecutionThread *thread, BytecodeStream *bs, const Value &value,
         Value previous_addr;
         previous_addr.m_type = Value::FUNCTION_CALL;
         previous_addr.m_value.call.varargs_push = 0;
+        // store current address
+        previous_addr.m_value.call.addr = (uint32_t)bs->Position();
 
         if (value.m_value.func.m_is_variadic) {
+            utf::cout << "required args:" << (int)value.m_value.func.m_nargs << "\n";
             // for each argument that is over the expected size, we must pop it from
             // the stack and add it to a new array.
             int varargs_amt = num_args - value.m_value.func.m_nargs + 1;
             // set varargs_push value so we know how to get back to the stack size before.
-            previous_addr.m_value.call.varargs_push = varargs_amt;
-            // store current address
-            previous_addr.m_value.call.addr = (uint32_t)bs->Position();
-
+            previous_addr.m_value.call.varargs_push = varargs_amt - 1;
+            
             // allocate heap object
             HeapValue *hv = m_state.HeapAlloc(thread);
             ASSERT(hv != nullptr);
@@ -179,7 +180,6 @@ void VM::Invoke(ExecutionThread *thread, BytecodeStream *bs, const Value &value,
 
         // push the address
         thread->GetStack().Push(previous_addr);
-        
         // seek to the new address
         bs->Seek(value.m_value.func.m_addr);
 
@@ -273,24 +273,32 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         ASSERT(size > 0);
 
-        uint32_t *hashes = new uint32_t[size];
-
-        // load (size) hashes.
+        char **names = new char*[size];
+        // load each name
         for (int i = 0; i < size; i++) {
-            bs->Read(&hashes[i]);
+            uint16_t length;
+            bs->Read(&length);
+
+            names[i] = new char[length + 1];
+            names[i][length] = '\0';
+            bs->Read(names[i], length);
         }
 
         // the value will be freed on
         // the destructor call of m_state.m_static_memory
         HeapValue *hv = new HeapValue();
-        hv->Assign(TypeInfo(size, hashes));
+        hv->Assign(TypeInfo(size, names));
 
         Value sv;
         sv.m_type = Value::HEAP_POINTER;
         sv.m_value.ptr = hv;
         m_state.m_static_memory.Store(std::move(sv));
-
-        delete[] hashes;
+        
+        // delete the names
+        for (size_t i = 0; i < size; i++) {
+            delete[] names[i];
+        }
+        delete[] names;
 
         break;
     }
@@ -407,11 +415,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         uint8_t reg; bs->Read(&reg);
         uint32_t addr; bs->Read(&addr);
         uint8_t nargs; bs->Read(&nargs);
+        uint8_t is_variadic; bs->Read(&is_variadic);
 
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::FUNCTION;
         sv.m_value.func.m_addr = addr;
         sv.m_value.func.m_nargs = nargs;
+        sv.m_value.func.m_is_variadic = is_variadic;
 
         break;
     }
@@ -421,25 +431,33 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         ASSERT(size > 0);
 
-        uint32_t *hashes = new uint32_t[size];
-
-        // load (size) hashes.
+        char **names = new char*[size];
+        // load each name
         for (int i = 0; i < size; i++) {
-            bs->Read(&hashes[i]);
+            uint16_t length;
+            bs->Read(&length);
+
+            names[i] = new char[length + 1];
+            names[i][length] = '\0';
+            bs->Read(names[i], length);
         }
 
         // allocate heap value
         HeapValue *hv = m_state.HeapAlloc(thread);
         ASSERT(hv != nullptr);
 
-        hv->Assign(TypeInfo(size, hashes));
+        hv->Assign(TypeInfo(size, names));
 
         // assign register value to the allocated object
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::HEAP_POINTER;
         sv.m_value.ptr = hv;
-
-        delete[] hashes;
+        
+        // delete the names
+        for (size_t i = 0; i < size; i++) {
+            delete[] names[i];
+        }
+        delete[] names;
 
         break;
     }
@@ -834,7 +852,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         ASSERT(hv != nullptr);
         
         // create the Object from the info type_ptr provides us with.
-        hv->Assign(Object(type_ptr->GetSize(), type_ptr->GetHashes()));
+        hv->Assign(Object(type_ptr->GetSize(), type_ptr->GetNames()));
 
         // assign register value to the allocated object
         Value &sv = thread->m_regs[dst];
@@ -1150,19 +1168,16 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
     }
 }
 
-void VM::Execute()
+void VM::Execute(BytecodeStream *bs)
 {
+    ASSERT(bs != nullptr);
     ASSERT(m_state.GetNumThreads() > 0);
-    ASSERT(m_state.GetBytecodeStream() != NULL);
 
-    // create copy of the stream so we don't affect position change
-    BytecodeStream bs = *m_state.GetBytecodeStream();
+    uint8_t code;
 
-    while (!bs.Eof() && m_state.good) {
-        uint8_t code;
-        bs.Read(&code);
-
-        HandleInstruction(MAIN_THREAD, &bs, code);
+    while (!bs->Eof() && m_state.good) {
+        bs->Read(&code);
+        HandleInstruction(MAIN_THREAD, bs, code);
     }
 }
 

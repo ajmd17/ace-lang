@@ -58,7 +58,7 @@ public:
     void Print(const Value &value);
     void Invoke(ExecutionThread *thread, BytecodeStream *bs, const Value &value, uint8_t num_args);
     void HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t code);
-    void Execute();
+    void Execute(BytecodeStream *bs);
 
 private:
     VMState m_state;

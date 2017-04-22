@@ -54,7 +54,8 @@ SymbolTypePtr_t SemanticAnalyzer::SubstituteFunctionArgs(AstVisitor *visitor, Mo
                 }
             }
 
-            if (param_types.size() == args.size() + 1 || (is_varargs && param_types.size() - 1 < args.size() + 2)) {
+            if (param_types.size() == args.size() + 1 ||
+                (is_varargs && param_types.size() - 1 < args.size() + 2)) {
                 for (int i = 0; i < args.size(); i++) {
                     SymbolTypePtr_t arg_type =
                         args[i]->GetSymbolType();

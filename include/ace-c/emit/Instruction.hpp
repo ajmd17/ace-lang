@@ -1,6 +1,8 @@
 #ifndef INSTRUCTION_HPP
 #define INSTRUCTION_HPP
 
+#include <ace-c/emit/NamesPair.hpp>
+
 #include <vector>
 #include <ostream>
 #include <cstring>
@@ -25,6 +27,25 @@ public:
     std::vector<std::vector<char>> m_data;
 
 protected:
+    void Accept(std::vector<NamesPair_t> names)
+    {
+        std::vector<char> operand;
+
+        for (size_t i = 0; i < names.size(); i++) {
+            char header[sizeof(names[i].first)];
+            std::memcpy(&header[0], &names[i].first, sizeof(names[i].first));
+
+            for (size_t j = 0; j < sizeof(names[i].first); j++) {
+                operand.push_back(header[j]);
+            }
+            for (size_t j = 0; j < names[i].second.size(); j++) {
+                operand.push_back(names[i].second[j]);
+            }
+        }
+        
+        m_data.push_back(operand);
+    }
+
     void Accept(const char *str)
     {
         // do not copy NUL byte

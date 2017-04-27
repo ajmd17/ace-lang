@@ -96,21 +96,24 @@ Member *ObjectMap::Get(uint32_t hash)
     return res;
 }
 
-Object::Object(int size, char **names)
-    : m_size(size)
+Object::Object(TypeInfo *type_ptr, const Value &type_ptr_value)
+    : m_type_ptr(type_ptr),
+      m_type_ptr_value(type_ptr_value)
 {
-    ASSERT(m_size != 0);
+    ASSERT(m_type_ptr != nullptr);
 
-    m_members = new Member[m_size];
-    m_object_map = new ObjectMap(m_size);
+    size_t size = m_type_ptr->GetSize();
+    ASSERT(size > 0);
 
-    for (int i = 0; i < m_size; i++) {
-        size_t len = std::strlen(names[i]);
-        m_members[i].name = new char[len + 1];
-        m_members[i].name[len] = '\0';
-        std::memcpy(m_members[i].name, names[i], len);
+    auto **names = m_type_ptr->GetNames();
+    ASSERT(names != nullptr);
 
-        uint32_t hash = hash_fnv_1(m_members[i].name);
+    m_members = new Member[size];
+    m_object_map = new ObjectMap(size);
+
+    for (size_t i = 0; i < size; i++) {
+        // compute hash for member name
+        uint32_t hash = hash_fnv_1(names[i]);
         m_members[i].hash = hash;
         
         m_object_map->Push(hash, &m_members[i]);
@@ -118,25 +121,27 @@ Object::Object(int size, char **names)
 }
 
 Object::Object(const Object &other)
-    : m_size(other.m_size)
+    : m_type_ptr(other.m_type_ptr),
+      m_type_ptr_value(other.m_type_ptr_value)
 {
-    ASSERT(m_size != 0);
+    ASSERT(m_type_ptr != nullptr);
 
-    m_members = new Member[m_size];
-    m_object_map = new ObjectMap(m_size);
+    size_t size = m_type_ptr->GetSize();
+    ASSERT(size > 0);
+
+    auto **names = m_type_ptr->GetNames();
+    ASSERT(names != nullptr);
+
+    m_members = new Member[size];
+    m_object_map = new ObjectMap(size);
 
     // copy all members
-    for (int i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < size; i++) {
         m_members[i] = other.m_members[i];
-
-        size_t len = std::strlen(other.m_members[i].name);
-        m_members[i].name = new char[len + 1];
-        m_members[i].name[len] = '\0';
-        std::memcpy(m_members[i].name, other.m_members[i].name, len);
-
-        uint32_t hash = hash_fnv_1(m_members[i].name);
+        // compute hash for member name
+        uint32_t hash = hash_fnv_1(names[i]);
         m_members[i].hash = hash;
-
+        
         m_object_map->Push(hash, &m_members[i]);
     }
 }
@@ -144,10 +149,6 @@ Object::Object(const Object &other)
 Object::~Object()
 {
     delete m_object_map;
-
-    for (size_t i = 0; i < m_size; i++) {
-        delete[] m_members[i].name;
-    }
     delete[] m_members;
 }
 

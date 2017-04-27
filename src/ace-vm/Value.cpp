@@ -2,6 +2,8 @@
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
 
+#include <common/my_assert.hpp>
+
 #include <stdio.h>
 #include <cinttypes>
 
@@ -27,10 +29,16 @@ void Value::Mark()
     
     if (m_type == Value::HEAP_POINTER && ptr != nullptr && !(ptr->GetFlags() & GC_MARKED)) {
         if (Object *object = ptr->GetPointer<Object>()) {
-            int size = object->GetSize();
-            for (int i = 0; i < size; i++) {
+            const vm::TypeInfo *type_ptr = object->GetTypePtr();
+            ASSERT(type_ptr != nullptr);
+
+            size_t size = type_ptr->GetSize();
+            for (size_t i = 0; i < size; i++) {
                 object->GetMember(i).value.Mark();
             }
+
+            // mark the type
+            object->GetTypePtrValue().Mark();
         } else if (Array *array = ptr->GetPointer<Array>()) {
             int size = array->GetSize();
             for (int i = 0; i < size; i++) {

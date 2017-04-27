@@ -477,7 +477,11 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
             m_state.ThrowException(thread, Exception::NullReferenceException());
         } else {
             if (Object *objptr = hv->GetPointer<Object>()) {
-                ASSERT_MSG(idx < objptr->GetSize(), "member index out of bounds");
+                const vm::TypeInfo *type_ptr = objptr->GetTypePtr();
+                
+                ASSERT(type_ptr != nullptr);
+                ASSERT_MSG(idx < type_ptr->GetSize(), "member index out of bounds");
+                
                 thread->m_regs[dst] = objptr->GetMember(idx).value;
             } else {
                 m_state.ThrowException(thread,
@@ -533,6 +537,14 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
                 if (Array *arrayptr = hv->GetPointer<Array>()) {
                     if (index >= arrayptr->GetSize()) {
                         m_state.ThrowException(thread, Exception::OutOfBoundsException());
+                    } else if (index < 0) {
+                        // wrap around (python style)
+                        index = arrayptr->GetSize() + index;
+                        if (index < 0 || index >= arrayptr->GetSize()) {
+                            m_state.ThrowException(thread, Exception::OutOfBoundsException());
+                        } else {
+                            thread->m_regs[dst] = arrayptr->AtIndex(index);
+                        }
                     } else {
                         thread->m_regs[dst] = arrayptr->AtIndex(index);
                     }
@@ -610,7 +622,11 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         if (HeapValue *hv = sv.m_value.ptr) {
             if (Object *objptr = hv->GetPointer<Object>()) {
-                ASSERT_MSG(idx < objptr->GetSize(), "member index out of bounds");
+                const vm::TypeInfo *type_ptr = objptr->GetTypePtr();
+                
+                ASSERT(type_ptr != nullptr);
+                ASSERT_MSG(idx < type_ptr->GetSize(), "member index out of bounds");
+                
                 objptr->GetMember(idx).value = thread->m_regs[src];
             } else {
                 m_state.ThrowException(thread,
@@ -855,7 +871,7 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         ASSERT(hv != nullptr);
         
         // create the Object from the info type_ptr provides us with.
-        hv->Assign(Object(type_ptr->GetSize(), type_ptr->GetNames()));
+        hv->Assign(Object(type_ptr, type_sv));
 
         // assign register value to the allocated object
         Value &sv = thread->m_regs[dst];

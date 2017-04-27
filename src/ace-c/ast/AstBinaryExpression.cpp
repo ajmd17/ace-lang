@@ -32,6 +32,9 @@ AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &l
 
 void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(m_left != nullptr);
+    ASSERT(m_right != nullptr);
+
     // check for lazy declaration first
     if ((m_variable_declaration = CheckLazyDeclaration(visitor, mod))) {
         m_variable_declaration->Visit(visitor, mod);
@@ -786,12 +789,23 @@ SymbolTypePtr_t AstBinaryExpression::GetSymbolType() const
     if (m_member_access) {
         return m_member_access->GetSymbolType();
     } else {
-        SymbolTypePtr_t lptr = m_left->GetSymbolType();
-        SymbolTypePtr_t rptr = m_right->GetSymbolType();
+        ASSERT(m_left != nullptr);
 
-        ASSERT(lptr != nullptr && rptr != nullptr);
+        SymbolTypePtr_t l_type_ptr = m_left->GetSymbolType();
+        ASSERT(l_type_ptr != nullptr);
 
-        return SymbolType::TypePromotion(lptr, rptr, true);
+        if (m_right) {
+            // the right was not optimized away,
+            // return type promotion
+            SymbolTypePtr_t r_type_ptr = m_right->GetSymbolType();
+
+            ASSERT(r_type_ptr != nullptr);
+
+            return SymbolType::TypePromotion(l_type_ptr, r_type_ptr, true);
+        } else {
+            // right was optimized away, return only left type
+            return l_type_ptr;
+        }
     }
 }
 

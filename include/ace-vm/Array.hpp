@@ -1,6 +1,8 @@
 #ifndef ARRAY_HPP
 #define ARRAY_HPP
 
+#include <common/my_assert.hpp>
+
 #include <ace-vm/Value.hpp>
 
 namespace ace {

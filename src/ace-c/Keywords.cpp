@@ -30,6 +30,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "continue", Keyword_continue },
     { "async",    Keyword_async },
     { "valueof",  Keyword_valueof },
+    { "typeof",   Keyword_typeof },
 };
 
 bool Keyword::IsKeyword(const std::string &str)

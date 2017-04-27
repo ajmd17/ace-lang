@@ -465,6 +465,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         expr = ParseAsyncExpression();
     } else if (MatchKeyword(Keyword_valueof)) {
         expr = ParseValueOfExpression();
+    } else if (MatchKeyword(Keyword_typeof)) {
+        expr = ParseTypeOfExpression();
     } else if (Match(TK_OPERATOR)) {
         expr = ParseUnaryExpression();
     } else {
@@ -1243,8 +1245,10 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition(bool requ
     return nullptr;
 }
 
-std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(bool require_keyword,
-    std::vector<std::shared_ptr<AstParameter>> params, bool is_async)
+std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(
+    bool require_keyword,
+    std::vector<std::shared_ptr<AstParameter>> params,
+    bool is_async)
 {
     Token token = require_keyword ? ExpectKeyword(Keyword_func, true) : Token::EMPTY;
 
@@ -1314,8 +1318,6 @@ std::shared_ptr<AstExpression> Parser::ParseAsyncExpression()
 std::shared_ptr<AstExpression> Parser::ParseValueOfExpression()
 {
     if (Token token = ExpectKeyword(Keyword_valueof, true)) {
-        
-        
         std::shared_ptr<AstExpression> expr;
 
         if (!MatchAhead(TK_DOUBLE_COLON, 1)) {
@@ -1333,6 +1335,27 @@ std::shared_ptr<AstExpression> Parser::ParseValueOfExpression()
         }
 
         return expr;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstTypeOfExpression> Parser::ParseTypeOfExpression()
+{
+    SourceLocation location = CurrentLocation();
+
+    Token token = ExpectKeyword(Keyword_typeof, true);
+    
+    if (token) {
+        SourceLocation expr_location = CurrentLocation();
+        if (auto expr = ParseExpression()) {
+            return std::shared_ptr<AstTypeOfExpression>(
+                new AstTypeOfExpression(expr, location)
+            );
+        } else {
+            CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
+            m_compilation_unit->GetErrorList().AddError(error);
+        }
     }
 
     return nullptr;

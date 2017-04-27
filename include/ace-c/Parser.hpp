@@ -38,6 +38,7 @@
 #include <ace-c/ast/AstPrintStatement.hpp>
 #include <ace-c/ast/AstTryCatch.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstTypeOfExpression.hpp>
 #include <ace-c/ast/AstReturnStatement.hpp>
 
 #include <string>
@@ -117,6 +118,7 @@ private:
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();
     std::shared_ptr<AstExpression> ParseAsyncExpression();
     std::shared_ptr<AstExpression> ParseValueOfExpression();
+    std::shared_ptr<AstTypeOfExpression> ParseTypeOfExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();

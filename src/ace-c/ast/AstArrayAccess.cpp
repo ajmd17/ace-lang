@@ -29,7 +29,12 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
     if (target_type != SymbolType::Builtin::ANY) {
         bool is_array = false;
 
-        if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+        if (target_type == SymbolType::Builtin::ARRAY) {
+            is_array = true;
+        } else if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+            // type is not Array, so check base class if it is a generic instance
+            // e.g Array(Int)
+            
             auto base = target_type->GetBaseType();
 
             if (base == SymbolType::Builtin::ARRAY || base == SymbolType::Builtin::VAR_ARGS) {

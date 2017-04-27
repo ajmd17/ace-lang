@@ -129,7 +129,14 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     // the properties of this function
     StaticFunction sf;
     sf.m_nargs = (uint8_t)m_parameters.size();
-    sf.m_is_variadic = 1; // TODO
+    sf.m_is_variadic = 0;
+    
+    if (!m_parameters.empty()) {
+        const std::shared_ptr<AstParameter> &last = m_parameters.back();
+        ASSERT(last != nullptr);
+
+        sf.m_is_variadic = (uint8_t)last->IsVariadic();
+    }
 
     // the register index variable we will reuse
     uint8_t rp;

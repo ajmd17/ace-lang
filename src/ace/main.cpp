@@ -163,18 +163,25 @@ void ObjectToJson(vm::Value *value, utf::Utf8String &out)
 
             return;
         } else if (vm::Object *obj = value->GetValue().ptr->GetPointer<vm::Object>()) {
+            // get type
+            vm::TypeInfo *type_ptr = obj->GetTypePtr();
+            ASSERT(type_ptr != nullptr);
+
+            const size_t size = type_ptr->GetSize();
+
             out += "{";
 
-            for (size_t i = 0; i < obj->GetSize(); i++) {
+            for (size_t i = 0; i < size; i++) {
                 vm::Member &mem = obj->GetMember(i);
 
                 out += "\"";
-                out += mem.name;
+                // get name from index
+                out += type_ptr->GetMemberName(mem.index);
                 out += "\":";
 
                 ObjectToJson(&mem.value, out);
 
-                if (i != obj->GetSize() - 1) {
+                if (i != size - 1) {
                     out += ",";
                 }
             }
@@ -349,7 +356,12 @@ void Global_length(ace::sdk::Params params)
             len = arrayptr->GetSize();
         } else if ((objptr = target_ptr->GetValue().ptr->GetPointer<vm::Object>()) != nullptr) {
             // get number of members in object
-            len = objptr->GetSize();
+            // first, get type
+            const vm::TypeInfo *type_ptr = objptr->GetTypePtr();
+            
+            ASSERT(type_ptr != nullptr);
+            
+            len = type_ptr->GetSize();
         } else {
             params.state->ThrowException(params.thread, e);
         }

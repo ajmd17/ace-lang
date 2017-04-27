@@ -2,6 +2,7 @@
 #define OBJECT_HPP
 
 #include <ace-vm/Value.hpp>
+#include <ace-vm/TypeInfo.hpp>
 
 #include <cstdint>
 
@@ -11,7 +12,7 @@ namespace ace {
 namespace vm {
 
 struct Member {
-    char *name;
+    int index; // index in the TypeInfo object
     uint32_t hash;
     Value value;
 };
@@ -46,22 +47,26 @@ private:
 
 class Object {
 public:
-    Object(int size, char **names);
+    Object(TypeInfo *type_ptr, const Value &type_ptr_value);
     Object(const Object &other);
     ~Object();
 
+    // compare by memory address
     inline bool operator==(const Object &other) const { return this == &other; }
-    
+
     inline Member *LookupMemberFromHash(uint32_t hash) const { return m_object_map->Get(hash); }
-    inline int GetSize() const { return m_size; }
     inline Member *GetMembers() const { return m_members; }
     inline Member &GetMember(int index) { return m_members[index]; }
     inline const Member &GetMember(int index) const { return m_members[index]; }
+    inline TypeInfo *GetTypePtr() const { return m_type_ptr; }
+    inline Value &GetTypePtrValue() { return m_type_ptr_value; }
+    inline const Value &GetTypePtrValue() const { return m_type_ptr_value; }
 
 private:
-    int m_size;
-    Member *m_members;
+    TypeInfo *m_type_ptr;
+    Value m_type_ptr_value;
     ObjectMap *m_object_map;
+    Member *m_members;
 };
 
 } // namespace vm

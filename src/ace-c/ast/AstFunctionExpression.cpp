@@ -31,7 +31,7 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
 void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 {
     // first item will be return type
-    std::vector<SymbolTypePtr_t> param_symbol_types;
+    std::vector<std::pair<std::string, SymbolTypePtr_t>> param_symbol_types;
 
     // open the new scope for parameters
     mod->m_scopes.Open(Scope(SCOPE_TYPE_FUNCTION));
@@ -42,13 +42,14 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             param->Visit(visitor, mod);
 
             SymbolTypePtr_t param_symbol_type = SymbolType::Builtin::UNDEFINED;
-
             // add the param's type to param_types
             if (param->GetIdentifier()) {
                 param_symbol_type = param->GetIdentifier()->GetSymbolType();
             }
 
-            param_symbol_types.push_back(param_symbol_type);
+            param_symbol_types.push_back({
+                param->GetName(), param_symbol_type
+            });
         }
     }
 
@@ -72,7 +73,8 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 } else {
                     // error; more than one possible return type.
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_multiple_return_types, it.second));
+                        CompilerError(Level_fatal, Msg_multiple_return_types, it.second)
+                    );
                 }
             }
         } else {
@@ -88,8 +90,12 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             if (!m_return_type->TypeCompatible(*it.first, true)) {
                 // error; more than one possible return type.
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_mismatched_return_type, it.second,
-                        m_return_type->GetName(), it.first->GetName()));
+                    CompilerError(
+                        Level_fatal,
+                        Msg_mismatched_return_type, it.second,
+                        m_return_type->GetName(), it.first->GetName()
+                    )
+                );
             }
         }
     }
@@ -97,17 +103,23 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Close();
 
     // set object type to be an instance of function
-    std::vector<SymbolTypePtr_t> generic_param_types;
+    std::vector<std::pair<std::string, SymbolTypePtr_t>> generic_param_types;
     generic_param_types.reserve(param_symbol_types.size() + 1);
 
-    generic_param_types.push_back(m_return_type);
+    generic_param_types.push_back({
+        "return_type", m_return_type
+    });
 
     for (auto &it : param_symbol_types) {
         generic_param_types.push_back(it);
     }
 
-    m_symbol_type = SymbolType::GenericInstance(SymbolType::Builtin::FUNCTION, 
-        GenericInstanceTypeInfo { generic_param_types });
+    m_symbol_type = SymbolType::GenericInstance(
+        SymbolType::Builtin::FUNCTION, 
+        GenericInstanceTypeInfo {
+            generic_param_types
+        }
+    );
 }
 
 void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)

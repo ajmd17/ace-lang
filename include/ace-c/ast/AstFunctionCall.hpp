@@ -2,6 +2,7 @@
 #define AST_FUNCTION_CALL_HPP
 
 #include <ace-c/ast/AstIdentifier.hpp>
+#include <ace-c/ast/AstArgument.hpp>
 
 #include <string>
 #include <vector>
@@ -10,15 +11,15 @@
 class AstFunctionCall : public AstIdentifier {
 public:
     AstFunctionCall(const std::string &name,
-        const std::vector<std::shared_ptr<AstExpression>> &args,
+        const std::vector<std::shared_ptr<AstArgument>> &args,
         const SourceLocation &location);
     virtual ~AstFunctionCall() = default;
 
-    inline void AddArgumentToFront(const std::shared_ptr<AstExpression> &arg)
+    inline void AddArgumentToFront(const std::shared_ptr<AstArgument> &arg)
         { m_args.insert(m_args.begin(), arg); }
-    inline void AddArgument(const std::shared_ptr<AstExpression> &arg)
+    inline void AddArgument(const std::shared_ptr<AstArgument> &arg)
         { m_args.push_back(arg); }
-    inline const std::vector<std::shared_ptr<AstExpression>> &GetArguments() const { return m_args; }
+    inline const std::vector<std::shared_ptr<AstArgument>> &GetArguments() const { return m_args; }
     
     inline bool HasSelfObject() const { return m_has_self_object; }
     inline void SetHasSelfObject(bool has_self_object) { m_has_self_object = has_self_object; }
@@ -39,7 +40,10 @@ public:
     virtual SymbolTypePtr_t GetSymbolType() const override;
 
 protected:
-    std::vector<std::shared_ptr<AstExpression>> m_args;
+    std::vector<std::shared_ptr<AstArgument>> m_args;
+
+    // set while analyzing
+    std::vector<int> m_arg_ordering;
     SymbolTypePtr_t m_return_type;
     bool m_has_self_object;
 

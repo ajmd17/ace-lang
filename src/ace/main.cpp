@@ -793,11 +793,11 @@ int main(int argc, char *argv[])
     api.Module("runtime")
         .Function("gc", SymbolType::Builtin::ANY, {}, Runtime_gc)
         .Function("load_library", SymbolType::Builtin::ANY, {
-            SymbolType::Builtin::STRING
+            { "lib_path", SymbolType::Builtin::STRING }
         }, Runtime_load_library)
         .Function("load_function", SymbolType::Builtin::FUNCTION, {
-            SymbolType::Builtin::ANY,
-            SymbolType::Builtin::STRING
+            { "lib", SymbolType::Builtin::ANY },
+            { "function_name", SymbolType::Builtin::STRING }
         }, Runtime_load_function)
         .Variable("version", SymbolType::Builtin::ARRAY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
@@ -854,33 +854,46 @@ int main(int argc, char *argv[])
         });
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
-        .Function("tostring", SymbolType::Builtin::STRING, {}, Global_tostring)
+        .Function("tostring", SymbolType::Builtin::STRING, {
+        }, Global_tostring)
         .Function("fmt", SymbolType::Builtin::STRING, {
-            SymbolType::Builtin::STRING,
-            SymbolType::GenericInstance(
+            { "format", SymbolType::Builtin::STRING },
+            { "args", SymbolType::GenericInstance(
                 SymbolType::Builtin::VAR_ARGS,
-                GenericInstanceTypeInfo{ { SymbolType::Builtin::ANY } }
-            )
+                GenericInstanceTypeInfo {
+                    {
+                        { "arg", SymbolType::Builtin::ANY }
+                    }
+                }
+            ) }
         }, Global_fmt)
         .Function("tojson", SymbolType::Builtin::STRING, {
-            SymbolType::Builtin::ANY
+            { "object", SymbolType::Builtin::ANY }
         }, Global_tojson)
         .Function("length", SymbolType::Builtin::INT, {
-            SymbolType::Builtin::ANY
+            { "arraylike", SymbolType::Builtin::ANY }
         }, Global_length)
         .Function("call", SymbolType::Builtin::ANY, {
-            SymbolType::Builtin::FUNCTION,
-            SymbolType::GenericInstance(
+            { "f", SymbolType::Builtin::FUNCTION },
+            { "args", SymbolType::GenericInstance(
                 SymbolType::Builtin::VAR_ARGS,
-                GenericInstanceTypeInfo{ { SymbolType::Builtin::ANY } }
-            )
+                GenericInstanceTypeInfo {
+                    {
+                        { "arg", SymbolType::Builtin::ANY }
+                    }
+                }
+            ) }
         }, Global_call)
         .Function("spawn_thread", SymbolType::Builtin::ANY, {
-            SymbolType::Builtin::FUNCTION,
-            SymbolType::GenericInstance(
+            { "f", SymbolType::Builtin::FUNCTION },
+            { "args", SymbolType::GenericInstance(
                 SymbolType::Builtin::VAR_ARGS,
-                GenericInstanceTypeInfo{ { SymbolType::Builtin::ANY } }
-            )
+                GenericInstanceTypeInfo {
+                    {
+                        { "arg", SymbolType::Builtin::ANY }
+                    }
+                }
+            ) }
         }, Global_spawn_thread);
 
     api.BindAll(&vm, &compilation_unit);

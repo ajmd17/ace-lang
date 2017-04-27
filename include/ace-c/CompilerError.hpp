@@ -34,6 +34,7 @@ enum ErrorMessage {
     Msg_too_many_args,
     Msg_too_few_args,
     Msg_arg_type_incompatible,
+    Msg_named_arg_not_found,
     Msg_redeclared_identifier,
     Msg_redeclared_identifier_module,
     Msg_redeclared_identifier_type,

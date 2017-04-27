@@ -56,16 +56,20 @@ API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
     const SymbolTypePtr_t &member_type,
     NativeInitializerPtr_t ptr)
 {
-    m_members.push_back(API::NativeVariableDefine(member_name, member_type, ptr));
+    m_members.push_back(API::NativeVariableDefine(
+        member_name, member_type, ptr
+    ));
     return *this;
 }
 
 API::TypeDefine &API::TypeDefine::Method(const std::string &method_name,
     const SymbolTypePtr_t &return_type,
-    const std::vector<SymbolTypePtr_t> &param_types,
+    const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
     NativeFunctionPtr_t ptr)
 {
-    m_methods.push_back(API::NativeFunctionDefine(method_name, return_type, param_types, ptr));
+    m_methods.push_back(API::NativeFunctionDefine(
+        method_name, return_type, param_types, ptr
+    ));
     return *this;
 }
 
@@ -100,10 +104,13 @@ API::ModuleDefine &API::ModuleDefine::Variable(
 API::ModuleDefine &API::ModuleDefine::Function(
     const std::string &function_name,
     const SymbolTypePtr_t &return_type,
-    const std::vector<SymbolTypePtr_t> &param_types,
+    const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
     NativeFunctionPtr_t ptr)
 {
-    m_function_defs.push_back(API::NativeFunctionDefine(function_name, return_type, param_types, ptr));
+    m_function_defs.push_back(API::NativeFunctionDefine(
+        function_name, return_type, param_types, ptr
+    ));
+
     return *this;
 }
 
@@ -174,13 +181,14 @@ void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
     main_thread->GetStack().Push(obj);
 }
 
-void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
+void API::ModuleDefine::BindNativeFunction(
+    const NativeFunctionDefine &def,
     Module *mod, VM *vm, CompilationUnit *compilation_unit)
 {
     ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
 
-    Identifier *ident = CreateIdentifier(compilation_unit, mod, def.function_name);
 
+    Identifier *ident = CreateIdentifier(compilation_unit, mod, def.function_name);
     ASSERT(ident != nullptr);
 
     // create value
@@ -191,16 +199,20 @@ void API::ModuleDefine::BindNativeFunction(const NativeFunctionDefine &def,
 
     value->SetReturnType(def.return_type);
 
-    std::vector<SymbolTypePtr_t> generic_param_types;
-    generic_param_types.push_back(def.return_type);
+    std::vector<std::pair<std::string, SymbolTypePtr_t>> generic_param_types;
+    generic_param_types.push_back({
+        "return_type", def.return_type
+    });
     for (auto &it : def.param_types) {
         generic_param_types.push_back(it);
     }
 
     // set identifier info
     ident->SetFlags(FLAG_CONST);
-    ident->SetSymbolType(SymbolType::GenericInstance(SymbolType::Builtin::FUNCTION, 
-        GenericInstanceTypeInfo{ generic_param_types }));
+    ident->SetSymbolType(SymbolType::GenericInstance(
+        SymbolType::Builtin::FUNCTION, 
+        GenericInstanceTypeInfo { generic_param_types }
+    ));
     ident->SetCurrentValue(value);
     ident->SetStackLocation(compilation_unit->GetInstructionStream().GetStackSize());
     compilation_unit->GetInstructionStream().IncStackSize();

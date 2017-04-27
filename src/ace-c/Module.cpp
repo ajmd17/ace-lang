@@ -79,7 +79,7 @@ SymbolTypePtr_t Module::LookupSymbolType(const std::string &name)
 }
 
 SymbolTypePtr_t Module::LookupGenericInstance(const SymbolTypePtr_t &base,
-    const std::vector<SymbolTypePtr_t> &params)
+    const std::vector<std::pair<std::string, SymbolTypePtr_t>> &params)
 {
     return PerformLookup(
     [&base, &params](TreeNode<Scope> *top) {

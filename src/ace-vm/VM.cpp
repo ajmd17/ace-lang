@@ -147,10 +147,13 @@ void VM::Invoke(ExecutionThread *thread, BytecodeStream *bs, const Value &value,
         previous_addr.m_value.call.addr = (uint32_t)bs->Position();
 
         if (value.m_value.func.m_is_variadic) {
-            utf::cout << "required args:" << (int)value.m_value.func.m_nargs << "\n";
             // for each argument that is over the expected size, we must pop it from
             // the stack and add it to a new array.
             int varargs_amt = num_args - value.m_value.func.m_nargs + 1;
+            if (varargs_amt < 0) {
+                varargs_amt = 0;
+            }
+            
             // set varargs_push value so we know how to get back to the stack size before.
             previous_addr.m_value.call.varargs_push = varargs_amt - 1;
             

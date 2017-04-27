@@ -22,15 +22,19 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr && mod != nullptr);
 
-    std::vector<SymbolTypePtr_t> generic_types;
+    std::vector<std::pair<std::string, SymbolTypePtr_t>> generic_types;
 
     for (auto &param : m_generic_params) {
         if (param) {
             param->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
             if (param->GetSymbolType()) {
-                generic_types.push_back(param->GetSymbolType());
+                generic_types.push_back({
+                    "param", param->GetSymbolType()
+                });
             } else {
-                generic_types.push_back(SymbolType::Builtin::UNDEFINED);
+                generic_types.push_back({
+                    "param", SymbolType::Builtin::UNDEFINED
+                });
             }
         }
     }
@@ -72,7 +76,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                             for (size_t i = 0; 
                                 i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++) {
 
-                                if (auto &gen = generic_types[i]) {
+                                if (auto &gen = generic_types[i].second) {
                                     SymbolTypePtr_t param_type = SymbolType::GenericParameter(
                                         symbol_type->GetGenericInfo().m_params[i]->GetName(),
                                         gen /* set substitution to the given type */);
@@ -82,8 +86,10 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 }
                             }
 
-                            auto new_instance = SymbolType::GenericInstance(symbol_type,
-                                GenericInstanceTypeInfo{ generic_types });
+                            auto new_instance = SymbolType::GenericInstance(
+                                symbol_type,
+                                GenericInstanceTypeInfo { generic_types }
+                            );
 
                             // accept all members
                             for (auto &mem : new_instance->GetMembers()) {

@@ -89,16 +89,25 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                             arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
                         }
                     }
+
+                    auto substituted = SemanticAnalyzer::SubstituteFunctionArgs(
+                        visitor,
+                        mod,
+                        member_type,
+                        field_as_call->GetArguments(), 
+                        field_as_call->GetLocation()
+                    );
                     
-                    if (auto as_function_type = SemanticAnalyzer::SubstituteFunctionArgs(
-                        visitor, mod, member_type, field_as_call->GetArguments(), 
-                            field_as_call->GetLocation())) {
+                    if (auto as_function_type = substituted.first) {
                         member_type = as_function_type;
                     } else {
                         // member is not a function type
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(
-                            CompilerError(Level_fatal, Msg_member_not_a_method, 
-                                field->GetLocation(), field_as_call->GetName()));
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            Level_fatal,
+                            Msg_member_not_a_method, 
+                            field->GetLocation(),
+                            field_as_call->GetName()
+                        ));
                     }
                 }
                 

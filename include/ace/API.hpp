@@ -41,13 +41,13 @@ public:
     struct NativeFunctionDefine {
         std::string function_name;
         SymbolTypePtr_t return_type;
-        std::vector<SymbolTypePtr_t> param_types;
+        std::vector<std::pair<std::string, SymbolTypePtr_t>> param_types;
         vm::NativeFunctionPtr_t ptr;
 
         NativeFunctionDefine(
             const std::string &function_name,
             const SymbolTypePtr_t &return_type,
-            const std::vector<SymbolTypePtr_t> &param_types,
+            const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
             vm::NativeFunctionPtr_t ptr)
             : function_name(function_name),
               return_type(return_type),
@@ -77,7 +77,7 @@ public:
 
         TypeDefine &Method(const std::string &method_name,
             const SymbolTypePtr_t &return_type,
-            const std::vector<SymbolTypePtr_t> &param_types,
+            const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
             vm::NativeFunctionPtr_t ptr);
     };
 
@@ -96,7 +96,7 @@ public:
 
         ModuleDefine &Function(const std::string &function_name,
             const SymbolTypePtr_t &return_type,
-            const std::vector<SymbolTypePtr_t> &param_types,
+            const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
             vm::NativeFunctionPtr_t ptr);
 
         void BindAll(vm::VM *vm, CompilationUnit *compilation_unit);

@@ -667,24 +667,54 @@ std::shared_ptr<AstIdentifier> Parser::ParseIdentifier(bool allow_keyword)
     return nullptr;
 }
 
+std::shared_ptr<AstArgument> Parser::ParseArgument()
+{
+    SourceLocation location = CurrentLocation();
+
+    bool is_named_arg = false;
+    std::string arg_name;
+
+    // check for name: value expressions (named arguments)
+    if (Match(TK_IDENT)) {
+        if (MatchAhead(TK_COLON, 1)) {
+            // named argument
+            is_named_arg = true;
+            Token name_token = Expect(TK_IDENT, true);
+            arg_name = name_token.GetValue();
+
+            // read the colon
+            Expect(TK_COLON, true);
+        }
+    }
+
+    if (auto expr = ParseExpression()) {
+        return std::shared_ptr<AstArgument>(
+            new AstArgument(
+                expr, is_named_arg, arg_name, location
+            )
+        );
+    } else {
+        CompilerError error(Level_fatal, Msg_illegal_expression, location);
+        m_compilation_unit->GetErrorList().AddError(error);
+        return nullptr;
+    }
+}
+
 std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall(bool allow_keyword)
 {
     Token token = ExpectIdentifier(allow_keyword, true);
 
     Expect(TK_OPEN_PARENTH, true);
 
-    std::vector<std::shared_ptr<AstExpression>> args;
+    std::vector<std::shared_ptr<AstArgument>> args;
 
     while (!Match(TK_CLOSE_PARENTH, false)) {
-        SourceLocation expr_location = CurrentLocation();
-
-        if (auto expr = ParseExpression()) {
-            args.push_back(expr);
-        } else {
-            CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
-            m_compilation_unit->GetErrorList().AddError(error);
-            return nullptr;
+        auto arg = ParseArgument();
+        if (arg == nullptr) {
+            break;
         }
+
+        args.push_back(arg);
 
         if (!Match(TK_COMMA, true)) {
             // unexpected token
@@ -701,20 +731,15 @@ std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCall(bool allow_keyword)
 std::shared_ptr<AstFunctionCall> Parser::ParseFunctionCallNoParams(bool allow_keyword)
 {
     Token token = ExpectIdentifier(allow_keyword, true);
-
-
-    std::vector<std::shared_ptr<AstExpression>> args;
+    std::vector<std::shared_ptr<AstArgument>> args;
 
     do {
-        SourceLocation expr_location = CurrentLocation();
-
-        if (auto expr = ParseExpression()) {
-            args.push_back(expr);
-        } else {
-            CompilerError error(Level_fatal, Msg_illegal_expression, expr_location);
-            m_compilation_unit->GetErrorList().AddError(error);
-            return nullptr;
+        auto arg = ParseArgument();
+        if (arg == nullptr) {
+            break;
         }
+
+        args.push_back(arg);
     } while (Match(TK_COMMA, true));
 
     return std::shared_ptr<AstFunctionCall>(

@@ -31,81 +31,178 @@ IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, M
     return res;
 }
 
-SymbolTypePtr_t SemanticAnalyzer::SubstituteFunctionArgs(AstVisitor *visitor, Module *mod, 
+void CheckArgTypeCompatible(
+    AstVisitor *visitor,
+    const SourceLocation &location,
+    const SymbolTypePtr_t &arg_type,
+    const SymbolTypePtr_t &param_type)
+{
+    ASSERT(arg_type != nullptr);
+    ASSERT(param_type != nullptr);
+
+    // make sure argument types are compatible
+    // use strict numbers so that floats cannot be passed as explicit ints
+    if (!param_type->TypeCompatible(*arg_type, true)) {
+        const CompilerError err(
+            Level_fatal,
+            Msg_arg_type_incompatible,
+            location,
+            arg_type->GetName(),
+            param_type->GetName()
+        );
+
+        visitor->GetCompilationUnit()->GetErrorList().AddError(err);
+    }
+}
+
+std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctionArgs(
+    AstVisitor *visitor, Module *mod, 
     const SymbolTypePtr_t &identifier_type, 
-    const std::vector<std::shared_ptr<AstExpression>> &args,
+    const std::vector<std::shared_ptr<AstArgument>> &args,
     const SourceLocation &location)
 {
     if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
         auto base = identifier_type->GetBaseType();
 
         if (base == SymbolType::Builtin::FUNCTION) {
+            // the indices of the arguments (will be returned)
+            std::vector<int> substituted_param_ids;
 
-            auto &param_types = identifier_type->GetGenericInstanceInfo().m_param_types;
+            auto &generic_args = identifier_type->GetGenericInstanceInfo().m_generic_args;
+
             // check for varargs (at end)
             bool is_varargs = false;
             SymbolTypePtr_t vararg_type;
-            if (!param_types.empty() && param_types.back()->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                auto base = param_types.back()->GetBaseType();
+
+            if (!generic_args.empty() && generic_args.back().second->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                auto base = generic_args.back().second->GetBaseType();
                 if (base == SymbolType::Builtin::VAR_ARGS) {
                     is_varargs = true;
-                    ASSERT(!param_types.back()->GetGenericInstanceInfo().m_param_types.empty());
-                    vararg_type = param_types.back()->GetGenericInstanceInfo().m_param_types[0];
+
+                    ASSERT(!generic_args.back().second->GetGenericInstanceInfo().m_generic_args.empty());
+                    vararg_type = generic_args.back().second->GetGenericInstanceInfo().m_generic_args[0].second;
                 }
             }
 
-            if (param_types.size() == args.size() + 1 ||
-                (is_varargs && param_types.size() - 1 < args.size() + 2)) {
+            if (generic_args.size() == args.size() + 1 || (is_varargs && generic_args.size() - 1 < args.size() + 2)) {
+                
                 for (int i = 0; i < args.size(); i++) {
-                    SymbolTypePtr_t arg_type =
-                        args[i]->GetSymbolType();
+                    ASSERT(args[i] != nullptr);
 
-                    const SymbolTypePtr_t &param_type = i + 1 < param_types.size()
-                        ? param_types[i + 1]
-                        : param_types.back();
+                    struct {
+                        bool is_named;
+                        std::string name;
+                        SymbolTypePtr_t type;
+                    } arg_info;
 
-                    ASSERT(arg_type != nullptr);
-                    ASSERT(param_type != nullptr);
+                    arg_info.is_named = args[i]->IsNamed();
+                    arg_info.name = args[i]->GetName();
+                    arg_info.type = args[i]->GetSymbolType();
 
-                    if (is_varargs && i + 2 >= param_types.size()) {
-                        // in varargs... check vararg base type
-                        ASSERT(vararg_type != nullptr);
+                    // if it is named, search the params for one with the same name.
+                    // (make sure it isnt already substituted)
+                    if (arg_info.is_named) {
+                        // TODO: maybe named varargs could be put in a hashmap?
+                        int found_index = -1;
 
-                        if (!vararg_type->TypeCompatible(*arg_type, true)) {
-                            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                                CompilerError(Level_fatal, Msg_arg_type_incompatible, 
-                                    args[i]->GetLocation(), arg_type->GetName(), vararg_type->GetName()));
+                        for (int j = 1; j < generic_args.size(); j++) {
+                            if (generic_args[j].first == arg_info.name) {
+                                found_index = j - 1; // do -1 because first param will be return type
+                                // found, stop searching
+                                break;
+                            }
                         }
+
+                        if (found_index == -1) {
+                            // still -1, so add error
+                            const CompilerError err(
+                                Level_fatal,
+                                Msg_named_arg_not_found,
+                                args[i]->GetLocation(),
+                                arg_info.name
+                            );
+
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(err);
+                        } else {
+                            // found successfully, check type compatibility
+
+                            const SymbolTypePtr_t &param_type = generic_args[found_index + 1].second;
+
+                            CheckArgTypeCompatible(
+                                visitor, args[i]->GetLocation(), arg_info.type, param_type
+                            );
+                        }
+
+                        // add 'i' to param ids (index of named param)
+                        substituted_param_ids.push_back(found_index);
+
+
                     } else {
-                        // make sure argument types are compatible
-                        // use strict numbers so that floats cannot be passed as explicit ints
-                        if (!param_type->TypeCompatible(*arg_type, true)) {
-                            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                                CompilerError(Level_fatal, Msg_arg_type_incompatible, 
-                                    args[i]->GetLocation(), arg_type->GetName(), param_type->GetName()));
+                        // choose whether to get next param, or last (in the case of varargs)
+                        struct {
+                            std::string name;
+                            SymbolTypePtr_t type;    
+                        } param_info;
+
+                        const std::pair<std::string, SymbolTypePtr_t> &param =
+                            (i + 1 < generic_args.size())
+                            ? generic_args[i + 1]
+                            : generic_args.back();
+                        
+                        param_info.name = param.first;
+                        param_info.type = param.second;
+
+                        if (is_varargs && i + 2 >= generic_args.size()) {
+                            // in varargs... check vararg base type
+                            CheckArgTypeCompatible(
+                                visitor, args[i]->GetLocation(), arg_info.type, vararg_type
+                            );
+                        } else {
+                            CheckArgTypeCompatible(
+                                visitor, args[i]->GetLocation(), arg_info.type, param_info.type
+                            );
                         }
+
+                        // add 'i' to param ids (positional)
+                        substituted_param_ids.push_back(i);
                     }
                 }
             } else {
                 // wrong number of args given
-                ErrorMessage msg = args.size() + 1 > identifier_type->GetGenericInstanceInfo().m_param_types.size()
+                ErrorMessage msg = (args.size() + 1 > identifier_type->GetGenericInstanceInfo().m_generic_args.size())
                     ? Msg_too_many_args : Msg_too_few_args;
                 
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, msg, location));
+                    CompilerError(Level_fatal, msg, location)
+                );
             }
 
-            ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types.size() >= 1);
-            ASSERT(identifier_type->GetGenericInstanceInfo().m_param_types[0] != nullptr);
+            // make sure the "return type" of the function is not null
+            ASSERT(identifier_type->GetGenericInstanceInfo().m_generic_args.size() >= 1);
+            ASSERT(identifier_type->GetGenericInstanceInfo().m_generic_args[0].second != nullptr);
 
-            return identifier_type->GetGenericInstanceInfo().m_param_types[0];
+            // return the "return type" of the function
+            return {
+                identifier_type->GetGenericInstanceInfo().m_generic_args[0].second,
+                substituted_param_ids
+            };
         }
     } else if (identifier_type == SymbolType::Builtin::FUNCTION) {
+        // the indices of the arguments (will be returned)
+        std::vector<int> substituted_param_ids;
+
+        for (size_t i = 0; i < args.size(); i++) {
+            substituted_param_ids.push_back(i);
+        }
+
         // abstract function, allow any params
-        return SymbolType::Builtin::ANY;
+        return {
+            SymbolType::Builtin::ANY,
+            substituted_param_ids
+        };
     }
     
-    return nullptr;
+    return { nullptr, {} };
 }
 
 SemanticAnalyzer::SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)

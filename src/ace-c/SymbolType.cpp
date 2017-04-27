@@ -99,16 +99,18 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
             }
             break;
         case TYPE_GENERIC_INSTANCE:
-            if (m_generic_instance_info.m_param_types.size() != other.m_generic_instance_info.m_param_types.size()) {
+            if (m_generic_instance_info.m_generic_args.size() != other.m_generic_instance_info.m_generic_args.size()) {
                 return false;
             }
 
             // check each substituted parameter
-            for (size_t i = 0; i < m_generic_instance_info.m_param_types.size(); i++) {
-                ASSERT(m_generic_instance_info.m_param_types[i] != nullptr);
-                ASSERT(other.m_generic_instance_info.m_param_types[i] != nullptr);
+            for (size_t i = 0; i < m_generic_instance_info.m_generic_args.size(); i++) {
+                ASSERT(m_generic_instance_info.m_generic_args[i].second != nullptr);
+                ASSERT(other.m_generic_instance_info.m_generic_args[i].second != nullptr);
 
-                if (!m_generic_instance_info.m_param_types[i]->TypeEqual(*other.m_generic_instance_info.m_param_types[i])) {
+                if (!m_generic_instance_info.m_generic_args[i].second->TypeEqual(
+                    *other.m_generic_instance_info.m_generic_args[i].second
+                )) {
                     return false;
                 }
             }
@@ -186,14 +188,14 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
                 }
 
                 // check all params
-                if (m_generic_instance_info.m_param_types.size() != right.m_generic_instance_info.m_param_types.size()) {
+                if (m_generic_instance_info.m_generic_args.size() != right.m_generic_instance_info.m_generic_args.size()) {
                     return false;
                 }
 
                 // check each substituted parameter
-                for (size_t i = 0; i < m_generic_instance_info.m_param_types.size(); i++) {
-                    auto &param_type = m_generic_instance_info.m_param_types[i];
-                    auto &other_param_type = right.m_generic_instance_info.m_param_types[i];
+                for (size_t i = 0; i < m_generic_instance_info.m_generic_args.size(); i++) {
+                    auto &param_type = m_generic_instance_info.m_generic_args[i].second;
+                    auto &other_param_type = right.m_generic_instance_info.m_generic_args[i].second;
 
                     ASSERT(param_type != nullptr);
                     ASSERT(other_param_type != nullptr);
@@ -305,12 +307,16 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
     ASSERT(base->GetTypeClass() == TYPE_GENERIC);
 
     std::string name = base->GetName();
-    if (!info.m_param_types.empty()) {
+    if (!info.m_generic_args.empty()) {
         name += "(";
 
-        for (size_t i = 0; i < info.m_param_types.size(); i++) {
-            name += info.m_param_types[i]->GetName();
-            if (i != info.m_param_types.size() - 1) {
+        for (size_t i = 0; i < info.m_generic_args.size(); i++) {
+            ASSERT(info.m_generic_args[i].second != nullptr);
+
+            name += info.m_generic_args[i].first;
+            name += ": ";
+            name += info.m_generic_args[i].second->GetName();
+            if (i != info.m_generic_args.size() - 1) {
                 name += ", ";
             }
         }
@@ -327,11 +333,12 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
         if (std::get<1>(member)->GetTypeClass() == TYPE_GENERIC_PARAMETER) {
             // if members of the generic/template class are of the type T (generic parameter)
             // we need to make sure that the number of parameters supplied are equal.
-            ASSERT(base->GetGenericInfo().m_params.size() == info.m_param_types.size());
+            ASSERT(base->GetGenericInfo().m_params.size() == info.m_generic_args.size());
             
             // find parameter and substitute it
             for (size_t i = 0; !substituted && i < base->GetGenericInfo().m_params.size(); i++) {
                 auto &it = base->GetGenericInfo().m_params[i];
+
                 if (it->GetName() == std::get<1>(member)->GetName()) {
                     std::shared_ptr<AstExpression> default_value;
 
@@ -340,7 +347,8 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
                     }
 
                     members.push_back(SymbolMember_t(
-                        std::get<0>(member), info.m_param_types[i], default_value));
+                        std::get<0>(member), info.m_generic_args[i].second, default_value)
+                    );
 
                     substituted = true;
                 }
@@ -349,12 +357,14 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
             if (!substituted) {
                 // substitution error, set type to be undefined
                 members.push_back(SymbolMember_t(
-                    std::get<0>(member), SymbolType::Builtin::UNDEFINED, std::get<2>(member)));
+                    std::get<0>(member), SymbolType::Builtin::UNDEFINED, std::get<2>(member))
+                );
             }
         } else {
             // push copy (clone assignment value)
             members.push_back(SymbolMember_t(
-                std::get<0>(member), std::get<1>(member), CloneAstNode(std::get<2>(member))));
+                std::get<0>(member), std::get<1>(member), CloneAstNode(std::get<2>(member)))
+            );
         }
     }
 
@@ -364,8 +374,9 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
     // generics, but built-in generics like Function and Array can play by
     // their own rules
 
-    SymbolTypePtr_t res(new SymbolType(name, TYPE_GENERIC_INSTANCE, base,
-        nullptr, members));
+    SymbolTypePtr_t res(new SymbolType(
+        name, TYPE_GENERIC_INSTANCE, base, nullptr, members)
+    );
 
     auto default_value = base->GetDefaultValue();
     if (!default_value) {
@@ -375,6 +386,7 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
     res->SetId(base->GetId());
     res->SetDefaultValue(default_value);
     res->m_generic_instance_info = info;
+
     return res;
 }
 

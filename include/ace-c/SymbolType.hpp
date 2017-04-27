@@ -42,7 +42,7 @@ struct GenericTypeInfo {
 };
 
 struct GenericInstanceTypeInfo {
-    std::vector<SymbolTypePtr_t> m_param_types;
+    std::vector<std::pair<std::string, SymbolTypePtr_t>> m_generic_args;
 };
 
 struct GenericParameterTypeInfo {

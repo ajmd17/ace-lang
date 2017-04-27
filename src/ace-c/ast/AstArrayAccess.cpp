@@ -136,8 +136,8 @@ SymbolTypePtr_t AstArrayAccess::GetSymbolType() const
 
     if (target_type->GetTypeClass() == TYPE_ARRAY) {
         SymbolTypePtr_t held_type = SymbolType::Builtin::UNDEFINED;
-        if (target_type->GetGenericInstanceInfo().m_param_types.size() == 1) {
-            held_type = target_type->GetGenericInstanceInfo().m_param_types[0];
+        if (target_type->GetGenericInstanceInfo().m_generic_args.size() == 1) {
+            held_type = target_type->GetGenericInstanceInfo().m_generic_args[0].second;
             // todo: tuple?
         }
         return held_type;

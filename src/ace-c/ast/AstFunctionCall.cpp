@@ -12,7 +12,7 @@
 #include <iostream>
 
 AstFunctionCall::AstFunctionCall(const std::string &name,
-    const std::vector<std::shared_ptr<AstExpression>> &args,
+    const std::vector<std::shared_ptr<AstArgument>> &args,
     const SourceLocation &location)
     : AstIdentifier(name, location),
       m_args(args),
@@ -48,9 +48,11 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
                 // we do this to make sure it was declared in this scope.
                 if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
                     // add error that the variable must be passed as a parameter
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter,
-                            m_location, m_name));
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        Level_fatal,
+                        Msg_closure_capture_must_be_parameter,
+                        m_location, m_name
+                    ));
                 }
             }
 
@@ -59,8 +61,17 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
             // continue if it is `Any` because we can't really assure that it is a function
             if (identifier_type != SymbolType::Builtin::ANY) {
-                if (!(m_return_type = SemanticAnalyzer::SubstituteFunctionArgs(visitor, 
-                    mod, identifier_type, m_args, m_location))) {
+                auto substituted = SemanticAnalyzer::SubstituteFunctionArgs(
+                    visitor, 
+                    mod,
+                    identifier_type,
+                    m_args,
+                    m_location
+                );
+
+                m_arg_ordering = substituted.second;
+
+                if (!(m_return_type = substituted.first)) {
                     // not a function type
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
                         CompilerError(Level_fatal, Msg_not_a_function, m_location, m_name));
@@ -89,8 +100,16 @@ void AstFunctionCall::BuildArgumentsStart(AstVisitor *visitor, Module *mod)
     uint8_t rp;
 
     // push a copy of each argument to the stack
-    for (auto &arg : m_args) {
+    for (size_t i = 0; i < m_args.size(); i++) {
+        ASSERT(m_arg_ordering.size() >= m_args.size());
+        ASSERT(m_arg_ordering[i] >= 0);
+        ASSERT(m_arg_ordering[i] <= m_args.size());
+
+        std::cout << "m_arg_ordering[" << i << "] = " << m_arg_ordering[i] << "\n";
+
+        auto &arg = m_args[m_arg_ordering[i]];
         ASSERT(arg != nullptr);
+
 
         arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
 

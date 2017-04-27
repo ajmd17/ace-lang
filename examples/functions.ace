@@ -1,9 +1,16 @@
 module functions {
+    let log = (what, args...) {
+        print 'what = ', what
+    }
+
+    log('hello');
+
     // simple function to take 'name' as an input,
     // and make use of it.
     say_name: Function = (name) {
         print "Hello, ", name, "!"
     }
+    print say_name
 
     say_name("your name here")
 }

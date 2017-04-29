@@ -107,7 +107,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     generic_param_types.reserve(param_symbol_types.size() + 1);
 
     generic_param_types.push_back({
-        "return_type", m_return_type
+        "@return", m_return_type
     });
 
     for (auto &it : param_symbol_types) {

@@ -82,6 +82,15 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
             if (auto member_type = target_type->FindMember(field->GetName())) {
                 if (field_as_call) {
                     has_side_effects = true;
+
+                    // add the 'self' argument
+                    field_as_call->AddArgumentToFront(std::shared_ptr<AstArgument>(new AstArgument(
+                        real_target,
+                        true, // named, because the name in the type/class should be named as "self".
+                        "self",
+                        real_target->GetLocation()
+                    )));
+
                     // visit all args even though this is not a free function
                     // still have to make sure each argument is valid
                     for (auto &arg : field_as_call->GetArguments()) {
@@ -89,7 +98,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                             arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
                         }
                     }
-
+                    
                     auto substituted = SemanticAnalyzer::SubstituteFunctionArgs(
                         visitor,
                         mod,
@@ -97,6 +106,8 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                         field_as_call->GetArguments(), 
                         field_as_call->GetLocation()
                     );
+
+                    field_as_call->SetArgumentOrdering(substituted.second);
                     
                     if (auto as_function_type = substituted.first) {
                         member_type = as_function_type;
@@ -138,8 +149,16 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
                     }
 
                     // in this case it would be usage of uniform call syntax.
-                    field->Visit(visitor, mod);
-                    target_type = field->GetSymbolType();
+
+                    field_as_call->AddArgumentToFront(std::shared_ptr<AstArgument>(new AstArgument(
+                        real_target,
+                        false,
+                        "",
+                        real_target->GetLocation()
+                    )));
+
+                    field_as_call->Visit(visitor, mod);
+                    target_type = field_as_call->GetSymbolType();
                     m_part_object_types.push_back(target_type);
                     real_target = field;
                 }

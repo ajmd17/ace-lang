@@ -4,6 +4,8 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/TypeInfo.hpp>
 
+#include <common/utf8.hpp>
+
 #include <cstdint>
 
 #define DEFAULT_BUCKET_CAPACITY 4
@@ -12,7 +14,6 @@ namespace ace {
 namespace vm {
 
 struct Member {
-    int index; // index in the TypeInfo object
     uint32_t hash;
     Value value;
 };
@@ -61,6 +62,8 @@ public:
     inline TypeInfo *GetTypePtr() const { return m_type_ptr; }
     inline Value &GetTypePtrValue() { return m_type_ptr_value; }
     inline const Value &GetTypePtrValue() const { return m_type_ptr_value; }
+    
+    void GetRepresentation(utf::Utf8String &out_str, bool add_type_name = true) const;
 
 private:
     TypeInfo *m_type_ptr;

@@ -198,7 +198,7 @@ void Compiler::BuildUCS(AstVisitor *visitor, Module *mod, AstFunctionCall *field
     visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 
     // build the function call
-    field_as_call->SetHasSelfObject(true);
+    //field_as_call->SetHasSelfObject(true);
     field_as_call->Build(visitor, mod);
 
     // decrement stack size

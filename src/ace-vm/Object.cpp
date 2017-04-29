@@ -152,5 +152,37 @@ Object::~Object()
     delete[] m_members;
 }
 
+void Object::GetRepresentation(utf::Utf8String &out_str, bool add_type_name) const
+{
+    // get type
+    ASSERT(m_type_ptr != nullptr);
+
+    size_t size = m_type_ptr->GetSize();
+    ASSERT(size > 0);
+
+    /*if (add_type_name)
+        // add the type name
+        out += m
+    }*/
+
+    out_str += "{";
+
+    for (size_t i = 0; i < size; i++) {
+        vm::Member &mem = m_members[i];
+
+        out_str += "\"";
+        out_str += m_type_ptr->GetMemberName(i);
+        out_str += "\":";
+
+        mem.value.ToRepresentation(out_str, add_type_name);
+
+        if (i != size - 1) {
+            out_str += ",";
+        }
+    }
+
+    out_str += "}";
+}
+
 } // namespace vm
 } // namespace ace

@@ -201,7 +201,7 @@ void API::ModuleDefine::BindNativeFunction(
 
     std::vector<std::pair<std::string, SymbolTypePtr_t>> generic_param_types;
     generic_param_types.push_back({
-        "return_type", def.return_type
+        "@return", def.return_type
     });
     for (auto &it : def.param_types) {
         generic_param_types.push_back(it);

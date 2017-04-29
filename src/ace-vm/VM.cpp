@@ -101,7 +101,7 @@ void VM::Print(const Value &value)
                 res += "]";
                 utf::cout << res;
             } else {
-                utf::fputs(UTF8_CSTR("Object"), stdout);
+                utf::cout << value.ToString();
             }
 
             break;

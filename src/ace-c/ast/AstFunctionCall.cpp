@@ -97,19 +97,17 @@ void AstFunctionCall::Visit(AstVisitor *visitor, Module *mod)
 
 void AstFunctionCall::BuildArgumentsStart(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(m_arg_ordering.size() >= m_args.size());
+
     uint8_t rp;
 
     // push a copy of each argument to the stack
     for (size_t i = 0; i < m_args.size(); i++) {
-        ASSERT(m_arg_ordering.size() >= m_args.size());
         ASSERT(m_arg_ordering[i] >= 0);
         ASSERT(m_arg_ordering[i] <= m_args.size());
 
-        std::cout << "m_arg_ordering[" << i << "] = " << m_arg_ordering[i] << "\n";
-
         auto &arg = m_args[m_arg_ordering[i]];
         ASSERT(arg != nullptr);
-
 
         arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
 

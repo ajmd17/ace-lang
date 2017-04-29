@@ -8,13 +8,11 @@
 
 class DecompilationUnit {
 public:
-    DecompilationUnit(const ByteStream &bs);
+    DecompilationUnit();
     DecompilationUnit(const DecompilationUnit &other) = delete;
 
-    InstructionStream Decompile(utf::utf8_ostream *os = nullptr);
-
-private:
-    ByteStream m_bs;
+    void DecodeNext(ByteStream &bs, InstructionStream &is, utf::utf8_ostream *os = nullptr);
+    InstructionStream Decompile(ByteStream &bs, utf::utf8_ostream *os = nullptr);
 };
 
 #endif

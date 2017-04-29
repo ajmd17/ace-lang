@@ -20,6 +20,9 @@ public:
     inline void AddArgument(const std::shared_ptr<AstArgument> &arg)
         { m_args.push_back(arg); }
     inline const std::vector<std::shared_ptr<AstArgument>> &GetArguments() const { return m_args; }
+
+    inline void SetArgumentOrdering(const std::vector<int> &arg_ordering)
+        { m_arg_ordering = arg_ordering; }
     
     inline bool HasSelfObject() const { return m_has_self_object; }
     inline void SetHasSelfObject(bool has_self_object) { m_has_self_object = has_self_object; }

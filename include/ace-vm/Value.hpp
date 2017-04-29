@@ -97,7 +97,8 @@ struct Value {
     void Mark();
 
     const char *GetTypeString() const;
-    utf::Utf8String ToString();
+    utf::Utf8String ToString() const;
+    void ToRepresentation(utf::Utf8String &out_str, bool add_type_name = true) const;
 };
 
 } // namespace vm

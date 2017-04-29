@@ -16,6 +16,8 @@ public:
 
     BytecodeStream &operator=(const BytecodeStream &other);
 
+    inline const non_owning_ptr<char> GetBuffer() const { return m_buffer; }
+
     inline void ReadBytes(char *ptr, size_t num_bytes)
     {
         ASSERT_MSG(m_position + num_bytes < m_size + 1, "cannot read past end of buffer");

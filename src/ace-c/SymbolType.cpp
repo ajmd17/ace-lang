@@ -306,6 +306,9 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
     ASSERT(base != nullptr);
     ASSERT(base->GetTypeClass() == TYPE_GENERIC);
 
+    bool has_return_type = false;
+    std::string return_type_name;
+
     std::string name = base->GetName();
     if (!info.m_generic_args.empty()) {
         name += "(";
@@ -313,15 +316,24 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
         for (size_t i = 0; i < info.m_generic_args.size(); i++) {
             ASSERT(info.m_generic_args[i].second != nullptr);
 
-            name += info.m_generic_args[i].first;
-            name += ": ";
-            name += info.m_generic_args[i].second->GetName();
-            if (i != info.m_generic_args.size() - 1) {
-                name += ", ";
+            if (info.m_generic_args[i].first == "@return") {
+                has_return_type = true;
+                return_type_name = info.m_generic_args[i].second->GetName();
+            } else {
+                name += info.m_generic_args[i].first;
+                name += ": ";
+                name += info.m_generic_args[i].second->GetName();
+                if (i != info.m_generic_args.size() - 1) {
+                    name += ", ";
+                }
             }
         }
 
         name += ")";
+
+        if (has_return_type) {
+            name += " => " + return_type_name;
+        }
     }
 
     std::vector<SymbolMember_t> members;

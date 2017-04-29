@@ -24,6 +24,7 @@
 #include <ace-c/Lexer.hpp>
 #include <ace-c/Parser.hpp>
 #include <ace-c/Compiler.hpp>
+#include <ace-c/dis/DecompilationUnit.hpp>
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
@@ -61,6 +62,23 @@ void Runtime_gc(ace::sdk::Params params)
 
     size_t heap_size_after = params.state->GetHeap().Size();
     utf::cout << (heap_size_before - heap_size_after) << " object(s) collected.\n";
+}
+
+void Runtime_typeof(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    // create heap value for string
+    vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(utf::Utf8String(params.args[0]->GetTypeString()));
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
 }
 
 void Runtime_load_library(ace::sdk::Params params)
@@ -155,57 +173,7 @@ void Runtime_load_function(ace::sdk::Params params)
     }
 }
 
-void ObjectToJson(vm::Value *value, utf::Utf8String &out)
-{
-    if (value->GetType() == vm::Value::HEAP_POINTER) {
-        if (value->GetValue().ptr == nullptr) {
-            out += "null";
-
-            return;
-        } else if (vm::Object *obj = value->GetValue().ptr->GetPointer<vm::Object>()) {
-            // get type
-            vm::TypeInfo *type_ptr = obj->GetTypePtr();
-            ASSERT(type_ptr != nullptr);
-
-            const size_t size = type_ptr->GetSize();
-
-            out += "{";
-
-            for (size_t i = 0; i < size; i++) {
-                vm::Member &mem = obj->GetMember(i);
-
-                out += "\"";
-                // get name from index
-                out += type_ptr->GetMemberName(mem.index);
-                out += "\":";
-
-                ObjectToJson(&mem.value, out);
-
-                if (i != size - 1) {
-                    out += ",";
-                }
-            }
-
-            out += "}";
-
-            // do not fall through
-            return;
-        }
-        // for strings
-        else if (utf::Utf8String *str = value->GetValue().ptr->GetPointer<utf::Utf8String>()) {
-            out += "\"";
-            out += *str;
-            out += "\"";
-
-            return;
-        } 
-    }
-
-    // fall through case
-    out += value->ToString();
-}
-
-void Global_tojson(ace::sdk::Params params)
+void Global_to_json(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
 
@@ -215,7 +183,7 @@ void Global_tojson(ace::sdk::Params params)
 
     // conver to json string
     utf::Utf8String json_string(256);
-    ObjectToJson(target_ptr, json_string);
+    target_ptr->ToRepresentation(json_string, false /* do not add type names */);
 
     // store in memory
     vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
@@ -230,7 +198,124 @@ void Global_tojson(ace::sdk::Params params)
     ACE_RETURN(res);
 }
 
-void Global_tostring(ace::sdk::Params params)
+void Global_decompile(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    // get value
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    utf::Utf8String bytecode_str;
+
+    if (target_ptr->m_type != vm::Value::FUNCTION) {
+        if (target_ptr->m_type == vm::Value::NATIVE_FUNCTION) {
+            bytecode_str += "<Native Code>";
+        } else {
+            char buffer[256];
+            std::sprintf(buffer, "cannot convert type '%s' to bytecode",
+                target_ptr->GetTypeString());
+            params.state->ThrowException(params.thread, vm::Exception(buffer));
+        }
+    } else {
+        ASSERT(params.bs != nullptr);
+        // the position of the function
+        size_t pos = target_ptr->m_value.func.m_addr;
+        ASSERT(pos < params.bs->Size());
+
+
+        // create required objects
+        // TODO: refactor this so it is shared across the
+        // whole program, instead of having to copy the buffer
+        SourceFile source_file(
+            "", params.bs->Size()
+        );
+        // read into it starting at pos
+        source_file.ReadIntoBuffer(
+            &params.bs->GetBuffer()[pos],
+            params.bs->Size() - pos
+        );
+
+        // note: this is different than BytecodeStream
+        // soon, it should be refactored into one
+        ByteStream byte_stream(&source_file);
+
+        // create DecompilationUnit
+        DecompilationUnit dec;
+        InstructionStream is;
+        std::stringstream ss;
+
+        uint8_t code;
+        do {
+            code = byte_stream.Peek();
+
+            // decompile the instruction
+            dec.DecodeNext(byte_stream, is, &ss);
+        } while (code != RET && byte_stream.HasNext());
+
+        std::string ss_str = ss.str();
+        bytecode_str += ss_str.data();
+    }
+    
+    // create heap value for string
+    vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(bytecode_str);
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
+void Global_prompt(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    vm::Exception e = vm::Exception(utf::Utf8String("prompt() expects a String as the first argument"));
+
+    if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
+        if (target_ptr->GetValue().ptr == nullptr) {
+            params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
+        } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
+            utf::cout << (*strptr) << ' ';
+
+            // read input...
+            std::string line;
+            if (std::getline(std::cin, line)) {
+                // store the result in a variable
+                vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
+                ASSERT(ptr != nullptr);
+                // assign it to the formatted string
+                ptr->Assign(utf::Utf8String(line.data()));
+
+                vm::Value res;
+                // assign register value to the allocated object
+                res.m_type = vm::Value::HEAP_POINTER;
+                res.m_value.ptr = ptr;
+
+                ACE_RETURN(res);
+            } else {
+                // error, throw exception
+                params.state->ThrowException(
+                    params.thread,
+                    vm::Exception("Error reading input from stdin")
+                );
+            }
+        } else {
+            params.state->ThrowException(params.thread, e);
+        }
+    } else {
+        params.state->ThrowException(params.thread, e);
+    }
+}
+
+void Global_to_string(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
 
@@ -804,6 +889,9 @@ int main(int argc, char *argv[])
 
     api.Module("runtime")
         .Function("gc", SymbolType::Builtin::ANY, {}, Runtime_gc)
+        .Function("typeof", SymbolType::Builtin::STRING, {
+            { "x", SymbolType::Builtin::ANY }
+        }, Runtime_typeof)
         .Function("load_library", SymbolType::Builtin::ANY, {
             { "lib_path", SymbolType::Builtin::STRING }
         }, Runtime_load_library)
@@ -866,8 +954,15 @@ int main(int argc, char *argv[])
         });
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
-        .Function("tostring", SymbolType::Builtin::STRING, {
-        }, Global_tostring)
+        .Function("prompt", SymbolType::Builtin::STRING, {
+            { "message", SymbolType::Builtin::STRING }
+        }, Global_prompt)
+        .Function("to_string", SymbolType::Builtin::STRING, {
+            { "object", SymbolType::Builtin::ANY },
+        }, Global_to_string)
+        .Function("decompile", SymbolType::Builtin::STRING, {
+            { "function", SymbolType::Builtin::FUNCTION },
+        }, Global_decompile)
         .Function("fmt", SymbolType::Builtin::STRING, {
             { "format", SymbolType::Builtin::STRING },
             { "args", SymbolType::GenericInstance(
@@ -879,14 +974,14 @@ int main(int argc, char *argv[])
                 }
             ) }
         }, Global_fmt)
-        .Function("tojson", SymbolType::Builtin::STRING, {
+        .Function("to_json", SymbolType::Builtin::STRING, {
             { "object", SymbolType::Builtin::ANY }
-        }, Global_tojson)
+        }, Global_to_json)
         .Function("length", SymbolType::Builtin::INT, {
             { "arraylike", SymbolType::Builtin::ANY }
         }, Global_length)
         .Function("call", SymbolType::Builtin::ANY, {
-            { "f", SymbolType::Builtin::FUNCTION },
+            { "function", SymbolType::Builtin::FUNCTION },
             { "args", SymbolType::GenericInstance(
                 SymbolType::Builtin::VAR_ARGS,
                 GenericInstanceTypeInfo {

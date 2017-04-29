@@ -758,7 +758,7 @@ std::shared_ptr<AstModuleAccess> Parser::ParseModuleAccess()
     if (MatchAhead(TK_DOUBLE_COLON, 1)) {
         expr = ParseModuleAccess();
     } else {
-        expr = ParseIdentifier();
+        expr = ParseIdentifier(true);
     }
 
     if (!expr) {
@@ -766,7 +766,8 @@ std::shared_ptr<AstModuleAccess> Parser::ParseModuleAccess()
     }
 
     return std::shared_ptr<AstModuleAccess>(
-        new AstModuleAccess(token.GetValue(), expr, token.GetLocation()));
+        new AstModuleAccess(token.GetValue(), expr, token.GetLocation())
+    );
 }
 
 std::shared_ptr<AstMemberAccess> Parser::ParseMemberAccess(std::shared_ptr<AstExpression> target)

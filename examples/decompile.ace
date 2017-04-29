@@ -1,0 +1,12 @@
+// an example on builtin decompilation
+module example_decompile {
+  sayName: Function = (yourName: String) {
+    print fmt("Hello, %! I'm about to decompile myself...\n", yourName)
+  }
+
+  name: String = prompt("What is your name?")
+  sayName(name)
+
+  sayNameDecompiled: String = decompile(sayName)
+  print sayNameDecompiled
+}

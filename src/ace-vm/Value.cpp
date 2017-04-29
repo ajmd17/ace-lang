@@ -73,7 +73,7 @@ const char *Value::GetTypeString() const
     }
 }
 
-utf::Utf8String Value::ToString()
+utf::Utf8String Value::ToString() const
 {
     const int buf_size = 256;
     char buf[buf_size] = {'\0'};
@@ -119,7 +119,7 @@ utf::Utf8String Value::ToString()
         case Value::HEAP_POINTER:
         {
             if (!m_value.ptr) {
-                return utf::Utf8String("null");
+                return utf::Utf8String("nil");
             } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
                 return *string;
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
@@ -141,6 +141,10 @@ utf::Utf8String Value::ToString()
                 res += "]";
 
                 return res;
+            } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
+                utf::Utf8String res;
+                object->GetRepresentation(res);
+                return res;
             } else {
                 // return memory address as string
                 n = snprintf(buf, buf_size, "%p", (void*)m_value.ptr);
@@ -155,6 +159,61 @@ utf::Utf8String Value::ToString()
             break;
         }
         default: return GetTypeString();
+    }
+}
+
+void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
+{
+    const int buf_size = 256;
+    char buf[buf_size] = {'\0'};
+    int n = 0;
+
+    switch (m_type) {
+        case Value::HEAP_POINTER:
+        {
+            if (!m_value.ptr) {
+                out_str += "nil";
+            } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
+                if (add_type_name) {
+                    out_str += "String(";
+                }
+
+                out_str += "\"";
+                out_str += *string;
+                out_str += "\"";
+
+                if (add_type_name) {
+                    out_str += ")";
+                }
+            } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
+                object->GetRepresentation(out_str, add_type_name);
+            } else {
+                if (add_type_name) {
+                    out_str += GetTypeString();
+                    out_str += "(";
+                }
+                
+                out_str += ToString();
+
+                if (add_type_name) {
+                    out_str += ")";
+                }
+            }
+
+            break;
+        }
+        default: {
+            if (add_type_name) {
+                out_str += GetTypeString();
+                out_str += "(";
+            }
+            
+            out_str += ToString();
+
+            if (add_type_name) {
+                out_str += ")";
+            }
+        }
     }
 }
 

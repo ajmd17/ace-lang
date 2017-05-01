@@ -121,8 +121,7 @@ bool StaticObject::operator==(const StaticObject &other) const
         return !(std::strcmp(m_value.str, other.m_value.str));
         break;
     case TYPE_FUNCTION:
-        return m_value.func.m_addr == other.m_value.func.m_addr &&
-               m_value.func.m_nargs == other.m_value.func.m_nargs;
+        return m_value.func.m_addr == other.m_value.func.m_addr;
         break;
     case TYPE_TYPE_INFO:
         return !(std::strcmp(m_value.type_info.m_name, other.m_value.type_info.m_name)) &&

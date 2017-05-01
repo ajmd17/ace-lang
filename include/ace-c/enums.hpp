@@ -2,8 +2,8 @@
 #define ENUMS_HPP
 
 enum AccessMode {
-    ACCESS_MODE_LOAD,
-    ACCESS_MODE_STORE
+    ACCESS_MODE_LOAD = 1,
+    ACCESS_MODE_STORE = 2
 };
 
 enum IdentifierType {

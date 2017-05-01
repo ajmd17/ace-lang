@@ -24,10 +24,12 @@
 #include <ace-c/ast/AstBinaryExpression.hpp>
 #include <ace-c/ast/AstUnaryExpression.hpp>
 #include <ace-c/ast/AstFunctionCall.hpp>
+#include <ace-c/ast/AstCallExpression.hpp>
 #include <ace-c/ast/AstArgument.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstModuleAccess.hpp>
 #include <ace-c/ast/AstMemberAccess.hpp>
+#include <ace-c/ast/AstMember.hpp>
 #include <ace-c/ast/AstArrayAccess.hpp>
 #include <ace-c/ast/AstTrue.hpp>
 #include <ace-c/ast/AstFalse.hpp>
@@ -57,9 +59,10 @@ private:
     TokenStream *m_token_stream;
     CompilationUnit *m_compilation_unit;
 
-    Token MatchAhead(TokenClass token_class, int n);
     Token Match(TokenClass token_class, bool read = false);
+    Token MatchAhead(TokenClass token_class, int n);
     Token MatchKeyword(Keywords keyword, bool read = false);
+    Token MatchKeywordAhead(Keywords keyword, int n);
     Token MatchOperator(const Operator *op, bool read = false);
     Token Expect(TokenClass token_class, bool read = false);
     Token ExpectKeyword(Keywords keyword, bool read = false);
@@ -86,9 +89,11 @@ private:
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier(bool allow_keyword = false);
     std::shared_ptr<AstArgument> ParseArgument();
+    std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstFunctionCall> ParseFunctionCall(bool allow_keyword = false);
     std::shared_ptr<AstFunctionCall> ParseFunctionCallNoParams(bool allow_keyword = false);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
+    std::shared_ptr<AstMember> ParseMemberExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstTrue> ParseTrue();

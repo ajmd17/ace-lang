@@ -15,7 +15,7 @@
 AstModuleAccess::AstModuleAccess(const std::string &target,
     const std::shared_ptr<AstExpression> &expr,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD | ACCESS_MODE_STORE),
       m_target(target),
       m_expr(expr),
       m_mod_access(nullptr),

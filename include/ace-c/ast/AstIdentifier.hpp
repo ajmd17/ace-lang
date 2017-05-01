@@ -10,7 +10,6 @@
 struct AstIdentifierProperties {
     Identifier *m_identifier = nullptr;
 
-    AccessMode m_access_mode = ACCESS_MODE_LOAD;
     IdentifierType m_identifier_type = IDENTIFIER_TYPE_UNKNOWN;
 
     bool m_is_in_function = false;
@@ -20,9 +19,6 @@ struct AstIdentifierProperties {
     inline Identifier *GetIdentifier() { return m_identifier; }
     inline const Identifier *GetIdentifier() const { return m_identifier; }
     inline void SetIdentifier(Identifier *identifier) { m_identifier = identifier; }
-
-    inline AccessMode GetAccessMode() const { return m_access_mode; }
-    inline void SetAccessMode(AccessMode access_mode) { m_access_mode = access_mode; }
 
     inline IdentifierType GetIdentifierType() const { return m_identifier_type; }
     inline void SetIdentifierType(IdentifierType identifier_type) { m_identifier_type = identifier_type; }

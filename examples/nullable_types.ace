@@ -1,0 +1,52 @@
+module nullable_types {
+	// nullable types (Maybes) can be either a value of a given type,
+	// or they may also be the 'nil' value (which is of the type, 'Null').
+	// before using these values it may be wise to check if it is set first.
+
+	i: Int = 5
+	// i = nil /* causes an error */
+
+	j: Int? = 5
+	j = nil// fine
+
+	// check if Null:
+	if j == nil {
+		print "j is Null"
+	}
+
+	type Cat {
+		name: String
+
+		meow: Function = (self) {
+			print fmt("% says meow!!!", self.name)
+		}
+	}
+	
+	// this will also work on your own types
+	type Person {
+		name: String
+		cat: Cat
+	}
+
+	you: Person
+	you.name = prompt("What is your name?")
+
+	has_cat: String = prompt("Do you have a cat? (y/n)")
+
+	if has_cat == "y" || has_cat == "Y" {
+		your_cat: Cat
+		your_cat.name = prompt("What is it's name?")
+		you.cat = your_cat
+	} else {
+		//you.cat = nil
+	}
+
+	//let cat = 5
+
+	//if you.cat != nil {
+		print fmt("Your cat's name is: %", you.cat.name)
+		print ((you.cat).meow())
+	//} else {
+		//print "You do not have a cat"
+	//}
+}

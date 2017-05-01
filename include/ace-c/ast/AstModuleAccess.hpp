@@ -18,6 +18,7 @@ public:
     inline const Module *GetModule() const { return m_mod_access; }
     inline const std::string &GetTarget() const { return m_target; }
     inline const std::shared_ptr<AstExpression> &GetExpression() const { return m_expr; }
+    inline void SetExpression(const std::shared_ptr<AstExpression> &expr) { m_expr = expr; }
     inline void SetChained(bool is_chained) { m_is_chained = is_chained; }
 
     void PerformLookup(AstVisitor *visitor, Module *mod);

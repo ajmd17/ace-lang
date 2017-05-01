@@ -15,9 +15,6 @@ public:
         const SourceLocation &location);
     virtual ~AstArrayAccess() = default;
 
-    inline AccessMode GetAccessMode() const { return m_access_mode; }
-    inline void SetAccessMode(AccessMode access_mode) { m_access_mode = access_mode; }
-
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
@@ -31,7 +28,6 @@ public:
 private:
     std::shared_ptr<AstExpression> m_target;
     std::shared_ptr<AstExpression> m_index;
-    AccessMode m_access_mode;
 
     inline std::shared_ptr<AstArrayAccess> CloneImpl() const
     {

@@ -23,6 +23,7 @@ public:
 
     inline void SetArgumentOrdering(const std::vector<int> &arg_ordering)
         { m_arg_ordering = arg_ordering; }
+    inline std::vector<int> GetArgumentOrdering() const { return m_arg_ordering; }
     
     inline bool HasSelfObject() const { return m_has_self_object; }
     inline void SetHasSelfObject(bool has_self_object) { m_has_self_object = has_self_object; }

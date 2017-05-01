@@ -7,6 +7,8 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
+#include <iostream>
+
 void Compiler::LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -53,6 +55,7 @@ void Compiler::LoadMemberFromHashAndCall(AstVisitor *visitor, Module *mod,
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
     }
 
+    std::cout << "num arguments:" << field_as_call->GetArguments().size() << ", " << field_as_call->GetArgumentOrdering().size() << std::endl;
     field_as_call->BuildArgumentsStart(visitor, mod);
 
     if (!args_side_effects) {

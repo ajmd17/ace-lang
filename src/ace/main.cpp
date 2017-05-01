@@ -95,12 +95,19 @@ void Runtime_load_library(ace::sdk::Params params)
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
         } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
             // load library from string
-            utf::Utf8String fullPath(utf::Utf8String(exec_path.c_str()) + *strptr);
-            Library lib = Runtime::Load(fullPath.GetData());
+            utf::Utf8String full_path;
+
+            if (strptr->GetLength() > 0 && strptr->GetData()[0] == '/') {
+                full_path = *strptr;
+            } else {
+                full_path = utf::Utf8String(exec_path.c_str()) + *strptr;
+            }
+            
+            Library lib = Runtime::Load(full_path.GetData());
 
             if (!lib.GetHandle()) {
                 // could not load library
-                params.state->ThrowException(params.thread, vm::Exception::LibraryLoadException(fullPath.GetData()));
+                params.state->ThrowException(params.thread, vm::Exception::LibraryLoadException(full_path.GetData()));
             } else {
                 // store the library in a variable
 

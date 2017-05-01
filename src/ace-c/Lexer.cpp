@@ -135,6 +135,11 @@ Token Lexer::NextToken()
             m_source_location.GetColumn() += pos_change;
             return Token(TK_COLON, ":", location);
         }
+    } else if (ch[0] == '?') {
+        int pos_change = 0;
+        m_source_stream.Next(pos_change);
+        m_source_location.GetColumn() += pos_change;
+        return Token(TK_QUESTION_MARK, "?", location);
     } else if (ch[0] == '.') {
         if (ch[1] == '.' && ch[2] == '.') {
             for (int i = 0; i < 3; i++) {
@@ -384,7 +389,7 @@ Token Lexer::ReadLineComment()
         m_source_location.GetColumn() += pos_change;
     }
 
-    return Token::EMPTY;
+    return Token(TK_NEWLINE, "newline", location);
 }
 
 Token Lexer::ReadBlockComment()

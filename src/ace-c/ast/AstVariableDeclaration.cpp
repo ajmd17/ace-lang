@@ -28,8 +28,12 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     if (!m_type_specification && !m_assignment) {
         // error; requires either type, or assignment.
-        visitor->GetCompilationUnit()->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_missing_type_and_assignment, m_location, m_name));
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            Level_fatal,
+            Msg_missing_type_and_assignment,
+            m_location,
+            m_name
+        ));
     } else {
         if (m_assignment) {
             m_real_assignment = m_assignment;

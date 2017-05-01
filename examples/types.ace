@@ -1,0 +1,15 @@
+module types {
+  type User {
+    username: String
+    password: String
+
+    printUsername = (self) {
+      print self.username
+    }
+  }
+
+  user: User = User(
+    username: "Username",
+    password: "password123"
+  )
+}

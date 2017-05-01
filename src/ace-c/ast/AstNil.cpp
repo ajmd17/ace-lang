@@ -54,7 +54,7 @@ ace::afloat32 AstNil::FloatValue() const
 
 SymbolTypePtr_t AstNil::GetSymbolType() const
 {
-    return SymbolType::Builtin::ANY;
+    return SymbolType::Builtin::NULL_TYPE;
 }
 
 std::shared_ptr<AstConstant> AstNil::operator+(AstConstant *right) const

@@ -15,8 +15,6 @@ public:
     virtual ~AstMemberAccess() = default;
 
     inline const std::shared_ptr<AstIdentifier> &GetLast() const { return m_parts.back(); }
-    inline AccessMode GetAccessMode() const { return m_access_mode; }
-    inline void SetAccessMode(AccessMode access_mode) { m_access_mode = access_mode; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
@@ -33,7 +31,6 @@ private:
     std::vector<std::shared_ptr<AstIdentifier>> m_parts;
     Module *m_mod_access;
     std::vector<SymbolTypePtr_t> m_part_object_types;
-    AccessMode m_access_mode;
     bool m_side_effects;
 
     inline Pointer<AstMemberAccess> CloneImpl() const

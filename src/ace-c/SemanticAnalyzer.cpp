@@ -187,7 +187,8 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
                 substituted_param_ids
             };
         }
-    } else if (identifier_type == SymbolType::Builtin::FUNCTION) {
+    } else if (identifier_type == SymbolType::Builtin::FUNCTION ||
+               identifier_type == SymbolType::Builtin::ANY) {
         // the indices of the arguments (will be returned)
         std::vector<int> substituted_param_ids;
 

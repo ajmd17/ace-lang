@@ -105,8 +105,28 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     }
     case STORE_STATIC_TYPE:
     {
+        uint16_t type_name_len;
+        bs.Read(&type_name_len);
+
+        std::vector<uint8_t> type_name;
+        type_name.resize(type_name_len + 1);
+        type_name[type_name_len] = '\0';
+        bs.Read(&type_name[0], type_name_len);
+
         uint16_t size;
         bs.Read(&size);
+
+        std::vector<std::vector<uint8_t>> names;
+        names.resize(size);
+        
+        for (int i = 0; i < size; i++) {
+            uint16_t len;
+            bs.Read(&len);
+
+            names[i].resize(len + 1);
+            names[i][len] = '\0';
+            bs.Read(&names[i][0], len);
+        }
 
         if (os != nullptr) {
             os->setf(std::ios::hex, std::ios::basefield);
@@ -115,16 +135,24 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
 
             (*os)
                 << "type ["
+                    << "str(" << type_name.data() << "), "
                     << "u16(" << (int)size << "), ";
-            
+
+            for (int i = 0; i < size; i++) {
+                (*os)
+                    << "str(" << names[i].data() << ")";
+                if (i != size - 1) {
+                    (*os) << ", ";
+                }
+            }
+                    
             (*os)
                 << "]"
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t>(code, size);
-
-        //delete[] name;
+        is << Instruction<uint8_t, std::vector<uint8_t>, uint16_t, std::vector<std::vector<uint8_t>>>
+            (code, type_name, size, names);
 
         break;
     }
@@ -396,6 +424,14 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         uint8_t reg;
         bs.Read(&reg);
 
+        uint16_t type_name_len;
+        bs.Read(&type_name_len);
+
+        std::vector<uint8_t> type_name;
+        type_name.resize(type_name_len + 1);
+        type_name[type_name_len] = '\0';
+        bs.Read(&type_name[0], type_name_len);
+
         uint16_t size;
         bs.Read(&size);
 
@@ -419,6 +455,7 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
             (*os)
                 << "load_type ["
                     << "%" << (int)reg << ", "
+                    << "str(" << type_name.data() << ")"
                     << "u16(" << (int)size << "), ";
 
             for (int i = 0; i < size; i++) {
@@ -434,8 +471,8 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t, std::vector<std::vector<uint8_t>>>
-            (code, reg, size, names);
+        is << Instruction<uint8_t, uint8_t, std::vector<uint8_t>, uint16_t, std::vector<std::vector<uint8_t>>>
+            (code, reg, type_name, size, names);
 
         break;
     }

@@ -33,7 +33,7 @@ static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> 
 AstUnaryExpression::AstUnaryExpression(const std::shared_ptr<AstExpression> &target,
     const Operator *op,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD),
       m_target(target),
       m_op(op),
       m_folded(false)

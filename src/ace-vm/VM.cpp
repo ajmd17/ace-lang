@@ -62,7 +62,7 @@ void VM::Print(const Value &value)
         case Value::HEAP_POINTER: {
             if (!value.m_value.ptr) {
                 // special case for null pointers
-                utf::fputs(UTF8_CSTR("null"), stdout);
+                utf::fputs(UTF8_CSTR("nil"), stdout);
             } else if (utf::Utf8String *str = value.m_value.ptr->GetPointer<utf::Utf8String>()) {
                 // print string value
                 utf::cout << *str;
@@ -272,6 +272,12 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         break;
     }
     case STORE_STATIC_TYPE: {
+        uint16_t type_name_len; bs->Read(&type_name_len);
+
+        char *type_name = new char[type_name_len + 1];
+        type_name[type_name_len] = '\0';
+        bs->Read(type_name, type_name_len);
+
         uint16_t size; bs->Read(&size);
 
         ASSERT(size > 0);
@@ -290,12 +296,14 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         // the value will be freed on
         // the destructor call of m_state.m_static_memory
         HeapValue *hv = new HeapValue();
-        hv->Assign(TypeInfo(size, names));
+        hv->Assign(TypeInfo(type_name, size, names));
 
         Value sv;
         sv.m_type = Value::HEAP_POINTER;
         sv.m_value.ptr = hv;
         m_state.m_static_memory.Store(std::move(sv));
+
+        delete[] type_name;
         
         // delete the names
         for (size_t i = 0; i < size; i++) {
@@ -430,8 +438,15 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
     }
     case LOAD_TYPE: {
         uint8_t reg; bs->Read(&reg);
-        uint16_t size; bs->Read(&size);
 
+        uint16_t type_name_len; bs->Read(&type_name_len);
+
+        char *type_name = new char[type_name_len + 1];
+        type_name[type_name_len] = '\0';
+        bs->Read(type_name, type_name_len);
+
+        // number of members
+        uint16_t size; bs->Read(&size);
         ASSERT(size > 0);
 
         char **names = new char*[size];
@@ -449,12 +464,14 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         HeapValue *hv = m_state.HeapAlloc(thread);
         ASSERT(hv != nullptr);
 
-        hv->Assign(TypeInfo(size, names));
+        hv->Assign(TypeInfo(type_name, size, names));
 
         // assign register value to the allocated object
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::HEAP_POINTER;
         sv.m_value.ptr = hv;
+
+        delete[] type_name;
         
         // delete the names
         for (size_t i = 0; i < size; i++) {

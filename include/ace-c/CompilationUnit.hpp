@@ -4,6 +4,7 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/ErrorList.hpp>
 #include <ace-c/emit/InstructionStream.hpp>
+#include <ace-c/ast/AstNodeBuilder.hpp>
 #include <ace-c/Tree.hpp>
 
 #include <map>
@@ -29,6 +30,9 @@ public:
     inline InstructionStream &GetInstructionStream() { return m_instruction_stream; }
     inline const InstructionStream &GetInstructionStream() const { return m_instruction_stream; }
 
+    inline AstNodeBuilder &GetAstNodeBuilder() { return m_ast_node_builder; }
+    inline const AstNodeBuilder &GetAstNodeBuilder() const { return m_ast_node_builder; }
+
     /** Looks up the module with the name, taking scope into account.
         Modules with the name that are in the current module or any module
         above the current one will be considered.
@@ -49,6 +53,7 @@ public:
 private:
     ErrorList m_error_list;
     InstructionStream m_instruction_stream;
+    AstNodeBuilder m_ast_node_builder;
     // the global module
     std::shared_ptr<Module> m_global_module;
 };

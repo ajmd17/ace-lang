@@ -11,7 +11,7 @@
 
 AstObject::AstObject(const SymbolTypeWeakPtr_t &symbol_type,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD),
       m_symbol_type(symbol_type)
 {
 }
@@ -40,10 +40,10 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
     if (!ace::compiler::Config::use_static_objects) {
         // fill with padding for LOAD_TYPE instruction
-        for (size_t i = 0; i < sp->GetMembers().size(); i++) {
+        /*for (size_t i = 0; i < sp->GetMembers().size(); i++) {
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += std::get<0>(sp->GetMembers()[i]).size();
-        }
+        }*/
     }
 
     // store newly allocated object in same register
@@ -64,7 +64,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
         ASSERT(std::get<1>(dm) != nullptr);
         ASSERT(std::get<1>(dm)->GetDefaultValue() != nullptr);
 
-        if (!std::get<1>(dm)->GetDefaultValue()->MayHaveSideEffects()) {
+        /*if (!std::get<1>(dm)->GetDefaultValue()->MayHaveSideEffects()) {
             // the member is a record type, and there is no chance of the 
             // register being overwritten,  so just load the type from obj_reg
 
@@ -87,7 +87,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             // store data member
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, obj_reg, (uint8_t)i, rp);
-        } else {
+        } else {*/
             // if the member has side effects, load the type
             // from stack memory into a register /after/ loading the
             // data member.
@@ -119,7 +119,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             // store data member
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, obj_reg, (uint8_t)i, rp - 1);
-        }
+       // }
 
         // unclaim register
         visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();

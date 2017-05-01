@@ -16,6 +16,8 @@ CompilationUnit::CompilationUnit()
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::STRING);
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::FUNCTION);
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::ARRAY);
+    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::MAYBE);
+    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::NULL_TYPE);
 
     m_module_tree.TopNode()->m_value = m_global_module.get();
 }

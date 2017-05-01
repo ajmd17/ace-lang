@@ -7,7 +7,7 @@
 #include <iostream>
 
 AstIdentifier::AstIdentifier(const std::string &name, const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD | ACCESS_MODE_STORE),
       m_name(name)
 {
 }

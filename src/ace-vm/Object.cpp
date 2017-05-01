@@ -160,10 +160,10 @@ void Object::GetRepresentation(utf::Utf8String &out_str, bool add_type_name) con
     size_t size = m_type_ptr->GetSize();
     ASSERT(size > 0);
 
-    /*if (add_type_name)
+    if (add_type_name) {
         // add the type name
-        out += m
-    }*/
+        out_str += m_type_ptr->GetName();
+    }
 
     out_str += "{";
 

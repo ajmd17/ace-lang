@@ -34,6 +34,9 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                 label_offset += sizeof(uint8_t); // num args
                 label_offset += sizeof(uint8_t); // is variadic
             } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
+                label_offset += sizeof(uint16_t); // size of name
+                label_offset += std::strlen(so.m_value.type_info.m_name);
+
                 label_offset += sizeof(uint16_t); // type size
                 // names
                 for (size_t i = 0; i < so.m_value.type_info.m_names.size(); i++) {
@@ -67,8 +70,16 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                     os.write(&(*it)[0], it->size());
                 }
             } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-                Instruction<uint8_t, uint16_t, std::vector<NamesPair_t>> store_ins(
-                    STORE_STATIC_TYPE, so.m_value.type_info.m_size, so.m_value.type_info.m_names
+                const size_t len = std::strlen(so.m_value.type_info.m_name);
+
+                Instruction<uint8_t, NamesPair_t, uint16_t, std::vector<NamesPair_t>> store_ins(
+                    STORE_STATIC_TYPE,
+                    {
+                        len,
+                        std::vector<uint8_t>(so.m_value.type_info.m_name, &so.m_value.type_info.m_name[len])
+                    },
+                    so.m_value.type_info.m_size,
+                    so.m_value.type_info.m_names
                 );
 
                 for (auto it = store_ins.m_data.rbegin(); it != store_ins.m_data.rend(); ++it) {
@@ -153,8 +164,18 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                             so.m_value.func.m_is_variadic);
                     ins = tmp;
                 } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {
-                    Instruction<> tmp = Instruction<uint8_t, uint8_t, uint16_t, std::vector<NamesPair_t>>(
-                        LOAD_TYPE, reg, so.m_value.type_info.m_size, so.m_value.type_info.m_names);
+                    size_t len = std::strlen(so.m_value.type_info.m_name);
+
+                    Instruction<> tmp = Instruction<uint8_t, uint8_t, NamesPair_t, uint16_t, std::vector<NamesPair_t>>(
+                        LOAD_TYPE,
+                        reg,
+                        {
+                            len,
+                            std::vector<uint8_t>(so.m_value.type_info.m_name, &so.m_value.type_info.m_name[len])
+                        },
+                        so.m_value.type_info.m_size,
+                        so.m_value.type_info.m_names
+                    );
                     ins = tmp;
                 }
             }

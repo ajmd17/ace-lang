@@ -13,18 +13,91 @@
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
 
-const SymbolTypePtr_t SymbolType::Builtin::UNDEFINED = SymbolType::Primitive("Undefined", std::shared_ptr<AstUndefined>(new AstUndefined(SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::ANY       = SymbolType::Primitive("Any", std::shared_ptr<AstNil>(new AstNil(SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::OBJECT    = SymbolType::Primitive("Object", nullptr, nullptr);
-const SymbolTypePtr_t SymbolType::Builtin::INT       = SymbolType::Primitive("Int", std::shared_ptr<AstInteger>(new AstInteger(0, SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::FLOAT     = SymbolType::Primitive("Float", std::shared_ptr<AstFloat>(new AstFloat(0.0, SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::NUMBER    = SymbolType::Primitive("Number", std::shared_ptr<AstInteger>(new AstInteger(0, SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::BOOLEAN   = SymbolType::Primitive("Boolean", std::shared_ptr<AstFalse>(new AstFalse(SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::STRING    = SymbolType::Primitive("String", std::shared_ptr<AstString>(new AstString("", SourceLocation::eof)));
-const SymbolTypePtr_t SymbolType::Builtin::FUNCTION  = SymbolType::Generic("Function", std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression({}, nullptr, 
-    std::shared_ptr<AstBlock>(new AstBlock(SourceLocation::eof)), false, SourceLocation::eof)), {}, GenericTypeInfo{ -1 });
-const SymbolTypePtr_t SymbolType::Builtin::ARRAY     = SymbolType::Generic("Array", std::shared_ptr<AstArrayExpression>(new AstArrayExpression({}, SourceLocation::eof)), {}, GenericTypeInfo{ 1 });
-const SymbolTypePtr_t SymbolType::Builtin::VAR_ARGS  = SymbolType::Generic("Args", std::shared_ptr<AstArrayExpression>(new AstArrayExpression({}, SourceLocation::eof)), {}, GenericTypeInfo{ 1 });
+const SymbolTypePtr_t SymbolType::Builtin::UNDEFINED = SymbolType::Primitive(
+    "Undefined",
+    sp<AstUndefined>(new AstUndefined(SourceLocation::eof))
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::ANY = SymbolType::Primitive(
+    "Any",
+    sp<AstNil>(new AstNil(SourceLocation::eof))
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::OBJECT = SymbolType::Primitive(
+    "Object",
+    nullptr,
+    nullptr
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::INT = SymbolType::Primitive(
+    "Int",
+    sp<AstInteger>(new AstInteger(0, SourceLocation::eof))
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::FLOAT = SymbolType::Primitive(
+    "Float",
+    sp<AstFloat>(new AstFloat(0.0, SourceLocation::eof))
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::NUMBER = SymbolType::Primitive(
+    "Number",
+    sp<AstInteger>(new AstInteger(0, SourceLocation::eof))
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::BOOLEAN = SymbolType::Primitive(
+    "Boolean",
+    sp<AstFalse>(new AstFalse(SourceLocation::eof))
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::STRING = SymbolType::Primitive(
+    "String",
+    sp<AstString>(new AstString("", SourceLocation::eof))
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::FUNCTION = SymbolType::Generic(
+    "Function",
+    sp<AstFunctionExpression>(new AstFunctionExpression(
+        {},
+        nullptr, 
+        sp<AstBlock>(new AstBlock(SourceLocation::eof)),
+        false,
+        SourceLocation::eof
+    )),
+    {},
+    GenericTypeInfo{ -1 }
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::ARRAY = SymbolType::Generic(
+    "Array",
+    sp<AstArrayExpression>(new AstArrayExpression(
+        {},
+        SourceLocation::eof
+    )),
+    {},
+    GenericTypeInfo { 1 }
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::VAR_ARGS = SymbolType::Generic(
+    "Args",
+    sp<AstArrayExpression>(new AstArrayExpression(
+        {},
+        SourceLocation::eof
+    )),
+    {},
+    GenericTypeInfo { 1 }
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::MAYBE = SymbolType::Generic(
+    "Maybe",
+    sp<AstNil>(new AstNil(SourceLocation::eof)),
+    {},
+    GenericTypeInfo { 1 }
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::NULL_TYPE = SymbolType::Primitive(
+    "Null",
+    sp<AstNil>(new AstNil(SourceLocation::eof))
+);
 
 SymbolType::SymbolType(const std::string &name, 
     SymbolTypeClass type_class, 
@@ -40,8 +113,8 @@ SymbolType::SymbolType(const std::string &name,
 SymbolType::SymbolType(const std::string &name, 
     SymbolTypeClass type_class,
     const SymbolTypePtr_t &base,
-    const std::shared_ptr<AstExpression> &default_value,
-    const std::vector<SymbolMember_t> &members)
+    const sp<AstExpression> &default_value,
+    const vec<SymbolMember_t> &members)
     : m_name(name),
       m_type_class(type_class),
       m_base(base),
@@ -130,12 +203,20 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
     for (const SymbolMember_t &i : m_members) {
         ASSERT(std::get<1>(i) != nullptr);
 
+        bool right_member_found = false;
+
         for (const SymbolMember_t &j : other.m_members) {
             ASSERT(std::get<1>(j) != nullptr);
 
-            if (!(std::get<1>(i)->TypeEqual(*std::get<1>(j)))) {
-                return false;
+            if ((std::get<1>(i)->TypeEqual(*std::get<1>(j)))) {
+                right_member_found = true;
+                continue;
             }
+        }
+
+        if (!right_member_found) {
+            // none found. return false.
+            return false;
         }
     }
 
@@ -151,7 +232,8 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
     if (TypeEqual(right)) {
         return true;
     } else if (right.GetTypeClass() == TYPE_GENERIC_PARAMETER && 
-                (!right.GetGenericParameterInfo().m_substitution.lock())) {
+              !right.GetGenericParameterInfo().m_substitution.lock())
+    {
         // right is a generic paramter that has not yet been substituted
         return true;
     }
@@ -208,29 +290,49 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
 
                 return true;
             } else {
+                // allow 'any' on right as well for generics
+                if (right.TypeEqual(*SymbolType::Builtin::ANY)) {
+                    return true;
+                }
+
+                // allow boxing/unboxing for 'Maybe(T)' type
+                if (base->TypeEqual(*SymbolType::Builtin::MAYBE)) {
+                    if (right.TypeEqual(*SymbolType::Builtin::NULL_TYPE)) {
+                        return true;
+                    } else {
+                        auto &held_type = m_generic_instance_info.m_generic_args[0].second;
+                        ASSERT(held_type != nullptr);
+                        return held_type->TypeCompatible(right, strict_numbers);
+                    }
+                }
+
                 return false;
             }
 
             break;
         }
-        case TYPE_BUILTIN:
-            if (!TypeEqual(*SymbolType::Builtin::UNDEFINED) && !right.TypeEqual(*SymbolType::Builtin::UNDEFINED)) {
-                if (TypeEqual(*SymbolType::Builtin::ANY)) {
+        case TYPE_BUILTIN: {
+            if (!TypeEqual(*SymbolType::Builtin::UNDEFINED) &&
+                !right.TypeEqual(*SymbolType::Builtin::UNDEFINED))
+            {
+                if (TypeEqual(*SymbolType::Builtin::ANY) ||
+                    right.TypeEqual(*SymbolType::Builtin::ANY))
+                {
                     return true;
                 } else if (TypeEqual(*SymbolType::Builtin::NUMBER)) {
-                    return right.TypeEqual(*SymbolType::Builtin::INT) ||
-                        right.TypeEqual(*SymbolType::Builtin::FLOAT);
+                    return (right.TypeEqual(*SymbolType::Builtin::INT) ||
+                            right.TypeEqual(*SymbolType::Builtin::FLOAT));
                 } else if (!strict_numbers) {
                     if (TypeEqual(*SymbolType::Builtin::INT) || TypeEqual(*SymbolType::Builtin::FLOAT)) {
-                        return right.TypeEqual(*SymbolType::Builtin::NUMBER) ||
-                            right.TypeEqual(*SymbolType::Builtin::FLOAT) ||
-                            right.TypeEqual(*SymbolType::Builtin::INT);
+                        return (right.TypeEqual(*SymbolType::Builtin::NUMBER) ||
+                                right.TypeEqual(*SymbolType::Builtin::FLOAT) ||
+                                right.TypeEqual(*SymbolType::Builtin::INT));
                     }
                 }
             }
 
             return false;
-
+        }
         case TYPE_GENERIC_PARAMETER: {
             if (auto sp = m_generic_param_info.m_substitution.lock()) {
                 return sp->TypeCompatible(right, strict_numbers);
@@ -269,34 +371,63 @@ SymbolTypePtr_t SymbolType::Alias(const std::string &name, const AliasTypeInfo &
 }
 
 SymbolTypePtr_t SymbolType::Primitive(const std::string &name, 
-    const std::shared_ptr<AstExpression> &default_value)
+    const sp<AstExpression> &default_value)
 {
-    return SymbolTypePtr_t(new SymbolType(name, TYPE_BUILTIN, SymbolType::Builtin::OBJECT, default_value, {}));
+    return SymbolTypePtr_t(new SymbolType(
+        name,
+        TYPE_BUILTIN,
+        SymbolType::Builtin::OBJECT,
+        default_value,
+        {}
+    ));
 }
 
 SymbolTypePtr_t SymbolType::Primitive(const std::string &name,
-    const std::shared_ptr<AstExpression> &default_value,
+    const sp<AstExpression> &default_value,
     const SymbolTypePtr_t &base)
 {
-    return SymbolTypePtr_t(new SymbolType(name, TYPE_BUILTIN, base, default_value, {}));
+    return SymbolTypePtr_t(new SymbolType(
+        name,
+        TYPE_BUILTIN,
+        base,
+        default_value,
+        {}
+    ));
 }
 
 SymbolTypePtr_t SymbolType::Object(const std::string &name,
-    const std::vector<SymbolMember_t> &members)
+    const vec<SymbolMember_t> &members)
 {
-    SymbolTypePtr_t symbol_type(new SymbolType(name, TYPE_BUILTIN, SymbolType::Builtin::OBJECT, nullptr, members));
-    symbol_type->SetDefaultValue(std::shared_ptr<AstObject>(
-        new AstObject(symbol_type, SourceLocation::eof)));
+    SymbolTypePtr_t symbol_type(new SymbolType(
+        name,
+        TYPE_BUILTIN,
+        SymbolType::Builtin::OBJECT,
+        nullptr,
+        members
+    ));
+
+    symbol_type->SetDefaultValue(sp<AstObject>(
+        new AstObject(symbol_type, SourceLocation::eof)
+    ));
+    
     return symbol_type;
 }
 
 SymbolTypePtr_t SymbolType::Generic(const std::string &name, 
-    const std::shared_ptr<AstExpression> &default_value,
-    const std::vector<SymbolMember_t> &members, 
+    const sp<AstExpression> &default_value,
+    const vec<SymbolMember_t> &members, 
     const GenericTypeInfo &info)
 {
-    SymbolTypePtr_t res(new SymbolType(name, TYPE_GENERIC, nullptr, default_value, members));
+    SymbolTypePtr_t res(new SymbolType(
+        name,
+        TYPE_GENERIC,
+        nullptr,
+        default_value,
+        members
+    ));
+    
     res->m_generic_info = info;
+    
     return res;
 }
 
@@ -336,7 +467,7 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
         }
     }
 
-    std::vector<SymbolMember_t> members;
+    vec<SymbolMember_t> members;
     members.reserve(base->GetMembers().size());
 
     for (const SymbolMember_t &member : base->GetMembers()) {
@@ -352,14 +483,16 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
                 auto &it = base->GetGenericInfo().m_params[i];
 
                 if (it->GetName() == std::get<1>(member)->GetName()) {
-                    std::shared_ptr<AstExpression> default_value;
+                    sp<AstExpression> default_value;
 
                     if ((default_value = std::get<2>(member))) {
                         default_value = CloneAstNode(default_value);
                     }
 
                     members.push_back(SymbolMember_t(
-                        std::get<0>(member), info.m_generic_args[i].second, default_value)
+                        std::get<0>(member),
+                        info.m_generic_args[i].second,
+                        default_value)
                     );
 
                     substituted = true;
@@ -369,14 +502,18 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
             if (!substituted) {
                 // substitution error, set type to be undefined
                 members.push_back(SymbolMember_t(
-                    std::get<0>(member), SymbolType::Builtin::UNDEFINED, std::get<2>(member))
-                );
+                    std::get<0>(member),
+                    SymbolType::Builtin::UNDEFINED,
+                    std::get<2>(member)
+                ));
             }
         } else {
             // push copy (clone assignment value)
             members.push_back(SymbolMember_t(
-                std::get<0>(member), std::get<1>(member), CloneAstNode(std::get<2>(member)))
-            );
+                std::get<0>(member),
+                std::get<1>(member),
+                CloneAstNode(std::get<2>(member))
+            ));
         }
     }
 
@@ -387,8 +524,12 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
     // their own rules
 
     SymbolTypePtr_t res(new SymbolType(
-        name, TYPE_GENERIC_INSTANCE, base, nullptr, members)
-    );
+        name,
+        TYPE_GENERIC_INSTANCE,
+        base,
+        nullptr,
+        members
+    ));
 
     auto default_value = base->GetDefaultValue();
     if (!default_value) {
@@ -402,15 +543,25 @@ SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
     return res;
 }
 
-SymbolTypePtr_t SymbolType::GenericParameter(const std::string &name, 
+SymbolTypePtr_t SymbolType::GenericParameter(
+    const std::string &name, 
     const SymbolTypePtr_t &substitution)
 {
-    SymbolTypePtr_t res(new SymbolType(name, TYPE_GENERIC_PARAMETER, nullptr));
+    SymbolTypePtr_t res(new SymbolType(
+        name,
+        TYPE_GENERIC_PARAMETER,
+        nullptr
+    ));
+
     res->m_generic_param_info.m_substitution = substitution;
+    
     return res;
 }
 
-SymbolTypePtr_t SymbolType::TypePromotion(const SymbolTypePtr_t &lptr, const SymbolTypePtr_t &rptr, bool use_number)
+SymbolTypePtr_t SymbolType::TypePromotion(
+    const SymbolTypePtr_t &lptr,
+    const SymbolTypePtr_t &rptr,
+    bool use_number)
 {
     if (!lptr || !rptr) {
         return nullptr;
@@ -421,7 +572,9 @@ SymbolTypePtr_t SymbolType::TypePromotion(const SymbolTypePtr_t &lptr, const Sym
         return lptr;
     }
 
-    if (lptr->TypeEqual(*SymbolType::Builtin::UNDEFINED) || rptr->TypeEqual(*SymbolType::Builtin::UNDEFINED)) {
+    if (lptr->TypeEqual(*SymbolType::Builtin::UNDEFINED) ||
+        rptr->TypeEqual(*SymbolType::Builtin::UNDEFINED))
+    {
         // (Undefined | Any) + (Undefined | Any) = Undefined
         return SymbolType::Builtin::UNDEFINED;
     } else if (lptr->TypeEqual(*SymbolType::Builtin::ANY)) {

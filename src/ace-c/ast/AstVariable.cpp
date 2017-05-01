@@ -72,21 +72,21 @@ void AstVariable::Build(AstVisitor *visitor, Module *mod)
 
     if (!(m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
         // load globally, rather than from offset.
-        if (m_properties.GetAccessMode() == ACCESS_MODE_LOAD) {
+        if (m_access_mode == ACCESS_MODE_LOAD) {
             // load stack value at index into register
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_INDEX, rp, (uint16_t)stack_location);
-        } else if (m_properties.GetAccessMode() == ACCESS_MODE_STORE) {
+        } else if (m_access_mode == ACCESS_MODE_STORE) {
             // store the value at the index into this local variable
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint16_t, uint8_t>(MOV_INDEX, (uint16_t)stack_location, rp - 1);
         }
     } else {
-        if (m_properties.GetAccessMode() == ACCESS_MODE_LOAD) {
+        if (m_access_mode == ACCESS_MODE_LOAD) {
             // load stack value at offset value into register
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)offset);
-        } else if (m_properties.GetAccessMode() == ACCESS_MODE_STORE) {
+        } else if (m_access_mode == ACCESS_MODE_STORE) {
             // store the value at (rp - 1) into this local variable
             visitor->GetCompilationUnit()->GetInstructionStream() <<
                 Instruction<uint8_t, uint16_t, uint8_t>(MOV_OFFSET, (uint16_t)offset, rp - 1);

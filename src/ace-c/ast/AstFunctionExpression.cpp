@@ -18,7 +18,7 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
     const std::shared_ptr<AstBlock> &block,
     bool is_async,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD),
       m_parameters(parameters),
       m_type_specification(type_specification),
       m_is_async(is_async),
@@ -126,6 +126,11 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_block != nullptr);
 
+    // the register index variable we will reuse
+    uint8_t rp;
+
+    if (ace::compiler::Config::use_static_objects && m_static_id == 0) {
+
     // the properties of this function
     StaticFunction sf;
     sf.m_nargs = (uint8_t)m_parameters.size();
@@ -137,9 +142,6 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 
         sf.m_is_variadic = (uint8_t)last->IsVariadic();
     }
-
-    // the register index variable we will reuse
-    uint8_t rp;
 
     // the label to jump to the very end
     StaticObject end_label;
@@ -166,37 +168,6 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     // store the function address before the function body
     sf.m_addr = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
 
-    // increase stack size by the number of parameters
-    int param_stack_size = 0;
-    for (auto &param : m_parameters) {
-        if (param != nullptr) {
-            param->Build(visitor, mod);
-            param_stack_size++;
-        }
-    }
-
-    // increase stack size for call stack info
-    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
-
-    // build the function body
-    m_block->Build(visitor, mod);
-
-    if (!m_block->IsLastStatementReturn()) {
-        // add RET instruction
-        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
-    }
-
-    for (int i = 0; i < param_stack_size; i++) {
-        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-    }
-
-    // decrease stack size for call stack info
-    visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-
-    // set the label's position to after the block
-    end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
-
     // store function data as a static object
     StaticObject so(sf);
     int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
@@ -204,8 +175,46 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
         so.m_id = m_static_id;
         visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
+        
+
+        // Build the function 
+
+        // increase stack size by the number of parameters
+        int param_stack_size = 0;
+        for (auto &param : m_parameters) {
+            if (param != nullptr) {
+                param->Build(visitor, mod);
+                param_stack_size++;
+            }
+        }
+
+        // increase stack size for call stack info
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
+        // build the function body
+        m_block->Build(visitor, mod);
+
+        if (!m_block->IsLastStatementReturn()) {
+            // add RET instruction
+            visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+        }
+
+        for (int i = 0; i < param_stack_size; i++) {
+            visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+        }
+
+        // decrease stack size for call stack info
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+
+        // set the label's position to after the block
+        end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+
+    
     } else {
         m_static_id = found_id;
+    }
+
     }
 
     // store local variable

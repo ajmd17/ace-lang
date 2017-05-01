@@ -10,7 +10,7 @@ AstArgument::AstArgument(
     bool is_named,
     const std::string &name,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD),
       m_expr(expr),
       m_is_named(is_named),
       m_name(name)

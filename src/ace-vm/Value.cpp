@@ -60,11 +60,14 @@ const char *Value::GetTypeString() const
         case BOOLEAN: return "Boolean";
         case HEAP_POINTER: 
             if (!m_value.ptr) {
-                return "NoType";
+                return "Null";
             } else if (m_value.ptr->GetPointer<utf::Utf8String>()) {
                 return "String";
             } else if (m_value.ptr->GetPointer<Array>()) {
                 return "Array";
+            } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
+                ASSERT(object->GetTypePtr() != nullptr);
+                return object->GetTypePtr()->GetName();
             }
             return "Object";
         case FUNCTION: return "Function";

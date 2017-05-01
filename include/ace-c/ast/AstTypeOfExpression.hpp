@@ -30,6 +30,8 @@ public:
 private:
     std::shared_ptr<AstExpression> m_expr;
 
+    std::shared_ptr<AstExpression> m_runtime_typeof_call;
+
     // set while compiling
     int m_static_id;
 

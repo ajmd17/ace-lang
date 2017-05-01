@@ -23,7 +23,7 @@ AstBinaryExpression::AstBinaryExpression(const std::shared_ptr<AstExpression> &l
     const std::shared_ptr<AstExpression> &right,
     const Operator *op,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD),
       m_left(left),
       m_right(right),
       m_op(op)
@@ -47,7 +47,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 
     SymbolTypePtr_t left_type  = m_left->GetSymbolType();
     SymbolTypePtr_t right_type = m_right->GetSymbolType();
-
+    
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
         visitor->Assert((left_type == SymbolType::Builtin::INT || left_type == SymbolType::Builtin::ANY) &&
@@ -71,7 +71,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
             visitor->GetCompilationUnit()->GetErrorList().AddError(error);
         }
 
-        AstVariable *left_as_var = nullptr;
+        /*AstVariable *left_as_var = nullptr;
 
         if (auto *left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get())) {
             AstIdentifier *last = left_as_mem->GetLast().get();
@@ -87,9 +87,9 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
             }
         } else {
             left_as_var = dynamic_cast<AstVariable*>(m_left.get());
-        }
+        }*/
 
-        if (left_as_var) {
+        /*if (left_as_var) {
             if (left_as_var->GetProperties().GetIdentifier()) {
                 // make sure we are not modifying a const
                 if (left_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
@@ -98,11 +98,15 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                             m_location, left_as_var->GetName()));
                 }
             }
-        } else {
+        }*/
+        
+        if (!(m_left->GetAccessOptions() & AccessMode::ACCESS_MODE_STORE)) {
             // cannot modify an rvalue
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_cannot_modify_rvalue,
-                    m_location));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                Level_fatal,
+                Msg_cannot_modify_rvalue,
+                m_location
+            ));
         }
     } else {
         // compare both sides because assignment does not matter in this case
@@ -676,7 +680,12 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-            AstVariable *left_as_var = nullptr;
+            if (m_left->GetAccessOptions() & AccessMode::ACCESS_MODE_STORE) {
+                m_left->SetAccessMode(AccessMode::ACCESS_MODE_STORE);
+                m_left->Build(visitor, mod);
+            }
+
+            /*AstVariable *left_as_var = nullptr;
 
             if ((left_as_var = dynamic_cast<AstVariable*>(m_left.get())) && left_as_var->GetProperties().GetIdentifier()) {
                 // we are storing the rhs into the left,
@@ -703,7 +712,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             } else if (auto *left_as_array = dynamic_cast<AstArrayAccess*>(m_left.get())) {
                 left_as_array->SetAccessMode(ACCESS_MODE_STORE);
                 left_as_array->Build(visitor, mod);
-            }
+            }*/
 
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         }

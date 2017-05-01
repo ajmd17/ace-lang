@@ -12,7 +12,7 @@
 AstArrayExpression::AstArrayExpression(
     const std::vector<std::shared_ptr<AstExpression>> &members,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD),
       m_members(members),
       m_held_type(SymbolType::Builtin::ANY)
 {

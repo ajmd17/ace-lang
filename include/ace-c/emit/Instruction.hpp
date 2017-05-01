@@ -27,6 +27,23 @@ public:
     std::vector<std::vector<char>> m_data;
 
 protected:
+    void Accept(NamesPair_t name)
+    {
+        std::vector<char> operand;
+
+        char header[sizeof(name.first)];
+        std::memcpy(&header[0], &name.first, sizeof(name.first));
+
+        for (size_t j = 0; j < sizeof(name.first); j++) {
+            operand.push_back(header[j]);
+        }
+        for (size_t j = 0; j < name.second.size(); j++) {
+            operand.push_back(name.second[j]);
+        }
+        
+        m_data.push_back(operand);
+    }
+
     void Accept(std::vector<NamesPair_t> names)
     {
         std::vector<char> operand;

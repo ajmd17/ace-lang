@@ -29,11 +29,11 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
             param->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
             if (param->GetSymbolType()) {
                 generic_types.push_back({
-                    "param", param->GetSymbolType()
+                    "of", param->GetSymbolType()
                 });
             } else {
                 generic_types.push_back({
-                    "param", SymbolType::Builtin::UNDEFINED
+                    "of", SymbolType::Builtin::UNDEFINED
                 });
             }
         }

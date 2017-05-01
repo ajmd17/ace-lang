@@ -1,0 +1,25 @@
+module test_ucs {
+
+  type Car {
+    drive = (self) {
+      print 'VROOM VROOM! : ', self
+    }
+
+    /*do_stuff = (self, a,b, args...) {
+      print [self,a,b,args]
+    }*/
+  }
+
+  func do_stuff (a, b, args...) {
+    print [a,b,args]
+  }
+
+
+  car1: Car
+  car1.drive()
+  car1.do_stuff(1,2,3)
+
+  car2: Any = car1
+  car2.do_stuff(9,8,7,3)
+
+}

@@ -1,0 +1,50 @@
+module car_example {
+  type Parent {
+    name: String
+    
+    printName = (self) {
+      print self.name
+      print "type: ", (runtime::typeof(self))
+      //print self
+    }
+  }
+
+  type Person {
+    name: String
+    parent: Parent
+    
+    printName = (self) {
+      //print self.name
+      print "type: ", (runtime::typeof(self))
+      //print self
+    }
+
+    sayHi = (self) {
+      print 'hi'
+    }
+  }
+
+  type Car {
+    name: String
+    derp: Person
+    owner: Person
+
+    sayHi = (self) {
+      print 'hello'
+    }
+
+    drive = (self, speed: Float?) {
+      print 'VROOM ', to_json(self)
+    }
+  }
+
+  car1: Car
+  car1.name = 'Lambourghini'
+  //car1.owner.name = 'Andrew'
+  car2: Any = car1
+  car3: Car
+
+  //call(car1.drive, car1)
+  (car1.drive)(5.3)
+  
+}

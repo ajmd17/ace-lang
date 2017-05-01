@@ -1,7 +1,7 @@
 #include <ace-c/ast/AstConstant.hpp>
 
 AstConstant::AstConstant(const SourceLocation &location)
-    : AstExpression(location)
+    : AstExpression(location, ACCESS_MODE_LOAD)
 {
 }
 

@@ -3,6 +3,7 @@
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstFunctionCall.hpp>
+#include <ace-c/ast/AstNil.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
@@ -15,14 +16,14 @@
 
 #include <iostream>
 
-AstMemberAccess::AstMemberAccess(const std::shared_ptr<AstExpression> &target,
+AstMemberAccess::AstMemberAccess(
+    const std::shared_ptr<AstExpression> &target,
     const std::vector<std::shared_ptr<AstIdentifier>> &parts,
     const SourceLocation &location)
-    : AstExpression(location),
+    : AstExpression(location, ACCESS_MODE_LOAD | ACCESS_MODE_STORE),
       m_target(target),
       m_parts(parts),
       m_mod_access(nullptr),
-      m_access_mode(ACCESS_MODE_LOAD),
       m_side_effects(true)
 {
 }
@@ -53,6 +54,7 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
     real_target->Visit(visitor, (m_mod_access != nullptr) ? m_mod_access : mod);
     target_type = real_target->GetSymbolType();
     m_part_object_types.push_back(target_type);
+            std::cout << "target_type: " << target_type->GetName() << "\n";
 
     for (; pos < m_parts.size(); pos++) {
         auto &field = m_parts[pos];
@@ -61,25 +63,55 @@ void AstMemberAccess::Visit(AstVisitor *visitor, Module *mod)
         AstFunctionCall *field_as_call = dynamic_cast<AstFunctionCall*>(field.get());
 
         if (target_type == SymbolType::Builtin::ANY) {
+            auto member_type = SymbolType::Builtin::ANY;
+
             if (field_as_call) {
                 has_side_effects = true;
+
+                // add the 'self' argument
+                field_as_call->AddArgumentToFront(std::shared_ptr<AstArgument>(new AstArgument(
+                    real_target,
+                    false,
+                    "",
+                    real_target->GetLocation()
+                )));
+
                 // if it's a function, we'll have to check it anyway,
                 // just in case it happens to be UCS...
                 // lookup the identifier first so we don't add a compiler error on not found
                 field_as_call->PerformLookup(visitor, mod);
-                if (field_as_call->GetProperties().GetIdentifier()) {
+                /*if (field_as_call->GetProperties().GetIdentifier()) {
                     field_as_call->Visit(visitor, mod);
-                }
+                } else {*/
+                    // visit all args, still have to make sure each argument is valid
+                    for (auto &arg : field_as_call->GetArguments()) {
+                        if (arg) {
+                            arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
+                        }
+                    }
+                    
+                    auto substituted = SemanticAnalyzer::SubstituteFunctionArgs(
+                        visitor,
+                        mod,
+                        SymbolType::Builtin::FUNCTION,
+                        field_as_call->GetArguments(), 
+                        field_as_call->GetLocation()
+                    );
+
+                    field_as_call->SetArgumentOrdering(substituted.second);
+                //}
             }
 
             // for the Any type, we will have to load the member from a hash
             // leave target_type as Any
-            target_type = SymbolType::Builtin::ANY;
+            target_type = member_type;
             m_part_object_types.push_back(target_type);
             real_target = field;
         } else {
+            //std::cout << "field name: " << field->GetName() << "\n";
             // first check if the target has the field
             if (auto member_type = target_type->FindMember(field->GetName())) {
+                //std::cout << "type name: " << member_type->GetName() << "\n";
                 if (field_as_call) {
                     has_side_effects = true;
 

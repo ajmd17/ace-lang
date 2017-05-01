@@ -4,11 +4,23 @@
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ObjectType.hpp>
 #include <ace-c/SymbolType.hpp>
+#include <ace-c/enums.hpp>
 
 class AstExpression : public AstStatement {
 public:
-    AstExpression(const SourceLocation &location);
+    AstExpression(
+        const SourceLocation &location,
+        int access_options
+    );
     virtual ~AstExpression() = default;
+
+    inline const int GetAccessOptions() const
+        { return m_access_options; }
+
+    inline AccessMode GetAccessMode() const
+      { return m_access_mode; }
+    inline void SetAccessMode(AccessMode access_mode)
+      { m_access_mode = access_mode; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
@@ -26,6 +38,12 @@ public:
     virtual SymbolTypePtr_t GetSymbolType() const = 0;
 
     bool m_is_standalone;
+
+protected:
+    AccessMode m_access_mode;
+
+private:
+    int m_access_options;
 };
 
 #endif

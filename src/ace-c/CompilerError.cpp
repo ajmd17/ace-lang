@@ -36,7 +36,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_mismatched_return_type, "function is marked to return '%', cannot return '%'" },
     { Msg_must_be_explicitly_marked_any, "function must be explicitly marked to return 'Any'" },
     { Msg_return_outside_function, "'return' not allowed outside of function body" },
-    { Msg_not_a_function, "'%' is not a function" },
+    { Msg_not_a_function, "an object of type '%' is not callable as a function" },
     { Msg_member_not_a_method, "data member '%' is not a method" },
     { Msg_closure_capture_must_be_parameter, "'%' was declared in a function above this one, and must be passed as a parameter to be captured" },
     { Msg_not_an_array, "subscript operator invalid on type '%'" },

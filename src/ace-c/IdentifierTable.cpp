@@ -44,8 +44,11 @@ Identifier *IdentifierTable::AddAlias(const std::string &name, Identifier *alias
 
 Identifier *IdentifierTable::AddIdentifier(const std::string &name, int flags)
 {
-    m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(name,
-        m_identifier_index++, flags)));
+    m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(
+        name,
+        m_identifier_index++,
+        flags
+    )));
     
     return m_identifiers.back().get();
 }
@@ -57,6 +60,7 @@ Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
             return ident.get();
         }
     }
+
     return nullptr;
 }
 
@@ -67,6 +71,7 @@ SymbolTypePtr_t IdentifierTable::LookupSymbolType(const std::string &name) const
             return type;
         }
     }
+    
     return nullptr;
 }
 

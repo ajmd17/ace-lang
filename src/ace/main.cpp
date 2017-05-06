@@ -418,6 +418,38 @@ void Global_fmt(ace::sdk::Params params)
     }
 }
 
+void Global_array_push(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(>=, 2);
+
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    const int buffer_size = 256;
+    char buffer[buffer_size];
+    std::snprintf(buffer, buffer_size, "array_push() requires an Array",
+        target_ptr->GetTypeString());
+    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
+
+    if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
+        utf::Utf8String *strptr = nullptr;
+        vm::Array *array_ptr = nullptr;
+        
+        if (target_ptr->GetValue().ptr == nullptr) {
+            params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
+        } else if ((array_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
+            array_ptr->PushMany(params.nargs - 1, &params.args[1]);
+        } else {
+            params.state->ThrowException(params.thread, e);
+        }
+    } else {
+        params.state->ThrowException(params.thread, e);
+    }
+
+    // return same value
+    ACE_RETURN(*target_ptr);
+}
+
 void Global_length(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
@@ -984,6 +1016,17 @@ int main(int argc, char *argv[])
         .Function("to_json", SymbolType::Builtin::STRING, {
             { "object", SymbolType::Builtin::ANY }
         }, Global_to_json)
+        .Function("array_push", SymbolType::Builtin::ARRAY, {
+            { "array", SymbolType::Builtin::ARRAY },
+            { "args", SymbolType::GenericInstance(
+                SymbolType::Builtin::VAR_ARGS,
+                GenericInstanceTypeInfo {
+                    {
+                        { "arg", SymbolType::Builtin::ANY }
+                    }
+                }
+            ) }
+        }, Global_array_push)
         .Function("length", SymbolType::Builtin::INT, {
             { "arraylike", SymbolType::Builtin::ANY }
         }, Global_length)

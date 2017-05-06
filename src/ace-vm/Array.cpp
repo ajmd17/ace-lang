@@ -1,5 +1,7 @@
 #include <ace-vm/Array.hpp>
 
+#include <common/my_assert.hpp>
+
 #include <cmath>
 #include <cstring>
 
@@ -68,6 +70,34 @@ void Array::Push(const Value &value)
     // set item at index
     m_buffer[index] = value;
     m_size++;
+}
+
+void Array::PushMany(size_t n, Value **values)
+{
+    int index = m_size;
+    if (index + n - 1 >= m_capacity) {
+        // delete and copy all over again
+        m_capacity = 1 << (unsigned int)std::ceil(std::log(m_size + n) / std::log(2.0));
+        Value *new_buffer = new Value[m_capacity];
+        // copy all objects into new buffer
+        for (int i = 0; i < m_size; i++) {
+            new_buffer[i] = m_buffer[i];
+        }
+        // delete old buffer
+        if (m_buffer) {
+            delete[] m_buffer;
+        }
+        // set internal buffer to the new one
+        m_buffer = new_buffer;
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        ASSERT(values[i] != nullptr);
+        // set item at index
+        m_buffer[index + i] = *values[i];
+    }
+
+    m_size += n;
 }
 
 void Array::Pop()

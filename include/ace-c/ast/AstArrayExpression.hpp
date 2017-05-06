@@ -12,6 +12,9 @@ public:
         const SourceLocation &location);
     virtual ~AstArrayExpression() = default;
 
+    inline const std::vector<std::shared_ptr<AstExpression>> &GetMembers() const
+        { return m_members; };
+
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;

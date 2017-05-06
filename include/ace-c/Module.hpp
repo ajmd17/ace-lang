@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_set>
 #include <functional>
 
 class Module {
@@ -18,6 +19,11 @@ public:
     inline const std::string &GetName() const { return m_name; }
     inline const SourceLocation &GetLocation() const { return m_location; }
     
+    inline const std::unordered_set<std::string> &GetScanPaths() const
+        { return m_scan_paths; }
+    inline void AddScanPath(const std::string &path)
+        { m_scan_paths.insert(path); }
+
     inline TreeNode<Module*> *GetImportTreeLink() { return m_tree_link; }
     inline const TreeNode<Module*> *GetImportTreeLink() const { return m_tree_link; }
     inline void SetImportTreeLink(TreeNode<Module*> *tree_link) { m_tree_link = tree_link; }
@@ -46,6 +52,9 @@ public:
 private:
     std::string m_name;
     SourceLocation m_location;
+
+    // module scan paths
+    std::unordered_set<std::string> m_scan_paths;
 
     /** A link to where this module exists in the import tree */
     TreeNode<Module*> *m_tree_link;

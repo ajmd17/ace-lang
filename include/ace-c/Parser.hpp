@@ -18,7 +18,7 @@
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstImport.hpp>
-#include <ace-c/ast/AstLocalImport.hpp>
+#include <ace-c/ast/AstFileImport.hpp>
 #include <ace-c/ast/AstInteger.hpp>
 #include <ace-c/ast/AstFloat.hpp>
 #include <ace-c/ast/AstString.hpp>
@@ -132,7 +132,7 @@ private:
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstStatement> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();
-    std::shared_ptr<AstLocalImport> ParseLocalImport();
+    std::shared_ptr<AstFileImport> ParseFileImport();
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
 };
 

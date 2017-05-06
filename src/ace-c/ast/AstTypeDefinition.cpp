@@ -85,14 +85,14 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             if (mem) {
                 mem->Visit(visitor, mod);
 
-                std::string mem_name = mem->GetName();
-                // add name
-                names.push_back({
-                    mem_name.size(),
-                    std::vector<uint8_t>(mem_name.begin(), mem_name.end())
-                });
-
                 if (mem->GetIdentifier()) {
+                    std::string mem_name = mem->GetName();
+                    // add name
+                    names.push_back({
+                        mem_name.size(),
+                        std::vector<uint8_t>(mem_name.begin(), mem_name.end())
+                    });
+
                     SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
 
                     // TODO find a better way to set up default assignment for members!

@@ -47,8 +47,7 @@ Token::Token(const Token &other)
 
 bool Token::IsContinuationToken() const
 {
-    return m_token_class == TK_OPERATOR ||
-           m_token_class == TK_DIRECTIVE ||
+    return m_token_class == TK_DIRECTIVE ||
            m_token_class == TK_COMMA ||
            m_token_class == TK_COLON ||
            m_token_class == TK_DOT ||

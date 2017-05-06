@@ -16,6 +16,7 @@ enum ErrorLevel {
 enum ErrorMessage {
     /* Fatal errors */
     Msg_internal_error,
+    Msg_custom_error,
     Msg_illegal_syntax,
     Msg_illegal_expression,
     Msg_illegal_operator,
@@ -73,6 +74,7 @@ enum ErrorMessage {
     Msg_bitwise_operands_must_be_int,
     Msg_bitwise_operand_must_be_int,
     Msg_expected_token,
+    Msg_unknown_directive,
     Msg_unknown_module,
     Msg_expected_module,
     Msg_empty_module,

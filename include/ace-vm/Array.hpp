@@ -23,6 +23,7 @@ public:
     inline void AtIndex(int index, const Value &value) { m_buffer[index] = value; }
 
     void Push(const Value &value);
+    void PushMany(size_t n, Value **values);
     void Pop();
 
 private:

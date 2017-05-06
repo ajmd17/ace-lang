@@ -3,6 +3,7 @@
 const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     /* Fatal errors */
     { Msg_internal_error, "internal error" },
+    { Msg_custom_error, "%" },
     { Msg_illegal_syntax, "illegal syntax" },
     { Msg_illegal_expression, "illegal expression" },
     { Msg_illegal_operator, "illegal usage of operator '%'" },
@@ -53,6 +54,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_bitwise_operands_must_be_int, "bitwise operands must both be 'Int', got '%' and '%'" },
     { Msg_bitwise_operand_must_be_int, "bitwise operand must be 'Int', got '%'" },
     { Msg_expected_token, "expected '%'" },
+    { Msg_unknown_directive, "unknown directive '%'" },
     { Msg_unknown_module, "'%' is not an imported module" },
     { Msg_expected_module, "expected 'module' declaration, cannot continue" },
     { Msg_empty_module, "the module is empty" },

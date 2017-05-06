@@ -5,7 +5,8 @@
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
 
-AstTypeSpecification::AstTypeSpecification(const std::string &left,
+AstTypeSpecification::AstTypeSpecification(
+    const std::string &left,
     const std::vector<std::shared_ptr<AstTypeSpecification>> &generic_params,
     const std::shared_ptr<AstTypeSpecification> &right,
     const SourceLocation &location)
@@ -14,6 +15,7 @@ AstTypeSpecification::AstTypeSpecification(const std::string &left,
       m_generic_params(generic_params),
       m_right(right),
       m_symbol_type(SymbolType::Builtin::UNDEFINED),
+      m_original_type(SymbolType::Builtin::UNDEFINED),
       m_is_chained(false)
 {
 }
@@ -41,7 +43,14 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 
     // check user-defined types
     if (!m_right) {
-        if (auto symbol_type = mod->LookupSymbolType(m_left)) {
+        if (SymbolTypePtr_t symbol_type = mod->LookupSymbolType(m_left)) {
+
+            m_original_type = symbol_type;
+
+            while (symbol_type != nullptr && symbol_type->GetTypeClass() == TYPE_ALIAS) {
+                symbol_type = symbol_type->GetAliasInfo().m_aliasee.lock();
+            }
+
             if (symbol_type->GetTypeClass() == TYPE_GENERIC_PARAMETER) {
                 // if it is a generic parameter:
                 //   if the substitution has been supplied:
@@ -59,12 +68,14 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 if (!m_generic_params.empty()) {
                     // look up generic instance to see if it's already been created
                     if (!(m_symbol_type = visitor->GetCompilationUnit()->
-                        GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types))) {
+                        GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types)))
+                    {
 
                         // nothing found from lookup,
                         // so create new generic instance
                         if (symbol_type->GetGenericInfo().m_num_parameters == -1 ||
-                            symbol_type->GetGenericInfo().m_num_parameters == generic_types.size()) {
+                            symbol_type->GetGenericInfo().m_num_parameters == generic_types.size())
+                        {
 
                             // open the scope for data members
                             mod->m_scopes.Open(Scope());
@@ -74,12 +85,14 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 
                             // for each supplied parameter, create substitution
                             for (size_t i = 0; 
-                                i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++) {
+                                i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
+                            {
 
                                 if (auto &gen = generic_types[i].second) {
                                     SymbolTypePtr_t param_type = SymbolType::GenericParameter(
                                         symbol_type->GetGenericInfo().m_params[i]->GetName(),
-                                        gen /* set substitution to the given type */);
+                                        gen /* set substitution to the given type */
+                                    );
 
                                     visitor->GetCompilationUnit()->GetCurrentModule()->
                                         m_scopes.Top().GetIdentifierTable().AddSymbolType(param_type);
@@ -101,7 +114,8 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 } else if (auto &mem_default = std::get<1>(mem)->GetDefaultValue()) {
                                     // assignment is null, update default value
                                     mem_default->Visit(visitor, mod);
-                                    std::get<1>(mem) = mem_default->GetSymbolType();
+                                    //std::get<1>(mem) = mem_default->GetSymbolType();
+                                    //std::get<1>(mem) = mem_default->GetSymbolType();
                                 }
                             }
 

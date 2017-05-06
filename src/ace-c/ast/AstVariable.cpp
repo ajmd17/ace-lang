@@ -36,9 +36,12 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 // we do this to make sure it was declared in this scope.
                 if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
                     // add error that the variable must be passed as a parameter
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_closure_capture_must_be_parameter,
-                            m_location, m_name));
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        Level_fatal,
+                        Msg_closure_capture_must_be_parameter,
+                        m_location,
+                        m_name
+                    ));
                 }
             }
 
@@ -51,6 +54,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
         case IDENTIFIER_TYPE_TYPE:
             visitor->GetCompilationUnit()->GetErrorList().AddError(
                 CompilerError(Level_fatal, Msg_identifier_is_type, m_location, m_name));
+
             break;
         case IDENTIFIER_TYPE_NOT_FOUND:
             visitor->GetCompilationUnit()->GetErrorList().AddError(

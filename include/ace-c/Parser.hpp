@@ -14,6 +14,7 @@
 #include <ace-c/ast/AstFunctionExpression.hpp>
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/ast/AstTypeDefinition.hpp>
+#include <ace-c/ast/AstTypeAlias.hpp>
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstImport.hpp>
@@ -31,6 +32,8 @@
 #include <ace-c/ast/AstMemberAccess.hpp>
 #include <ace-c/ast/AstMember.hpp>
 #include <ace-c/ast/AstArrayAccess.hpp>
+#include <ace-c/ast/AstHasExpression.hpp>
+#include <ace-c/ast/AstNewExpression.hpp>
 #include <ace-c/ast/AstTrue.hpp>
 #include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/ast/AstNil.hpp>
@@ -89,13 +92,15 @@ private:
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier(bool allow_keyword = false);
     std::shared_ptr<AstArgument> ParseArgument();
+    std::vector<std::shared_ptr<AstArgument>> ParseArguments();
     std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
-    std::shared_ptr<AstFunctionCall> ParseFunctionCall(bool allow_keyword = false);
     std::shared_ptr<AstFunctionCall> ParseFunctionCallNoParams(bool allow_keyword = false);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstMember> ParseMemberExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
+    std::shared_ptr<AstHasExpression> ParseHasExpression(std::shared_ptr<AstExpression> target);
+    std::shared_ptr<AstNewExpression> ParseNewExpression();
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
     std::shared_ptr<AstNil> ParseNil();
@@ -125,7 +130,7 @@ private:
     std::shared_ptr<AstExpression> ParseValueOfExpression();
     std::shared_ptr<AstTypeOfExpression> ParseTypeOfExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
-    std::shared_ptr<AstTypeDefinition> ParseTypeDefinition();
+    std::shared_ptr<AstStatement> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstLocalImport> ParseLocalImport();
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();

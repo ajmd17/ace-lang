@@ -9,7 +9,8 @@
 
 class AstTypeSpecification: public AstStatement {
 public:
-    AstTypeSpecification(const std::string &left,
+    AstTypeSpecification(
+        const std::string &left,
         const std::vector<std::shared_ptr<AstTypeSpecification>> &generic_params,
         const std::shared_ptr<AstTypeSpecification> &right,
         const SourceLocation &location);
@@ -22,6 +23,7 @@ public:
     virtual Pointer<AstStatement> Clone() const override;
 
     inline const SymbolTypePtr_t &GetSymbolType() const { return m_symbol_type; }
+    inline const SymbolTypePtr_t &GetOriginalType() const { return m_original_type; }
 
 private:
     std::string m_left;
@@ -30,6 +32,7 @@ private:
 
     /** Set while analyzing */
     SymbolTypePtr_t m_symbol_type;
+    SymbolTypePtr_t m_original_type;
 
     /** Is module access chained */
     bool m_is_chained;

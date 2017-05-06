@@ -149,6 +149,11 @@ public:
     inline const vec<SymbolMember_t> &GetMembers() const
         { return m_members; }
 
+    inline AliasTypeInfo &GetAliasInfo()
+        { return m_alias_info; }
+    inline const AliasTypeInfo &GetAliasInfo() const
+        { return m_alias_info; }
+
     inline FunctionTypeInfo &GetFunctionInfo()
         { return m_function_info; }
     inline const FunctionTypeInfo &GetFunctionInfo() const

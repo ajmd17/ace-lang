@@ -29,6 +29,10 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
     if (target_type != SymbolType::Builtin::ANY) {
         bool is_array = false;
 
+        /*while (target_type != nullptr && target_type->GetTypeClass() == TYPE_ALIAS) {
+            target_type = target_type->GetBaseType();
+        }*/
+
         if (target_type == SymbolType::Builtin::ARRAY) {
             is_array = true;
         } else if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {

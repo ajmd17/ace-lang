@@ -26,6 +26,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     ASSERT(sp != nullptr);
 
     int static_id = sp->GetId();
+    std::cout << "static_id = " << static_id << "\n";
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -40,10 +41,12 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
     if (!ace::compiler::Config::use_static_objects) {
         // fill with padding for LOAD_TYPE instruction
-        /*for (size_t i = 0; i < sp->GetMembers().size(); i++) {
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sp->GetName().length();
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
+        for (size_t i = 0; i < sp->GetMembers().size(); i++) {
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += std::get<0>(sp->GetMembers()[i]).size();
-        }*/
+        }
     }
 
     // store newly allocated object in same register

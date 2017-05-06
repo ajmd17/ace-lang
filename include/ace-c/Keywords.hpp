@@ -15,6 +15,8 @@ enum Keywords {
     Keyword_func,
     Keyword_type,
     Keyword_as,
+    Keyword_has,
+    Keyword_new,
     Keyword_print,
     Keyword_self,
     Keyword_if,

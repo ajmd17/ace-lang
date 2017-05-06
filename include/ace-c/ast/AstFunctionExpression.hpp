@@ -43,6 +43,8 @@ protected:
     // set while compiling
     int m_static_id;
 
+    void BuildFunctionBody(AstVisitor *visitor, Module *mod);
+
     inline Pointer<AstFunctionExpression> CloneImpl() const
     {
         return Pointer<AstFunctionExpression>(new AstFunctionExpression(

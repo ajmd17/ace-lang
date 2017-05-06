@@ -146,7 +146,10 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         SymbolTypePtr_t symbol_type;
 
         if (!is_generic) {
-            symbol_type = SymbolType::Object(m_name, member_types);
+            symbol_type = SymbolType::Object(
+                m_name,
+                member_types
+            );
         } else {
             symbol_type = SymbolType::Generic(
                 m_name,

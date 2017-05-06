@@ -12,6 +12,7 @@
 #include <common/utf8.hpp>
 
 #include <vector>
+#include <iostream>
 
 AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<AstParameter>> &parameters,
     const std::shared_ptr<AstTypeSpecification> &type_specification,
@@ -26,6 +27,37 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
       m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)
 {
+}
+
+void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
+{
+    // increase stack size by the number of parameters
+    int param_stack_size = 0;
+    for (auto &param : m_parameters) {
+        if (param != nullptr) {
+            param->Build(visitor, mod);
+            param_stack_size++;
+        }
+    }
+
+    // increase stack size for call stack info
+    visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
+    // build the function body
+    m_block->Build(visitor, mod);
+
+    if (!m_block->IsLastStatementReturn()) {
+        // add RET instruction
+        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+    }
+
+    for (int i = 0; i < param_stack_size; i++) {
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+    }
+
+    // decrease stack size for call stack info
+    visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+
 }
 
 void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
@@ -129,91 +161,65 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     // the register index variable we will reuse
     uint8_t rp;
 
-    if (ace::compiler::Config::use_static_objects && m_static_id == 0) {
+    if (!ace::compiler::Config::use_static_objects || m_static_id == 0) {
 
-    // the properties of this function
-    StaticFunction sf;
-    sf.m_nargs = (uint8_t)m_parameters.size();
-    sf.m_is_variadic = 0;
-    
-    if (!m_parameters.empty()) {
-        const std::shared_ptr<AstParameter> &last = m_parameters.back();
-        ASSERT(last != nullptr);
-
-        sf.m_is_variadic = (uint8_t)last->IsVariadic();
-    }
-
-    // the label to jump to the very end
-    StaticObject end_label;
-    end_label.m_type = StaticObject::TYPE_LABEL;
-    end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-    // jump to end as to not execute the function body
-    // get current register index
-    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-    // load the label address from static memory into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
-
-    if (!ace::compiler::Config::use_static_objects) {
-        // fill with padding, for LOAD_ADDR instruction.
-        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-    }
-
-    // jump if they are equal: i.e the value is false
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(JMP, rp);
-
-    // store the function address before the function body
-    sf.m_addr = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-
-    // store function data as a static object
-    StaticObject so(sf);
-    int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
-    if (found_id == -1) {
-        m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-        so.m_id = m_static_id;
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
+        // the properties of this function
+        StaticFunction sf;
+        sf.m_nargs = (uint8_t)m_parameters.size();
+        sf.m_is_variadic = 0;
         
+        if (!m_parameters.empty()) {
+            const std::shared_ptr<AstParameter> &last = m_parameters.back();
+            ASSERT(last != nullptr);
 
-        // Build the function 
-
-        // increase stack size by the number of parameters
-        int param_stack_size = 0;
-        for (auto &param : m_parameters) {
-            if (param != nullptr) {
-                param->Build(visitor, mod);
-                param_stack_size++;
-            }
+            sf.m_is_variadic = (uint8_t)last->IsVariadic();
         }
 
-        // increase stack size for call stack info
-        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+        // the label to jump to the very end
+        StaticObject end_label;
+        end_label.m_type = StaticObject::TYPE_LABEL;
+        end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
 
-        // build the function body
-        m_block->Build(visitor, mod);
+        // jump to end as to not execute the function body
+        // get current register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        if (!m_block->IsLastStatementReturn()) {
-            // add RET instruction
-            visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+        // load the label address from static memory into register
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
         }
 
-        for (int i = 0; i < param_stack_size; i++) {
-            visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-        }
+        // jump if they are equal: i.e the value is false
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(JMP, rp);
 
-        // decrease stack size for call stack info
-        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+        // store the function address before the function body
+        sf.m_addr = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+
+        // store function data as a static object
+        StaticObject so(sf);
+        int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
+        if (found_id == -1) {
+            m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+            so.m_id = m_static_id;
+            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
+            
+
+            // Build the function 
+            BuildFunctionBody(visitor, mod);
+        
+        } else {
+            m_static_id = found_id;
+            std::cout << "found_id = " << found_id << "\n";
+        }
 
         // set the label's position to after the block
         end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
         visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
-
-    
-    } else {
-        m_static_id = found_id;
-    }
 
     }
 

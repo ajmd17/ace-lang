@@ -355,19 +355,24 @@ const SymbolTypePtr_t SymbolType::FindMember(const std::string &name) const
     return nullptr;
 }
 
-SymbolTypePtr_t SymbolType::Alias(const std::string &name, const AliasTypeInfo &info)
+SymbolTypePtr_t SymbolType::Alias(
+    const std::string &name,
+    const AliasTypeInfo &info)
 {
-    SymbolTypePtr_t res;
-
     if (auto sp = info.m_aliasee.lock()) {
-        auto base = sp->m_base.lock();
-        ASSERT(base != nullptr);
+        SymbolTypePtr_t res(new SymbolType(
+            name,
+            TYPE_ALIAS,
+            nullptr
+        ));
 
-        res.reset(new SymbolType(name, TYPE_ALIAS, base));
         res->m_alias_info = info;
+        res->SetId(sp->GetId());
+
+        return res;
     }
 
-    return res;
+    return nullptr;
 }
 
 SymbolTypePtr_t SymbolType::Primitive(const std::string &name, 
@@ -421,7 +426,7 @@ SymbolTypePtr_t SymbolType::Generic(const std::string &name,
     SymbolTypePtr_t res(new SymbolType(
         name,
         TYPE_GENERIC,
-        nullptr,
+        SymbolType::Builtin::OBJECT,
         default_value,
         members
     ));

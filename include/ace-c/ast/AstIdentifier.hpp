@@ -13,6 +13,7 @@ struct AstIdentifierProperties {
     IdentifierType m_identifier_type = IDENTIFIER_TYPE_UNKNOWN;
 
     bool m_is_in_function = false;
+    bool m_is_in_pure_function = false;
     int m_depth = 0;
 
     // getters & setters
@@ -24,6 +25,7 @@ struct AstIdentifierProperties {
     inline void SetIdentifierType(IdentifierType identifier_type) { m_identifier_type = identifier_type; }
 
     inline bool IsInFunction() const { return m_is_in_function; }
+    inline bool IsInPureFunction() const { return m_is_in_pure_function; }
     inline int GetDepth() const { return m_depth; }
 };
 

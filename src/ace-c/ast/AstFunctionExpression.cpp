@@ -18,11 +18,13 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
     const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstBlock> &block,
     bool is_async,
+    bool is_pure,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_parameters(parameters),
       m_type_specification(type_specification),
       m_is_async(is_async),
+      m_is_pure(is_pure),
       m_block(block),
       m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)
@@ -65,8 +67,14 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     // first item will be return type
     std::vector<std::pair<std::string, SymbolTypePtr_t>> param_symbol_types;
 
+    ScopeType scope_type = SCOPE_TYPE_FUNCTION;
+
+    if (m_is_pure) {
+        scope_type = SCOPE_TYPE_PURE_FUNCTION;
+    }
+    
     // open the new scope for parameters
-    mod->m_scopes.Open(Scope(SCOPE_TYPE_FUNCTION));
+    mod->m_scopes.Open(Scope(scope_type));
 
     for (auto &param : m_parameters) {
         if (param) {
@@ -203,7 +211,7 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         // store function data as a static object
         StaticObject so(sf);
         int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
-        if (found_id == -1) {
+        if (!ace::compiler::Config::use_static_objects || found_id == -1) {
             m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
             so.m_id = m_static_id;
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
@@ -214,7 +222,6 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         
         } else {
             m_static_id = found_id;
-            std::cout << "found_id = " << found_id << "\n";
         }
 
         // set the label's position to after the block

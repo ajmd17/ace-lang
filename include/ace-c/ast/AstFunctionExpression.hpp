@@ -15,6 +15,7 @@ public:
         const std::shared_ptr<AstTypeSpecification> &type_specification,
         const std::shared_ptr<AstBlock> &block,
         bool is_async,
+        bool is_pure,
         const SourceLocation &location);
     virtual ~AstFunctionExpression() = default;
 
@@ -36,6 +37,7 @@ protected:
     std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstBlock> m_block;
     bool m_is_async;
+    bool m_is_pure;
 
     SymbolTypePtr_t m_symbol_type;
     SymbolTypePtr_t m_return_type;
@@ -52,7 +54,9 @@ protected:
             CloneAstNode(m_type_specification),
             CloneAstNode(m_block),
             m_is_async,
-            m_location));
+            m_is_pure,
+            m_location
+        ));
     }
 };
 

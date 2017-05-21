@@ -368,6 +368,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             }
         } else if (MatchKeyword(Keyword_async, false)) {
             res = ParseAsyncExpression();
+        } else if (MatchKeyword(Keyword_pure, false)) {
+            res = ParsePureExpression();
         } else if (MatchKeyword(Keyword_type, false)) {
             res = ParseTypeDefinition();
         } else if (MatchKeyword(Keyword_if, false)) {
@@ -512,6 +514,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         expr = ParseFunctionExpression();
     } else if (MatchKeyword(Keyword_async)) {
         expr = ParseAsyncExpression();
+    } else if (MatchKeyword(Keyword_pure)) {
+        expr = ParsePureExpression();
     } else if (MatchKeyword(Keyword_valueof)) {
         expr = ParseValueOfExpression();
     } else if (MatchKeyword(Keyword_typeof)) {
@@ -1392,10 +1396,10 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition(bool requ
 std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(
     bool require_keyword,
     std::vector<std::shared_ptr<AstParameter>> params,
-    bool is_async)
+    bool is_async,
+    bool is_pure)
 {
     Token token = require_keyword ? ExpectKeyword(Keyword_func, true) : Token::EMPTY;
-
     SourceLocation location = token ? token.GetLocation() : CurrentLocation();
 
     if (require_keyword || !token) {
@@ -1418,6 +1422,7 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(
                 type_spec,
                 block,
                 is_async,
+                is_pure,
                 location
             ));
         }
@@ -1457,8 +1462,23 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
 std::shared_ptr<AstExpression> Parser::ParseAsyncExpression()
 {
     if (Token token = ExpectKeyword(Keyword_async, true)) {
+        MatchKeyword(Keyword_func, true); // skip 'func' keyword if found
         // for now, only functions are supported.
-        return ParseFunctionExpression(false, ParseFunctionParameters(), true);
+        return ParseFunctionExpression(
+            false, ParseFunctionParameters(), true, false
+        );
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstExpression> Parser::ParsePureExpression()
+{
+    if (Token token = ExpectKeyword(Keyword_pure, true)) {
+        MatchKeyword(Keyword_func, true); // skip 'func' keyword if found
+        return ParseFunctionExpression(
+            false, ParseFunctionParameters(), false, true
+        );
     }
 
     return nullptr;
@@ -1624,7 +1644,9 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                             // read the identifier token
                             Token identifier = ExpectIdentifier(true, true);
 
-                            if (auto expr = ParseFunctionExpression(false, ParseFunctionParameters())) {
+                            if (auto expr = ParseFunctionExpression(
+                                false, ParseFunctionParameters()
+                            )) {
                                 // first, read the identifier
                                 std::shared_ptr<AstVariableDeclaration> member(new AstVariableDeclaration(
                                     identifier.GetValue(),

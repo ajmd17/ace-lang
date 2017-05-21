@@ -194,8 +194,9 @@ void API::ModuleDefine::BindNativeFunction(
     // create value
     std::vector<std::shared_ptr<AstParameter>> parameters; // TODO
     std::shared_ptr<AstBlock> block(new AstBlock(SourceLocation::eof));
-    std::shared_ptr<AstFunctionExpression> value(
-        new AstFunctionExpression(parameters, nullptr, block, false, SourceLocation::eof));
+    std::shared_ptr<AstFunctionExpression> value(new AstFunctionExpression(
+        parameters, nullptr, block, false, false, SourceLocation::eof
+    ));
 
     value->SetReturnType(def.return_type);
 

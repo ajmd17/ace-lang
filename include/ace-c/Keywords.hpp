@@ -36,6 +36,7 @@ enum Keywords {
     Keyword_break,
     Keyword_continue,
     Keyword_async,
+    Keyword_pure,
     Keyword_valueof,
     Keyword_typeof
 };

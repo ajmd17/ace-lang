@@ -40,7 +40,8 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 TreeNode<Scope> *top = mod->m_scopes.TopNode();
 
                 while (top) {
-                    if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
+                    if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION ||
+                        top->m_value.GetScopeType() == SCOPE_TYPE_PURE_FUNCTION) {
                         // set declared in function flag
                         m_identifier->GetFlags() |= FLAG_DECLARED_IN_FUNCTION;
                         break;

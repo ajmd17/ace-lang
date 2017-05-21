@@ -32,6 +32,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "break",    Keyword_break },
     { "continue", Keyword_continue },
     { "async",    Keyword_async },
+    { "pure",     Keyword_pure },
     { "valueof",  Keyword_valueof },
     { "typeof",   Keyword_typeof },
 };

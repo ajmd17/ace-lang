@@ -1,11 +1,10 @@
 module generics {
     example_counter: Int = 1
 
-    example: Function = (name: String) {
+    example = function (name: String) {
         print "Example #", example_counter, ": ", name
         example_counter += 1
     }
-
 
     // This is a simple example of a generic type.
     // It holds a value internally of whatever type 
@@ -20,17 +19,17 @@ module generics {
 
     example("Boxing a type within a type")
 
-    type (BoxedType) BoxedValue {
+    type BoxedValue<BoxedType> {
         value: BoxedType
-        internal_array: Array(BoxedType) = [1.4, 2, 3] // bug
+        internal_array: BoxedType[] = [1.4, 2, 3] // bug
     }
 
-    boxed_int: BoxedValue(Int)
+    boxed_int: BoxedValue<Int>
     boxed_int.value = 500
     print "boxed_int.value is ", boxed_int.value
     //ss: String =  boxed_int.internal_array
 
-    boxed_boolean: BoxedValue(Boolean)
+    boxed_boolean: BoxedValue<Boolean>
     boxed_boolean.value = true
     print "boxed_boolean.value is ", boxed_boolean.value, "\n"
 
@@ -40,12 +39,12 @@ module generics {
 
     example("A simple 'Pair' type")
 
-    type (KeyType, ValueType) Pair {
+    type Pair<KeyType, ValueType> {
         key: KeyType
         value: ValueType
     }
 
-    string_int_pair: Pair(String, Int)
+    string_int_pair: Pair<String, Int>
     string_int_pair.key = "Apples"
     string_int_pair.value = 4
 

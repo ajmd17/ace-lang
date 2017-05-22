@@ -69,6 +69,9 @@ public:
         static const SymbolTypePtr_t VAR_ARGS;
         static const SymbolTypePtr_t MAYBE;
         static const SymbolTypePtr_t NULL_TYPE;
+        static const SymbolTypePtr_t EVENT;
+        static const SymbolTypePtr_t EVENT_IMPL;
+        static const SymbolTypePtr_t EVENT_ARRAY;
     };
 
     static SymbolTypePtr_t Alias(

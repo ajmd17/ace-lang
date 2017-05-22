@@ -25,7 +25,8 @@ private:
     {
         return Pointer<AstObject>(new AstObject(
             m_symbol_type,
-            m_location));
+            m_location
+        ));
     }
 };
 

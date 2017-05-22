@@ -144,25 +144,28 @@ void Runtime_load_function(ace::sdk::Params params)
 
     vm::Exception e = vm::Exception(utf::Utf8String("load_function() expects arguments of type Library and String"));
 
-    Library *libptr = nullptr;
-    utf::Utf8String *strptr = nullptr;
+    Library *lib_ptr = nullptr;
+    utf::Utf8String *str_ptr = nullptr;
 
     if (arg0->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (arg0->GetValue().ptr == nullptr) {
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
-        } else if ((libptr = arg0->GetValue().ptr->GetPointer<Library>()) == nullptr) {
+        } else if ((lib_ptr = arg0->GetValue().ptr->GetPointer<Library>()) == nullptr) {
             params.state->ThrowException(params.thread, e);
         } else {
             if (arg1->GetType() == vm::Value::ValueType::HEAP_POINTER) {
                 if (arg1->GetValue().ptr == nullptr) {
                     params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
-                } else if ((strptr = arg1->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
+                } else if ((str_ptr = arg1->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
                     params.state->ThrowException(params.thread, e);
                 } else {
-                    auto func = libptr->GetFunction(strptr->GetData());
+                    auto func = lib_ptr->GetFunction(str_ptr->GetData());
                     if (!func) {
                         // could not load function from the library
-                        params.state->ThrowException(params.thread, vm::Exception::LibraryFunctionLoadException(strptr->GetData()));
+                        params.state->ThrowException(
+                            params.thread,
+                            vm::Exception::LibraryFunctionLoadException(str_ptr->GetData())
+                        );
                     } else {
                         vm::Value res;
                         res.m_type = vm::Value::NATIVE_FUNCTION;

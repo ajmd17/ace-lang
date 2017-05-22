@@ -12,7 +12,7 @@ enum Keywords {
     Keyword_const,
     Keyword_ref,
     Keyword_val,
-    Keyword_func,
+    Keyword_function,
     Keyword_type,
     Keyword_as,
     Keyword_has,
@@ -25,6 +25,7 @@ enum Keywords {
     Keyword_each,
     Keyword_while,
     Keyword_do,
+    Keyword_on,
     Keyword_try,
     Keyword_catch,
     Keyword_throw,
@@ -37,6 +38,7 @@ enum Keywords {
     Keyword_continue,
     Keyword_async,
     Keyword_pure,
+    Keyword_impure,
     Keyword_valueof,
     Keyword_typeof
 };

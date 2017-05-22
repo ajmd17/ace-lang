@@ -77,67 +77,41 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstCallExpression::BuildArgumentsStart(AstVisitor *visitor, Module *mod)
-{
-    ASSERT(m_arg_ordering.size() >= m_args.size());
-
-    uint8_t rp;
-
-    // push a copy of each argument to the stack
-    for (size_t i = 0; i < m_args.size(); i++) {
-        ASSERT(m_arg_ordering[i] >= 0);
-        ASSERT(m_arg_ordering[i] <= m_args.size());
-
-        auto &arg = m_args[m_arg_ordering[i]];
-        ASSERT(arg != nullptr);
-
-        arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
-
-        // get active register
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // now that it's loaded into the register, make a copy
-        // add instruction to store on stack
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(PUSH, rp);
-
-        // increment stack size
-        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
-    }
-
-    // the reason we decrement the compiler's record of the stack size directly after
-    // is because the function body will actually handle the management of the stack size,
-    // so that the parameters are actually local variables to the function body.
-    for (int i = 0; i < m_args.size(); i++) {
-        // increment stack size
-        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-    }
-}
-
-void AstCallExpression::BuildArgumentsEnd(AstVisitor *visitor, Module *mod)
-{
-    // pop arguments from stack
-    Compiler::PopStack(visitor, m_args.size());
-}
-
 void AstCallExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_target != nullptr);
 
-    BuildArgumentsStart(visitor, mod);
+    // sort args
+    ASSERT(m_arg_ordering.size() >= m_args.size());
+    
+    std::vector<std::shared_ptr<AstArgument>> args_sorted;
+    args_sorted.resize(m_args.size());
 
-    m_target->Build(visitor, mod);
+    for (size_t i = 0; i < m_args.size(); i++) {
+        ASSERT(m_arg_ordering[i] >= 0);
+        ASSERT(m_arg_ordering[i] <= m_args.size());
+        args_sorted[m_arg_ordering[i]] = m_args[i];
+    }
 
-    // get active register
-    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    // build arguments
+    Compiler::BuildArgumentsStart(
+        visitor,
+        mod,
+        args_sorted
+    );
 
-    // invoke the function
-    int argc = (int)m_args.size();
+    Compiler::BuildCall(
+        visitor,
+        mod,
+        m_target,
+        (uint8_t)m_args.size()
+    );
 
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t>(CALL, rp, (uint8_t)argc);
-
-    BuildArgumentsEnd(visitor, mod);
+    Compiler::BuildArgumentsEnd(
+        visitor,
+        mod,
+        m_args.size()
+    );
 }
 
 void AstCallExpression::Optimize(AstVisitor *visitor, Module *mod)

@@ -287,15 +287,39 @@ void AstMemberAccess::Build(AstVisitor *visitor, Module *mod)
                     // enter the block
                     // the member was found here, so we can call what was in the register.
 
-                    // push args
-                    int nargs = field_as_call->GetArguments().size();
-                    field_as_call->BuildArgumentsStart(visitor, mod);
-                    // invoke it.
+                    const auto &args = field_as_call->GetArguments();
+                    const auto &arg_ordering = field_as_call->GetArgumentOrdering();
+
+                    const size_t nargs = field_as_call->GetArguments().size();
+
+                    // sort args before calling
+                    ASSERT(arg_ordering.size() >= nargs);
+                    
+                    std::vector<std::shared_ptr<AstArgument>> args_sorted;
+                    args_sorted.resize(nargs);
+
+                    for (size_t i = 0; i < nargs; i++) {
+                        ASSERT(arg_ordering[i] >= 0);
+                        ASSERT(arg_ordering[i] <= nargs);
+                        args_sorted[arg_ordering[i]] = args[i];
+                    }
+
+                    Compiler::BuildArgumentsStart(
+                        visitor,
+                        mod,
+                        args_sorted
+                    );
+
+                    // invoke it
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint8_t>(CALL, (uint8_t)found_member_reg, (uint8_t)nargs);
 
                     // pop args
-                    field_as_call->BuildArgumentsEnd(visitor, mod);
+                    Compiler::BuildArgumentsEnd(
+                        visitor,
+                        mod,
+                        nargs
+                    );
 
                     // unclaim register used to hold the object we're loading the member from
                     visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();

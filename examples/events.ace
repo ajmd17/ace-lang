@@ -1,0 +1,33 @@
+module events_example {
+  type Player {
+    id: Int
+    username: String
+    position = [0, 0] // x, y
+
+    on 'player move': (x, y) => (self) {
+      self.position[0] += x
+      self.position[1] += y
+
+      print x
+    }
+
+    on 'save': (file: File) => (self) {
+      file => self.x
+      file => self.y
+      file => self.id
+    }
+  }
+
+  my_player = new Player
+  my_player.id = 9999
+  my_player.username = 'asdfghjk'
+  my_player.position = [10, 25]
+
+  // throw an event into my_player object
+  'player move' => my_player
+
+  new Action('player move') => my_player
+
+  (file: new FileStream) => SaveAction => my_player
+  
+}

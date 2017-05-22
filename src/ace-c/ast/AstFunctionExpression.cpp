@@ -259,7 +259,7 @@ void AstFunctionExpression::Optimize(AstVisitor *visitor, Module *mod)
 
 void AstFunctionExpression::Recreate(std::ostringstream &ss)
 {
-    ss << Keyword::ToString(Keyword_func);
+    ss << Keyword::ToString(Keyword_function);
     ss << "(";
 
     for (auto &param : m_parameters) {

@@ -100,6 +100,39 @@ const SymbolTypePtr_t SymbolType::Builtin::NULL_TYPE = SymbolType::Primitive(
     sp<AstNil>(new AstNil(SourceLocation::eof))
 );
 
+const SymbolTypePtr_t SymbolType::Builtin::EVENT_IMPL = SymbolType::Object(
+    "Event_impl",
+    {
+        SymbolMember_t {
+            "key",
+            SymbolType::Builtin::STRING,
+            SymbolType::Builtin::STRING->GetDefaultValue()
+        },
+        SymbolMember_t {
+            "trigger",
+            SymbolType::Builtin::FUNCTION,
+            SymbolType::Builtin::FUNCTION->GetDefaultValue()
+        }
+    }
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::EVENT = SymbolType::Generic(
+    "$Event",
+    SymbolType::Builtin::UNDEFINED->GetDefaultValue(),
+    {},
+    GenericTypeInfo { 1 }
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::EVENT_ARRAY = SymbolType::Generic(
+    "$EventArray",
+    sp<AstArrayExpression>(new AstArrayExpression(
+        {},
+        SourceLocation::eof
+    )),
+    {},
+    GenericTypeInfo { 1 }
+);
+
 SymbolType::SymbolType(const std::string &name, 
     SymbolTypeClass type_class, 
     const SymbolTypePtr_t &base)
@@ -107,7 +140,7 @@ SymbolType::SymbolType(const std::string &name,
       m_type_class(type_class),
       m_base(base),
       m_default_value(nullptr),
-      m_id(0)
+      m_id(-1)
 {
 }
 
@@ -437,7 +470,8 @@ SymbolTypePtr_t SymbolType::Generic(const std::string &name,
     return res;
 }
 
-SymbolTypePtr_t SymbolType::GenericInstance(const SymbolTypePtr_t &base,
+SymbolTypePtr_t SymbolType::GenericInstance(
+    const SymbolTypePtr_t &base,
     const GenericInstanceTypeInfo &info)
 {
     ASSERT(base != nullptr);

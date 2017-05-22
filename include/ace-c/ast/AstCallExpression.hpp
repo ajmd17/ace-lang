@@ -31,9 +31,6 @@ public:
     inline const SymbolTypePtr_t &GetReturnType() const
         { return m_return_type; }
 
-    void BuildArgumentsStart(AstVisitor *visitor, Module *mod);
-    void BuildArgumentsEnd(AstVisitor *visitor, Module *mod);
-
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;

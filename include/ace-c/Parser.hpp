@@ -45,6 +45,8 @@
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/ast/AstTypeOfExpression.hpp>
 #include <ace-c/ast/AstReturnStatement.hpp>
+#include <ace-c/ast/AstEvent.hpp>
+#include <ace-c/ast/AstActionExpression.hpp>
 
 #include <string>
 
@@ -100,6 +102,7 @@ private:
     std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstHasExpression> ParseHasExpression(std::shared_ptr<AstExpression> target);
+    std::shared_ptr<AstActionExpression> ParseActionExpression();
     std::shared_ptr<AstNewExpression> ParseNewExpression();
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
@@ -132,6 +135,7 @@ private:
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();
     std::shared_ptr<AstExpression> ParseAsyncExpression();
     std::shared_ptr<AstExpression> ParsePureExpression();
+    std::shared_ptr<AstExpression> ParseImpureExpression();
     std::shared_ptr<AstExpression> ParseValueOfExpression();
     std::shared_ptr<AstTypeOfExpression> ParseTypeOfExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();

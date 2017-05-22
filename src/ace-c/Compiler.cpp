@@ -9,6 +9,65 @@
 
 #include <iostream>
 
+void Compiler::BuildArgumentsStart(
+    AstVisitor *visitor,
+    Module *mod,
+    const std::vector<std::shared_ptr<AstArgument>> &args
+) {
+    uint8_t rp;
+
+    // push a copy of each argument to the stack
+    for (size_t i = 0; i < args.size(); i++) {
+        auto &arg = args[i];
+        ASSERT(arg != nullptr);
+
+        arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
+
+        // get active register
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // now that it's loaded into the register, make a copy
+        // add instruction to store on stack
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(PUSH, rp);
+
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+    }
+
+    // the reason we decrement the compiler's record of the stack size directly after
+    // is because the function body will actually handle the management of the stack size,
+    // so that the parameters are actually local variables to the function body.
+    for (int i = 0; i < args.size(); i++) {
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+    }
+}
+
+void Compiler::BuildArgumentsEnd(
+    AstVisitor *visitor,
+    Module *mod,
+    size_t nargs
+) {
+    // pop arguments from stack
+    Compiler::PopStack(visitor, nargs);
+}
+
+void Compiler::BuildCall(
+    AstVisitor *visitor,
+    Module *mod,
+    const std::shared_ptr<AstExpression> &target,
+    uint8_t nargs
+) {
+    target->Build(visitor, mod);
+
+    // get active register
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint8_t>(CALL, rp, nargs);
+}
+
 void Compiler::LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -211,9 +270,15 @@ void Compiler::BuildUCS(AstVisitor *visitor, Module *mod, AstFunctionCall *field
     visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
 }
 
-void Compiler::CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info)
+void Compiler::CreateConditional(
+    AstVisitor *visitor,
+    Module *mod,
+    AstStatement *cond,
+    AstStatement *then_part,
+    AstStatement *else_part)
 {
-    ASSERT(info.cond != nullptr && info.then_part != nullptr);
+    ASSERT(cond != nullptr);
+    ASSERT(then_part != nullptr);
 
     uint8_t rp;
 
@@ -225,12 +290,14 @@ void Compiler::CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info
     // the label to jump to the else-part
     StaticObject else_label;
     else_label.m_type = StaticObject::TYPE_LABEL;
-    else_label.m_id = (info.else_part != nullptr) ? visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId() : -1;
+    else_label.m_id = (else_part != nullptr)
+        ? visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId()
+        : -1;
 
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // build the conditional
-    info.cond->Build(visitor, mod);
+    cond->Build(visitor, mod);
     // compare the conditional to 0
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t>(CMPZ, rp);
@@ -239,7 +306,7 @@ void Compiler::CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
     // load the label address from static memory into register 0
-    if (info.else_part != nullptr) {
+    if (else_part != nullptr) {
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
 
@@ -262,9 +329,9 @@ void Compiler::CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info
         Instruction<uint8_t, uint8_t>(JE, rp);
 
     // enter the block
-    info.then_part->Build(visitor, mod);
+    then_part->Build(visitor, mod);
 
-    if (info.else_part != nullptr) {
+    if (else_part != nullptr) {
         // jump to the very end now that we've accepted the if-block
         visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
         // get current register index
@@ -288,7 +355,104 @@ void Compiler::CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info
         // set the label's position to where the else-block would be
         else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
         visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
-        info.else_part->Build(visitor, mod);
+        else_part->Build(visitor, mod);
+    }
+
+    // set the label's position to after the block,
+    // so we can skip it if the condition is false
+    end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+}
+
+void Compiler::CreateConditional(
+    AstVisitor *visitor,
+    Module *mod,
+    const std::vector<Instruction<>> &ins,
+    AstStatement *then_part,
+    AstStatement *else_part)
+{
+    ASSERT(then_part != nullptr);
+
+    uint8_t rp;
+
+    // the label to jump to the very end
+    StaticObject end_label;
+    end_label.m_type = StaticObject::TYPE_LABEL;
+    end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+
+    // the label to jump to the else-part
+    StaticObject else_label;
+    else_label.m_type = StaticObject::TYPE_LABEL;
+    else_label.m_id = (else_part != nullptr)
+        ? visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId()
+        : -1;
+
+    // get current register index
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    
+    // build the conditionals
+    for (const auto &it : ins) {
+        visitor->GetCompilationUnit()->GetInstructionStream() << it;
+    }
+
+    // compare the conditional to 0
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(CMPZ, rp);
+
+    // get current register index
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    // load the label address from static memory into register 0
+    if (else_part != nullptr) {
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        }
+    } else {
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)end_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        }
+    }
+
+    // jump if condition is false or zero.
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t>(JE, rp);
+
+    // enter the block
+    then_part->Build(visitor, mod);
+
+    if (else_part != nullptr) {
+        // jump to the very end now that we've accepted the if-block
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        // get current register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // load the label address from static memory into register 1
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
+
+        if (!ace::compiler::Config::use_static_objects) {
+            // fill with padding, for LOAD_ADDR instruction.
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        }
+        // jump if they are equal: i.e the value is false
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t>(JMP, rp);
+        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        // get current register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // set the label's position to where the else-block would be
+        else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
+        else_part->Build(visitor, mod);
     }
 
     // set the label's position to after the block,

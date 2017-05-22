@@ -3,6 +3,7 @@
 
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstVariableDeclaration.hpp>
+#include <ace-c/ast/AstEvent.hpp>
 
 #include <string>
 #include <memory>
@@ -13,6 +14,7 @@ public:
     AstTypeDefinition(const std::string &name,
         const std::vector<std::string> &generic_params,
         const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
+        const std::vector<std::shared_ptr<AstEvent>> &events,
         const SourceLocation &location);
     virtual ~AstTypeDefinition() = default;
 
@@ -31,7 +33,10 @@ protected:
     std::string m_name;
     std::vector<std::string> m_generic_params;
     std::vector<std::shared_ptr<AstVariableDeclaration>> m_members;
+    std::vector<std::shared_ptr<AstEvent>> m_events;
     int m_num_members;
+
+    SymbolTypePtr_t m_event_field_type;
 
     inline Pointer<AstTypeDefinition> CloneImpl() const
     {
@@ -39,7 +44,9 @@ protected:
             m_name,
             m_generic_params,
             CloneAllAstNodes(m_members),
-            m_location));
+            CloneAllAstNodes(m_events),
+            m_location
+        ));
     }
 };
 

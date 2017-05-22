@@ -1,16 +1,38 @@
 module functions {
-    let log = (what, args...) {
-        print 'what = ', what
+    // declaring a function (standard for module-scoped functions)
+    function compute_sum(numbers...) {
+        // ...
     }
 
-    log('hello');
-
-    // simple function to take 'name' as an input,
-    // and make use of it.
-    say_name: Function = (name) {
-        print "Hello, ", name, "!"
+    // if there are no parameters needed, the parentheses may be omitted
+    function say_hello {
+        print "Hello!"
     }
-    print say_name
 
-    say_name("your name here")
+    // functions may also be declared in the same way that variables are,
+    // with an '=' assignment.
+    // use this for methods.
+    type Matrix {
+        mul = function (self, other) {
+            // ...
+        }
+
+        // you can actually omit the 'function keyword' altogether,
+        // however, the parentheses are required.
+        // this doesn't really matter though as you'll want to have a 'self'
+        // object in almost all cases of using methods
+
+        add = (self, other) {
+            // ...
+        }
+    }
+
+    // the type may be optionally specified.
+    // you don't have to get too specific, e.g writing `Function(a: Any) -> Any`.
+    // simply writing `Function` will do.
+    some_function: Function = (a, b) {
+        print fmt("% + % = %", a, b, a + b)
+    }
+
+    some_function(5, 7)
 }

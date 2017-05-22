@@ -2,6 +2,7 @@
 #define COMPILER_HPP
 
 #include <ace-c/AstVisitor.hpp>
+#include <ace-c/ast/AstArgument.hpp>
 #include <common/my_assert.hpp>
 
 // forward declarations
@@ -20,6 +21,25 @@ public:
         AstExpression *right;
     };
 
+    static void BuildArgumentsStart(
+        AstVisitor *visitor,
+        Module *mod,
+        const std::vector<std::shared_ptr<AstArgument>> &args
+    );
+
+    static void BuildArgumentsEnd(
+        AstVisitor *visitor,
+        Module *mod,
+        size_t nargs
+    );
+
+    static void BuildCall(
+        AstVisitor *visitor,
+        Module *mod,
+        const std::shared_ptr<AstExpression> &target,
+        uint8_t nargs
+    );
+
     static void LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash);
 
     static void LoadMemberFromHashAndCall(AstVisitor *visitor, Module *mod,
@@ -37,7 +57,25 @@ public:
     /** Compiler a standard if-then-else statement into the program.
         If the `else` expression is nullptr it will be omitted.
     */
-    static void CreateConditional(AstVisitor *visitor, Module *mod, CondInfo info);
+    static void CreateConditional(
+        AstVisitor *visitor,
+        Module *mod,
+        AstStatement *cond,
+        AstStatement *then_part,
+        AstStatement *else_part
+    );
+
+    /** Compiler a standard if-then-else statement into the program.
+        If the `else` expression is nullptr it will be omitted.
+    */
+    static void CreateConditional(
+        AstVisitor *visitor,
+        Module *mod,
+        const std::vector<Instruction<>> &ins,
+        AstStatement *then_part,
+        AstStatement *else_part
+    );
+
     /** Standard evaluation order. Load left into register 0,
         then load right into register 1.
         Rinse and repeat.

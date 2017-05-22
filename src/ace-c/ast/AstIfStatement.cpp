@@ -10,9 +10,9 @@
 #include <cstdio>
 
 AstIfStatement::AstIfStatement(const std::shared_ptr<AstExpression> &conditional,
-        const std::shared_ptr<AstBlock> &block,
-        const std::shared_ptr<AstBlock> &else_block,
-        const SourceLocation &location)
+    const std::shared_ptr<AstBlock> &block,
+    const std::shared_ptr<AstBlock> &else_block,
+    const SourceLocation &location)
     : AstStatement(location),
       m_conditional(conditional),
       m_block(block),
@@ -37,15 +37,13 @@ void AstIfStatement::Build(AstVisitor *visitor, Module *mod)
     int condition_is_true = m_conditional->IsTrue();
     if (condition_is_true == -1) {
         // the condition cannot be determined at compile time
-
-        Compiler::CondInfo info {
+        Compiler::CreateConditional(
+            visitor,
+            mod,
             m_conditional.get(),
             m_block.get(),
             m_else_block.get()
-        };
-
-        Compiler::CreateConditional(visitor, mod, info);
-
+        );
     } else if (condition_is_true) {
         // the condition has been determined to be true
         if (m_conditional->MayHaveSideEffects()) {

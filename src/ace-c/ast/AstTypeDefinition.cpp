@@ -14,11 +14,13 @@
 AstTypeDefinition::AstTypeDefinition(const std::string &name,
     const std::vector<std::string> &generic_params,
     const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
+    const std::vector<std::shared_ptr<AstEvent>> &events,
     const SourceLocation &location)
     : AstStatement(location),
       m_name(name),
       m_generic_params(generic_params),
       m_members(members),
+      m_events(events),
       m_num_members(0)
 {
 }
@@ -76,23 +78,59 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             }
         }
 
+        if (!m_events.empty()) {
+            std::vector<SymbolMember_t> events_members;
+            
+            for (const auto &event : m_events) {
+                if (event != nullptr) {
+                    event->Visit(visitor, mod);
+                    events_members.push_back({
+                        event->GetKey(),
+                        SymbolType::Builtin::FUNCTION,
+                        event->GetTrigger()
+                    });
+                }
+            }
+
+            // create a new type for the 'events' field containing all listeners as fields
+            m_event_field_type = SymbolType::Object(
+                m_name + ".Events",
+                events_members
+            );
+            
+            // register the type for 'events' field
+            visitor->GetCompilationUnit()->RegisterType(m_event_field_type);
+
+            // builtin members:
+            m_members.push_back(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
+                "events",
+                // std::shared_ptr<AstTypeSpecification>(new AstTypeSpecification(
+                //     SymbolType::Builtin::ARRAY->GetName(),
+                //     {
+                //         std::shared_ptr<AstTypeSpecification>(new AstTypeSpecification(
+                //             SymbolType::Builtin::EVENT->GetName(),
+                //             {},
+                //             nullptr,
+                //             m_location
+                //         ))
+                //     },
+                //     nullptr,
+                //     m_location
+                // )),
+                nullptr,
+                m_event_field_type->GetDefaultValue(),
+                m_location
+            )));
+        }
+
         std::vector<SymbolMember_t> member_types;
 
-        std::vector<NamesPair_t> names;
-        names.reserve(m_members.size());
-
         for (const auto &mem : m_members) {
-            if (mem) {
+            if (mem != nullptr) {
                 mem->Visit(visitor, mod);
 
                 if (mem->GetIdentifier()) {
                     std::string mem_name = mem->GetName();
-                    // add name
-                    names.push_back({
-                        mem_name.size(),
-                        std::vector<uint8_t>(mem_name.begin(), mem_name.end())
-                    });
-
                     SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
 
                     // TODO find a better way to set up default assignment for members!
@@ -104,44 +142,12 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                         mem_type,
                         mem->GetAssignment()
                     ));
-
-                    // generate hash from member name
-                    //hashes.push_back(hash_fnv_1(mem_name.c_str()));
-
-                    m_num_members++;
                 }
             }
         }
 
         // close the scope for data members
         mod->m_scopes.Close();
-
-        // mangle the type name
-        size_t len = m_name.length();
-
-        ASSERT((int)m_num_members < ace::compiler::Config::MAX_DATA_MEMBERS);
-
-        // create static object
-        StaticTypeInfo st;
-        st.m_size = m_num_members;
-        st.m_names = names;
-        st.m_name = new char[len + 1];
-        st.m_name[len] = '\0';
-        std::strcpy(st.m_name, m_name.c_str());
-
-        int id;
-
-        StaticObject so(st);
-        int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
-        if (found_id == -1) {
-            so.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
-            id = so.m_id;
-        } else {
-            id = found_id;
-        }
-
-        delete[] st.m_name;
 
         SymbolTypePtr_t symbol_type;
 
@@ -162,8 +168,10 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             );
         }
 
-        symbol_type->SetId(id);
+        // register the main type
+        visitor->GetCompilationUnit()->RegisterType(symbol_type);
 
+        // add the type to the identifier table, so it's usable
         Scope &top_scope = mod->m_scopes.Top();
         top_scope.GetIdentifierTable().AddSymbolType(symbol_type);
     }

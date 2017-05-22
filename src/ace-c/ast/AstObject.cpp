@@ -18,6 +18,8 @@ AstObject::AstObject(const SymbolTypeWeakPtr_t &symbol_type,
 
 void AstObject::Visit(AstVisitor *visitor, Module *mod)
 {
+    auto sp = m_symbol_type.lock();
+    ASSERT(sp != nullptr);
 }
 
 void AstObject::Build(AstVisitor *visitor, Module *mod)
@@ -26,7 +28,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     ASSERT(sp != nullptr);
 
     int static_id = sp->GetId();
-    std::cout << "static_id = " << static_id << "\n";
+    ASSERT(static_id != -1);
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

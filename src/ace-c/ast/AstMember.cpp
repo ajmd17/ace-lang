@@ -33,11 +33,35 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
 
     m_target->Visit(visitor, mod);
     
-    SymbolTypePtr_t target_type = m_target->GetSymbolType();
-    ASSERT(target_type != nullptr);
+    m_target_type = m_target->GetSymbolType();
+    ASSERT(m_target_type != nullptr);
 
-    if (target_type != SymbolType::Builtin::ANY) {
-        if (const SymbolTypePtr_t field_type = target_type->FindMember(m_field_name)) {
+    if (m_target_type != SymbolType::Builtin::ANY) {
+        // start looking at the target type,
+        // iterate through base type
+
+        SymbolTypePtr_t field_type = nullptr;
+
+        while (field_type == nullptr && m_target_type != nullptr) {
+            // allow boxing/unboxing for 'Maybe(T)' type
+            if (m_target_type->GetBaseType() != nullptr &&
+                m_target_type->GetBaseType()->TypeEqual(*SymbolType::Builtin::MAYBE))
+            {
+                m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].second;
+            }
+
+            ASSERT(m_target_type != nullptr);
+            
+            field_type = m_target_type->FindMember(m_field_name);
+
+            if (field_type == nullptr) {
+                m_target_type = m_target_type->GetBaseType();
+            } else {
+                break;
+            }
+        }
+
+        if (field_type != nullptr) {
             m_symbol_type = field_type;
         } else {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
@@ -45,7 +69,7 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
                 Msg_not_a_data_member,
                 m_location,
                 m_field_name,
-                target_type->GetName()
+                m_target->GetSymbolType()->GetName()
             ));
         }
     } else {
@@ -58,10 +82,9 @@ void AstMember::Build(AstVisitor *visitor, Module *mod)
     ASSERT(m_target != nullptr);
     m_target->Build(visitor, mod);
 
-    SymbolTypePtr_t target_type = m_target->GetSymbolType();
-    ASSERT(target_type != nullptr);
+    ASSERT(m_target_type != nullptr);
 
-    if (target_type == SymbolType::Builtin::ANY) {
+    if (m_target_type == SymbolType::Builtin::ANY) {
         // for Any type we will have to load from hash
         uint32_t hash = hash_fnv_1(m_field_name.c_str());
 
@@ -69,27 +92,31 @@ void AstMember::Build(AstVisitor *visitor, Module *mod)
 
         // todo: StoreMemberFromHash
     } else {
-        std::pair<int, SymbolTypePtr_t> dm = { -1, nullptr };
+        int found_index = -1;
 
         // get member index from name
-        for (size_t i = 0; i < target_type->GetMembers().size(); i++) {
-            if (std::get<0>(target_type->GetMembers()[i]) == m_field_name) {
-                dm = {
-                    i,
-                    std::get<1>(target_type->GetMembers()[i])
-                };
+        for (size_t i = 0; i < m_target_type->GetMembers().size(); i++) {
+            if (std::get<0>(m_target_type->GetMembers()[i]) == m_field_name) {
+                found_index = i;
                 break;
             }
         }
 
-        if (dm.first != -1) {
-            std::cout << "m_access_mode = " << m_access_mode << "\n";
+        if (found_index != -1) {
             if (m_access_mode == ACCESS_MODE_LOAD) {
                 // just load the data member.
-                Compiler::LoadMemberAtIndex(visitor, mod, dm.first);
+                Compiler::LoadMemberAtIndex(
+                    visitor,
+                    mod,
+                    found_index
+                );
             } else if (m_access_mode == ACCESS_MODE_STORE) {
                 // we are in storing mode, so store to LAST item in the member expr.
-                Compiler::StoreMemberAtIndex(visitor, mod, dm.first);
+                Compiler::StoreMemberAtIndex(
+                    visitor,
+                    mod,
+                    found_index
+                );
             }
         }
     }

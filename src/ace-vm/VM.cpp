@@ -692,21 +692,24 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         uint32_t hash; bs->Read(&hash);
 
         Value &sv = thread->m_regs[src];
-        Value &res = thread->m_regs[dst];
+        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
 
-        if (sv.m_type == Value::HEAP_POINTER && sv.m_value.ptr != nullptr) {
-            if (Object *objptr = sv.m_value.ptr->GetPointer<Object>()) {
-                if (Member *member = objptr->LookupMemberFromHash(hash)) {
-                    res = member->value;
-                    // leave the statement
+
+        Value &res = thread->m_regs[dst];
+        res.m_type = Value::BOOLEAN;
+
+        if (sv.m_value.ptr != nullptr) {
+            if (Object *obj_ptr = sv.m_value.ptr->GetPointer<Object>()) {
+                if (Member *mem_ptr = obj_ptr->LookupMemberFromHash(hash)) {
+                    res.m_value.b = true;
+                    // leave the case statement
                     break;
                 }
             }
         }
 
-        // not found, set it to null
-        res.m_type = Value::HEAP_POINTER;
-        res.m_value.ptr = nullptr;
+        // not found, set it to false
+        res.m_value.b = false;
 
         break;
     }

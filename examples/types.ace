@@ -1,4 +1,5 @@
 module types {
+  // custom types
   type User {
     username: String
     password: String
@@ -8,8 +9,15 @@ module types {
     }
   }
 
-  user: User = User(
-    username: "Username",
-    password: "password123"
-  )
+  // create an instance of the type
+  user = new User
+
+  // array of User objects
+  users: User[] // NOTE: same as writing Array(User)
+
+  // NOTE: a User object cannot be null by default
+  // to allow null, use Maybe(User) or User? (they're the same, but different syntax)
+
+  maybeUser: User? // NOTE: set to null by default.
+  maybeUser = new User // no longer null.
 }

@@ -5,6 +5,7 @@
 #include <ace-c/ErrorList.hpp>
 #include <ace-c/emit/InstructionStream.hpp>
 #include <ace-c/ast/AstNodeBuilder.hpp>
+#include <ace-c/SymbolType.hpp>
 #include <ace-c/Tree.hpp>
 
 #include <map>
@@ -32,6 +33,11 @@ public:
 
     inline AstNodeBuilder &GetAstNodeBuilder() { return m_ast_node_builder; }
     inline const AstNodeBuilder &GetAstNodeBuilder() const { return m_ast_node_builder; }
+
+    /**
+        Allows a non-builtin type to be used
+    */
+    void RegisterType(SymbolTypePtr_t &type_ptr);
 
     /** Looks up the module with the name, taking scope into account.
         Modules with the name that are in the current module or any module

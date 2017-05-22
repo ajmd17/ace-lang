@@ -1,0 +1,28 @@
+module pure_functions {
+  i = 0
+
+  add_with_i = function (a: Number) {
+    return a + i
+  }
+
+  add_numbers = pure function (a: Number, b: Number) {
+    // return a + i would cause a compilation error,
+    //   pure functions may not reference out-of-scope objects
+
+    return a + b
+      // fine, because all variables are passed to it
+  }
+
+  // the goal of pure functions is to prevent your programs from
+  // becoming totally intertwined and tangled together.
+  // pieces of a program (functions) should be able to work as individual
+  // programs themselves.
+
+  // there is also an 'impure function' syntax to go with the 'pure function' syntax.
+  // this is because of the possibility of functions being pure by default,
+  // having to be explicitly made impure.
+
+  add_with_i_again = impure function (a: Number) {
+    return add_with_i(a)
+  }
+}

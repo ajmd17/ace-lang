@@ -11,6 +11,4 @@ module test_pure {
   }
 
   print x(6)
-
-
 }

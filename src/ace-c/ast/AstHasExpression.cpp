@@ -97,9 +97,6 @@ void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
 
         found_member_reg = rp;
 
-        // store the data in a register
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-
         // compare the found member to zero
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(CMPZ, found_member_reg);
@@ -124,12 +121,9 @@ void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
             Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
         
 
-        // unclaim register used to hold the object we're loading the member from
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-
         // this is the `else` part
         // jump to the very end now that we've accepted the if-block
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage(); // 1
         // get current register index
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
@@ -146,12 +140,9 @@ void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(JMP, rp);
 
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage(); // 0
         // get current register index
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // unclaim for conditional
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
 
         // set the label's position to where the else-block would be
         else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();

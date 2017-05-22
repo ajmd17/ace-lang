@@ -20,7 +20,9 @@ std::string Token::TokenTypeToString(TokenClass token_class)
         case TK_QUESTION_MARK: return "?";
         case TK_DOT:           return ".";
         case TK_ELLIPSIS:      return "...";
+        case TK_LEFT_ARROW:    return "<-";
         case TK_RIGHT_ARROW:   return "->";
+        case TK_FAT_ARROW:     return "=>";
         case TK_OPEN_PARENTH:  return "(";
         case TK_CLOSE_PARENTH: return ")";
         case TK_OPEN_BRACKET:  return "[";

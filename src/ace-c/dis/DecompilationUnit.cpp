@@ -12,15 +12,15 @@ DecompilationUnit::DecompilationUnit()
 
 void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::utf8_ostream *os)
 {
+    const size_t pos = bs.GetPosition();
+    
+    (*os) << pos << "\t";
+
     uint8_t code = bs.Next();
     switch (code) {
     case NOP:
     {
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os) << "nop" << std::endl;
         }
 
@@ -38,10 +38,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(str, len);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "str ["
                     << "u32(" << len << "), "
@@ -62,13 +58,8 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&val);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
-            os->setf(std::ios::hex, std::ios::basefield);
+            
             (*os) << "addr [@(" << val << ")]" << std::endl;
-            os->unsetf(std::ios::hex);
         }
 
         is << Instruction<uint8_t, uint32_t>(code, val);
@@ -87,19 +78,14 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&is_variadic);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
-            os->setf(std::ios::hex, std::ios::basefield);
+            
             (*os) << "function [@(" << addr << "), "
                     << "u8(" << (int)nargs << ")], "
                     << "u8(" << (int)is_variadic << ")]"
                     << std::endl;
-            os->unsetf(std::ios::hex);
         }
 
-        is << Instruction<uint8_t, uint32_t, uint8_t>(code, addr, nargs);
+        is << Instruction<uint8_t, uint32_t, uint8_t, uint8_t>(code, addr, nargs, is_variadic);
 
         break;
     }
@@ -129,10 +115,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         }
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "type ["
                     << "str(" << type_name.data() << "), "
@@ -165,10 +147,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&val);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_i32 ["
                     << "%" << (int)reg << ", "
@@ -190,10 +168,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&val);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_i64 ["
                     << "%" << (int)reg << ", "
@@ -215,10 +189,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&val);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_f32 ["
                     << "%" << (int)reg << ", "
@@ -240,10 +210,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&val);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_f64 ["
                     << "%" << (int)reg << ", "
@@ -265,10 +231,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&offset);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_offset ["
                     << "%" << (int)reg << ", "
@@ -290,10 +252,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&idx);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_index ["
                     << "%" << (int)reg << ", "
@@ -315,10 +273,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&index);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_static ["
                     << "%" << (int)reg << ", "
@@ -346,10 +300,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         str[len] = '\0';
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_str ["
                     << "%" << (int)reg << ", "
@@ -374,13 +324,8 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&val);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
-            os->setf(std::ios::hex, std::ios::basefield);
+            
             (*os) << "load_addr [%" << (int)reg << ", @(" << val << ")]" << std::endl;
-            os->unsetf(std::ios::hex);
         }
 
         is << Instruction<uint8_t, uint8_t, uint32_t>(code, reg, val);
@@ -402,17 +347,12 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&is_variadic);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
-            os->setf(std::ios::hex, std::ios::basefield);
+            
             (*os) << "load_func [%" << (int)reg
                     << ", @(" << addr << "), "
                     << "u8(" << (int)nargs << ")], "
                     << "u8(" << (int)is_variadic << ")]"
                     << std::endl;
-            os->unsetf(std::ios::hex);
         }
 
         is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t, uint8_t>(code, reg, addr, nargs, is_variadic);
@@ -448,10 +388,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         }
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_type ["
                     << "%" << (int)reg << ", "
@@ -488,10 +424,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&idx);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_mem ["
                     << "%" << (int)reg << ", "
@@ -517,10 +449,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&hash);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_mem_hash ["
                     << "%" << (int)reg << ", "
@@ -546,10 +474,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&idx);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_arrayidx ["
                     << "%" << (int)reg << ", "
@@ -569,10 +493,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&reg);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_null ["
                     << "%" << (int)reg
@@ -590,10 +510,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&reg);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_true ["
                     << "%" << (int)reg
@@ -611,10 +527,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&reg);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "load_false ["
                     << "%" << (int)reg
@@ -635,10 +547,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&src);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "mov_offset ["
                     << "$(sp-" << dst << "), "
@@ -660,10 +568,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&src);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "mov_index ["
                     << "u16(" << dst << "), "
@@ -688,10 +592,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&src);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "mov_mem ["
                     << "%" << (int)reg << ", "
@@ -717,10 +617,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&src);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "mov_arrayidx ["
                     << "%" << (int)reg << ", "
@@ -743,10 +639,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&src);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "mov_reg ["
                     << "%" << (int)dst << ", "
@@ -771,10 +663,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&hash);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "has_mem_hash ["
                     << "%" << (int)reg << ", "
@@ -794,10 +682,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&src);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "push ["
                     << "%" << (int)src
@@ -812,10 +696,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     case POP:
     {
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "pop"
                 << std::endl;
@@ -831,10 +711,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&n);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "pop_n ["
                 << "u8(" << (int)n << ")"
@@ -855,10 +731,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&src);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "push_array ["
                 << "% " << (int)dst << ", "
@@ -876,10 +748,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&reg);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "echo ["
                     << "%" << (int)reg
@@ -894,10 +762,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     case ECHO_NEWLINE:
     {
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
-
             (*os)
                 << "echo_newline"
                 << std::endl;
@@ -913,9 +777,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&addr);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "jmp ["
@@ -934,9 +795,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&addr);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "je ["
@@ -955,9 +813,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&addr);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "jne ["
@@ -976,9 +831,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&addr);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "jg ["
@@ -997,9 +849,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&addr);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "jge ["
@@ -1021,9 +870,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&argc);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "call ["
@@ -1040,9 +886,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     case RET:
     {
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "ret"
@@ -1059,9 +902,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&reg);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "begin_try ["
@@ -1077,9 +917,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     case END_TRY:
     {
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os) << "end_try" << std::endl;
         }
@@ -1097,9 +934,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&type);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "new ["
@@ -1122,9 +956,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&size);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "new_array ["
@@ -1147,9 +978,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&rhs);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "cmp ["
@@ -1169,9 +997,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&lhs);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "cmpz ["
@@ -1196,9 +1021,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&dst);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "add ["
@@ -1225,9 +1047,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&dst);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "sub ["
@@ -1254,9 +1073,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&dst);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "mul ["
@@ -1283,9 +1099,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&dst);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "div ["
@@ -1312,9 +1125,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&dst);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "mod ["
@@ -1335,9 +1145,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         bs.Read(&reg);
 
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "neg ["
@@ -1353,9 +1160,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     case EXIT:
     {
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "exit"
@@ -1368,9 +1172,6 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     }
     default:
         if (os != nullptr) {
-            os->setf(std::ios::hex, std::ios::basefield);
-            (*os) << is.GetPosition() << "\t";
-            os->unsetf(std::ios::hex);
 
             (*os)
                 << "??"

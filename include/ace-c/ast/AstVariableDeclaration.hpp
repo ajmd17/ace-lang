@@ -4,6 +4,7 @@
 #include <ace-c/ast/AstDeclaration.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/SymbolType.hpp>
 
 #include <memory>
 
@@ -33,13 +34,16 @@ protected:
     // set while analyzing
     std::shared_ptr<AstExpression> m_real_assignment;
 
+    SymbolTypeWeakPtr_t m_symbol_type;
+
     inline Pointer<AstVariableDeclaration> CloneImpl() const
     {
         return Pointer<AstVariableDeclaration>(new AstVariableDeclaration(
             m_name,
             CloneAstNode(m_type_specification),
             CloneAstNode(m_assignment),
-            m_location));
+            m_location
+        ));
     }
 };
 

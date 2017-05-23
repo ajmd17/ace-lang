@@ -7,8 +7,10 @@
 #include <common/utf8.hpp>
 
 #include <cstdint>
+#include <cmath>
 
 #define DEFAULT_BUCKET_CAPACITY 4
+#define COMPUTE_CAPACITY(size) 1 << (unsigned)std::ceil(std::log(size) / std::log(2.0))
 
 namespace ace {
 namespace vm {
@@ -24,6 +26,8 @@ public:
     ObjectMap(const ObjectMap &other);
     ~ObjectMap();
 
+    ObjectMap &operator=(const ObjectMap &other);
+
     void Push(uint32_t hash, Member *member);
     Member *Get(uint32_t hash);
 
@@ -36,6 +40,8 @@ private:
         ObjectBucket();
         ObjectBucket(const ObjectBucket &other);
         ~ObjectBucket();
+
+        ObjectBucket &operator=(const ObjectBucket &other);
 
         void Resize(size_t capacity);
         void Push(Member *member);

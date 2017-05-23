@@ -446,10 +446,13 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         bs->Read(type_name, type_name_len);
 
         // number of members
-        uint16_t size; bs->Read(&size);
+        uint16_t size;
+        bs->Read(&size);
+
         ASSERT(size > 0);
 
         char **names = new char*[size];
+        
         // load each name
         for (int i = 0; i < size; i++) {
             uint16_t length;

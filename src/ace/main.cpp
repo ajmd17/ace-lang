@@ -56,11 +56,13 @@ void Runtime_gc(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 0);
 
-    size_t heap_size_before = params.state->GetHeap().Size();
+    const size_t heap_size_before = params.state->GetHeap().Size();
 
+    // run the gc
     params.state->GC();
 
-    size_t heap_size_after = params.state->GetHeap().Size();
+    const size_t heap_size_after = params.state->GetHeap().Size();
+    
     utf::cout << (heap_size_before - heap_size_after) << " object(s) collected.\n";
 }
 
@@ -292,8 +294,8 @@ void Global_prompt(ace::sdk::Params params)
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (target_ptr->GetValue().ptr == nullptr) {
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
-        } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
-            utf::cout << (*strptr) << ' ';
+        } else if (utf::Utf8String *str_ptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
+            utf::cout << (*str_ptr) << ' ';
 
             // read input...
             std::string line;
@@ -354,12 +356,12 @@ void Global_fmt(ace::sdk::Params params)
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (target_ptr->GetValue().ptr == nullptr) {
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
-        } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
+        } else if (utf::Utf8String *str_ptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
             // scan through string and merge each argument where there is a '%'
-            size_t original_length = strptr->GetLength();
+            const size_t original_length = str_ptr->GetLength();
             utf::Utf8String result_string(original_length);
 
-            const char *original_data = strptr->GetData();
+            const char *original_data = str_ptr->GetData();
             ASSERT(original_data != nullptr);
 
             const int buffer_size = 256;
@@ -367,7 +369,6 @@ void Global_fmt(ace::sdk::Params params)
 
             // number of '%' characters handled
             int num_fmts = 0;
-
             int buffer_idx = 0;
             
             for (size_t i = 0; i < original_length; i++) {
@@ -382,9 +383,7 @@ void Global_fmt(ace::sdk::Params params)
                     buffer[0] = '\0';
 
                     result_string += params.args[++num_fmts]->ToString();
-
                 } else {
-
                     buffer[buffer_idx] = original_data[i];
 
                     if (buffer_idx == buffer_size - 1 || i == original_length - 1) {
@@ -430,8 +429,12 @@ void Global_array_push(ace::sdk::Params params)
 
     const int buffer_size = 256;
     char buffer[buffer_size];
-    std::snprintf(buffer, buffer_size, "array_push() requires an Array",
-        target_ptr->GetTypeString());
+    std::snprintf(
+        buffer,
+        buffer_size,
+        "array_push() requires an Array",
+        target_ptr->GetTypeString()
+    );
     vm::Exception e = vm::Exception(utf::Utf8String(buffer));
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
@@ -464,28 +467,31 @@ void Global_length(ace::sdk::Params params)
 
     const int buffer_size = 256;
     char buffer[buffer_size];
-    std::snprintf(buffer, buffer_size, "length() is undefined for type '%s'",
-        target_ptr->GetTypeString());
+    std::snprintf(
+        buffer,
+        buffer_size,
+        "length() is undefined for type '%s'",
+        target_ptr->GetTypeString()
+    );
     vm::Exception e = vm::Exception(utf::Utf8String(buffer));
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
-        utf::Utf8String *strptr = nullptr;
-        vm::Array *arrayptr = nullptr;
-        vm::Object *objptr = nullptr;
+        utf::Utf8String *str_ptr = nullptr;
+        vm::Array *array_ptr = nullptr;
+        vm::Object *obj_ptr = nullptr;
         
         if (target_ptr->GetValue().ptr == nullptr) {
             params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
-        } else if ((strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) != nullptr) {
+        } else if ((str_ptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) != nullptr) {
             // get length of string
-            len = strptr->GetLength();
-        } else if ((arrayptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
+            len = str_ptr->GetLength();
+        } else if ((array_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
             // get length of array
-            len = arrayptr->GetSize();
-        } else if ((objptr = target_ptr->GetValue().ptr->GetPointer<vm::Object>()) != nullptr) {
+            len = array_ptr->GetSize();
+        } else if ((obj_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Object>()) != nullptr) {
             // get number of members in object
             // first, get type
-            const vm::TypeInfo *type_ptr = objptr->GetTypePtr();
-            
+            const vm::TypeInfo *type_ptr = obj_ptr->GetTypePtr();
             ASSERT(type_ptr != nullptr);
             
             len = type_ptr->GetSize();
@@ -517,7 +523,11 @@ void Global_call(ace::sdk::Params params)
     size_t pos = params.bs->Position();
 
     // call the function
-    params.state->m_vm->Invoke(params.thread, params.bs, target, params.nargs - 1);
+    params.state->m_vm->Invoke(
+        params.thread,
+        params.bs, target,
+        params.nargs - 1
+    );
 }
 
 void Global_spawn_thread(ace::sdk::Params params)
@@ -593,7 +603,11 @@ static void LexLine(const utf::Utf8String &line, TokenStream &token_stream)
     lex.Analyze();
 }
 
-static int RunBytecodeFile(vm::VM *vm, const utf::Utf8String &filename, bool record_time, int pos=0)
+static int RunBytecodeFile(
+    vm::VM *vm,
+    const utf::Utf8String &filename,
+    bool record_time,
+    int pos=0)
 {
     ASSERT(vm != nullptr);
 
@@ -616,7 +630,11 @@ static int RunBytecodeFile(vm::VM *vm, const utf::Utf8String &filename, bool rec
     file.read(bytecodes, bytecode_size);
     file.close();
 
-    vm::BytecodeStream bytecode_stream(non_owning_ptr<char>(bytecodes), (size_t)bytecode_size, pos);
+    vm::BytecodeStream bytecode_stream(
+        non_owning_ptr<char>(bytecodes),
+        (size_t)bytecode_size,
+        pos
+    );
 
     // time how long execution took
     auto start = std::chrono::high_resolution_clock::now();
@@ -626,7 +644,8 @@ static int RunBytecodeFile(vm::VM *vm, const utf::Utf8String &filename, bool rec
     if (record_time) {
         auto end = std::chrono::high_resolution_clock::now();
         auto elapsed_ms = std::chrono::duration_cast<
-            std::chrono::duration<double, std::ratio<1>>>(end - start).count();
+            std::chrono::duration<double, std::ratio<1>>
+        >(end - start).count();
         utf::cout << "Elapsed time: " << elapsed_ms << "s\n";
     }
 
@@ -641,8 +660,11 @@ static int RunBytecodeFile(vm::VM *vm, const utf::Utf8String &filename, bool rec
     return 0;
 }
 
-static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
-    const utf::Utf8String &template_code, bool first_time = true)
+static int REPL(
+    vm::VM *vm,
+    CompilationUnit &compilation_unit,
+    const utf::Utf8String &template_code,
+    bool first_time = true)
 {
     AstIterator ast_iterator;
 
@@ -727,8 +749,12 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
             ASSERT(compilation_unit.GetCurrentModule() != nullptr);
             ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
             
-            size_t num_identifiers = compilation_unit.GetCurrentModule()->m_scopes.Top()
-                .GetIdentifierTable().GetIdentifiers().size();
+            size_t num_identifiers = compilation_unit
+                .GetCurrentModule()
+                ->m_scopes.Top()
+                .GetIdentifierTable()
+                .GetIdentifiers()
+                .size();
 
             // send code to be compiled
             SourceFile source_file("<stdin>", line.GetBufferSize());
@@ -795,7 +821,6 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
 
                     // check if we even have to run the bytecode file
                     if (bytecode_file_size - file_pos > 0) {
-
                         ASSERT(vm->GetState().GetNumThreads() > 0);
                         vm::ExecutionThread *main_thread = vm->GetState().m_threads[0];
                         ASSERT(main_thread != nullptr);
@@ -813,8 +838,10 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                             // if an exception was unhandled go back to previous state
                             // overwrite the bytecode file with the code that has been generated up to the point of error
                             // start by loading it into a temporary buffer
-                            std::ifstream tmp_is(out_filename.GetData(),
-                                std::ios::in | std::ios::binary | std::ios::ate);
+                            std::ifstream tmp_is(
+                                out_filename.GetData(),
+                                std::ios::in | std::ios::binary | std::ios::ate
+                            );
                             // len is only the amount of bytes up to where we were before in the file.
                             int64_t len = std::min((int64_t) tmp_is.tellg(), file_pos);
                             // create buffer
@@ -827,7 +854,10 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                             tmp_is.close();
 
                             // create the new file to write the buffer to
-                            std::ofstream tmp_os(out_filename.GetData(), std::ios::out | std::ios::binary);
+                            std::ofstream tmp_os(
+                                out_filename.GetData(),
+                                std::ios::out | std::ios::binary
+                            );
                             tmp_os.write(buf, len);
                             tmp_os.close();
 
@@ -872,10 +902,13 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
                 ASSERT(compilation_unit.GetCurrentModule() != nullptr);
                 ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
                 
-                auto &tbl = compilation_unit.GetCurrentModule()->m_scopes.Top().GetIdentifierTable();
-                auto &idents = tbl.GetIdentifiers();
-                
-                size_t diff = idents.size() - num_identifiers;
+                IdentifierTable &tbl = compilation_unit
+                    .GetCurrentModule()
+                    ->m_scopes.Top()
+                    .GetIdentifierTable();
+
+                const size_t diff = tbl.GetIdentifiers().size() - num_identifiers;
+
                 for (size_t i = 0; i < diff; i++) {
                     tbl.PopIdentifier();
                 }
@@ -912,23 +945,74 @@ static int REPL(vm::VM *vm, CompilationUnit &compilation_unit,
     return 0;
 }
 
-int main(int argc, char *argv[])
+void HandleArgs(
+    int argc,
+    char *argv[],
+    vm::VM &vm,
+    CompilationUnit &compilation_unit,
+    APIInstance &api)
 {
-    utf::init();
+    if (argc == 1) {
+        // trigger the REPL when no command line arguments have been provided
+        // disable static objects, so we can append the bytecode files.
+        ace::compiler::Config::use_static_objects = false;
+        // do not cull unused objects
+        ace::compiler::Config::cull_unused_objects = false;
 
-    if (argc >= 1) {
-        exec_path = argv[0];
-        // trim the exec name
-        size_t index = exec_path.find_last_of("/\\");
-        if (index != std::string::npos) {
-            exec_path = exec_path.substr(0, index) + "/";
+        REPL(&vm, compilation_unit, "// type 'quit' to exit\n");
+    } else if (argc >= 2) {
+        enum {
+            COMPILE_SOURCE,
+            DECOMPILE_BYTECODE,
+        } mode = COMPILE_SOURCE;
+
+        utf::Utf8String src_filename;
+        utf::Utf8String out_filename;
+
+        if (CLI::HasOption(argv, argv + argc, "-d")) {
+            // disassembly mode
+            mode = DECOMPILE_BYTECODE;
+            src_filename = CLI::GetOptionValue(argv, argv + argc, "-d");
+
+            if (CLI::HasOption(argv, argv + argc, "-o")) {
+                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
+            }
+        } else {
+            mode = COMPILE_SOURCE;
+
+            if (CLI::HasOption(argv, argv + argc, "-c")) {
+                src_filename = CLI::GetOptionValue(argv, argv + argc, "-c");
+            }
+
+            if (src_filename == "") {
+                src_filename = argv[1];
+            }
+
+            if (CLI::HasOption(argv, argv + argc, "-o")) {
+                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
+            }
+
+            if (out_filename == "") {
+                out_filename = (str_util::strip_extension(src_filename.GetData()) + ".aex").c_str();
+            }
+        }
+
+        if (mode == COMPILE_SOURCE) {
+            if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
+                // execute the compiled bytecode file
+                RunBytecodeFile(&vm, out_filename, true);
+            }
+        } else if (mode == DECOMPILE_BYTECODE) {
+            ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
         }
     }
+}
 
-    vm::VM vm;
-    CompilationUnit compilation_unit;
-    APIInstance api;
-
+void BuildLibraries(
+    vm::VM &vm,
+    CompilationUnit &compilation_unit,
+    APIInstance &api)
+{
     api.Module("runtime")
         .Function("gc", SymbolType::Builtin::ANY, {}, Runtime_gc)
         .Function("typeof", SymbolType::Builtin::STRING, {
@@ -941,61 +1025,91 @@ int main(int argc, char *argv[])
             { "lib", SymbolType::Builtin::ANY },
             { "function_name", SymbolType::Builtin::STRING }
         }, Runtime_load_function)
-        .Variable("version", SymbolType::Builtin::ARRAY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
-            ASSERT(state != nullptr);
-            ASSERT(out != nullptr);
+        .Variable(
+            "version",
+            SymbolType::Builtin::ARRAY,
+            [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+                ASSERT(state != nullptr);
+                ASSERT(out != nullptr);
 
-            // allocate heap value
-            vm::HeapValue *hv = state->HeapAlloc(thread);
+                // allocate heap value
+                vm::HeapValue *hv = state->HeapAlloc(thread);
+                ASSERT(hv != nullptr);
 
-            ASSERT(hv != nullptr);
+                // create each version object
+                vm::Value sv_major;
+                sv_major.m_type = vm::Value::ValueType::I32;
+                sv_major.m_value.i32 = Runtime::VERSION_MAJOR;
 
-            // create each version object
-            vm::Value sv_major;
-            sv_major.m_type = vm::Value::ValueType::I32;
-            sv_major.m_value.i32 = Runtime::VERSION_MAJOR;
+                vm::Value sv_minor;
+                sv_minor.m_type = vm::Value::ValueType::I32;
+                sv_minor.m_value.i32 = Runtime::VERSION_MINOR;
 
-            vm::Value sv_minor;
-            sv_minor.m_type = vm::Value::ValueType::I32;
-            sv_minor.m_value.i32 = Runtime::VERSION_MINOR;
+                vm::Value sv_patch;
+                sv_patch.m_type = vm::Value::ValueType::I32;
+                sv_patch.m_value.i32 = Runtime::VERSION_PATCH;
 
-            vm::Value sv_patch;
-            sv_patch.m_type = vm::Value::ValueType::I32;
-            sv_patch.m_value.i32 = Runtime::VERSION_PATCH;
+                // create array
+                vm::Array res(3);
+                res.AtIndex(0) = sv_major;
+                res.AtIndex(1) = sv_minor;
+                res.AtIndex(2) = sv_patch;
 
-            // create array
-            vm::Array res(3);
-            res.AtIndex(0) = sv_major;
-            res.AtIndex(1) = sv_minor;
-            res.AtIndex(2) = sv_patch;
+                // assign heap value to array
+                hv->Assign(res);
 
-            // assign heap value to array
-            hv->Assign(res);
+                // assign the out value to this
+                out->m_type = vm::Value::ValueType::HEAP_POINTER;
+                out->m_value.ptr = hv;
+            }
+        )
+        .Variable(
+            "os_name",
+            SymbolType::Builtin::STRING,
+            [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+                ASSERT(state != nullptr);
+                ASSERT(out != nullptr);
 
-            // assign the out value to this
-            out->m_type = vm::Value::ValueType::HEAP_POINTER;
-            out->m_value.ptr = hv;
-        })
-        .Variable("os_name", SymbolType::Builtin::STRING, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
-            ASSERT(state != nullptr);
-            ASSERT(out != nullptr);
+                // allocate heap value
+                vm::HeapValue *hv = state->HeapAlloc(thread);
+                ASSERT(hv != nullptr);
 
-            // allocate heap value
-            vm::HeapValue *hv = state->HeapAlloc(thread);
-            ASSERT(hv != nullptr);
+                // create string and set to to hold the name
+                utf::Utf8String res = Runtime::OS_NAME;
 
-            // create string and set to to hold the name
-            utf::Utf8String res = Runtime::OS_NAME;
+                // assign heap value to array
+                hv->Assign(res);
 
-            // assign heap value to array
-            hv->Assign(res);
-
-            // assign the out value to this
-            out->m_type = vm::Value::ValueType::HEAP_POINTER;
-            out->m_value.ptr = hv;
-        });
+                // assign the out value to this
+                out->m_type = vm::Value::ValueType::HEAP_POINTER;
+                out->m_value.ptr = hv;
+            }
+        );
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
+        .Type(SymbolType::Object("Range", {
+            {
+                "step",
+                SymbolType::Builtin::NUMBER,
+                std::shared_ptr<AstInteger>(new AstInteger(
+                    1, SourceLocation::eof
+                ))
+            },
+            {
+                "first",
+                SymbolType::Builtin::NUMBER,
+                std::shared_ptr<AstInteger>(new AstInteger(
+                    0, SourceLocation::eof
+                ))
+            },
+            {
+                "last",
+                SymbolType::Builtin::NUMBER,
+                std::shared_ptr<AstInteger>(new AstInteger(
+                    10, SourceLocation::eof
+                ))
+            }
+        }))
         .Function("prompt", SymbolType::Builtin::STRING, {
             { "message", SymbolType::Builtin::STRING }
         }, Global_prompt)
@@ -1057,60 +1171,36 @@ int main(int argc, char *argv[])
         }, Global_spawn_thread);
 
     api.BindAll(&vm, &compilation_unit);
+}
 
-    if (argc == 1) {
-        // trigger the REPL when no command line arguments have been provided
-        // disable static objects, so we can append the bytecode files.
-        ace::compiler::Config::use_static_objects = false;
-        // do not cull unused objects
-        ace::compiler::Config::cull_unused_objects = false;
+int main(int argc, char *argv[])
+{
+    utf::init();
 
-        REPL(&vm, compilation_unit, "// type 'quit' to exit\n");
-
-    } else if (argc >= 2) {
-        enum {
-            COMPILE_SOURCE,
-            DECOMPILE_BYTECODE,
-        } mode = COMPILE_SOURCE;
-
-        utf::Utf8String src_filename;
-        utf::Utf8String out_filename;
-
-        if (CLI::HasOption(argv, argv + argc, "-d")) {
-            // disassembly mode
-            mode = DECOMPILE_BYTECODE;
-            src_filename = CLI::GetOptionValue(argv, argv + argc, "-d");
-
-            if (CLI::HasOption(argv, argv + argc, "-o")) {
-                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
-            }
-        } else {
-            mode = COMPILE_SOURCE;
-
-            if (CLI::HasOption(argv, argv + argc, "-c")) {
-                src_filename = CLI::GetOptionValue(argv, argv + argc, "-c");
-            }
-
-            if (src_filename == "") {
-                src_filename = argv[1];
-            }
-
-            if (CLI::HasOption(argv, argv + argc, "-o")) {
-                out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
-            }
-
-            if (out_filename == "") {
-                out_filename = (str_util::strip_extension(src_filename.GetData()) + ".aex").c_str();
-            }
-        }
-
-        if (mode == COMPILE_SOURCE) {
-            if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
-                // execute the compiled bytecode file
-                RunBytecodeFile(&vm, out_filename, true);
-            }
-        } else if (mode == DECOMPILE_BYTECODE) {
-            ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
+    if (argc >= 1) {
+        exec_path = argv[0];
+        // trim the exec name
+        size_t index = exec_path.find_last_of("/\\");
+        if (index != std::string::npos) {
+            exec_path = exec_path.substr(0, index) + "/";
         }
     }
+
+    vm::VM vm;
+    CompilationUnit compilation_unit;
+    APIInstance api;
+
+    BuildLibraries(
+        vm,
+        compilation_unit,
+        api
+    );
+
+    HandleArgs(
+        argc,
+        argv,
+        vm,
+        compilation_unit,
+        api
+    );
 }

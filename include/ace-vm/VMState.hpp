@@ -7,7 +7,6 @@
 #include <ace-vm/Exception.hpp>
 #include <ace-vm/BytecodeStream.hpp>
 
-#define GC_THRESHOLD_MUL 2
 #define GC_THRESHOLD_MIN 20
 #define GC_THRESHOLD_MAX 1000
 
@@ -85,8 +84,6 @@ struct VMState {
     ExecutionThread *CreateThread();
     /** Destroy thread with ID */
     void DestroyThread(int id);
-    /** Returns true if there is enough space to create a new thread */
-    inline bool CanCreateThread() const { return m_num_threads < VM_MAX_THREADS; }
     /** Get the number of threads currently in use */
     inline int GetNumThreads() const { return m_num_threads; }
 

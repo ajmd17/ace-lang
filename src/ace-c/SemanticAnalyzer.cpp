@@ -7,7 +7,10 @@
 
 #include <iostream>
 
-IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(AstVisitor *visitor, Module *mod, const std::string &name)
+IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(
+    AstVisitor *visitor,
+    Module *mod,
+    const std::string &name)
 {
     IdentifierLookupResult res;
     res.type = IDENTIFIER_TYPE_UNKNOWN;
@@ -43,15 +46,13 @@ void CheckArgTypeCompatible(
     // make sure argument types are compatible
     // use strict numbers so that floats cannot be passed as explicit ints
     if (!param_type->TypeCompatible(*arg_type, true)) {
-        const CompilerError err(
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             Level_fatal,
             Msg_arg_type_incompatible,
             location,
             arg_type->GetName(),
             param_type->GetName()
-        );
-
-        visitor->GetCompilationUnit()->GetErrorList().AddError(err);
+        ));
     }
 }
 
@@ -62,7 +63,7 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
     const SourceLocation &location)
 {
     if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-        auto base = identifier_type->GetBaseType();
+        const SymbolTypePtr_t base = identifier_type->GetBaseType();
 
         if (base == SymbolType::Builtin::FUNCTION) {
             // the indices of the arguments (will be returned)
@@ -74,18 +75,25 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
             bool is_varargs = false;
             SymbolTypePtr_t vararg_type;
 
-            if (!generic_args.empty() && generic_args.back().second->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                auto base = generic_args.back().second->GetBaseType();
-                if (base == SymbolType::Builtin::VAR_ARGS) {
-                    is_varargs = true;
+            if (!generic_args.empty()) {
+                const SymbolTypePtr_t &last_generic_arg_type = generic_args.back().second;
+                ASSERT(last_generic_arg_type != nullptr);
 
-                    ASSERT(!generic_args.back().second->GetGenericInstanceInfo().m_generic_args.empty());
-                    vararg_type = generic_args.back().second->GetGenericInstanceInfo().m_generic_args[0].second;
+                if (last_generic_arg_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                    const SymbolTypePtr_t arg_base = last_generic_arg_type->GetBaseType();
+                    // check if it is an instance of varargs type
+                    if (arg_base == SymbolType::Builtin::VAR_ARGS) {
+                        is_varargs = true;
+
+                        ASSERT(!last_generic_arg_type->GetGenericInstanceInfo().m_generic_args.empty());
+                        vararg_type = last_generic_arg_type->GetGenericInstanceInfo().m_generic_args[0].second;
+                    }
                 }
             }
 
-            if (generic_args.size() == args.size() + 1 || (is_varargs && generic_args.size() - 1 < args.size() + 2)) {
-                
+            if (generic_args.size() == args.size() + 1 ||
+                (is_varargs && generic_args.size() - 1 < args.size() + 2))
+            {
                 for (int i = 0; i < args.size(); i++) {
                     ASSERT(args[i] != nullptr);
 
@@ -115,28 +123,26 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
 
                         if (found_index == -1) {
                             // still -1, so add error
-                            const CompilerError err(
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                                 Level_fatal,
                                 Msg_named_arg_not_found,
                                 args[i]->GetLocation(),
                                 arg_info.name
-                            );
-
-                            visitor->GetCompilationUnit()->GetErrorList().AddError(err);
+                            ));
                         } else {
                             // found successfully, check type compatibility
-
                             const SymbolTypePtr_t &param_type = generic_args[found_index + 1].second;
 
                             CheckArgTypeCompatible(
-                                visitor, args[i]->GetLocation(), arg_info.type, param_type
+                                visitor,
+                                args[i]->GetLocation(),
+                                arg_info.type,
+                                param_type
                             );
                         }
 
                         // add 'i' to param ids (index of named param)
                         substituted_param_ids.push_back(found_index);
-
-
                     } else {
                         // choose whether to get next param, or last (in the case of varargs)
                         struct {
@@ -144,8 +150,7 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
                             SymbolTypePtr_t type;    
                         } param_info;
 
-                        const std::pair<std::string, SymbolTypePtr_t> &param =
-                            (i + 1 < generic_args.size())
+                        const std::pair<std::string, SymbolTypePtr_t> &param = (i + 1 < generic_args.size())
                             ? generic_args[i + 1]
                             : generic_args.back();
                         
@@ -155,11 +160,17 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
                         if (is_varargs && i + 2 >= generic_args.size()) {
                             // in varargs... check vararg base type
                             CheckArgTypeCompatible(
-                                visitor, args[i]->GetLocation(), arg_info.type, vararg_type
+                                visitor,
+                                args[i]->GetLocation(),
+                                arg_info.type,
+                                vararg_type
                             );
                         } else {
                             CheckArgTypeCompatible(
-                                visitor, args[i]->GetLocation(), arg_info.type, param_info.type
+                                visitor,
+                                args[i]->GetLocation(),
+                                arg_info.type,
+                                param_info.type
                             );
                         }
 
@@ -169,26 +180,34 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
                 }
             } else {
                 // wrong number of args given
-                ErrorMessage msg = (args.size() + 1 > identifier_type->GetGenericInstanceInfo().m_generic_args.size())
-                    ? Msg_too_many_args : Msg_too_few_args;
+                ErrorMessage msg = (args.size() + 1 > generic_args.size())
+                    ? Msg_too_many_args
+                    : Msg_too_few_args;
                 
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, msg, location)
-                );
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    Level_fatal,
+                    msg,
+                    location,
+                    is_varargs
+                        ? generic_args.size() - 2
+                        : generic_args.size() - 1,
+                    args.size()
+                ));
             }
 
             // make sure the "return type" of the function is not null
-            ASSERT(identifier_type->GetGenericInstanceInfo().m_generic_args.size() >= 1);
-            ASSERT(identifier_type->GetGenericInstanceInfo().m_generic_args[0].second != nullptr);
+            ASSERT(generic_args.size() >= 1);
+            ASSERT(generic_args[0].second != nullptr);
 
             // return the "return type" of the function
             return {
-                identifier_type->GetGenericInstanceInfo().m_generic_args[0].second,
+                generic_args[0].second,
                 substituted_param_ids
             };
         }
     } else if (identifier_type == SymbolType::Builtin::FUNCTION ||
-               identifier_type == SymbolType::Builtin::ANY) {
+               identifier_type == SymbolType::Builtin::ANY)
+    {
         // the indices of the arguments (will be returned)
         std::vector<int> substituted_param_ids;
 
@@ -203,10 +222,15 @@ std::pair<SymbolTypePtr_t, std::vector<int>> SemanticAnalyzer::SubstituteFunctio
         };
     }
     
-    return { nullptr, {} };
+    return {
+        nullptr,
+        {}
+    };
 }
 
-SemanticAnalyzer::SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
+SemanticAnalyzer::SemanticAnalyzer(
+    AstIterator *ast_iterator,
+    CompilationUnit *compilation_unit)
     : AstVisitor(ast_iterator, compilation_unit)
 {
 }
@@ -220,31 +244,9 @@ void SemanticAnalyzer::Analyze(bool expect_module_decl)
 {
     if (expect_module_decl) {
         while (m_ast_iterator->HasNext()) {
-            auto first_statement = m_ast_iterator->Next();
-            auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
-
-            if (module_declaration) {
-                module_declaration->Visit(this, nullptr);
-
-               /* if (module_declaration->GetModule()) {
-                    // module was successfully added
-
-                    // parse filename
-                    std::vector<std::string> path = str_util::split_path(module_declaration->GetLocation().GetFileName());
-                    path = str_util::canonicalize_path(path);
-                    // change it back to string
-                    std::string canon_path = str_util::path_to_str(path);
-
-                    // map filepath to module
-                    auto it = m_compilation_unit->m_imported_modules.find(canon_path);
-                    if (it != m_compilation_unit->m_imported_modules.end()) {
-                        it->second.push_back(module_declaration->GetModule());
-                    } else {
-                        m_compilation_unit->m_imported_modules[canon_path] = { module_declaration->GetModule() };
-                    }
-                }*/
-            } else {
-                // statement outside of module
+            auto first_stmt = m_ast_iterator->Next();
+            if (AstModuleDeclaration *mod_decl = dynamic_cast<AstModuleDeclaration*>(first_stmt.get())) {
+                mod_decl->Visit(this, nullptr);
             }
         }
     } else {

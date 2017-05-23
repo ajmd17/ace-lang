@@ -21,7 +21,11 @@ ObjectMap::ObjectBucket::ObjectBucket(const ObjectBucket &other)
       m_capacity(other.m_capacity),
       m_size(other.m_size)
 {
-    std::memcpy(m_data, other.m_data, sizeof(Member*) * other.m_size);
+    std::memcpy(
+        m_data,
+        other.m_data,
+        sizeof(Member*) * other.m_size
+    );
 }
 
 ObjectMap::ObjectBucket::~ObjectBucket()
@@ -29,12 +33,37 @@ ObjectMap::ObjectBucket::~ObjectBucket()
     delete[] m_data;
 }
 
+ObjectMap::ObjectBucket &ObjectMap::ObjectBucket::operator=(const ObjectBucket &other)
+{
+    if (m_capacity < other.m_capacity) {
+        // capacity must be resized
+        delete[] m_data;
+        m_data = new Member*[other.m_capacity];
+        m_capacity = other.m_capacity;
+    }
+
+    // copy members
+    std::memcpy(
+        m_data,
+        other.m_data,
+        sizeof(Member*) * other.m_size
+    );
+
+    return *this;
+}
+
 void ObjectMap::ObjectBucket::Resize(size_t capacity)
 {
     if (m_capacity < capacity) {
-        Member **new_data = new Member*[capacity];
-        std::memcpy(new_data, m_data, m_capacity);
-        m_capacity = capacity;
+        const size_t new_capacity = COMPUTE_CAPACITY(capacity);
+        // create new bucket and copy
+        Member **new_data = new Member*[new_capacity];
+        std::memcpy(
+            new_data,
+            m_data,
+            sizeof(Member*) * m_size
+        );
+        m_capacity = new_capacity;
         delete[] m_data;
         m_data = new_data;
     }
@@ -43,7 +72,7 @@ void ObjectMap::ObjectBucket::Resize(size_t capacity)
 void ObjectMap::ObjectBucket::Push(Member *member)
 {
     if (m_size == m_capacity) {
-        Resize(m_capacity * 2);
+        Resize(COMPUTE_CAPACITY(m_capacity));
     }
     m_data[m_size++] = member;
 }
@@ -82,6 +111,25 @@ ObjectMap::ObjectMap(const ObjectMap &other)
 ObjectMap::~ObjectMap()
 {
     delete[] m_buckets;
+}
+
+ObjectMap &ObjectMap::operator=(const ObjectMap &other)
+{
+    ASSERT(other.m_size != 0);
+
+    if (m_size != other.m_size) {
+        // delete buckets and recreate with new size
+        delete[] m_buckets;
+        m_buckets = new ObjectMap::ObjectBucket[other.m_size];
+    }
+
+    m_size = other.m_size;
+
+    for (size_t i = 0; i < m_size; i++) {
+        m_buckets[i] = other.m_buckets[i];
+    }
+
+    return *this;
 }
 
 void ObjectMap::Push(uint32_t hash, Member *member)

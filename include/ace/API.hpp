@@ -67,7 +67,7 @@ public:
 
     struct TypeDefine {
     public:
-        std::string m_name;
+        /*std::string m_name;
         std::vector<NativeFunctionDefine> m_methods;
         std::vector<NativeVariableDefine> m_members;
 
@@ -78,17 +78,19 @@ public:
         TypeDefine &Method(const std::string &method_name,
             const SymbolTypePtr_t &return_type,
             const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
-            vm::NativeFunctionPtr_t ptr);
+            vm::NativeFunctionPtr_t ptr);*/
+
+        SymbolTypePtr_t m_type;
     };
 
     struct ModuleDefine {
     public:
         std::string m_name;
-        std::vector<TypeDefine> m_types;
+        std::vector<TypeDefine> m_type_defs;
         std::vector<NativeFunctionDefine> m_function_defs;
         std::vector<NativeVariableDefine> m_variable_defs;
 
-        TypeDefine &Type(const std::string &type_name);
+        ModuleDefine &Type(const SymbolTypePtr_t &type);
 
         ModuleDefine &Variable(const std::string &variable_name,
             const SymbolTypePtr_t &variable_type,
@@ -108,8 +110,8 @@ public:
         void BindNativeFunction(const NativeFunctionDefine &def,
             Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);
 
-        /*void BindType(const TypeDefine &def,
-            Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);*/
+        void BindType(TypeDefine def,
+            Module *mod, vm::VM *vm, CompilationUnit *compilation_unit);
     };
 };
 

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <thread>
 #include <iostream>
+#include <cmath>
 #include <mutex>
 
 namespace ace {
@@ -63,15 +64,17 @@ HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
 {
     ASSERT(thread != nullptr);
 
-    size_t heap_size = m_heap.Size();
+    const size_t heap_size = m_heap.Size();
     
-    if (heap_size >= GC_THRESHOLD_MAX) {
-        // heap overflow.
-        char buffer[256];
-        std::sprintf(buffer, "heap overflow, heap size is %zu", heap_size);
-        ThrowException(thread, Exception(buffer));
-        return nullptr;
-    } else if (heap_size >= m_max_heap_objects) {
+    if (heap_size >= m_max_heap_objects) {
+        if (heap_size >= GC_THRESHOLD_MAX) {
+            // heap overflow.
+            char buffer[256];
+            std::sprintf(buffer, "heap overflow, heap size is %zu", heap_size);
+            ThrowException(thread, Exception(buffer));
+            return nullptr;
+        }
+
         // run the gc
         GC();
 
@@ -80,7 +83,9 @@ HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
         if (m_heap.Size() >= m_max_heap_objects) {
             // resize max number of objects
             m_max_heap_objects = std::min(
-                m_max_heap_objects * GC_THRESHOLD_MUL, GC_THRESHOLD_MAX);
+                1 << (unsigned)std::ceil(std::log(m_max_heap_objects) / std::log(2.0)),
+                GC_THRESHOLD_MAX
+            );
         }
     }
 
@@ -108,9 +113,9 @@ void VMState::GC()
 
 ExecutionThread *VMState::CreateThread()
 {
-    ASSERT(CanCreateThread());
+    ASSERT(m_num_threads < VM_MAX_THREADS);
 
-    // find free slot
+    // find a free slot
     for (int i = 0; i < VM_MAX_THREADS; i++) {
         if (m_threads[i] == nullptr) {
             ExecutionThread *thread = new ExecutionThread();

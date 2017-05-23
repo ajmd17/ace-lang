@@ -4,17 +4,14 @@ module events_example {
     username: String
     position = [0, 0] // x, y
 
-    on 'player move': (x, y) => (self) {
-      self.position[0] += x
-      self.position[1] += y
-
-      print x
+    on 'save': (fs: FileStream) => (self) {
+      fs => self.x
+      fs => self.y
+      fs => self.id
     }
 
-    on 'save': (file: File) => (self) {
-      file => self.x
-      file => self.y
-      file => self.id
+    on 'player move': (x: Number, y: Number) => (self) {
+      self.position = [x, y]
     }
   }
 
@@ -24,10 +21,17 @@ module events_example {
   my_player.position = [10, 25]
 
   // throw an event into my_player object
+  //@Move => my_player
   'player move' => my_player
-
-  new Action('player move') => my_player
-
-  (file: new FileStream) => SaveAction => my_player
   
+
+  print new FilePath(pathname: '/home/test.txt')
+    => new FileStream
+    => @Save
+    => my_player
+
+  // implemented as a queue
+  // filepath goes into FileStream
+  // filestream object goes into 'save' command's queue,
+  // the 'save' command's queue gets passed into my_player as params
 }

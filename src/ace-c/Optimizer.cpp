@@ -62,7 +62,7 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
     ASSERT(expr != nullptr);
     expr->Optimize(visitor, mod);
 
-    if (auto *expr_as_var = dynamic_cast<AstVariable*>(expr.get())) {
+    if (AstVariable *expr_as_var = dynamic_cast<AstVariable*>(expr.get())) {
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
         if (expr_as_var->GetProperties().GetIdentifier()) {
@@ -78,7 +78,7 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
                 }
             }
         }
-    } else if (auto *expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) {
+    } else if (AstBinaryExpression *expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) {
         if (!expr_as_binop->GetRight()) {
             // right side has been optimized away, to just left side
             expr = expr_as_binop->GetLeft();
@@ -100,12 +100,11 @@ void Optimizer::Optimize(bool expect_module_decl)
 {
     if (expect_module_decl) {
         if (m_ast_iterator->HasNext()) {
-            auto first_statement = m_ast_iterator->Next();
-            auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
+            std::shared_ptr<AstStatement> first_stmt = m_ast_iterator->Next();
 
-            if (module_declaration) {
+            if (AstModuleDeclaration *mod_decl = dynamic_cast<AstModuleDeclaration*>(first_stmt.get())) {
                 // all files must begin with a module declaration
-                module_declaration->Optimize(this, nullptr);
+                mod_decl->Optimize(this, nullptr);
                 OptimizeInner();
             }
         }

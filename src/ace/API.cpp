@@ -52,7 +52,7 @@ static std::string MangleName(const std::string &type_name, const std::string &n
     return "__" + type_name + "_" + name;
 }
 
-API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
+/*API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
     const SymbolTypePtr_t &member_type,
     NativeInitializerPtr_t ptr)
 {
@@ -71,25 +71,16 @@ API::TypeDefine &API::TypeDefine::Method(const std::string &method_name,
         method_name, return_type, param_types, ptr
     ));
     return *this;
-}
+}*/
 
-
-API::TypeDefine &API::ModuleDefine::Type(const std::string &type_name)
+API::ModuleDefine &API::ModuleDefine::Type(const SymbolTypePtr_t &type)
 {
-    // check if already found
-    for (auto &def : m_types) {
-        if (def.m_name == type_name) {
-            return def;
-        }
-    }
-
-    // not found, add new
-    TypeDefine def;
-    def.m_name = type_name;
-    m_types.push_back(def);
+    m_type_defs.push_back(TypeDefine {
+        type
+    });
 
     // return last
-    return m_types.back();
+    return *this;
 }
 
 API::ModuleDefine &API::ModuleDefine::Variable(
@@ -97,7 +88,12 @@ API::ModuleDefine &API::ModuleDefine::Variable(
     const SymbolTypePtr_t &variable_type,
     NativeInitializerPtr_t ptr)
 {
-    m_variable_defs.push_back(API::NativeVariableDefine(variable_name, variable_type, ptr));
+    m_variable_defs.push_back(API::NativeVariableDefine(
+        variable_name,
+        variable_type,
+        ptr
+    ));
+
     return *this;
 }
 
@@ -144,14 +140,21 @@ void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
         BindNativeFunction(def, mod, vm, compilation_unit);
     }
 
+    for (auto &def : m_type_defs) {
+        BindType(def, mod, vm, compilation_unit);
+    }
+
     if (close_mod) {
         // close this module
         compilation_unit->m_module_tree.Close();
     }
 }
 
-void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
-    Module *mod, VM *vm, CompilationUnit *compilation_unit)
+void API::ModuleDefine::BindNativeVariable(
+    const NativeVariableDefine &def,
+    Module *mod,
+    VM *vm,
+    CompilationUnit *compilation_unit)
 {
     ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
 
@@ -183,10 +186,11 @@ void API::ModuleDefine::BindNativeVariable(const NativeVariableDefine &def,
 
 void API::ModuleDefine::BindNativeFunction(
     const NativeFunctionDefine &def,
-    Module *mod, VM *vm, CompilationUnit *compilation_unit)
+    Module *mod,
+    VM *vm,
+    CompilationUnit *compilation_unit)
 {
     ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
-
 
     Identifier *ident = CreateIdentifier(compilation_unit, mod, def.function_name);
     ASSERT(ident != nullptr);
@@ -222,117 +226,33 @@ void API::ModuleDefine::BindNativeFunction(
     vm->PushNativeFunctionPtr(def.ptr);
 }
 
-/*void API::ModuleDefine::BindType(const TypeDefine &def,
-    Module *mod, VM *vm, CompilationUnit *compilation_unit)
+void API::ModuleDefine::BindType(TypeDefine def,
+    Module *mod,
+    VM *vm,
+    CompilationUnit *compilation_unit)
 {
     ASSERT(mod != nullptr && vm != nullptr && compilation_unit != nullptr);
+    ASSERT(def.m_type != nullptr);
 
-    ObjectType object_type(def.m_name, nullptr);
+    const std::string type_name = def.m_type->GetName();
 
-    // look up to make sure type doesn't exist
-    ASSERT_MSG(!mod->LookUpUserType(def.m_name, object_type), "Type already defined");
-    ASSERT_MSG(!ObjectType::GetBuiltinType(def.m_name), "Type already defined as built-in type");
-
-    unsigned int num_members = (unsigned int)(def.m_members.size() + def.m_methods.size());
-
-    // generate hashes for member names
-    std::vector<uint32_t> hashes;
-    hashes.reserve(num_members);
-
-    // the start on the stack of where the methods are.
-    const int stack_start = compilation_unit->GetInstructionStream().GetStackSize();
-
-    for (size_t i = 0; i < def.m_methods.size(); i++) {
-        const auto &method = def.m_methods[i];
-        auto method_copy = method;
-        method_copy.function_name = MangleName(def.m_name, method.function_name);
-
-        BindNativeFunction(method_copy, mod, vm, compilation_unit);
-    }
-
-    // open the scope for data members
-    mod->m_scopes.Open(Scope());
-
-    for (const auto &mem : def.m_members) {
-        Scope &scope = mod->m_scopes.Top();
-
-        ASSERT_MSG(!object_type.HasDataMember(mem.name), "Type has duplicate data member");
-
-        DataMember dm(mem.name, mem.type);
-        object_type.AddDataMember(dm);
-
-        // generate hash from member name
-        hashes.push_back(hash_fnv_1(mem.name.c_str()));
-    }
-
-    // create methods
-    for (size_t i = 0; i < def.m_methods.size(); i++) {
-        Scope &scope = mod->m_scopes.Top();
-
-        const auto &method = def.m_methods[i];
-
-        std::string mangled_name = MangleName(def.m_name, method.function_name);
-        Identifier *mangled_ident = mod->LookUpIdentifier(mangled_name, false);
-        ASSERT(mangled_ident != nullptr);
-
-        // create identifier
-        Identifier *ident = mod->LookUpIdentifier(method.function_name, true);
-        ASSERT_MSG(ident == nullptr, "Cannot create multiple methods with the same name");
-
-        // add identifier for method
-        ident = scope.GetIdentifierTable().AddIdentifier(method.function_name);
-        ASSERT(ident != nullptr);
-
-        ObjectType member_type = ObjectType::MakeFunctionType(method.return_type, method.param_types);
-
-        auto value = std::shared_ptr<AstVariable>(new AstVariable(mangled_name, SourceLocation::eof));
-        value->GetProperties().SetIdentifier(mangled_ident);
-
-        member_type.SetDefaultValue(value);
-
-        // set identifier info
-        ident->SetObjectType(member_type);
-
-        DataMember dm(method.function_name, member_type);
-        // add data member
-        object_type.AddDataMember(dm);
-
-        // generate hash from method name
-        hashes.push_back(hash_fnv_1(method.function_name.c_str()));
-    }
-
-    // close the scope for data members
-    mod->m_scopes.Close();
-
-    ASSERT((int)num_members < ace::compiler::Config::MAX_DATA_MEMBERS);
-
-    // mangle the type name
-    std::string type_name = mod->GetName() + "." + m_name;
-    size_t len = type_name.length();
-
-    // create static object
-    StaticTypeInfo st;
-    st.m_size = num_members;
-    st.m_hashes = hashes;
-    st.m_name = new char[len + 1];
-    st.m_name[len] = '\0';
-    std::strcpy(st.m_name, type_name.c_str());
-
-    StaticObject so(st);
-    int found_id = compilation_unit->GetInstructionStream().FindStaticObject(so);
-    if (found_id == -1) {
-        so.m_id = compilation_unit->GetInstructionStream().NewStaticId();
-        compilation_unit->GetInstructionStream().AddStaticObject(so);
-        object_type.SetStaticId(so.m_id);
+    if (mod->LookupSymbolType(type_name)) {
+        // error; redeclaration of type in module
+        compilation_unit->GetErrorList().AddError(
+            CompilerError(
+                Level_fatal,
+                Msg_redefined_type,
+                SourceLocation::eof,
+                type_name
+            )
+        );
     } else {
-        object_type.SetStaticId(found_id);
+        compilation_unit->RegisterType(def.m_type);
+        // add the type to the identifier table, so it's usable
+        Scope &top_scope = mod->m_scopes.Top();
+        top_scope.GetIdentifierTable().AddSymbolType(def.m_type);
     }
-
-    delete[] st.m_name;
-
-    object_type.SetDefaultValue(std::shared_ptr<AstObject>(new AstObject(object_type, SourceLocation::eof)));
-    mod->AddUserType(object_type);
-}*/
+}
 
 API::ModuleDefine &APIInstance::Module(const std::string &name)
 {

@@ -126,23 +126,8 @@ utf::Utf8String Value::ToString() const
             } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
                 return *string;
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
-                // convert array list to string
-                const char sep_str[] = ", ";
-
-                utf::Utf8String res("[", 256);
-
-                // convert all array elements to string
-                const int size = array->GetSize();
-                for (int i = 0; i < size; i++) {
-                    res += array->AtIndex(i).ToString();
-
-                    if (i != size - 1) {
-                        res += sep_str;
-                    }
-                }
-
-                res += "]";
-
+                utf::Utf8String res(256);
+                array->GetRepresentation(res);
                 return res;
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 utf::Utf8String res;
@@ -188,6 +173,8 @@ void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
                 if (add_type_name) {
                     out_str += ")";
                 }
+            } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
+                array->GetRepresentation(out_str, add_type_name);
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 object->GetRepresentation(out_str, add_type_name);
             } else {

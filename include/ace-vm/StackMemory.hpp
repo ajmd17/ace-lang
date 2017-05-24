@@ -13,6 +13,8 @@ class Stack {
 public:
     static const uint16_t STACK_SIZE;
 
+    friend std::ostream &operator<<(std::ostream &os, const Stack &stack);
+
 public:
     Stack();
     Stack(const Stack &other) = delete;

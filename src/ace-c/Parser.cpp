@@ -1353,17 +1353,20 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
             if (op.GetValue() == Operator::operator_assign.ToString()) {
                 // read assignment expression
                 SourceLocation expr_location = CurrentLocation();
-                assignment = ParseExpression();
-                if (!assignment) {
-                    CompilerError error(LEVEL_ERROR, Msg_illegal_expression, expr_location);
-                    m_compilation_unit->GetErrorList().AddError(error);
+                if (!(assignment = ParseExpression())) {
+                    m_compilation_unit->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_illegal_expression,
+                        expr_location
+                    ));
                 }
             } else {
                 // unexpected operator
-                CompilerError error(LEVEL_ERROR,
-                    Msg_illegal_operator, op.GetLocation());
-
-                m_compilation_unit->GetErrorList().AddError(error);
+                m_compilation_unit->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_illegal_operator,
+                    op.GetLocation()
+                ));
             }
         }
 
@@ -1463,8 +1466,10 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
 
         Expect(TK_CLOSE_BRACKET, true);
 
-        return std::shared_ptr<AstArrayExpression>(
-            new AstArrayExpression(members, token.GetLocation()));
+        return std::shared_ptr<AstArrayExpression>(new AstArrayExpression(
+            members,
+            token.GetLocation()
+        ));
     }
 
     return nullptr;
@@ -1476,7 +1481,10 @@ std::shared_ptr<AstExpression> Parser::ParseAsyncExpression()
         MatchKeyword(Keyword_function, true); // skip 'function' keyword if found
         // for now, only functions are supported.
         return ParseFunctionExpression(
-            false, ParseFunctionParameters(), true, false
+            false,
+            ParseFunctionParameters(),
+            true,
+            false
         );
     }
 
@@ -1488,7 +1496,10 @@ std::shared_ptr<AstExpression> Parser::ParsePureExpression()
     if (Token token = ExpectKeyword(Keyword_pure, true)) {
         MatchKeyword(Keyword_function, true); // skip 'function' keyword if found
         return ParseFunctionExpression(
-            false, ParseFunctionParameters(), false, true
+            false,
+            ParseFunctionParameters(),
+            false,
+            true
         );
     }
 
@@ -1500,7 +1511,10 @@ std::shared_ptr<AstExpression> Parser::ParseImpureExpression()
     if (Token token = ExpectKeyword(Keyword_impure, true)) {
         MatchKeyword(Keyword_function, true); // skip 'function' keyword if found
         return ParseFunctionExpression(
-            false, ParseFunctionParameters(), false, false
+            false,
+            ParseFunctionParameters(),
+            false,
+            false
         );
     }
 
@@ -1514,15 +1528,18 @@ std::shared_ptr<AstExpression> Parser::ParseValueOfExpression()
 
         if (!MatchAhead(TK_DOUBLE_COLON, 1)) {
             Token ident = Expect(TK_IDENT, true);
-            expr.reset(
-                new AstVariable(ident.GetValue(), token.GetLocation())
-            );
+            expr.reset(new AstVariable(
+                ident.GetValue(),
+                token.GetLocation()
+            ));
         } else {
             do {
                 Token ident = Expect(TK_IDENT, true);
-                expr.reset(
-                    new AstModuleAccess(ident.GetValue(), expr, ident.GetLocation())
-                );
+                expr.reset(new AstModuleAccess(
+                    ident.GetValue(),
+                    expr,
+                    ident.GetLocation()
+                ));
             } while (Match(TK_DOUBLE_COLON, true));
         }
 
@@ -1541,12 +1558,16 @@ std::shared_ptr<AstTypeOfExpression> Parser::ParseTypeOfExpression()
     if (token) {
         SourceLocation expr_location = CurrentLocation();
         if (auto term = ParseTerm()) {
-            return std::shared_ptr<AstTypeOfExpression>(
-                new AstTypeOfExpression(term, location)
-            );
+            return std::shared_ptr<AstTypeOfExpression>(new AstTypeOfExpression(
+                term,
+                location
+            ));
         } else {
-            CompilerError error(LEVEL_ERROR, Msg_illegal_expression, expr_location);
-            m_compilation_unit->GetErrorList().AddError(error);
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_illegal_expression,
+                expr_location
+            ));
         }
     }
 
@@ -1653,7 +1674,6 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                     }
 
                     if (auto aliasee = ParseTypeSpecification()) {
-
                         return std::shared_ptr<AstTypeAlias>(new AstTypeAlias(
                             identifier.GetValue(), 
                             aliasee,
@@ -1696,7 +1716,8 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
 
                             MatchKeyword(Keyword_function, true); // skip 'function' keyword if found
                             if (auto expr = ParseFunctionExpression(
-                                false, ParseFunctionParameters()
+                                false,
+                                ParseFunctionParameters()
                             )) {
                                 // first, read the identifier
                                 std::shared_ptr<AstVariableDeclaration> member(new AstVariableDeclaration(
@@ -1803,8 +1824,11 @@ std::shared_ptr<AstReturnStatement> Parser::ParseReturnStatement()
         SourceLocation expr_location = CurrentLocation();
         auto expr = ParseExpression();
         if (!expr) {
-            CompilerError error(LEVEL_ERROR, Msg_illegal_expression, expr_location);
-            m_compilation_unit->GetErrorList().AddError(error);
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_illegal_expression,
+                expr_location
+            ));
         }
         return std::shared_ptr<AstReturnStatement>(new AstReturnStatement(expr, location));
     }

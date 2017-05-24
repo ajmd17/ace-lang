@@ -1,9 +1,10 @@
 #ifndef ARRAY_HPP
 #define ARRAY_HPP
 
-#include <common/my_assert.hpp>
-
 #include <ace-vm/Value.hpp>
+
+#include <common/my_assert.hpp>
+#include <common/utf8.hpp>
 
 namespace ace {
 namespace vm {
@@ -25,6 +26,8 @@ public:
     void Push(const Value &value);
     void PushMany(size_t n, Value **values);
     void Pop();
+
+    void GetRepresentation(utf::Utf8String &out_str, bool add_type_name = true) const;
 
 private:
     int m_size;

@@ -105,5 +105,26 @@ void Array::Pop()
     m_size--;
 }
 
+void Array::GetRepresentation(utf::Utf8String &out_str, bool add_type_name) const
+{
+    // convert array list to string
+    const char sep_str[] = ", ";
+
+    utf::Utf8String res("[", 256);
+
+    // convert all array elements to string
+    for (int i = 0; i < m_size; i++) {
+        m_buffer[i].ToRepresentation(res, add_type_name);
+
+        if (i != m_size - 1) {
+            res += sep_str;
+        }
+    }
+
+    res += "]";
+
+    out_str += res;
+}
+
 } // namespace vm
 } // namespace ace

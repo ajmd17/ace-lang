@@ -66,6 +66,20 @@ void Runtime_gc(ace::sdk::Params params)
     utf::cout << (heap_size_before - heap_size_after) << " object(s) collected.\n";
 }
 
+void Runtime_dump_heap(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 0);
+
+    utf::cout << params.state->GetHeap() << "\n";
+}
+
+void Runtime_dump_stack(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 0);
+
+    utf::cout << params.thread->GetStack() << "\n";
+}
+
 void Runtime_typeof(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
@@ -1028,7 +1042,9 @@ void BuildLibraries(
     APIInstance &api)
 {
     api.Module("runtime")
-        .Function("gc", SymbolType::Builtin::ANY, {}, Runtime_gc)
+        .Function("gc", SymbolType::Builtin::NULL_TYPE, {}, Runtime_gc)
+        .Function("dump_heap", SymbolType::Builtin::NULL_TYPE, {}, Runtime_dump_heap)
+        .Function("dump_stack", SymbolType::Builtin::NULL_TYPE, {}, Runtime_dump_stack)
         .Function("typeof", SymbolType::Builtin::STRING, {
             { "x", SymbolType::Builtin::ANY }
         }, Runtime_typeof)

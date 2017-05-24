@@ -42,17 +42,9 @@ public:
 
     static void LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash);
 
-    static void LoadMemberFromHashAndCall(AstVisitor *visitor, Module *mod,
-        AstFunctionCall *field_as_call, uint32_t hash);
-
     static void LoadMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index);
 
     static void StoreMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index);
-
-    static void LoadMemberAtIndexAndCall(AstVisitor *visitor, Module *mod,
-        AstFunctionCall *field_as_call, int dm_index);
-
-    static void BuildUCS(AstVisitor *visitor, Module *mod, AstFunctionCall *field_as_call);
 
     /** Compiler a standard if-then-else statement into the program.
         If the `else` expression is nullptr it will be omitted.

@@ -191,7 +191,7 @@ SymbolTypePtr_t AstArrayExpression::GetSymbolType() const
         SymbolType::Builtin::ARRAY,
         GenericInstanceTypeInfo {
             {
-                { "held_type", m_held_type }
+                { "@array_of", m_held_type }
             }
         }
     );

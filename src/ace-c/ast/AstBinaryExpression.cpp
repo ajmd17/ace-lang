@@ -1,10 +1,8 @@
 #include <ace-c/ast/AstBinaryExpression.hpp>
 #include <ace-c/ast/AstVariable.hpp>
-#include <ace-c/ast/AstFunctionCall.hpp>
 #include <ace-c/ast/AstConstant.hpp>
 #include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/ast/AstModuleAccess.hpp>
-#include <ace-c/ast/AstMemberAccess.hpp>
 #include <ace-c/ast/AstArrayAccess.hpp>
 #include <ace-c/Operator.hpp>
 #include <ace-c/emit/Instruction.hpp>
@@ -52,7 +50,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         // no bitwise operators on floats allowed.
         visitor->Assert((left_type == SymbolType::Builtin::INT || left_type == SymbolType::Builtin::ANY) &&
             (right_type == SymbolType::Builtin::INT || right_type == SymbolType::Builtin::ANY),
-            CompilerError(Level_fatal, Msg_bitwise_operands_must_be_int, m_location,
+            CompilerError(LEVEL_ERROR, Msg_bitwise_operands_must_be_int, m_location,
                 left_type->GetName(), right_type->GetName()));
     }
 
@@ -60,11 +58,11 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         ASSERT(right_type != nullptr);
 
         if (!left_type->TypeCompatible(*right_type, true)) {
-            CompilerError error(Level_fatal, Msg_mismatched_types,
+            CompilerError error(LEVEL_ERROR, Msg_mismatched_types,
                 m_location, left_type->GetName(), right_type->GetName());
 
             if (right_type == SymbolType::Builtin::ANY) {
-                error = CompilerError(Level_fatal, Msg_implicit_any_mismatch,
+                error = CompilerError(LEVEL_ERROR, Msg_implicit_any_mismatch,
                     m_location, left_type->GetName());
             }
 
@@ -94,7 +92,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                 // make sure we are not modifying a const
                 if (left_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_const_modified,
+                        CompilerError(LEVEL_ERROR, Msg_const_modified,
                             m_location, left_as_var->GetName()));
                 }
             }
@@ -103,7 +101,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         if (!(m_left->GetAccessOptions() & AccessMode::ACCESS_MODE_STORE)) {
             // cannot modify an rvalue
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                Level_fatal,
+                LEVEL_ERROR,
                 Msg_cannot_modify_rvalue,
                 m_location
             ));
@@ -112,7 +110,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         // compare both sides because assignment does not matter in this case
         if (!left_type->TypeCompatible(*right_type, false)) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_mismatched_types,
+                CompilerError(LEVEL_ERROR, Msg_mismatched_types,
                     m_location, left_type->GetName(), right_type->GetName()));
         }
     }
@@ -120,9 +118,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 
 void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 {
-    if (m_member_access) {
-        m_member_access->Build(visitor, mod);
-    } else if (m_variable_declaration) {
+    if (m_variable_declaration) {
         m_variable_declaration->Build(visitor, mod);
     } else {
         AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
@@ -721,9 +717,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
 void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
-    if (m_member_access) {
-        m_member_access->Optimize(visitor, mod);
-    } else if (m_variable_declaration) {
+    if (m_variable_declaration) {
         m_variable_declaration->Optimize(visitor, mod);
     } else {
         Optimizer::OptimizeExpr(m_left, visitor, mod);
@@ -759,9 +753,9 @@ Pointer<AstStatement> AstBinaryExpression::Clone() const
 
 int AstBinaryExpression::IsTrue() const
 {
-    if (m_member_access) {
-        return m_member_access->IsTrue();
-    } else {
+    // if (m_member_access) {
+    //     return m_member_access->IsTrue();
+    // } else {
         if (m_right) {
             // the right was not optimized away,
             // therefore we cannot determine whether or
@@ -770,14 +764,14 @@ int AstBinaryExpression::IsTrue() const
         }
 
         return m_left->IsTrue();
-    }
+    //}
 }
 
 bool AstBinaryExpression::MayHaveSideEffects() const
 {
-    if (m_member_access) {
-        return m_member_access->MayHaveSideEffects();
-    } else {
+    // if (m_member_access) {
+    //     return m_member_access->MayHaveSideEffects();
+    // } else {
         bool left_side_effects = m_left->MayHaveSideEffects();
         bool right_side_effects = false;
 
@@ -790,14 +784,14 @@ bool AstBinaryExpression::MayHaveSideEffects() const
         }
 
         return left_side_effects || right_side_effects;
-    }
+    //}
 }
 
 SymbolTypePtr_t AstBinaryExpression::GetSymbolType() const
 {
-    if (m_member_access) {
-        return m_member_access->GetSymbolType();
-    } else {
+    // if (m_member_access) {
+    //     return m_member_access->GetSymbolType();
+    // } else {
         ASSERT(m_left != nullptr);
 
         SymbolTypePtr_t l_type_ptr = m_left->GetSymbolType();
@@ -815,7 +809,7 @@ SymbolTypePtr_t AstBinaryExpression::GetSymbolType() const
             // right was optimized away, return only left type
             return l_type_ptr;
         }
-    }
+    //}
 }
 
 std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaration(AstVisitor *visitor, Module *mod)

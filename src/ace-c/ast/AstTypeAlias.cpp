@@ -30,7 +30,7 @@ void AstTypeAlias::Visit(AstVisitor *visitor, Module *mod)
         // error; redeclaration of type in module
         visitor->GetCompilationUnit()->GetErrorList().AddError(
             CompilerError(
-                Level_fatal,
+                LEVEL_ERROR,
                 Msg_redefined_type,
                 m_location,
                 m_name

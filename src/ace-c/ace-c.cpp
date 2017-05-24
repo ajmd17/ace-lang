@@ -19,7 +19,8 @@
 
 namespace ace_compiler {
 
-bool BuildSourceFile(const utf::Utf8String &filename,
+bool BuildSourceFile(
+    const utf::Utf8String &filename,
     const utf::Utf8String &out_filename)
 {
     CompilationUnit compilation_unit;

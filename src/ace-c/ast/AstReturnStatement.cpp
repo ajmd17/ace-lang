@@ -41,7 +41,7 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
     } else {
         // error; 'return' not allowed outside of a function
         visitor->GetCompilationUnit()->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_return_outside_function,
+            CompilerError(LEVEL_ERROR, Msg_return_outside_function,
                 m_location));
     }
 }

@@ -8,9 +8,9 @@
 #include <map>
 
 enum ErrorLevel {
-    Level_info,
-    Level_warning,
-    Level_fatal
+    LEVEL_INFO,
+    LEVEL_WARN,
+    LEVEL_ERROR
 };
 
 enum ErrorMessage {
@@ -85,6 +85,7 @@ enum ErrorMessage {
     Msg_statement_outside_module,
     Msg_module_declared_in_block,
     Msg_could_not_open_file,
+    Msg_could_not_find_module,
     Msg_identifier_is_module,
     Msg_import_outside_global,
     Msg_import_current_file,
@@ -120,18 +121,6 @@ public:
           m_msg(msg),
           m_location(location)
     {
-        switch (m_level) {
-        case Level_info:
-            m_text = "INFO: ";
-            break;
-        case Level_warning:
-            m_text = "WARNING: ";
-            break;
-        case Level_fatal:
-            m_text = "FATAL: ";
-            break;
-        }
-
         std::string msg_str = error_message_strings.at(m_msg);
         MakeMessage(msg_str.c_str(), args...);
     }
@@ -147,10 +136,7 @@ public:
     bool operator<(const CompilerError &other) const;
 
 private:
-    void MakeMessage(const char *format)
-    {
-        m_text += format;
-    }
+    void MakeMessage(const char *format) { m_text += format; }
 
     template <typename T, typename ... Args>
     void MakeMessage(const char *format, T value, Args && ... args)

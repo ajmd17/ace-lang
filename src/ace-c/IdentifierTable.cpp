@@ -75,18 +75,19 @@ SymbolTypePtr_t IdentifierTable::LookupSymbolType(const std::string &name) const
     return nullptr;
 }
 
-SymbolTypePtr_t IdentifierTable::LookupGenericInstance(const SymbolTypePtr_t &base,
-    const std::vector<std::pair<std::string, SymbolTypePtr_t>> &params) const
+SymbolTypePtr_t IdentifierTable::LookupGenericInstance(
+    const SymbolTypePtr_t &base,
+    const std::vector<GenericInstanceTypeInfo::Arg> &params) const
 {
     ASSERT(base != nullptr);
     ASSERT(base->GetTypeClass() == TYPE_GENERIC);
 
     for (auto &type : m_symbol_types) {
-        if (type) {
+        if (type != nullptr) {
             if (type->GetTypeClass() == TYPE_GENERIC_INSTANCE && type->GetBaseType() == base) {
 
                 // check params
-                auto &other_params = type->GetGenericInstanceInfo().m_generic_args;
+                const auto &other_params = type->GetGenericInstanceInfo().m_generic_args;
 
                 if (other_params.size() != params.size()) {
                     continue;
@@ -95,12 +96,13 @@ SymbolTypePtr_t IdentifierTable::LookupGenericInstance(const SymbolTypePtr_t &ba
                 bool found = true;
 
                 for (size_t i = 0; i < params.size(); i++) {
-                    ASSERT(params[i].second != nullptr);
-                    ASSERT(type->GetGenericInstanceInfo().m_generic_args[i].second != nullptr);
+                    const SymbolTypePtr_t &param_type = params[i].m_type;
+                    const SymbolTypePtr_t &arg_type = type->GetGenericInstanceInfo().m_generic_args[i].m_type;
 
-                    if (!params[i].second->TypeEqual(
-                        *type->GetGenericInstanceInfo().m_generic_args[i].second)
-                    ) {
+                    ASSERT(param_type != nullptr);
+                    ASSERT(arg_type != nullptr);
+
+                    if (!param_type->TypeEqual(*arg_type)) {
                         found = false;
                         break;
                     }

@@ -100,7 +100,7 @@ API::ModuleDefine &API::ModuleDefine::Variable(
 API::ModuleDefine &API::ModuleDefine::Function(
     const std::string &function_name,
     const SymbolTypePtr_t &return_type,
-    const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
+    const std::vector<GenericInstanceTypeInfo::Arg> &param_types,
     NativeFunctionPtr_t ptr)
 {
     m_function_defs.push_back(API::NativeFunctionDefine(
@@ -118,7 +118,7 @@ void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
     bool close_mod = false;
 
     // create new module
-    if (!mod) {
+    if (mod == nullptr) {
         close_mod = true;
 
         std::shared_ptr<Module> new_mod(new Module(m_name, SourceLocation::eof));
@@ -204,10 +204,12 @@ void API::ModuleDefine::BindNativeFunction(
 
     value->SetReturnType(def.return_type);
 
-    std::vector<std::pair<std::string, SymbolTypePtr_t>> generic_param_types;
+    std::vector<GenericInstanceTypeInfo::Arg> generic_param_types;
+
     generic_param_types.push_back({
         "@return", def.return_type
     });
+
     for (auto &it : def.param_types) {
         generic_param_types.push_back(it);
     }
@@ -240,7 +242,7 @@ void API::ModuleDefine::BindType(TypeDefine def,
         // error; redeclaration of type in module
         compilation_unit->GetErrorList().AddError(
             CompilerError(
-                Level_fatal,
+                LEVEL_ERROR,
                 Msg_redefined_type,
                 SourceLocation::eof,
                 type_name

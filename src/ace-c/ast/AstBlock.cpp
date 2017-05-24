@@ -35,8 +35,8 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    m_last_is_return = (!m_children.empty()) &&
-        (dynamic_cast<AstReturnStatement*>(m_children.back().get()) != nullptr);
+    m_last_is_return = !m_children.empty() &&
+        dynamic_cast<AstReturnStatement*>(m_children.back().get()) != nullptr;
 
     // store number of locals, so we can pop them from the stack later
     Scope &this_scope = mod->m_scopes.Top();
@@ -53,7 +53,7 @@ void AstBlock::Build(AstVisitor *visitor, Module *mod)
     }
 
     // how many times to pop the stack
-    int pop_times = 0;
+    size_t pop_times = 0;
 
     // pop all local variables off the stack
     for (int i = 0; i < m_num_locals; i++) {

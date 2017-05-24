@@ -8,7 +8,10 @@
 
 CompilationUnit::CompilationUnit()
     : m_module_index(0),
-      m_global_module(new Module(ace::compiler::Config::GLOBAL_MODULE_NAME, SourceLocation::eof))
+      m_global_module(new Module(
+          ace::compiler::Config::GLOBAL_MODULE_NAME,
+          SourceLocation::eof
+      ))
 {
     m_global_module->m_scopes.Open(Scope());
 
@@ -48,7 +51,7 @@ void CompilationUnit::RegisterType(SymbolTypePtr_t &type_ptr)
     }
 
     // mangle the type name
-    size_t len = type_ptr->GetName().length();
+    const size_t len = type_ptr->GetName().length();
 
     ASSERT(type_ptr->GetMembers().size() < ace::compiler::Config::MAX_DATA_MEMBERS);
 
@@ -81,7 +84,7 @@ Module *CompilationUnit::LookupModule(const std::string &name)
 {
     TreeNode<Module*> *top = m_module_tree.TopNode();
 
-    while (top) {
+    while (top != nullptr) {
         if (top->m_value && top->m_value->GetName() == name) {
             return top->m_value;
         }

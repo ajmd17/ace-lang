@@ -2,7 +2,6 @@
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/ast/AstVariable.hpp>
-#include <ace-c/ast/AstFunctionCall.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/Module.hpp>
@@ -62,7 +61,7 @@ void AstModuleAccess::Visit(AstVisitor *visitor, Module *mod)
     if (m_mod_access) {
         m_expr->Visit(visitor, m_mod_access);
     } else {
-        CompilerError err(Level_fatal, Msg_unknown_module, m_location, m_target);
+        CompilerError err(LEVEL_ERROR, Msg_unknown_module, m_location, m_target);
         visitor->GetCompilationUnit()->GetErrorList().AddError(err);
     }
 }

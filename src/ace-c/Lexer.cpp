@@ -12,7 +12,9 @@
 
 using namespace utf;
 
-Lexer::Lexer(const SourceStream &source_stream, TokenStream *token_stream,
+Lexer::Lexer(
+    const SourceStream &source_stream,
+    TokenStream *token_stream,
     CompilationUnit *compilation_unit)
     : m_source_stream(source_stream),
       m_token_stream(token_stream),
@@ -205,7 +207,7 @@ Token Lexer::NextToken()
         char bad_token_str[sizeof(bad_token)] = { '\0' };
         utf::char32to8(bad_token, bad_token_str);
 
-        CompilerError error(Level_fatal, Msg_unexpected_token,
+        CompilerError error(LEVEL_ERROR, Msg_unexpected_token,
             location, std::string(bad_token_str));
 
         m_compilation_unit->GetErrorList().AddError(error);
@@ -239,7 +241,7 @@ u32char Lexer::ReadEscapeCode()
             return esc;
         default:
             m_compilation_unit->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_unrecognized_escape_sequence,
+                CompilerError(LEVEL_ERROR, Msg_unrecognized_escape_sequence,
                     location, std::string("\\") + utf::get_bytes(esc)));
         }
     }
@@ -270,7 +272,7 @@ Token Lexer::ReadStringLiteral()
         } else if (ch == (u32char)'\n' || !HasNext()) {
             // unterminated string literal
             m_compilation_unit->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_unterminated_string_literal,
+                CompilerError(LEVEL_ERROR, Msg_unterminated_string_literal,
                     location));
 
             if (ch == (u32char)'\n') {
@@ -566,7 +568,7 @@ bool Lexer::HasNext()
 {
     if (!m_source_stream.HasNext()) {
         m_compilation_unit->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_unexpected_eof, m_source_location));
+            CompilerError(LEVEL_ERROR, Msg_unexpected_eof, m_source_location));
         return false;
     }
 

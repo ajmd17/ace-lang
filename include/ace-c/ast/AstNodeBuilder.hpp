@@ -2,7 +2,7 @@
 #define AST_NODE_BUILDER_HPP
 
 #include <ace-c/ast/AstFunctionDefinition.hpp>
-#include <ace-c/ast/AstFunctionCall.hpp>
+#include <ace-c/ast/AstArgument.hpp>
 #include <ace-c/ast/AstModuleAccess.hpp>
 #include <ace-c/SymbolType.hpp>
 

@@ -2,7 +2,6 @@
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/ast/AstVariable.hpp>
-#include <ace-c/ast/AstFunctionCall.hpp>
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
@@ -47,7 +46,7 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
             if (m_target_type->GetBaseType() != nullptr &&
                 m_target_type->GetBaseType()->TypeEqual(*SymbolType::Builtin::MAYBE))
             {
-                m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].second;
+                m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
             }
 
             ASSERT(m_target_type != nullptr);
@@ -65,7 +64,7 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
             m_symbol_type = field_type;
         } else {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                Level_fatal,
+                LEVEL_ERROR,
                 Msg_not_a_data_member,
                 m_location,
                 m_field_name,

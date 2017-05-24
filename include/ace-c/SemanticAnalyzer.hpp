@@ -28,7 +28,10 @@ class SemanticAnalyzer : public AstVisitor {
 public:
     static IdentifierLookupResult LookupIdentifier(AstVisitor *visitor, Module *mod, const std::string &name);
 
-    static std::pair<SymbolTypePtr_t, std::vector<int>> SubstituteFunctionArgs(AstVisitor *visitor, Module *mod, 
+    static std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>>
+    SubstituteFunctionArgs(
+        AstVisitor *visitor,
+        Module *mod, 
         const SymbolTypePtr_t &identifier_type, 
         const std::vector<std::shared_ptr<AstArgument>> &args,
         const SourceLocation &location);

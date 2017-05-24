@@ -26,14 +26,12 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             m_properties.GetIdentifier()->IncUseCount();
 
             if (m_properties.IsInFunction()) {
-
-                
                 if (m_properties.IsInPureFunction()) {
                     // check if pure function - in a pure function, only variables from this scope may be used
                     if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
                         // add error that the variable must be passed as a parameter
                         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            Level_fatal,
+                            LEVEL_ERROR,
                             Msg_pure_function_scope,
                             m_location,
                             m_name
@@ -50,10 +48,11 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 if (m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION) {
                     // lookup the variable by depth to make sure it was declared in the current function
                     // we do this to make sure it was declared in this scope.
+                    std::cout << "name = " << m_name << ", " << "depth = " << m_properties.GetDepth() << "\n";
                     if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
                         // add error that the variable must be passed as a parameter
                         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            Level_fatal,
+                            LEVEL_ERROR,
                             Msg_closure_capture_must_be_parameter,
                             m_location,
                             m_name
@@ -66,16 +65,16 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
         }
         case IDENTIFIER_TYPE_MODULE:
             visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_identifier_is_module, m_location, m_name));
+                CompilerError(LEVEL_ERROR, Msg_identifier_is_module, m_location, m_name));
             break;
         case IDENTIFIER_TYPE_TYPE:
             visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_identifier_is_type, m_location, m_name));
+                CompilerError(LEVEL_ERROR, Msg_identifier_is_type, m_location, m_name));
 
             break;
         case IDENTIFIER_TYPE_NOT_FOUND:
             visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_undeclared_identifier, m_location, m_name));
+                CompilerError(LEVEL_ERROR, Msg_undeclared_identifier, m_location, m_name));
             break;
     }
 }

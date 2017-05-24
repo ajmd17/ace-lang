@@ -63,51 +63,6 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     ));
 
     m_expr->Visit(visitor, mod);
-
-/*
-    // if the target is a member expression,
-    // place it as 'self' argument to the call
-    if (AstMember *target_mem = dynamic_cast<AstMember*>(m_target.get())) {
-        m_is_method_call = true;
-
-        std::shared_ptr<AstArgument> self_arg(new AstArgument(
-            target_mem->GetTarget(),
-            true,
-            "self",
-            m_target->GetLocation()
-        ));
-        
-        // insert at front
-        m_args.insert(m_args.begin(), self_arg);
-    }
-
-    // visit each argument
-    for (auto &arg : m_args) {
-        if (arg) {
-            arg->Visit(visitor, mod);
-        }
-    }
-
-    auto substituted = SemanticAnalyzer::SubstituteFunctionArgs(
-        visitor, 
-        mod,
-        target_type,
-        m_args,
-        m_location
-    );
-
-    m_arg_ordering = substituted.second;
-    m_return_type = substituted.first;
-
-    if (m_return_type == nullptr) {
-        // not a function type
-        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-            Level_fatal,
-            Msg_not_a_function,
-            m_location,
-            target_type->GetName()
-        ));
-    }*/
 }
 
 void AstActionExpression::Build(AstVisitor *visitor, Module *mod)

@@ -2,7 +2,6 @@
 #define AST_BINARY_EXPRESSION_HPP
 
 #include <ace-c/ast/AstExpression.hpp>
-#include <ace-c/ast/AstMemberAccess.hpp>
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/Operator.hpp>
 
@@ -30,9 +29,6 @@ private:
     std::shared_ptr<AstExpression> m_left;
     std::shared_ptr<AstExpression> m_right;
     const Operator *m_op;
-
-    // if the operator is overloaded and it is actually a function call
-    std::shared_ptr<AstMemberAccess> m_member_access;
 
     // if the expression is lazy declaration
     std::shared_ptr<AstVariableDeclaration> m_variable_declaration;

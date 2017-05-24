@@ -66,6 +66,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_statement_outside_module, "statement outside of module" },
     { Msg_module_declared_in_block, "a module may not be declared within a conditional, loop or function" },
     { Msg_could_not_open_file, "could not open file '%'" },
+    { Msg_could_not_find_module, "could not find module '%'" },
     { Msg_import_outside_global, "import not allowed outside of global scope" },
     { Msg_import_current_file, "attempt to import current file" },
     { Msg_self_outside_class, "'self' not allowed outside of a class" },

@@ -14,6 +14,16 @@ public:
     AstImport(const SourceLocation &location);
     virtual ~AstImport() = default;
 
+    static void CopyModules(
+        AstVisitor *visitor,
+        std::shared_ptr<Module> &mod,
+        bool check_lookup = false,
+        bool update_tree_link = false);
+
+    static bool TryOpenFile(
+        const std::string &path,
+        std::ifstream &is);
+
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
@@ -23,6 +33,11 @@ public:
 protected:
     /** The AST iterator that will be used by the imported module */
     AstIterator m_ast_iterator;
+
+    void PerformImport(
+        AstVisitor *visitor,
+        Module *mod,
+        const std::string &filepath);
 };
 
 #endif

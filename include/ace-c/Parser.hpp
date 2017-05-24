@@ -19,17 +19,16 @@
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstImport.hpp>
 #include <ace-c/ast/AstFileImport.hpp>
+#include <ace-c/ast/AstModuleImport.hpp>
 #include <ace-c/ast/AstInteger.hpp>
 #include <ace-c/ast/AstFloat.hpp>
 #include <ace-c/ast/AstString.hpp>
 #include <ace-c/ast/AstBinaryExpression.hpp>
 #include <ace-c/ast/AstUnaryExpression.hpp>
-#include <ace-c/ast/AstFunctionCall.hpp>
 #include <ace-c/ast/AstCallExpression.hpp>
 #include <ace-c/ast/AstArgument.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstModuleAccess.hpp>
-#include <ace-c/ast/AstMemberAccess.hpp>
 #include <ace-c/ast/AstMember.hpp>
 #include <ace-c/ast/AstArrayAccess.hpp>
 #include <ace-c/ast/AstHasExpression.hpp>
@@ -96,10 +95,8 @@ private:
     std::shared_ptr<AstArgument> ParseArgument();
     std::vector<std::shared_ptr<AstArgument>> ParseArguments();
     std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
-    std::shared_ptr<AstFunctionCall> ParseFunctionCallNoParams(bool allow_keyword = false);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstMember> ParseMemberExpression(std::shared_ptr<AstExpression> target);
-    std::shared_ptr<AstMemberAccess> ParseMemberAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstHasExpression> ParseHasExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstActionExpression> ParseActionExpression();
@@ -142,6 +139,7 @@ private:
     std::shared_ptr<AstStatement> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstFileImport> ParseFileImport();
+    std::shared_ptr<AstModuleImport> ParseModuleImport();
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
 };
 

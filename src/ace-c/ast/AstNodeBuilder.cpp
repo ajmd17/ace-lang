@@ -1,4 +1,6 @@
 #include <ace-c/ast/AstNodeBuilder.hpp>
+#include <ace-c/ast/AstCallExpression.hpp>
+#include <ace-c/ast/AstVariable.hpp>
 
 #include <common/my_assert.hpp>
 
@@ -68,8 +70,11 @@ FunctionBuilder::FunctionBuilder(
 
 sp<AstExpression> FunctionBuilder::Call(const std::vector<sp<AstArgument>> &args)
 {
-    sp<AstFunctionCall> call(new AstFunctionCall(
-        m_name,
+    sp<AstCallExpression> call(new AstCallExpression(
+        sp<AstVariable>(new AstVariable(
+            m_name,
+            SourceLocation::eof
+        )),
         args,
         SourceLocation::eof
     ));

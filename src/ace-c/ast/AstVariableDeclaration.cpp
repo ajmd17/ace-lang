@@ -29,7 +29,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
     if (!m_type_specification && !m_assignment) {
         // error; requires either type, or assignment.
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-            Level_fatal,
+            LEVEL_ERROR,
             Msg_missing_type_and_assignment,
             m_location,
             m_name
@@ -93,7 +93,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 if (type_strict) {
                     if (!symbol_type->TypeCompatible(*assignment_type, true)) {
                         CompilerError error(
-                            Level_fatal,
+                            LEVEL_ERROR,
                             Msg_mismatched_types,
                             m_real_assignment->GetLocation(),
                             symbol_type->GetName(),
@@ -102,7 +102,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
                         if (assignment_type == SymbolType::Builtin::ANY) {
                             error = CompilerError(
-                                Level_fatal,
+                                LEVEL_ERROR,
                                 Msg_implicit_any_mismatch,
                                 m_real_assignment->GetLocation(),
                                 symbol_type->GetName()

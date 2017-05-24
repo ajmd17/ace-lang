@@ -48,7 +48,7 @@ void AstUseStatement::Visit(AstVisitor *visitor, Module *mod)
                     // module access, continue
                 } else {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_unknown_module, 
+                        CompilerError(LEVEL_ERROR, Msg_unknown_module, 
                             mod_access->GetLocation(), mod_access->GetTarget()));
                     
                     // module not found, cannot continue
@@ -59,7 +59,7 @@ void AstUseStatement::Visit(AstVisitor *visitor, Module *mod)
 
                 if (identifier->GetProperties().GetIdentifierType() == IDENTIFIER_TYPE_NOT_FOUND) {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_undeclared_identifier, 
+                        CompilerError(LEVEL_ERROR, Msg_undeclared_identifier, 
                             identifier->GetLocation(), identifier->GetName()));
                 } else {
                     if (!user_alias_name) {
@@ -90,7 +90,7 @@ void AstUseStatement::Visit(AstVisitor *visitor, Module *mod)
             } else {
                 // unsupported alias type
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_unrecognized_alias_type, target->GetLocation()));
+                    CompilerError(LEVEL_ERROR, Msg_unrecognized_alias_type, target->GetLocation()));
 
                 // unknown alias type, cannot continue
                 break;

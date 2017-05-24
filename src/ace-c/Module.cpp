@@ -78,16 +78,18 @@ SymbolTypePtr_t Module::LookupSymbolType(const std::string &name)
     });
 }
 
-SymbolTypePtr_t Module::LookupGenericInstance(const SymbolTypePtr_t &base,
-    const std::vector<std::pair<std::string, SymbolTypePtr_t>> &params)
+SymbolTypePtr_t Module::LookupGenericInstance(
+    const SymbolTypePtr_t &base,
+    const std::vector<GenericInstanceTypeInfo::Arg> &params)
 {
     return PerformLookup(
-    [&base, &params](TreeNode<Scope> *top) {
-        return top->m_value.GetIdentifierTable().LookupGenericInstance(base, params);
-    },
-    [&base, &params](Module *mod) {
-        return mod->LookupGenericInstance(base, params);
-    });
+        [&base, &params](TreeNode<Scope> *top) {
+            return top->m_value.GetIdentifierTable().LookupGenericInstance(base, params);
+        },
+        [&base, &params](Module *mod) {
+            return mod->LookupGenericInstance(base, params);
+        }
+    );
 }
 
 SymbolTypePtr_t Module::PerformLookup(

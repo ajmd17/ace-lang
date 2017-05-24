@@ -35,7 +35,8 @@ void AstIdentifier::CheckInFunction(AstVisitor *visitor, Module *mod)
 {
     m_properties.m_depth = 0;
     TreeNode<Scope> *top = mod->m_scopes.TopNode();
-    while (top) {
+    
+    while (top != nullptr) {
         m_properties.m_depth++;
         if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
             m_properties.m_is_in_function = true;

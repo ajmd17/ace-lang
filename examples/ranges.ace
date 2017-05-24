@@ -1,0 +1,5 @@
+module example_ranges {
+  import '../acelib/range'
+
+  print range::make_range(0, 5, 10)
+}

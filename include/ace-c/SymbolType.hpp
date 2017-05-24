@@ -46,7 +46,13 @@ struct GenericTypeInfo {
 };
 
 struct GenericInstanceTypeInfo {
-    vec<std::pair<std::string, SymbolTypePtr_t>> m_generic_args;
+    struct Arg {
+        std::string m_name;
+        SymbolTypePtr_t m_type;
+        sp<AstExpression> m_default_value;
+    };
+
+    vec<Arg> m_generic_args;
 };
 
 struct GenericParameterTypeInfo {
@@ -186,6 +192,8 @@ public:
     inline bool operator==(const SymbolType &other) const { return TypeEqual(other); }
     inline bool operator!=(const SymbolType &other) const { return !operator==(other); }
     const SymbolTypePtr_t FindMember(const std::string &name) const;
+    
+    bool IsArrayType() const;
 
 private:
     std::string m_name;

@@ -774,14 +774,28 @@ static int REPL(
 
             compilation_unit.GetErrorList().SortErrors();
             for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
-                
-                std::string filename = error.GetLocation().GetFileName();
-                std::string error_text = error.GetText();
-                
-                utf::cout << utf::Utf8String(filename.c_str()) << " "
-                          << "(Ln " << (error.GetLocation().GetLine() + 1)
-                          << ", Col " << (error.GetLocation().GetColumn() + 1)
-                          << "): " << utf::Utf8String(error_text.c_str()) << "\n";
+                const std::string &filename = error.GetLocation().GetFileName();
+                const std::string &error_text = error.GetText();
+
+                utf::cout << "* ";
+
+                switch (error.GetLevel()) {
+                    case LEVEL_INFO:
+                        utf::cout << "Info";
+                        break;
+                    case LEVEL_WARN:
+                        utf::cout << "Warning";
+                        break;
+                    case LEVEL_ERROR:
+                        utf::cout << "Error";
+                        break;
+                }
+
+                utf::cout << " in file " << utf::Utf8String(filename.c_str())
+                          << " at line "    << (error.GetLocation().GetLine() + 1)
+                          << ", col " << (error.GetLocation().GetColumn() + 1);
+                utf::cout << "\n\t" << utf::Utf8String(error_text.c_str()) << "\n";
+                          //<< "): " << utf::Utf8String(error_text.c_str()) << "\n";
             }
 
             if (!compilation_unit.GetErrorList().HasFatalErrors()) {

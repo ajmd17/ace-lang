@@ -100,6 +100,7 @@ bool AstNewExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstNewExpression::GetSymbolType() const
 {
-    ASSERT(m_object_value != nullptr);
-    return m_object_value->GetSymbolType();
+    ASSERT(m_type_expr != nullptr);
+    ASSERT(m_type_expr->GetSymbolType() != nullptr);
+    return m_type_expr->GetSymbolType();
 }

@@ -65,7 +65,7 @@ void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
 void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 {
     // first item will be return type
-    std::vector<std::pair<std::string, SymbolTypePtr_t>> param_symbol_types;
+    std::vector<GenericInstanceTypeInfo::Arg> param_symbol_types;
 
     ScopeType scope_type = SCOPE_TYPE_FUNCTION;
 
@@ -77,24 +77,26 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Open(Scope(scope_type));
 
     for (auto &param : m_parameters) {
-        if (param) {
+        if (param != nullptr) {
             // add the identifier to the table
             param->Visit(visitor, mod);
 
             SymbolTypePtr_t param_symbol_type = SymbolType::Builtin::UNDEFINED;
             // add the param's type to param_types
-            if (param->GetIdentifier()) {
-                param_symbol_type = param->GetIdentifier()->GetSymbolType();
+            
+            if (param->GetIdentifier() != nullptr) {
+                // add to list of param types
+                param_symbol_types.push_back(GenericInstanceTypeInfo::Arg {
+                    param->GetName(),
+                    param->GetIdentifier()->GetSymbolType(),
+                    param->GetDefaultValue()
+                });
             }
-
-            param_symbol_types.push_back({
-                param->GetName(), param_symbol_type
-            });
         }
     }
 
     // function body
-    if (m_block) {
+    if (m_block != nullptr) {
         // visit the function body
         m_block->Visit(visitor, mod);
     }
@@ -113,7 +115,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 } else {
                     // error; more than one possible return type.
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_multiple_return_types, it.second)
+                        CompilerError(LEVEL_ERROR, Msg_multiple_return_types, it.second)
                     );
                 }
             }
@@ -131,21 +133,23 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 // error; more than one possible return type.
                 visitor->GetCompilationUnit()->GetErrorList().AddError(
                     CompilerError(
-                        Level_fatal,
-                        Msg_mismatched_return_type, it.second,
-                        m_return_type->GetName(), it.first->GetName()
+                        LEVEL_ERROR,
+                        Msg_mismatched_return_type,
+                        it.second,
+                        m_return_type->GetName(),
+                        it.first->GetName()
                     )
                 );
             }
         }
     }
+
     // close parameter scope
     mod->m_scopes.Close();
 
     // set object type to be an instance of function
-    std::vector<std::pair<std::string, SymbolTypePtr_t>> generic_param_types;
+    std::vector<GenericInstanceTypeInfo::Arg> generic_param_types;
     generic_param_types.reserve(param_symbol_types.size() + 1);
-
     generic_param_types.push_back({
         "@return", m_return_type
     });

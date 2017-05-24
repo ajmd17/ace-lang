@@ -63,13 +63,14 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         m_location
     );
 
-    m_arg_ordering = substituted.second;
+    //m_arg_ordering = substituted.second;
+    m_args = substituted.second;
     m_return_type = substituted.first;
 
     if (m_return_type == nullptr) {
         // not a function type
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-            Level_fatal,
+            LEVEL_ERROR,
             Msg_not_a_function,
             m_location,
             target_type->GetName()
@@ -82,22 +83,22 @@ void AstCallExpression::Build(AstVisitor *visitor, Module *mod)
     ASSERT(m_target != nullptr);
 
     // sort args
-    ASSERT(m_arg_ordering.size() >= m_args.size());
+    //ASSERT(m_arg_ordering.size() >= m_args.size());
     
-    std::vector<std::shared_ptr<AstArgument>> args_sorted;
+    /*std::vector<std::shared_ptr<AstArgument>> args_sorted;
     args_sorted.resize(m_args.size());
 
     for (size_t i = 0; i < m_args.size(); i++) {
         ASSERT(m_arg_ordering[i] >= 0);
         ASSERT(m_arg_ordering[i] <= m_args.size());
         args_sorted[m_arg_ordering[i]] = m_args[i];
-    }
+    }*/
 
     // build arguments
     Compiler::BuildArgumentsStart(
         visitor,
         mod,
-        args_sorted
+        m_args//args_sorted
     );
 
     Compiler::BuildCall(

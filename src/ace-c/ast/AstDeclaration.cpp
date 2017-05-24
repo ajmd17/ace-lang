@@ -20,26 +20,37 @@ void AstDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     if ((m_identifier = mod->LookUpIdentifier(m_name, true))) {
         // a collision was found, add an error
-        compilation_unit->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_redeclared_identifier, m_location, m_name));
+        compilation_unit->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_redeclared_identifier,
+            m_location,
+            m_name
+        ));
     } else {
         if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_redeclared_identifier_module, m_location, m_name));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_redeclared_identifier_module,
+                m_location, m_name
+            ));
         } else {
             // check if identifier is a type
             SymbolTypePtr_t type = mod->LookupSymbolType(m_name);
 
-            if (type) {
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(Level_fatal, Msg_redeclared_identifier_type, m_location, m_name));
+            if (type != nullptr) {
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_redeclared_identifier_type,
+                    m_location,
+                    m_name
+                ));
             } else {
                 // add identifier
                 m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name);
 
                 TreeNode<Scope> *top = mod->m_scopes.TopNode();
 
-                while (top) {
+                while (top != nullptr) {
                     if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION ||
                         top->m_value.GetScopeType() == SCOPE_TYPE_PURE_FUNCTION) {
                         // set declared in function flag

@@ -27,29 +27,14 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
 
     // check if target is an array
     if (target_type != SymbolType::Builtin::ANY) {
-        bool is_array = false;
-
-        /*while (target_type != nullptr && target_type->GetTypeClass() == TYPE_ALIAS) {
-            target_type = target_type->GetBaseType();
-        }*/
-
-        if (target_type == SymbolType::Builtin::ARRAY) {
-            is_array = true;
-        } else if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-            // type is not Array, so check base class if it is a generic instance
-            // e.g Array(Int)
-            
-            auto base = target_type->GetBaseType();
-
-            if (base == SymbolType::Builtin::ARRAY || base == SymbolType::Builtin::VAR_ARGS) {
-                is_array = true;
-            }
-        }
-
-        if (!is_array) {
+        if (!target_type->IsArrayType()) {
             // not an array type
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_not_an_array, m_location, target_type->GetName()));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_not_an_array,
+                m_location,
+                target_type->GetName()
+            ));
         }
     }
 }
@@ -142,13 +127,18 @@ SymbolTypePtr_t AstArrayAccess::GetSymbolType() const
     ASSERT(m_target != nullptr);
 
     SymbolTypePtr_t target_type = m_target->GetSymbolType();
+    ASSERT(target_type != nullptr);
 
     if (target_type->GetTypeClass() == TYPE_ARRAY) {
         SymbolTypePtr_t held_type = SymbolType::Builtin::UNDEFINED;
+
         if (target_type->GetGenericInstanceInfo().m_generic_args.size() == 1) {
-            held_type = target_type->GetGenericInstanceInfo().m_generic_args[0].second;
+            held_type = target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
             // todo: tuple?
         }
+
+        ASSERT(held_type != nullptr);
+
         return held_type;
     }
 

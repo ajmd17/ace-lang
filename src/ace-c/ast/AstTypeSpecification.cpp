@@ -24,10 +24,10 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr && mod != nullptr);
 
-    std::vector<std::pair<std::string, SymbolTypePtr_t>> generic_types;
+    std::vector<GenericInstanceTypeInfo::Arg> generic_types;
 
     for (auto &param : m_generic_params) {
-        if (param) {
+        if (param != nullptr) {
             param->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
             if (param->GetSymbolType()) {
                 generic_types.push_back({
@@ -44,7 +44,6 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
     // check user-defined types
     if (!m_right) {
         if (SymbolTypePtr_t symbol_type = mod->LookupSymbolType(m_left)) {
-
             m_original_type = symbol_type;
 
             while (symbol_type != nullptr && symbol_type->GetTypeClass() == TYPE_ALIAS) {
@@ -76,7 +75,6 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                         if (symbol_type->GetGenericInfo().m_num_parameters == -1 ||
                             symbol_type->GetGenericInfo().m_num_parameters == generic_types.size())
                         {
-
                             // open the scope for data members
                             mod->m_scopes.Open(Scope());
 
@@ -88,7 +86,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
                             {
 
-                                if (auto &gen = generic_types[i].second) {
+                                if (const SymbolTypePtr_t &gen = generic_types[i].m_type) {
                                     SymbolTypePtr_t param_type = SymbolType::GenericParameter(
                                         symbol_type->GetGenericInfo().m_params[i]->GetName(),
                                         gen /* set substitution to the given type */
@@ -99,9 +97,11 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 }
                             }
 
-                            auto new_instance = SymbolType::GenericInstance(
+                            SymbolTypePtr_t new_instance = SymbolType::GenericInstance(
                                 symbol_type,
-                                GenericInstanceTypeInfo { generic_types }
+                                GenericInstanceTypeInfo {
+                                    generic_types
+                                }
                             );
 
                             // accept all members
@@ -128,9 +128,13 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                             visitor->GetCompilationUnit()->GetCurrentModule()->
                                 m_scopes.Root().GetIdentifierTable().AddSymbolType(new_instance);
                         } else {
-                            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                                CompilerError(Level_fatal, Msg_generic_parameters_missing, m_location,
-                                    symbol_type->GetName(), symbol_type->GetGenericInfo().m_num_parameters));
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                                LEVEL_ERROR,
+                                Msg_generic_parameters_missing,
+                                m_location,
+                                symbol_type->GetName(),
+                                symbol_type->GetGenericInfo().m_num_parameters
+                            ));
                         }
                     }
                 } else {
@@ -139,9 +143,13 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                         // allow user to omit parameters
                         m_symbol_type = symbol_type;
                     } else {
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(
-                            CompilerError(Level_fatal, Msg_generic_parameters_missing, m_location,
-                                symbol_type->GetName(), symbol_type->GetGenericInfo().m_num_parameters));
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_generic_parameters_missing,
+                            m_location,
+                            symbol_type->GetName(),
+                            symbol_type->GetGenericInfo().m_num_parameters
+                        ));
                     }
                 }
             } else {
@@ -149,16 +157,23 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 
                 if (!m_generic_params.empty()) {
                     // not a generic type but generic params supplied
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_type_not_generic,
-                            m_location, symbol_type->GetName()));
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_type_not_generic,
+                        m_location,
+                        symbol_type->GetName()
+                    ));
                 }
             }
 
         } else {
             // error, unknown type
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_undefined_type, m_location, m_left));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_undefined_type,
+                m_location,
+                m_left
+            ));
         }
 
 
@@ -171,11 +186,11 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 // same name, maybe the user was confused
                 if (mod->LookUpIdentifier(m_left, false)) {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_expected_type_got_identifier, m_location, m_left));
+                        CompilerError(LEVEL_ERROR, Msg_expected_type_got_identifier, m_location, m_left));
                 } else {
                     // error, unknown type
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_undefined_type, m_location, m_left));
+                        CompilerError(LEVEL_ERROR, Msg_undefined_type, m_location, m_left));
                 }
             }
         }*/
@@ -209,12 +224,15 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
         if (left_mod) {
             // accept the right-hand side
             m_right->Visit(visitor, left_mod);
-
             m_symbol_type = m_right->GetSymbolType();
         } else {
             // did not find module
-            CompilerError err(Level_fatal, Msg_unknown_module, m_location, m_left);
-            visitor->GetCompilationUnit()->GetErrorList().AddError(err);
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_unknown_module,
+                m_location,
+                m_left
+            ));
         }
     }
 }

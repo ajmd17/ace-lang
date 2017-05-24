@@ -45,7 +45,7 @@ public:
     SymbolTypePtr_t LookupSymbolType(const std::string &name); 
     /** Look up an instance of a generic type with the given parameters */
     SymbolTypePtr_t LookupGenericInstance(const SymbolTypePtr_t &base, 
-        const std::vector<std::pair<std::string, SymbolTypePtr_t>> &params);
+        const std::vector<GenericInstanceTypeInfo::Arg> &params);
 
     Tree<Scope> m_scopes;
 

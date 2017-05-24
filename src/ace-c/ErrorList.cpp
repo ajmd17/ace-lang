@@ -13,7 +13,7 @@ bool ErrorList::HasFatalErrors() const
 {
     if (!m_errors.empty()) {
         for (const CompilerError &error : m_errors) {
-            if (error.GetLevel() == Level_fatal) {
+            if (error.GetLevel() == LEVEL_ERROR) {
                 return true;
             }
         }

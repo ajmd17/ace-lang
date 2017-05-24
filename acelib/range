@@ -1,0 +1,9 @@
+module range {
+  make_range = (first: Number, last: Number, step: Number = 1) {
+    r: Range
+    r.first = first
+    r.last = last
+    r.step = step
+    return r
+  }
+}

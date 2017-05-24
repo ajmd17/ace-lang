@@ -57,6 +57,8 @@ public:
     int m_module_index;
 
 private:
+    std::string m_exec_path;
+
     ErrorList m_error_list;
     InstructionStream m_instruction_stream;
     AstNodeBuilder m_ast_node_builder;

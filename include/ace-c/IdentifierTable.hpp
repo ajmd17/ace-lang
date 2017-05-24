@@ -31,7 +31,8 @@ public:
     SymbolTypePtr_t LookupSymbolType(const std::string &name) const;
     /** Look up an instance of a generic type, with the given parameters*/
     SymbolTypePtr_t LookupGenericInstance(const SymbolTypePtr_t &base, 
-        const std::vector<std::pair<std::string, SymbolTypePtr_t>> &params) const;
+        const std::vector<GenericInstanceTypeInfo::Arg> &params) const;
+        
     void AddSymbolType(const SymbolTypePtr_t &type);
 
 private:

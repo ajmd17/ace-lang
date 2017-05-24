@@ -22,30 +22,28 @@ AstTypeOfExpression::AstTypeOfExpression(
 void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-
     m_expr->Visit(visitor, mod);
     
     SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
     ASSERT(expr_type != nullptr);
 
-    if (expr_type == SymbolType::Builtin::ANY) {
+   /* if (expr_type == SymbolType::Builtin::ANY) {
         // add runtime::typeof call
         m_runtime_typeof_call = visitor->GetCompilationUnit()->GetAstNodeBuilder()
-        .Module("runtime")
-        .Function("typeof")
-        .Call({
-            std::shared_ptr<AstArgument>((new AstArgument(
-                m_expr,
-                false,
-                "",
-                SourceLocation::eof
-            )))
-        });
+            .Module("runtime")
+            .Function("typeof")
+            .Call({
+                std::shared_ptr<AstArgument>((new AstArgument(
+                    m_expr,
+                    false,
+                    "",
+                    SourceLocation::eof
+                )))
+            });
 
         ASSERT(m_runtime_typeof_call != nullptr);
-
         m_runtime_typeof_call->Visit(visitor, mod);
-    }
+    //}*/
 }
 
 void AstTypeOfExpression::Build(AstVisitor *visitor, Module *mod)
@@ -61,7 +59,6 @@ void AstTypeOfExpression::Build(AstVisitor *visitor, Module *mod)
         std::string expr_type_name = expr_type->GetName();
 
         // simply add a string representing the type
-        // TODO: if type is 'Any' do a runtime type check
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

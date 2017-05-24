@@ -25,6 +25,8 @@ public:
         { m_args.push_back(arg); }
     inline const std::vector<std::shared_ptr<AstArgument>> &GetArguments() const
         { return m_args; }
+    inline void SetArguments(const std::vector<std::shared_ptr<AstArgument>> &args)
+        { m_args = args; }
 
     inline void SetArgumentOrdering(const std::vector<int> &arg_ordering)
         { m_arg_ordering = arg_ordering; }

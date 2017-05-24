@@ -22,8 +22,12 @@ void AstModuleDeclaration::PerformLookup(AstVisitor *visitor)
 {
     // make sure this module was not already declared/imported
     if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
-        visitor->GetCompilationUnit()->GetErrorList().AddError(
-            CompilerError(Level_fatal, Msg_module_already_defined, m_location, m_name));
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_module_already_defined,
+            m_location,
+            m_name
+        ));
     } else {
         m_module.reset(new Module(m_name, m_location));
     }
@@ -31,11 +35,11 @@ void AstModuleDeclaration::PerformLookup(AstVisitor *visitor)
 
 void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
-    if (!m_module) {
+    if (m_module == nullptr) {
         PerformLookup(visitor);
     }
 
-    if (m_module) {
+    if (m_module != nullptr) {
         // add this module to the compilation unit
         visitor->GetCompilationUnit()->m_module_tree.Open(m_module.get());
         // set the link to the module in the tree

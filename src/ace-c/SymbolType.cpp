@@ -212,12 +212,13 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
 
             // check each substituted parameter
             for (size_t i = 0; i < m_generic_instance_info.m_generic_args.size(); i++) {
-                ASSERT(m_generic_instance_info.m_generic_args[i].second != nullptr);
-                ASSERT(other.m_generic_instance_info.m_generic_args[i].second != nullptr);
+                const SymbolTypePtr_t &instance_arg_type = m_generic_instance_info.m_generic_args[i].m_type;
+                const SymbolTypePtr_t &other_arg_type = other.m_generic_instance_info.m_generic_args[i].m_type;
 
-                if (!m_generic_instance_info.m_generic_args[i].second->TypeEqual(
-                    *other.m_generic_instance_info.m_generic_args[i].second
-                )) {
+                ASSERT(instance_arg_type != nullptr);
+                ASSERT(other_arg_type != nullptr);
+
+                if (!instance_arg_type->TypeEqual(*other_arg_type)) {
                     return false;
                 }
             }
@@ -310,14 +311,16 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
 
                 // check each substituted parameter
                 for (size_t i = 0; i < m_generic_instance_info.m_generic_args.size(); i++) {
-                    auto &param_type = m_generic_instance_info.m_generic_args[i].second;
-                    auto &other_param_type = right.m_generic_instance_info.m_generic_args[i].second;
+                    const SymbolTypePtr_t &param_type = m_generic_instance_info.m_generic_args[i].m_type;
+                    const SymbolTypePtr_t &other_param_type = right.m_generic_instance_info.m_generic_args[i].m_type;
 
                     ASSERT(param_type != nullptr);
                     ASSERT(other_param_type != nullptr);
 
                     if (param_type != other_param_type && 
-                        !param_type->TypeCompatible(*other_param_type, strict_numbers)) {
+                        !param_type->TypeEqual(*other_param_type))
+                    {
+                        //!param_type->TypeCompatible(*other_param_type, strict_numbers)) {
                         return false;
                     }
                 }
@@ -334,9 +337,12 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
                     if (right.TypeEqual(*SymbolType::Builtin::NULL_TYPE)) {
                         return true;
                     } else {
-                        auto &held_type = m_generic_instance_info.m_generic_args[0].second;
+                        const SymbolTypePtr_t &held_type = m_generic_instance_info.m_generic_args[0].m_type;
                         ASSERT(held_type != nullptr);
-                        return held_type->TypeCompatible(right, strict_numbers);
+                        return held_type->TypeCompatible(
+                            right,
+                            strict_numbers
+                        );
                     }
                 }
 
@@ -387,6 +393,26 @@ const SymbolTypePtr_t SymbolType::FindMember(const std::string &name) const
     }
 
     return nullptr;
+}
+
+bool SymbolType::IsArrayType() const
+{
+    // compare directly to ARRAY type
+    if (this == SymbolType::Builtin::ARRAY.get()) {
+        return true;
+    } else if (m_type_class == TYPE_GENERIC_INSTANCE) {
+        // type is not Array, so check base class if it is a generic instance
+        // e.g Array(Int)
+        if (const SymbolTypePtr_t base = m_base.lock()) {
+            if (base == SymbolType::Builtin::ARRAY ||
+                base == SymbolType::Builtin::VAR_ARGS)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 SymbolTypePtr_t SymbolType::Alias(
@@ -477,33 +503,52 @@ SymbolTypePtr_t SymbolType::GenericInstance(
     ASSERT(base != nullptr);
     ASSERT(base->GetTypeClass() == TYPE_GENERIC);
 
-    bool has_return_type = false;
+    std::string name;
     std::string return_type_name;
+    bool has_return_type = false;
 
-    std::string name = base->GetName();
     if (!info.m_generic_args.empty()) {
-        name += "(";
+        if (base == Builtin::ARRAY) {
+            ASSERT(!info.m_generic_args.empty());
 
-        for (size_t i = 0; i < info.m_generic_args.size(); i++) {
-            ASSERT(info.m_generic_args[i].second != nullptr);
+            const SymbolTypePtr_t &held_type = info.m_generic_args.front().m_type;
+            ASSERT(held_type != nullptr);
 
-            if (info.m_generic_args[i].first == "@return") {
-                has_return_type = true;
-                return_type_name = info.m_generic_args[i].second->GetName();
-            } else {
-                name += info.m_generic_args[i].first;
-                name += ": ";
-                name += info.m_generic_args[i].second->GetName();
-                if (i != info.m_generic_args.size() - 1) {
-                    name += ", ";
+            name = held_type->GetName() + "[]";
+        } else if (base == Builtin::VAR_ARGS) {
+            ASSERT(!info.m_generic_args.empty());
+
+            const SymbolTypePtr_t &held_type = info.m_generic_args.front().m_type;
+            ASSERT(held_type != nullptr);
+
+            name = held_type->GetName() + "...";
+        } else {
+            name = base->GetName() + "(";
+
+            for (size_t i = 0; i < info.m_generic_args.size(); i++) {
+                const std::string &generic_arg_name = info.m_generic_args[i].m_name;
+                const SymbolTypePtr_t &generic_arg_type = info.m_generic_args[i].m_type;
+
+                ASSERT(generic_arg_type != nullptr);
+
+                if (generic_arg_name == "@return") {
+                    has_return_type = true;
+                    return_type_name = generic_arg_type->GetName();
+                } else {
+                    name += generic_arg_name;
+                    name += ": ";
+                    name += generic_arg_type->GetName();
+                    if (i != info.m_generic_args.size() - 1) {
+                        name += ", ";
+                    }
                 }
             }
-        }
 
-        name += ")";
+            name += ")";
 
-        if (has_return_type) {
-            name += " => " + return_type_name;
+            if (has_return_type) {
+                name += " -> " + return_type_name;
+            }
         }
     }
 
@@ -531,9 +576,9 @@ SymbolTypePtr_t SymbolType::GenericInstance(
 
                     members.push_back(SymbolMember_t(
                         std::get<0>(member),
-                        info.m_generic_args[i].second,
-                        default_value)
-                    );
+                        info.m_generic_args[i].m_type,
+                        default_value
+                    ));
 
                     substituted = true;
                 }

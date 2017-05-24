@@ -1,7 +1,6 @@
 #include <ace-c/ast/AstUnaryExpression.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstConstant.hpp>
-#include <ace-c/ast/AstMemberAccess.hpp>
 #include <ace-c/Operator.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/emit/StaticObject.hpp>
@@ -52,38 +51,38 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
         visitor->Assert((type == SymbolType::Builtin::INT || 
             type == SymbolType::Builtin::NUMBER ||
             type == SymbolType::Builtin::ANY),
-            CompilerError(Level_fatal, Msg_bitwise_operand_must_be_int, m_target->GetLocation(), type->GetName()));
+            CompilerError(LEVEL_ERROR, Msg_bitwise_operand_must_be_int, m_target->GetLocation(), type->GetName()));
     } else if (m_op->GetType() & ARITHMETIC) {
         visitor->Assert(type == SymbolType::Builtin::INT ||
             type == SymbolType::Builtin::FLOAT ||
             type == SymbolType::Builtin::NUMBER ||
             type == SymbolType::Builtin::ANY,
-            CompilerError(Level_fatal, Msg_invalid_operator_for_type, m_target->GetLocation(), m_op->ToString(), type->GetName()));
+            CompilerError(LEVEL_ERROR, Msg_invalid_operator_for_type, m_target->GetLocation(), m_op->ToString(), type->GetName()));
     }
 
     if (m_op->ModifiesValue()) {
         AstVariable *target_as_var = nullptr;
-        // check member access first
+        /*// check member access first
         if (AstMemberAccess *target_as_mem = dynamic_cast<AstMemberAccess*>(m_target.get())) {
             AstIdentifier *last = target_as_mem->GetLast().get();
             target_as_var = dynamic_cast<AstVariable*>(last);
-        } else {
+        } else {*/
             target_as_var = dynamic_cast<AstVariable*>(m_target.get());
-        }
+        //}
 
         if (target_as_var) {
             if (target_as_var->GetProperties().GetIdentifier()) {
                 // make sure we are not modifying a const
                 if (target_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(Level_fatal, Msg_const_modified,
+                        CompilerError(LEVEL_ERROR, Msg_const_modified,
                             m_target->GetLocation(), target_as_var->GetName()));
                 }
             }
         } else {
             // cannot modify an rvalue
             visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(Level_fatal, Msg_cannot_modify_rvalue,
+                CompilerError(LEVEL_ERROR, Msg_cannot_modify_rvalue,
                     m_target->GetLocation()));
         }
     }

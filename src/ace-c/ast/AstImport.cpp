@@ -40,6 +40,8 @@ void AstImport::CopyModules(
 
     // add this module to the compilation unit
     visitor->GetCompilationUnit()->m_module_tree.Open(mod.get());
+    // open scope for module
+    //mod->m_scopes.Open(Scope());
 
     if (update_tree_link) {
         mod->SetImportTreeLink(visitor->GetCompilationUnit()->m_module_tree.TopNode());
@@ -79,6 +81,9 @@ void AstImport::CopyModules(
 
     // copy all nested modules
     copy_nodes(mod->GetImportTreeLink());
+
+    // close scope for module
+    //mod->m_scopes.Close();
 
     // close module
     visitor->GetCompilationUnit()->m_module_tree.Close();

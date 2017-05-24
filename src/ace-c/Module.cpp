@@ -10,6 +10,24 @@ Module::Module(const std::string &name, const SourceLocation &location)
 {
 }
 
+Module *Module::LookupNestedModule(const std::string &name)
+{
+    ASSERT(m_tree_link != nullptr);
+
+    // search siblings of the current module,
+    // rather than global lookup.
+    for (auto *sibling : m_tree_link->m_siblings) {
+        ASSERT(sibling != nullptr);
+        ASSERT(sibling->m_value != nullptr);
+        
+        if (sibling->m_value->GetName() == name) {
+            return sibling->m_value;
+        }
+    }
+
+    return nullptr;
+}
+
 Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_only)
 {
     TreeNode<Scope> *top = m_scopes.TopNode();
@@ -70,12 +88,13 @@ Identifier *Module::LookUpIdentifierDepth(const std::string &name, int depth_lev
 SymbolTypePtr_t Module::LookupSymbolType(const std::string &name)
 {
     return PerformLookup(
-    [&name](TreeNode<Scope> *top) {
-        return top->m_value.GetIdentifierTable().LookupSymbolType(name);
-    },
-    [&name](Module *mod) {
-        return mod->LookupSymbolType(name);
-    });
+        [&name](TreeNode<Scope> *top) {
+            return top->m_value.GetIdentifierTable().LookupSymbolType(name);
+        },
+        [&name](Module *mod) {
+            return mod->LookupSymbolType(name);
+        }
+    );
 }
 
 SymbolTypePtr_t Module::LookupGenericInstance(

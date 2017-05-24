@@ -13,7 +13,11 @@ CompilationUnit::CompilationUnit()
           SourceLocation::eof
       ))
 {
-    m_global_module->m_scopes.Open(Scope());
+    //m_module_tree.Open(m_global_module.get());
+    m_global_module->SetImportTreeLink(m_module_tree.TopNode());
+
+    // open global module scope
+    //m_global_module->m_scopes.Open(Scope());
 
     Scope &top = m_global_module->m_scopes.Top();
     top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::ANY);
@@ -34,7 +38,11 @@ CompilationUnit::CompilationUnit()
 
 CompilationUnit::~CompilationUnit()
 {
-    m_global_module->m_scopes.Close();
+    // close global module scopes
+    //m_global_module->m_scopes.Close();
+
+    // close global module
+    //m_module_tree.Close();
 }
 
 void CompilationUnit::RegisterType(SymbolTypePtr_t &type_ptr)

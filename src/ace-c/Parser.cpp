@@ -966,20 +966,19 @@ std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
     if (Token token = ExpectKeyword(Keyword_if, true)) {
         SourceLocation cond_location = CurrentLocation();
 
-        std::shared_ptr<AstExpression> conditional = ParseExpression();
-        if (!conditional) {
+        std::shared_ptr<AstExpression> conditional;
+        if (!(conditional = ParseExpression())) {
             return nullptr;
         }
 
-        std::shared_ptr<AstBlock> block = ParseBlock();
-        if (!block) {
+        std::shared_ptr<AstBlock> block;
+        if (!(block = ParseBlock())) {
             return nullptr;
         }
 
         std::shared_ptr<AstBlock> else_block = nullptr;
         // parse else statement if the "else" keyword is found
-        Token else_token = MatchKeyword(Keyword_else, true);
-        if (else_token) {
+        if (Token else_token = MatchKeyword(Keyword_else, true)) {
             // check for "if" keyword for else-if
             if (MatchKeyword(Keyword_if, false)) {
                 else_block = std::shared_ptr<AstBlock>(new AstBlock(else_token.GetLocation()));
@@ -990,9 +989,12 @@ std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
             }
         }
 
-        return std::shared_ptr<AstIfStatement>(
-            new AstIfStatement(conditional, block, else_block,
-                token.GetLocation()));
+        return std::shared_ptr<AstIfStatement>(new AstIfStatement(
+            conditional,
+            block,
+            else_block,
+            token.GetLocation()
+        ));
     }
 
     return nullptr;
@@ -1002,21 +1004,23 @@ std::shared_ptr<AstWhileLoop> Parser::ParseWhileLoop()
 {
     if (Token token = ExpectKeyword(Keyword_while, true)) {
         SourceLocation cond_location = CurrentLocation();
-        std::shared_ptr<AstExpression> conditional = ParseExpression();
-        std::shared_ptr<AstBlock> block = ParseBlock();
 
-        if (!conditional) {
-            CompilerError error(LEVEL_ERROR, Msg_illegal_expression, cond_location);
-            m_compilation_unit->GetErrorList().AddError(error);
+        std::shared_ptr<AstExpression> conditional;
+        std::shared_ptr<AstBlock> block;
+
+        if (!(conditional = ParseExpression())) {
             return nullptr;
         }
 
-        if (!block) {
+        if (!(block = ParseBlock())) {
             return nullptr;
         }
 
-        return std::shared_ptr<AstWhileLoop>(
-            new AstWhileLoop(conditional, block, token.GetLocation()));
+        return std::shared_ptr<AstWhileLoop>(new AstWhileLoop(
+            conditional,
+            block,
+            token.GetLocation()
+        ));
     }
 
     return nullptr;
@@ -1033,9 +1037,7 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
             if (auto expr = ParseExpression()) {
                 arguments.push_back(expr);
             } else {
-                // expression or statement could not be evaluated
-                CompilerError error(LEVEL_ERROR, Msg_illegal_expression, loc);
-                m_compilation_unit->GetErrorList().AddError(error);
+                return nullptr;
             }
 
             if (!Match(TK_COMMA, true)) {
@@ -1043,8 +1045,10 @@ std::shared_ptr<AstPrintStatement> Parser::ParsePrintStatement()
             }
         }
 
-        return std::shared_ptr<AstPrintStatement>(
-            new AstPrintStatement(arguments, token.GetLocation()));
+        return std::shared_ptr<AstPrintStatement>(new AstPrintStatement(
+            arguments,
+            token.GetLocation()
+        ));
     }
 
     return nullptr;
@@ -1097,8 +1101,12 @@ std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
                 }
             }
 
-            left = std::shared_ptr<AstBinaryExpression>(
-                new AstBinaryExpression(left, right, op, token.GetLocation()));
+            left = std::shared_ptr<AstBinaryExpression>(new AstBinaryExpression(
+                left,
+                right,
+                op,
+                token.GetLocation()
+            ));
         }
     }
 
@@ -1112,16 +1120,22 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
         const Operator *op = nullptr;
         if (Operator::IsUnaryOperator(token.GetValue(), op)) {
             if (auto term = ParseTerm()) {
-                return std::shared_ptr<AstUnaryExpression>(
-                    new AstUnaryExpression(term, op, token.GetLocation()));
+                return std::shared_ptr<AstUnaryExpression>(new AstUnaryExpression(
+                    term,
+                    op,
+                    token.GetLocation()
+                ));
             }
             
             return nullptr;
         } else {
             // internal error: operator not defined
-            CompilerError error(LEVEL_ERROR,
-                Msg_illegal_operator, token.GetLocation(), token.GetValue());
-            m_compilation_unit->GetErrorList().AddError(error);
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_illegal_operator,
+                token.GetLocation(),
+                token.GetValue()
+            ));
         }
     }
 
@@ -1758,13 +1772,20 @@ std::shared_ptr<AstFileImport> Parser::ParseFileImport()
     return nullptr;
 }
 
-std::shared_ptr<AstModuleImport> Parser::ParseModuleImport()
+std::shared_ptr<AstModuleImport> Parser::ParseModuleImport(bool allow_braces)
 {
     const SourceLocation location = CurrentLocation();
 
-    if (auto mod_access = ParseModuleAccess()) {
+    if (Token mod_name = Expect(TK_IDENT, true)) {
+        std::shared_ptr<AstModuleImport> right;
+
+        if (Match(TK_DOUBLE_COLON, true)) {
+            right = ParseModuleImport(true);
+        }
+
         return std::shared_ptr<AstModuleImport>(new AstModuleImport(
-            mod_access,
+            mod_name.GetValue(),
+            right,
             location
         ));
     }

@@ -28,6 +28,9 @@ public:
     inline const TreeNode<Module*> *GetImportTreeLink() const { return m_tree_link; }
     inline void SetImportTreeLink(TreeNode<Module*> *tree_link) { m_tree_link = tree_link; }
 
+    /** Look up a child module of this module */
+    Module *LookupNestedModule(const std::string &name);
+
     /** Check to see if the identifier exists in multiple scopes, starting
         from the currently opened scope.
         If this_scope_only is set to true, only the current scope will be

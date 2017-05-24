@@ -67,12 +67,18 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
         mod = m_module.get();
         ASSERT(mod == visitor->GetCompilationUnit()->GetCurrentModule());
 
+        // open scope for module
+        //mod->m_scopes.Open(Scope());
+
         // visit all children
         for (auto &child : m_children) {
             if (child) {
                 child->Visit(visitor, mod);
             }
         }
+
+        // close scope for module
+        //mod->m_scopes.Close();
 
         // close this module
         visitor->GetCompilationUnit()->m_module_tree.Close();

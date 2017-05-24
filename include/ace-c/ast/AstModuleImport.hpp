@@ -8,7 +8,8 @@
 class AstModuleImport : public AstImport {
 public:
     AstModuleImport(
-      const std::shared_ptr<AstModuleAccess> &mod_access,
+      const std::string &mod_name,
+      const std::shared_ptr<AstModuleImport> &right,
       const SourceLocation &location);
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
@@ -16,12 +17,14 @@ public:
     virtual Pointer<AstStatement> Clone() const override;
 
 protected:
-    std::shared_ptr<AstModuleAccess> m_mod_access;
+    std::string m_mod_name;
+    std::shared_ptr<AstModuleImport> m_right;
 
     inline Pointer<AstModuleImport> CloneImpl() const
     {
         return Pointer<AstModuleImport>(new AstModuleImport(
-            CloneAstNode(m_mod_access),
+            m_mod_name,
+            CloneAstNode(m_right),
             m_location
         ));
     }

@@ -27,18 +27,7 @@ void AstModuleAccess::PerformLookup(AstVisitor *visitor, Module *mod)
 {
     if (m_is_chained) {
         ASSERT(mod != nullptr);
-        ASSERT(mod->GetImportTreeLink() != nullptr);
-
-        // search siblings of the current module,
-        // rather than global lookup.
-        for (auto *sibling : mod->GetImportTreeLink()->m_siblings) {
-            ASSERT(sibling != nullptr);
-            ASSERT(sibling->m_value != nullptr);
-            
-            if (sibling->m_value->GetName() == m_target) {
-                m_mod_access = sibling->m_value;
-            }
-        }
+        m_mod_access = mod->LookupNestedModule(m_target);
     } else {
         m_mod_access = visitor->GetCompilationUnit()->LookupModule(m_target);
     }
@@ -58,7 +47,7 @@ void AstModuleAccess::Visit(AstVisitor *visitor, Module *mod)
     }
 
     // check modules for one with the same name
-    if (m_mod_access) {
+    if (m_mod_access != nullptr) {
         m_expr->Visit(visitor, m_mod_access);
     } else {
         CompilerError err(LEVEL_ERROR, Msg_unknown_module, m_location, m_target);

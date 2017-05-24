@@ -139,7 +139,7 @@ private:
     std::shared_ptr<AstStatement> ParseTypeDefinition();
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstFileImport> ParseFileImport();
-    std::shared_ptr<AstModuleImport> ParseModuleImport();
+    std::shared_ptr<AstModuleImport> ParseModuleImport(bool allow_braces = false);
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
 };
 

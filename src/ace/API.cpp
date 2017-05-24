@@ -26,8 +26,10 @@ static Module *GetModule(CompilationUnit *compilation_unit, const std::string &m
     return nullptr;
 }
 
-static Identifier *CreateIdentifier(CompilationUnit *compilation_unit,
-    Module *mod, const std::string &name)
+static Identifier *CreateIdentifier(
+    CompilationUnit *compilation_unit,
+    Module *mod,
+    const std::string &name)
 {
     ASSERT(compilation_unit != nullptr);
     ASSERT(mod != nullptr);
@@ -130,6 +132,9 @@ void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
         compilation_unit->m_module_tree.Open(mod);
         // set the link to the module in the tree
         mod->SetImportTreeLink(compilation_unit->m_module_tree.TopNode());
+
+        // open a new scope for this module
+        //mod->m_scopes.Open(Scope());
     }
 
     for (auto &def : m_variable_defs) {
@@ -145,6 +150,9 @@ void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
     }
 
     if (close_mod) {
+        ASSERT(mod != nullptr);
+        // close scope for module
+       // mod->m_scopes.Close();
         // close this module
         compilation_unit->m_module_tree.Close();
     }

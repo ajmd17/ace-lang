@@ -21,7 +21,7 @@ void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
         // if the identifier was not found,
         // look in the global module to see if it is a global function.
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_VARIABLE);
-    } else if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
+    } else if (mod->LookupNestedModule(m_name) != nullptr) {
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_MODULE);
     } else if (mod->LookupSymbolType(m_name)) {
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_TYPE);

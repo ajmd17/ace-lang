@@ -35,7 +35,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             m_name
         ));
     } else {
-        if (m_assignment) {
+        if (m_assignment != nullptr) {
             m_real_assignment = m_assignment;
         }
 
@@ -47,7 +47,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         // with an empty array of type Array(Any)
         bool type_strict = true;
 
-        if (m_type_specification) {
+        if (m_type_specification != nullptr) {
             m_type_specification->Visit(visitor, mod);
 
             symbol_type = m_type_specification->GetSymbolType();
@@ -61,7 +61,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             }
         }
 
-        if (m_real_assignment) {
+        if (m_real_assignment != nullptr) {
             if (!m_assignment_already_visited) {
                 // visit assignment
                 m_real_assignment->Visit(visitor, mod);
@@ -71,7 +71,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
             ASSERT(m_real_assignment != nullptr);
 
-            if (m_type_specification) {
+            if (m_type_specification != nullptr) {
                 // symbol_type should be the user-specified type
                 ASSERT(symbol_type != nullptr);
 

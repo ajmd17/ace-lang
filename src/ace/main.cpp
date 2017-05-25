@@ -1046,10 +1046,10 @@ void BuildLibraries(
         .Function("dump_heap", SymbolType::Builtin::NULL_TYPE, {}, Runtime_dump_heap)
         .Function("dump_stack", SymbolType::Builtin::NULL_TYPE, {}, Runtime_dump_stack)
         .Function("typeof", SymbolType::Builtin::STRING, {
-            { "x", SymbolType::Builtin::ANY }
+            { "object", SymbolType::Builtin::ANY }
         }, Runtime_typeof)
         .Function("load_library", SymbolType::Builtin::ANY, {
-            { "lib_path", SymbolType::Builtin::STRING }
+            { "path", SymbolType::Builtin::STRING }
         }, Runtime_load_library)
         .Function("load_function", SymbolType::Builtin::FUNCTION, {
             { "lib", SymbolType::Builtin::ANY },
@@ -1147,7 +1147,7 @@ void BuildLibraries(
             { "object", SymbolType::Builtin::ANY },
         }, Global_to_string)
         .Function("decompile", SymbolType::Builtin::STRING, {
-            { "function", SymbolType::Builtin::FUNCTION },
+            { "f", SymbolType::Builtin::FUNCTION },
         }, Global_decompile)
         .Function("fmt", SymbolType::Builtin::STRING, {
             { "format", SymbolType::Builtin::STRING },
@@ -1164,7 +1164,7 @@ void BuildLibraries(
             { "object", SymbolType::Builtin::ANY }
         }, Global_to_json)
         .Function("array_push", SymbolType::Builtin::ARRAY, {
-            { "array", SymbolType::Builtin::ARRAY },
+            { "arr", SymbolType::Builtin::ARRAY },
             { "args", SymbolType::GenericInstance(
                 SymbolType::Builtin::VAR_ARGS,
                 GenericInstanceTypeInfo {
@@ -1175,10 +1175,10 @@ void BuildLibraries(
             ) }
         }, Global_array_push)
         .Function("length", SymbolType::Builtin::INT, {
-            { "arraylike", SymbolType::Builtin::ANY }
+            { "object", SymbolType::Builtin::ANY }
         }, Global_length)
         .Function("call", SymbolType::Builtin::ANY, {
-            { "function", SymbolType::Builtin::FUNCTION },
+            { "f", SymbolType::Builtin::FUNCTION },
             { "args", SymbolType::GenericInstance(
                 SymbolType::Builtin::VAR_ARGS,
                 GenericInstanceTypeInfo {

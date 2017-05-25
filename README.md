@@ -5,6 +5,6 @@ It features optional typing and is inspired by languages such as C++, JavaScript
 
 ## Documentation
 
-[Installation](./docs/installation.md)
-[Syntax](./docs/syntax.md)
-[Built-in Modules](./docs/built-in-modules)
+- [Installation](./docs/installation.md)
+- [Syntax](./docs/syntax.md)
+- [Built-in Modules](./docs/built-in-modules)

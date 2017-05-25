@@ -605,6 +605,31 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
 
         break;
     }
+    case MOV_MEM_HASH:
+    {
+        uint8_t reg;
+        bs.Read(&reg);
+
+        uint32_t hash;
+        bs.Read(&hash);
+
+        uint8_t src;
+        bs.Read(&src);
+
+        if (os != nullptr) {
+            (*os)
+                << "mov_mem_hash ["
+                    << "%" << (int)reg << ", "
+                    << "u32(" << hash << "), "
+                    << "%" << (int)src
+                << "]"
+                << std::endl;
+        }
+
+        is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(code, reg, hash, src);
+
+        break;
+    }
     case MOV_ARRAYIDX:
     {
         uint8_t reg;

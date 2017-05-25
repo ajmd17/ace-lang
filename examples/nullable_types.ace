@@ -1,16 +1,16 @@
 module nullable_types {
 	// nullable types (Maybes) can be either a value of a given type,
-	// or they may also be the 'nil' value (which is of the type, 'Null').
+	// or they may also be the 'null' value (which is of the type, 'Null').
 	// before using these values it may be wise to check if it is set first.
 
 	i: Int = 5
-	// i = nil would cause an error 
+	// i = null would cause an error 
 
 	j: Int? = 5
-	j = nil // fine
+	j = null // fine
 
 	// check if Null:
-	if j == nil {
+	if j == null {
 		print "j is Null"
 	}
 
@@ -37,10 +37,10 @@ module nullable_types {
 		you.cat = new Cat
 		you.cat.name = prompt("What is it's name?")
 	} else {
-		you.cat = nil
+		you.cat = null
 	}
 
-	if you.cat != nil {
+	if you.cat != null {
 		print fmt("Your cat's name is: %", you.cat.name)
 		print you.cat.meow()
 	} else {

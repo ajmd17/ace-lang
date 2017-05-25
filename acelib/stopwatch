@@ -1,0 +1,9 @@
+module stopwatch {
+  start = () {
+
+  }
+
+  stop = () {
+    
+  }
+}

@@ -1,0 +1,18 @@
+module random {
+  type RandomGenerator {
+    seed: Int?
+    gen: Any?
+
+    next = (self) {
+      if self.gen == null {
+        if self.seed == null {
+          self.seed = 0 // time?
+        }
+
+        self.gen = random_utils::new_random(self.seed)
+      }
+
+      return random_utils::get_next(self.gen)
+    }
+  } 
+}

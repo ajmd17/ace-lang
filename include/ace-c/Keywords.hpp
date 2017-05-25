@@ -30,7 +30,7 @@ enum Keywords {
     Keyword_try,
     Keyword_catch,
     Keyword_throw,
-    Keyword_nil,
+    Keyword_null,
     Keyword_void,
     Keyword_true,
     Keyword_false,

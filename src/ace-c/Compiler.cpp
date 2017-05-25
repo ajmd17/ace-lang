@@ -74,6 +74,13 @@ void Compiler::LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t has
         Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(LOAD_MEM_HASH, rp, rp, hash);
 }
 
+void Compiler::StoreMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
+{
+    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(MOV_MEM_HASH, rp, hash, rp - 1);
+}
+
 void Compiler::LoadMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();

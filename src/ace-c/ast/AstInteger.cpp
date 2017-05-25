@@ -235,7 +235,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&&(AstConstant *right) const
     if (!right->IsNumber()) {
         // this operator is valid to compare against null
         if (dynamic_cast<AstNil*>(right)) {
-            // rhs is nil, return false
+            // rhs is null, return false
             return std::shared_ptr<AstFalse>(
                 new AstFalse(m_location));
         }
@@ -258,7 +258,7 @@ std::shared_ptr<AstConstant> AstInteger::operator||(AstConstant *right) const
     int right_true = right->IsTrue();
 
     if (!right->IsNumber()) {
-        // this operator is valid to compare against nil
+        // this operator is valid to compare against null
         if (dynamic_cast<AstNil*>(right)) {
             if (this_true == 1) {
                 return std::shared_ptr<AstTrue>(new AstTrue(m_location));

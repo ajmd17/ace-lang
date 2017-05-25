@@ -1,3 +1,0 @@
-module import_me {
-    import 'another-import.ace'
-}

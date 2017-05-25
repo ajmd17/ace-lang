@@ -62,7 +62,7 @@ void VM::Print(const Value &value)
         case Value::HEAP_POINTER: {
             if (!value.m_value.ptr) {
                 // special case for null pointers
-                utf::fputs(UTF8_CSTR("nil"), stdout);
+                utf::fputs(UTF8_CSTR("null"), stdout);
             } else if (utf::Utf8String *str = value.m_value.ptr->GetPointer<utf::Utf8String>()) {
                 // print string value
                 utf::cout << *str;
@@ -658,6 +658,42 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
 
         break;
     }
+    case MOV_MEM_HASH: {
+        uint8_t dst; bs->Read(&dst);
+        uint32_t hash; bs->Read(&hash);
+        uint8_t src; bs->Read(&src);
+
+        Value &sv = thread->m_regs[dst];
+        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
+
+        HeapValue *hv = sv.m_value.ptr;
+
+        if (hv == nullptr) {
+            m_state.ThrowException(
+                thread,
+                Exception::NullReferenceException()
+            );
+        } else {
+            if (Object *obj_ptr = hv->GetPointer<Object>()) {
+                if (Member *member = obj_ptr->LookupMemberFromHash(hash)) {
+                    // set value in member
+                    member->value = thread->m_regs[src];
+                } else {
+                    m_state.ThrowException(
+                        thread,
+                        Exception::MemberNotFoundException()
+                    );
+                }
+            } else {
+                m_state.ThrowException(
+                    thread,
+                    Exception(utf::Utf8String("not a standard object"))
+                );
+            }
+        }
+
+        break;
+    }
     case MOV_ARRAYIDX: {
         uint8_t dst; bs->Read(&dst);
         uint32_t idx; bs->Read(&idx);
@@ -947,14 +983,17 @@ void VM::HandleInstruction(ExecutionThread *thread, BytecodeStream *bs, uint8_t 
         } else if (lhs->m_type == Value::BOOLEAN && rhs->m_type == Value::BOOLEAN) {
             thread->m_regs.m_flags = (lhs->m_value.b == rhs->m_value.b) ? EQUAL 
                 : ((lhs->m_value.b > rhs->m_value.b) ? GREATER : NONE);
-        } else if (lhs->m_type == Value::HEAP_POINTER && rhs->m_type == Value::HEAP_POINTER) {
+        } else if (lhs->m_type == Value::HEAP_POINTER || rhs->m_type == Value::HEAP_POINTER) {
             CompareAsPointers(thread, lhs, rhs);
         } else if (lhs->m_type == Value::FUNCTION && rhs->m_type == Value::FUNCTION) {
             CompareAsFunctions(thread, lhs, rhs);
         } else if (lhs->m_type == Value::NATIVE_FUNCTION && rhs->m_type == Value::NATIVE_FUNCTION) {
             CompareAsNativeFunctions(thread, lhs, rhs);
         } else {
-            THROW_COMPARISON_ERROR(lhs->GetTypeString(), rhs->GetTypeString());
+            THROW_COMPARISON_ERROR(
+                lhs->GetTypeString(),
+                rhs->GetTypeString()
+            );
         }
 
         break;

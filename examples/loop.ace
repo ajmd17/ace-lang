@@ -72,8 +72,8 @@ module loop {
 	}
 	
 	/*type Range {
-		start = nil
-		end   = nil
+		start = null
+		end   = null
 	}*/
 
 	

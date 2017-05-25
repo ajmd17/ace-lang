@@ -6,8 +6,4 @@ module range {
     r.step = step
     return r
   }
-
-  module _Detail_ {
-    test = 10
-  }
 }

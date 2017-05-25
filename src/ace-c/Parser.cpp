@@ -1,4 +1,5 @@
 #include <ace-c/Parser.hpp>
+#include <ace-c/Configuration.hpp>
 
 #include <common/utf8.hpp>
 
@@ -269,7 +270,7 @@ void Parser::Parse(bool expect_module_decl)
                 }
 
                 // check for modules declared after the first
-                if (MatchKeyword(Keyword_module, false)) {
+                if (MatchKeyword(Keyword_module, false) && !MatchAhead(TK_DOT, 1)) {
                     m_ast_iterator->Push(ParseModuleDeclaration());
                 } else {
                     SourceLocation location = CurrentLocation();
@@ -295,7 +296,7 @@ void Parser::Parse(bool expect_module_decl)
             std::shared_ptr<AstStatement> stmt;
 
             // check for module declaration
-            if (MatchKeyword(Keyword_module, false)) {
+            if (MatchKeyword(Keyword_module, false) && !MatchAhead(TK_DOT, 1)) {
                 stmt = ParseModuleDeclaration();
             } else {
                 stmt = ParseStatement();
@@ -341,7 +342,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
     std::shared_ptr<AstStatement> res;
 
     if (Match(TK_KEYWORD, false)) {
-        if (MatchKeyword(Keyword_module, false)) {
+        if (MatchKeyword(Keyword_module, false) && !MatchAhead(TK_DOT, 1)) {
             auto module_decl = ParseModuleDeclaration();
             
             if (top_level) {
@@ -508,13 +509,17 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         } else {
             expr = ParseIdentifier();
         }
+    } else if (Match(TK_DOUBLE_COLON)) {
+        expr = ParseModuleAccess();
+    } else if (MatchKeyword(Keyword_module) && MatchAhead(TK_DOT, 1)) {
+        expr = ParseModuleProperty();
     } else if (MatchKeyword(Keyword_self)) {
         expr = ParseIdentifier(true);
     }  else if (MatchKeyword(Keyword_true)) {
         expr = ParseTrue();
     } else if (MatchKeyword(Keyword_false)) {
         expr = ParseFalse();
-    } else if (MatchKeyword(Keyword_nil)) {
+    } else if (MatchKeyword(Keyword_null)) {
         expr = ParseNil();
     } else if (MatchKeyword(Keyword_new)) {
         expr = ParseNewExpression();
@@ -817,24 +822,63 @@ std::shared_ptr<AstCallExpression> Parser::ParseCallExpression(std::shared_ptr<A
 
 std::shared_ptr<AstModuleAccess> Parser::ParseModuleAccess()
 {
-    Token token = Expect(TK_IDENT, true);
-    Expect(TK_DOUBLE_COLON, true);
+    const SourceLocation location = CurrentLocation();
 
-    std::shared_ptr<AstExpression> expr;
+    Token token = Token::EMPTY;
+    bool global_module_access = false;
 
-    if (MatchAhead(TK_DOUBLE_COLON, 1)) {
-        expr = ParseModuleAccess();
+    if (Match(TK_DOUBLE_COLON, true)) {
+        // global module access for prepended double colon.
+        global_module_access = true;
     } else {
-        expr = ParseIdentifier(true);
+        token = Expect(TK_IDENT, true);
+        Expect(TK_DOUBLE_COLON, true);
     }
 
-    if (!expr) {
+    if (token || global_module_access) {
+        std::shared_ptr<AstExpression> expr;
+
+        if (MatchAhead(TK_DOUBLE_COLON, 1)) {
+            expr = ParseModuleAccess();
+        } else {
+            expr = ParseIdentifier(true);
+        }
+
+        if (!expr) {
+            return nullptr;
+        }
+
+        return std::shared_ptr<AstModuleAccess>(new AstModuleAccess(
+            global_module_access
+                ? ace::compiler::Config::GLOBAL_MODULE_NAME
+                : token.GetValue(),
+            expr,
+            location
+        ));
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstModuleProperty> Parser::ParseModuleProperty()
+{
+    Token token = ExpectKeyword(Keyword_module, true);
+    if (!token) {
         return nullptr;
     }
 
-    return std::shared_ptr<AstModuleAccess>(new AstModuleAccess(
-        token.GetValue(),
-        expr,
+    Token dot = Expect(TK_DOT, true);
+    if (!dot) {
+        return nullptr;
+    }
+
+    Token ident = Expect(TK_IDENT, true);
+    if (!ident) {
+        return nullptr;
+    }
+
+    return std::shared_ptr<AstModuleProperty>(new AstModuleProperty(
+        ident.GetValue(),
         token.GetLocation()
     ));
 }
@@ -942,7 +986,7 @@ std::shared_ptr<AstFalse> Parser::ParseFalse()
 
 std::shared_ptr<AstNil> Parser::ParseNil()
 {
-    if (Token token = ExpectKeyword(Keyword_nil, true)) {
+    if (Token token = ExpectKeyword(Keyword_null, true)) {
         return std::shared_ptr<AstNil>(new AstNil(token.GetLocation()));
     }
     return nullptr;
@@ -1895,19 +1939,13 @@ std::shared_ptr<AstReturnStatement> Parser::ParseReturnStatement()
 {
     SourceLocation location = CurrentLocation();
 
-    Token token = ExpectKeyword(Keyword_return, true);
-    
-    if (token) {
-        SourceLocation expr_location = CurrentLocation();
-        auto expr = ParseExpression();
-        if (!expr) {
-            m_compilation_unit->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_illegal_expression,
-                expr_location
+    if (Token token = ExpectKeyword(Keyword_return, true)) {
+        if (auto expr = ParseExpression()) {
+            return std::shared_ptr<AstReturnStatement>(new AstReturnStatement(
+                expr,
+                location
             ));
         }
-        return std::shared_ptr<AstReturnStatement>(new AstReturnStatement(expr, location));
     }
 
     return nullptr;

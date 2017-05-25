@@ -87,7 +87,11 @@ void AstMember::Build(AstVisitor *visitor, Module *mod)
         // for Any type we will have to load from hash
         uint32_t hash = hash_fnv_1(m_field_name.c_str());
 
-        Compiler::LoadMemberFromHash(visitor, mod, hash);
+        if (m_access_mode == ACCESS_MODE_LOAD) {
+            Compiler::LoadMemberFromHash(visitor, mod, hash);
+        } else if (m_access_mode == ACCESS_MODE_STORE) {
+            Compiler::StoreMemberFromHash(visitor, mod, hash);
+        }
 
         // todo: StoreMemberFromHash
     } else {

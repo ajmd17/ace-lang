@@ -122,7 +122,7 @@ utf::Utf8String Value::ToString() const
         case Value::HEAP_POINTER:
         {
             if (!m_value.ptr) {
-                return utf::Utf8String("nil");
+                return utf::Utf8String("null");
             } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
                 return *string;
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
@@ -157,10 +157,9 @@ void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
     int n = 0;
 
     switch (m_type) {
-        case Value::HEAP_POINTER:
-        {
+        case Value::HEAP_POINTER: {
             if (!m_value.ptr) {
-                out_str += "nil";
+                out_str += "null";
             } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
                 if (add_type_name) {
                     out_str += "String(";
@@ -190,6 +189,18 @@ void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
                 }
             }
 
+            break;
+        }
+        case Value::FUNCTION: {
+            if (add_type_name) {
+                out_str += GetTypeString();
+            }
+            break;
+        }
+        case Value::NATIVE_FUNCTION: {
+            if (add_type_name) {
+                out_str += GetTypeString();
+            }
             break;
         }
         default: {

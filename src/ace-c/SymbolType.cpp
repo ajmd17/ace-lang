@@ -133,6 +133,22 @@ const SymbolTypePtr_t SymbolType::Builtin::EVENT_ARRAY = SymbolType::Generic(
     GenericTypeInfo { 1 }
 );
 
+const SymbolTypePtr_t SymbolType::Builtin::MODULE_INFO = SymbolType::Object(
+    "ModuleInfo",
+    {
+        SymbolMember_t {
+            "id",
+            SymbolType::Builtin::INT,
+            SymbolType::Builtin::INT->GetDefaultValue()
+        },
+        SymbolMember_t {
+            "name",
+            SymbolType::Builtin::STRING,
+            SymbolType::Builtin::STRING->GetDefaultValue()
+        }
+    }
+);
+
 SymbolType::SymbolType(const std::string &name, 
     SymbolTypeClass type_class, 
     const SymbolTypePtr_t &base)
@@ -393,6 +409,18 @@ const SymbolTypePtr_t SymbolType::FindMember(const std::string &name) const
     }
 
     return nullptr;
+}
+
+bool SymbolType::FindMember(const std::string &name, SymbolMember_t &out) const
+{
+    for (const SymbolMember_t &member : m_members) {
+        if (std::get<0>(member) == name) {
+            out = member;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool SymbolType::IsArrayType() const

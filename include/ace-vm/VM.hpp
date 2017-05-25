@@ -63,7 +63,10 @@ public:
 private:
     VMState m_state;
 
-    inline void CompareAsPointers(ExecutionThread *thread, Value *lhs, Value *rhs)
+    inline void CompareAsPointers(
+        ExecutionThread *thread,
+        Value *lhs,
+        Value *rhs)
     {
         HeapValue *a = lhs->m_value.ptr;
         HeapValue *b = rhs->m_value.ptr;

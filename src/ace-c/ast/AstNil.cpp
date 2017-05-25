@@ -24,7 +24,7 @@ void AstNil::Build(AstVisitor *visitor, Module *mod)
 
 void AstNil::Recreate(std::ostringstream &ss)
 {
-    ss << Keyword::ToString(Keyword_nil);
+    ss << Keyword::ToString(Keyword_null);
 }
 
 Pointer<AstStatement> AstNil::Clone() const

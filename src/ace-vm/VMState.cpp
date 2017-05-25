@@ -108,7 +108,7 @@ void VMState::GC()
 
     m_heap.Sweep();
 
-    utf::cout << "gc()\n";
+    //utf::cout << "gc()\n";
 }
 
 ExecutionThread *VMState::CreateThread()

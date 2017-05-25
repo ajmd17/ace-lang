@@ -33,6 +33,8 @@
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
 #include <common/instructions.hpp>
+#include <common/typedefs.hpp>
+#include <common/timer.hpp>
 
 #include <vector>
 #include <string>
@@ -40,9 +42,11 @@
 #include <chrono>
 #include <algorithm>
 #include <mutex>
+#include <random>
 #include <thread>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 
 using namespace ace;
 
@@ -51,6 +55,122 @@ std::mutex mtx;
 std::vector<std::thread> threads;
 
 std::string exec_path;
+
+static Timer stopwatch;
+
+void Random_new_random(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    const vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    ace::aint64 seed;
+    if (target_ptr->GetInteger(&seed)) {
+        std::mt19937_64 gen;
+        gen.seed(seed);
+
+        // create heap value for random generator
+        vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
+        ASSERT(ptr != nullptr);
+        ptr->Assign(gen);
+
+        // assign register value to the allocated object
+        vm::Value res;
+        res.m_type = vm::Value::HEAP_POINTER;
+        res.m_value.ptr = ptr;
+
+        ACE_RETURN(res);
+    } else {
+        params.state->ThrowException(
+            params.thread,
+            vm::Exception(utf::Utf8String("invalid seed value"))
+        );
+    }
+}
+
+void Random_get_next(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    const vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    if (std::mt19937_64 *gen_ptr = target_ptr->GetValue().ptr->GetPointer<std::mt19937_64>()) {
+        ace::aint64 value = (*gen_ptr)();
+
+        // assign register value to the generated value
+        vm::Value res;
+        res.m_type = vm::Value::ValueType::I64;
+        res.m_value.i64 = value;
+
+        ACE_RETURN(res);
+    } else {
+        params.state->ThrowException(
+            params.thread,
+            vm::Exception(utf::Utf8String("invalid random generator"))
+        );
+    }
+}
+
+void Random_crand(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 0);
+
+    int value = std::rand();
+
+    // assign register value to the generated value
+    vm::Value res;
+    res.m_type = vm::Value::ValueType::I32;
+    res.m_value.i32 = value;
+
+    ACE_RETURN(res);
+}
+
+void Stopwatch_start(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 0);
+
+    // start timer
+    if (std::int64_t now = stopwatch.Start()) {
+        // return the timestamp
+        vm::Value res;
+        res.m_type = vm::Value::ValueType::I64;
+        res.m_value.i64 = now;
+        ACE_RETURN(res);
+    } else {
+        params.state->ThrowException(
+            params.thread,
+            vm::Exception(utf::Utf8String("failed to start stopwatch"))
+        );
+    }
+}
+
+void Stopwatch_stop(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 0);
+
+    double elapsed = stopwatch.Elapsed();
+
+    // return the elapsed time
+    vm::Value res;
+    res.m_type = vm::Value::ValueType::F64;
+    res.m_value.d = elapsed;
+    ACE_RETURN(res);
+}
+
+void Time_now(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 0);
+
+    std::int64_t unix_timestamp = std::chrono::seconds(std::time(NULL)).count();
+
+    // return the timestamp
+    vm::Value res;
+    res.m_type = vm::Value::ValueType::I64;
+    res.m_value.i64 = unix_timestamp;
+    ACE_RETURN(res);
+}
 
 void Runtime_gc(ace::sdk::Params params)
 {
@@ -1041,6 +1161,22 @@ void BuildLibraries(
     CompilationUnit &compilation_unit,
     APIInstance &api)
 {
+    api.Module("random_utils")
+        .Function("new_random", SymbolType::Builtin::ANY, {
+            { "seed", SymbolType::Builtin::INT }
+        }, Random_new_random)
+        .Function("get_next", SymbolType::Builtin::INT, {
+            { "gen", SymbolType::Builtin::ANY }
+        }, Random_get_next)
+        .Function("crand", SymbolType::Builtin::INT, {}, Random_crand);
+
+    api.Module("stopwatch")
+        .Function("start", SymbolType::Builtin::FLOAT, {}, Stopwatch_start)
+        .Function("stop", SymbolType::Builtin::FLOAT, {}, Stopwatch_stop);
+
+    api.Module("time")
+        .Function("now", SymbolType::Builtin::INT, {}, Time_now);
+
     api.Module("runtime")
         .Function("gc", SymbolType::Builtin::NULL_TYPE, {}, Runtime_gc)
         .Function("dump_heap", SymbolType::Builtin::NULL_TYPE, {}, Runtime_dump_heap)

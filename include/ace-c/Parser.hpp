@@ -30,6 +30,7 @@
 #include <ace-c/ast/AstArgument.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstModuleAccess.hpp>
+#include <ace-c/ast/AstModuleProperty.hpp>
 #include <ace-c/ast/AstMember.hpp>
 #include <ace-c/ast/AstArrayAccess.hpp>
 #include <ace-c/ast/AstHasExpression.hpp>
@@ -97,6 +98,7 @@ private:
     std::vector<std::shared_ptr<AstArgument>> ParseArguments();
     std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
+    std::shared_ptr<AstModuleProperty> ParseModuleProperty();
     std::shared_ptr<AstMember> ParseMemberExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstHasExpression> ParseHasExpression(std::shared_ptr<AstExpression> target);

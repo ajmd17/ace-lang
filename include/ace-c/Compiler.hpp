@@ -42,6 +42,8 @@ public:
 
     static void LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash);
 
+    static void StoreMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash);
+
     static void LoadMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index);
 
     static void StoreMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index);

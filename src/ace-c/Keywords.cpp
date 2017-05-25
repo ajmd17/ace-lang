@@ -26,7 +26,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "try",      Keyword_try },
     { "catch",    Keyword_catch },
     { "throw",    Keyword_throw },
-    { "nil",      Keyword_nil },
+    { "null",     Keyword_null },
     { "void",     Keyword_void },
     { "true",     Keyword_true },
     { "false",    Keyword_false },

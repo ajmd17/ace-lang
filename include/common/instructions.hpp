@@ -126,6 +126,8 @@ enum Instructions : char {
     MOV_INDEX,      // mov_index    [u16 dst, % src]
     /* Copy register value to object member */
     MOV_MEM,        // mov_mem      [% dst_obj, u8 dst_idx, % src]
+    /* Copy register value to object member (using hashcode) */
+    MOV_MEM_HASH,   // mov_mem_hash [% dst_obj, u32 hash, % src]
     /* Copy register value to array index */
     MOV_ARRAYIDX,   // mov_arrayidx [% dst_array, u32 dst_idx, %src]
     /* Copy register value to another register */

@@ -78,6 +78,7 @@ public:
         static const SymbolTypePtr_t EVENT;
         static const SymbolTypePtr_t EVENT_IMPL;
         static const SymbolTypePtr_t EVENT_ARRAY;
+        static const SymbolTypePtr_t MODULE_INFO;
     };
 
     static SymbolTypePtr_t Alias(
@@ -192,6 +193,7 @@ public:
     inline bool operator==(const SymbolType &other) const { return TypeEqual(other); }
     inline bool operator!=(const SymbolType &other) const { return !operator==(other); }
     const SymbolTypePtr_t FindMember(const std::string &name) const;
+    bool FindMember(const std::string &name, SymbolMember_t &out) const;
     
     bool IsArrayType() const;
 

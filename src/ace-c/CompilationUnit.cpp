@@ -6,6 +6,8 @@
 
 #include <common/my_assert.hpp>
 
+#include <iostream>
+
 CompilationUnit::CompilationUnit()
     : m_module_index(0),
       m_global_module(new Module(
@@ -93,13 +95,13 @@ Module *CompilationUnit::LookupModule(const std::string &name)
     TreeNode<Module*> *top = m_module_tree.TopNode();
 
     while (top != nullptr) {
-        if (top->m_value && top->m_value->GetName() == name) {
+        if (top->m_value != nullptr && top->m_value->GetName() == name) {
             return top->m_value;
         }
 
         // look up module names in the top module's siblings
         for (auto &sibling : top->m_siblings) {
-            if (sibling && sibling->m_value) {
+            if (sibling != nullptr && sibling->m_value != nullptr) {
                 if (sibling->m_value->GetName() == name) {
                     return sibling->m_value;
                 }

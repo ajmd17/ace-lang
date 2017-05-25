@@ -16,7 +16,7 @@ public:
 
     static void CopyModules(
         AstVisitor *visitor,
-        std::shared_ptr<Module> &mod,
+        Module *mod_to_copy,
         bool check_lookup = false,
         bool update_tree_link = false);
 

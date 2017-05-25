@@ -8,7 +8,9 @@
 
 class AstDeclaration : public AstStatement {
 public:
-    AstDeclaration(const std::string &name, const SourceLocation &location);
+    AstDeclaration(
+        const std::string &name,
+        const SourceLocation &location);
     virtual ~AstDeclaration() = default;
 
     inline const std::string &GetName() const { return m_name; }

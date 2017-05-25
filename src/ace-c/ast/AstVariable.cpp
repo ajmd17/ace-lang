@@ -23,40 +23,50 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
         case IDENTIFIER_TYPE_VARIABLE: {
             ASSERT(m_properties.GetIdentifier() != nullptr);
 
-            m_properties.GetIdentifier()->IncUseCount();
+            if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS) {
+                const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
+                ASSERT(current_value != nullptr);
 
-            if (m_properties.IsInFunction()) {
-                if (m_properties.IsInPureFunction()) {
-                    // check if pure function - in a pure function, only variables from this scope may be used
-                    if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
-                        // add error that the variable must be passed as a parameter
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            LEVEL_ERROR,
-                            Msg_pure_function_scope,
-                            m_location,
-                            m_name
-                        ));
+                // set access options for this variable based on those of the current value
+                AstExpression::m_access_options = current_value->GetAccessOptions();
+
+                // if alias, accept the current value instead
+                current_value->Visit(visitor, mod);
+            } else {
+                m_properties.GetIdentifier()->IncUseCount();
+
+                if (m_properties.IsInFunction()) {
+                    if (m_properties.IsInPureFunction()) {
+                        // check if pure function - in a pure function, only variables from this scope may be used
+                        if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
+                            // add error that the variable must be passed as a parameter
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                                LEVEL_ERROR,
+                                Msg_pure_function_scope,
+                                m_location,
+                                m_name
+                            ));
+                        }
                     }
-                }
 
-                // NOTE: if we are in a function, and the variable we are loading is declared in a separate function,
-                // we will show an error message saying that the variable must be passed as a parameter to be captured.
-                // the reason for this is that any variables owned by the parent function will be immediately popped from the stack
-                // when the parent function returns. That will mean the variables used here will reference garbage.
-                // In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
-                // on the stack of /this/ function.
-                if (m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION) {
-                    // lookup the variable by depth to make sure it was declared in the current function
-                    // we do this to make sure it was declared in this scope.
-                    std::cout << "name = " << m_name << ", " << "depth = " << m_properties.GetDepth() << "\n";
-                    if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
-                        // add error that the variable must be passed as a parameter
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            LEVEL_ERROR,
-                            Msg_closure_capture_must_be_parameter,
-                            m_location,
-                            m_name
-                        ));
+                    // NOTE: if we are in a function, and the variable we are loading is declared in a separate function,
+                    // we will show an error message saying that the variable must be passed as a parameter to be captured.
+                    // the reason for this is that any variables owned by the parent function will be immediately popped from the stack
+                    // when the parent function returns. That will mean the variables used here will reference garbage.
+                    // In the near feature, it'd be possible to automatically make a copy of those variables referenced and store them
+                    // on the stack of /this/ function.
+                    if (m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION) {
+                        // lookup the variable by depth to make sure it was declared in the current function
+                        // we do this to make sure it was declared in this scope.
+                        if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
+                            // add error that the variable must be passed as a parameter
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                                LEVEL_ERROR,
+                                Msg_closure_capture_must_be_parameter,
+                                m_location,
+                                m_name
+                            ));
+                        }
                     }
                 }
             }
@@ -83,33 +93,47 @@ void AstVariable::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_properties.GetIdentifier() != nullptr);
 
-    int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-    int stack_location = m_properties.GetIdentifier()->GetStackLocation();
-    int offset = stack_size - stack_location;
+    // if alias
+    if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS) {
+        const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
+        ASSERT(current_value != nullptr);
 
-    // get active register
-    uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-    if (!(m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
-        // load globally, rather than from offset.
-        if (m_access_mode == ACCESS_MODE_LOAD) {
-            // load stack value at index into register
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint16_t>(LOAD_INDEX, rp, (uint16_t)stack_location);
-        } else if (m_access_mode == ACCESS_MODE_STORE) {
-            // store the value at the index into this local variable
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint16_t, uint8_t>(MOV_INDEX, (uint16_t)stack_location, rp - 1);
-        }
+        // if alias, accept the current value instead
+        const AccessMode current_access_mode = current_value->GetAccessMode();
+        current_value->SetAccessMode(m_access_mode);
+        current_value->Build(visitor, mod);
+        // reset access mode
+        current_value->SetAccessMode(current_access_mode);
     } else {
-        if (m_access_mode == ACCESS_MODE_LOAD) {
-            // load stack value at offset value into register
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)offset);
-        } else if (m_access_mode == ACCESS_MODE_STORE) {
-            // store the value at (rp - 1) into this local variable
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint16_t, uint8_t>(MOV_OFFSET, (uint16_t)offset, rp - 1);
+
+        int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        int stack_location = m_properties.GetIdentifier()->GetStackLocation();
+        int offset = stack_size - stack_location;
+
+        // get active register
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        if (!(m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
+            // load globally, rather than from offset.
+            if (m_access_mode == ACCESS_MODE_LOAD) {
+                // load stack value at index into register
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_INDEX, rp, (uint16_t)stack_location);
+            } else if (m_access_mode == ACCESS_MODE_STORE) {
+                // store the value at the index into this local variable
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint16_t, uint8_t>(MOV_INDEX, (uint16_t)stack_location, rp - 1);
+            }
+        } else {
+            if (m_access_mode == ACCESS_MODE_LOAD) {
+                // load stack value at offset value into register
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)offset);
+            } else if (m_access_mode == ACCESS_MODE_STORE) {
+                // store the value at (rp - 1) into this local variable
+                visitor->GetCompilationUnit()->GetInstructionStream() <<
+                    Instruction<uint8_t, uint16_t, uint8_t>(MOV_OFFSET, (uint16_t)offset, rp - 1);
+            }
         }
     }
 }

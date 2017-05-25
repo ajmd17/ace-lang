@@ -20,47 +20,45 @@ AstImport::AstImport(const SourceLocation &location)
 
 void AstImport::CopyModules(
     AstVisitor *visitor,
-    std::shared_ptr<Module> &mod,
+    Module *mod_to_copy,
     bool check_lookup,
     bool update_tree_link)
 {
     ASSERT(visitor != nullptr);
-    ASSERT(mod != nullptr);
-
+    ASSERT(mod_to_copy != nullptr);
+    
     if (check_lookup) {
-        if (visitor->GetCompilationUnit()->LookupModule(mod->GetName())) {
+        if (visitor->GetCompilationUnit()->LookupModule(mod_to_copy->GetName())) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                 LEVEL_ERROR,
                 Msg_module_already_defined,
-                mod->GetLocation(),
-                mod->GetName()
+                mod_to_copy->GetLocation(),
+                mod_to_copy->GetName()
             ));
         }
     }
 
     // add this module to the compilation unit
-    visitor->GetCompilationUnit()->m_module_tree.Open(mod.get());
+    visitor->GetCompilationUnit()->m_module_tree.Open(mod_to_copy);
     // open scope for module
     //mod->m_scopes.Open(Scope());
 
     if (update_tree_link) {
-        mod->SetImportTreeLink(visitor->GetCompilationUnit()->m_module_tree.TopNode());
+        mod_to_copy->SetImportTreeLink(visitor->GetCompilationUnit()->m_module_tree.TopNode());
     }
 
     // function to copy nested modules 
     std::function<void(TreeNode<Module*>*)> copy_nodes =
 
-    [visitor, &copy_nodes, &check_lookup, &update_tree_link]
-    (TreeNode<Module*> *link) {
+    [visitor, &copy_nodes, &check_lookup, &update_tree_link](TreeNode<Module*> *link)
+    {
         ASSERT(link != nullptr);
         ASSERT(link->m_value != nullptr);
 
         for (auto *sibling : link->m_siblings) {
-            visitor->GetCompilationUnit()->m_module_tree.Open(sibling->m_value);
+            ASSERT(sibling != nullptr);
 
-            if (update_tree_link) {
-                sibling->m_value->SetImportTreeLink(sibling);
-            }
+            bool error = false;
 
             if (check_lookup) {
                 if (visitor->GetCompilationUnit()->LookupModule(sibling->m_value->GetName())) {
@@ -70,17 +68,27 @@ void AstImport::CopyModules(
                         sibling->m_value->GetLocation(),
                         sibling->m_value->GetName()
                     ));
+
+                    error = true;
                 }
             }
 
-            copy_nodes(sibling);
+            if (!error) {
+                visitor->GetCompilationUnit()->m_module_tree.Open(sibling->m_value);
 
-            visitor->GetCompilationUnit()->m_module_tree.Close();
+                if (update_tree_link) {
+                    sibling->m_value->SetImportTreeLink(sibling);
+                }
+
+                copy_nodes(sibling);
+
+                visitor->GetCompilationUnit()->m_module_tree.Close();
+            }
         }
     };
 
     // copy all nested modules
-    copy_nodes(mod->GetImportTreeLink());
+    copy_nodes(mod_to_copy->GetImportTreeLink());
 
     // close scope for module
     //mod->m_scopes.Close();
@@ -116,7 +124,12 @@ void AstImport::PerformImport(
         // imported file found, so just re-open all
         // modules that belong to the file into this scope
         for (std::shared_ptr<Module> &mod : it->second) {
-            AstImport::CopyModules(visitor, mod);
+            AstImport::CopyModules(
+                visitor,
+                mod.get(),
+                true,
+                false
+            );
         }
     } else {
         // file hasn't been imported, so open it

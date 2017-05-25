@@ -2,7 +2,9 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 
-AstDeclaration::AstDeclaration(const std::string &name, const SourceLocation &location)
+AstDeclaration::AstDeclaration(
+    const std::string &name,
+    const SourceLocation &location)
     : AstStatement(location),
       m_name(name),
       m_identifier(nullptr)

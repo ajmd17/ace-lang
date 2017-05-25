@@ -374,6 +374,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseImpureExpression();
         } else if (MatchKeyword(Keyword_type, false)) {
             res = ParseTypeDefinition();
+        } else if (MatchKeyword(Keyword_alias, false)) {
+            res = ParseAliasDeclaration();
         } else if (MatchKeyword(Keyword_if, false)) {
             res = ParseIfStatement();
         } else if (MatchKeyword(Keyword_while, false)) {
@@ -585,8 +587,11 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
         } else {
             expr = ParseExpression();
 
-            if (Match(TK_COMMA) || Match(TK_COLON) || Match(TK_ELLIPSIS) ||
-                (Match(TK_CLOSE_PARENTH) && MatchAhead(TK_COLON, 1))) {
+            if (Match(TK_COMMA) ||
+                Match(TK_COLON) ||
+                Match(TK_ELLIPSIS) ||
+                (Match(TK_CLOSE_PARENTH) && MatchAhead(TK_COLON, 1)))
+            {
                 // go back to before open '(' found, 
                 // to allow ParseFunctionParameters() to handle it
                 m_token_stream->SetPosition(before_pos);
@@ -1764,6 +1769,35 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
     return nullptr;
 }
 
+std::shared_ptr<AstAliasDeclaration> Parser::ParseAliasDeclaration()
+{
+    const Token token = ExpectKeyword(Keyword_alias, true);
+    if (!token) {
+        return nullptr;
+    }
+
+    const Token ident = Expect(TK_IDENT, true);
+    if (!ident) {
+        return nullptr;
+    }
+
+    const Token op = ExpectOperator(&Operator::operator_assign, true);
+    if (!op) {
+        return nullptr;
+    }
+
+    auto expr = ParseExpression();
+    if (!expr) {
+        return nullptr;
+    }
+
+    return std::shared_ptr<AstAliasDeclaration>(new AstAliasDeclaration(
+        ident.GetValue(),
+        expr,
+        token.GetLocation()
+    ));
+}
+
 std::shared_ptr<AstImport> Parser::ParseImport()
 {
     if (ExpectKeyword(Keyword_import, true)) {
@@ -1793,20 +1827,63 @@ std::shared_ptr<AstFileImport> Parser::ParseFileImport()
     return nullptr;
 }
 
-std::shared_ptr<AstModuleImport> Parser::ParseModuleImport(bool allow_braces)
+std::shared_ptr<AstModuleImportPart> Parser::ParseModuleImportPart(bool allow_braces)
 {
     const SourceLocation location = CurrentLocation();
 
-    if (Token mod_name = Expect(TK_IDENT, true)) {
-        std::shared_ptr<AstModuleImport> right;
+    std::vector<std::shared_ptr<AstModuleImportPart>> parts;
 
+    if (Token ident = Expect(TK_IDENT, true)) {
         if (Match(TK_DOUBLE_COLON, true)) {
-            right = ParseModuleImport(true);
+            if (Match(TK_OPEN_BRACE, true)) {
+                while (!Match(TK_CLOSE_BRACE, false)) {
+                    std::shared_ptr<AstModuleImportPart> part = ParseModuleImportPart(false);
+
+                    if (part == nullptr) {
+                        return nullptr;
+                    }
+
+                    parts.push_back(part);
+
+                    if (!Match(TK_COMMA, true)) {
+                        break;
+                    }
+                }
+
+                Expect(TK_CLOSE_BRACE, true);
+            } else {
+                // match next
+                std::shared_ptr<AstModuleImportPart> part = ParseModuleImportPart(true);
+
+                if (part == nullptr) {
+                    return nullptr;
+                }
+
+                parts.push_back(part);
+            }
         }
 
+        return std::shared_ptr<AstModuleImportPart>(new AstModuleImportPart(
+            ident.GetValue(),
+            parts,
+            location
+        ));
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstModuleImport> Parser::ParseModuleImport()
+{
+    const SourceLocation location = CurrentLocation();
+
+    std::vector<std::shared_ptr<AstModuleImportPart>> parts;
+
+    if (auto part = ParseModuleImportPart(false)) {
+        parts.push_back(part);
+
         return std::shared_ptr<AstModuleImport>(new AstModuleImport(
-            mod_name.GetValue(),
-            right,
+            parts,
             location
         ));
     }

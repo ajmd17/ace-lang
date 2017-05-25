@@ -22,7 +22,8 @@ private:
     {
         return Pointer<AstVariable>(new AstVariable(
             m_name,
-            m_location));
+            m_location
+        ));
     }
 };
 

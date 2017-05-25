@@ -15,6 +15,7 @@
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/ast/AstTypeDefinition.hpp>
 #include <ace-c/ast/AstTypeAlias.hpp>
+#include <ace-c/ast/AstAliasDeclaration.hpp>
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstImport.hpp>
@@ -137,9 +138,11 @@ private:
     std::shared_ptr<AstTypeOfExpression> ParseTypeOfExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstStatement> ParseTypeDefinition();
+    std::shared_ptr<AstAliasDeclaration> ParseAliasDeclaration();
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstFileImport> ParseFileImport();
-    std::shared_ptr<AstModuleImport> ParseModuleImport(bool allow_braces = false);
+    std::shared_ptr<AstModuleImport> ParseModuleImport();
+    std::shared_ptr<AstModuleImportPart> ParseModuleImportPart(bool allow_braces = false);
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
 };
 

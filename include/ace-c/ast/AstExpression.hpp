@@ -41,8 +41,6 @@ public:
 
 protected:
     AccessMode m_access_mode;
-
-private:
     int m_access_options;
 };
 

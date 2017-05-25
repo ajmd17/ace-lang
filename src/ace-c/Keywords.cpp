@@ -10,6 +10,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "val",      Keyword_val },
     { "function", Keyword_function },
     { "type",     Keyword_type },
+    { "alias",    Keyword_alias },
     { "as",       Keyword_as },
     { "has",      Keyword_has },
     { "new",      Keyword_new },

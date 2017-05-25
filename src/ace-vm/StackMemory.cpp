@@ -21,21 +21,18 @@ std::ostream &operator<<(std::ostream &os, const Stack &stack)
         
         os << std::setw(5) << i << "| ";
 
-
         if (value.GetType() == Value::ValueType::HEAP_POINTER) {
-            os << "-> " << std::setw(15) << value.GetTypeString() << "| ";
-
-            os << std::setw(16);
-            os << (void*)value.m_value.ptr;
+            //os << std::setw(17);
+            os << std::setw(18) << utf::Utf8String(value.GetTypeString()) + "*" << "| ";
         } else {
             os << std::setw(18);
             os << value.GetTypeString() << "| ";
-
-            os << std::setw(16);
-            utf::Utf8String tmp_str(256);
-            value.ToRepresentation(tmp_str, false);
-            os << tmp_str;
         }
+
+        os << std::setw(16);
+        utf::Utf8String tmp_str(256);
+        value.ToRepresentation(tmp_str, false);
+        os << tmp_str;
 
         os << std::endl;
     }

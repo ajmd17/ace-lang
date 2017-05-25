@@ -57,12 +57,16 @@ void AstModuleAccess::Visit(AstVisitor *visitor, Module *mod)
 
 void AstModuleAccess::Build(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(m_expr != nullptr);
     ASSERT(m_mod_access != nullptr);
+
+    m_expr->SetAccessMode(m_access_mode);
     m_expr->Build(visitor, m_mod_access);
 }
 
 void AstModuleAccess::Optimize(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(m_expr != nullptr);
     ASSERT(m_mod_access != nullptr);
     m_expr->Optimize(visitor, m_mod_access);
 }

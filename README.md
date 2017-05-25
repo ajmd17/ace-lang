@@ -7,4 +7,4 @@ It features optional typing and is inspired by languages such as C++, JavaScript
 
 - [Installation](./docs/installation.md)
 - [Syntax](./docs/syntax.md)
-- [Built-in Modules](./docs/built-in-modules)
+- [Built-in Modules](./docs/built-in-modules.md)

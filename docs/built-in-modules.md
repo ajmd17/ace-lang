@@ -1,7 +1,7 @@
-## Built-in Libraries
+## Built-in Modules
 
-#### _Global_
-The `_Global_` module contains everything that is usable without having to write the module name.
+#### `global` Module
+The `global` module contains everything that is usable without having to write the module name.
 
 Functions:
  - `prompt(message: String) -> String`: Prompts the user with a message in the command line and returns the line they entered in a string
@@ -14,7 +14,7 @@ Functions:
  - `call(f: Function, args: Any...) -> Any`: Passes the supplied arguments to the given function, and calls it. The return value will be the return value of the supplied function.
  - `spawn_thread(f: Function, args: Any...) -> Any`: Functions the same way that `call` does, however the function will be called on new thread and run concurrently
 
-#### `runtime` Library
+#### `runtime` Module
   - `gc() -> Null`: Triggers the runtime's garbage collector. Does not return a value.
   - `dump_heap() -> Null`: Prints out an information table of all objects stored in heap memory. Does not return a value.
   - `dump_stack() -> Null`: Prints out an information table of all objects stored on the stack (local variables). Does not return a value.

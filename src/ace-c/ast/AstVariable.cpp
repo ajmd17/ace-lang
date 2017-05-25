@@ -74,17 +74,28 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             break;
         }
         case IDENTIFIER_TYPE_MODULE:
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_identifier_is_module, m_location, m_name));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_identifier_is_module,
+                m_location,
+                m_name
+            ));
             break;
         case IDENTIFIER_TYPE_TYPE:
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_identifier_is_type, m_location, m_name));
-
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_identifier_is_type,
+                m_location,
+                m_name
+            ));
             break;
         case IDENTIFIER_TYPE_NOT_FOUND:
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_undeclared_identifier, m_location, m_name));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_undeclared_identifier,
+                m_location,
+                m_name
+            ));
             break;
     }
 }

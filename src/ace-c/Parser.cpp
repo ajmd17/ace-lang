@@ -1429,7 +1429,7 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(
 
         std::shared_ptr<AstTypeSpecification> type_spec;
 
-        if (Match(TK_COLON, true)) {
+        if (Match(TK_RIGHT_ARROW, true)) {
             // read return type for functions
             type_spec = ParseTypeSpecification();
         }

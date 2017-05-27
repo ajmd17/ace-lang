@@ -74,7 +74,8 @@ static int FindFreeSlot(
     size_t counter = 0;
     
     while (counter < num_params) {
-        if (current_index == num_params) {
+        // variadic keeps counting
+        if (!is_variadic && current_index == num_params) {
             current_index = 0;
         }
 
@@ -89,9 +90,7 @@ static int FindFreeSlot(
     }
 
     // no slot available
-    return is_variadic
-        ? current_index
-        : -1;
+    return -1;
 }
 
 static int ArgIndex(
@@ -151,12 +150,15 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
 
                 if (last_generic_arg_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
                     const SymbolTypePtr_t arg_base = last_generic_arg_type->GetBaseType();
+                    ASSERT(arg_base != nullptr);
+
                     // check if it is an instance of varargs type
                     if (arg_base == SymbolType::Builtin::VAR_ARGS) {
                         is_varargs = true;
 
                         ASSERT(!last_generic_arg_type->GetGenericInstanceInfo().m_generic_args.empty());
-                        vararg_type = last_generic_arg_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                        vararg_type = last_generic_arg_type->GetGenericInstanceInfo().m_generic_args.front().m_type;
+                        std::cout << "type = " << vararg_type->GetName() << "\n";
                     }
                 }
             }
@@ -205,15 +207,15 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
                 }
             }*/
 
-            if (generic_args.size() == args.size() + 1 ||
-                (is_varargs && generic_args.size() - 1 < args.size() + 2))
+            if (generic_args.size() - 1 <= args.size() ||
+                (is_varargs && generic_args.size() - 2 <= args.size()))
             {
                 using ArgDataPair = std::pair<ArgInfo, std::shared_ptr<AstArgument>>;
 
                 std::vector<ArgDataPair> named_args;
                 std::vector<ArgDataPair> unnamed_args;
 
-                // find named args first
+                // sort into two separate buckets
                 for (int i = 0; i < args.size(); i++) {
                     ASSERT(args[i] != nullptr);
 
@@ -222,7 +224,10 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
                     arg_info.name = args[i]->GetName();
                     arg_info.type = args[i]->GetSymbolType();
 
-                    ArgDataPair arg_data_pair = { arg_info, args[i] };
+                    ArgDataPair arg_data_pair = {
+                        arg_info,
+                        args[i]
+                    };
 
                     if (arg_info.is_named) {
                         named_args.push_back(arg_data_pair);
@@ -280,11 +285,7 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
                         is_varargs
                     );
 
-                    if (found_index != -1) {
-                        used_indices.insert(found_index);
-                    }
-                    
-                    if (is_varargs && ((i + named_args.size()) + 2) >= generic_args.size()) {
+                    if (is_varargs && ((i + named_args.size())) >= generic_args.size() - 2) {
                         // in varargs... check against vararg base type
                         CheckArgTypeCompatible(
                             visitor,
@@ -292,12 +293,19 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
                             std::get<0>(arg).type,
                             vararg_type
                         );
+                        
+                        if (found_index == -1 || found_index >= res_args.size()) {
 
-                        if (found_index >= res_args.size()) {
+                            std::cout << "arg index (push) for " << std::get<0>(arg).name << "(" << i << ") = " << found_index << "\n";
+
+                            used_indices.insert(res_args.size());
                             // at end, push
                             res_args.push_back(std::get<1>(arg));
                         } else {
+                            std::cout << "arg index for " << std::get<0>(arg).name << "(" << i << ") = " << found_index << "\n";
+
                             res_args[found_index] = std::get<1>(arg);
+                            used_indices.insert(found_index);
                         }
                     } else {
                         if (found_index == -1) {
@@ -310,6 +318,9 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
                                 args.size()
                             ));
                         } else {
+                            // store used index
+                            used_indices.insert(found_index);
+
                             // choose whether to get next param, or last (in the case of varargs)
                             struct {
                                 std::string name;

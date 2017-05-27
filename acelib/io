@@ -3,6 +3,42 @@ module io {
     open: Any
     write: Any
     close: Any
+
+    type FileStream {
+        filepath: String
+        file_obj: Any
+
+        open = (self, filepath: String, write_mode: String) {
+            self.filepath = filepath
+            self.file_obj = io::open(filepath, write_mode)
+            return self
+        }
+
+        close = (self) {
+            if self.file_obj == null {
+                return null
+            }
+
+            io::close(self.file_obj)
+        }
+
+        write = (self, args...) {
+            if self.file_obj == null {
+                return null
+            }
+
+            let i = 0
+            let len = ::length(args)
+            
+            while i < len {
+                io::write(self.file_obj, ::to_string(args[i]))
+                i += 1
+            }
+            
+            return self
+        }
+    }
+    
     stdout: Any
     
     module _Detail_ {
@@ -12,6 +48,7 @@ module io {
         io::open = runtime::load_function(lib,'io_open')
         io::write = runtime::load_function(lib,'io_write')
         io::close = runtime::load_function(lib, 'io_close')
-        io::stdout = call(runtime::load_function(lib, 'io_get_stdout'))
+
+        io::stdout = ::call(runtime::load_function(lib, 'io_get_stdout'))
     }
 }

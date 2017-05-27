@@ -1,0 +1,11 @@
+module error {
+  type Error {
+    error_code: String
+  }
+
+  make_error = (error_code) -> Error {
+    err: Error
+    err.error_code = error_code
+    return err
+  }
+}

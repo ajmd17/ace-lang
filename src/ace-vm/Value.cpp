@@ -127,11 +127,11 @@ utf::Utf8String Value::ToString() const
                 return *string;
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
                 utf::Utf8String res(256);
-                array->GetRepresentation(res);
+                array->GetRepresentation(res, false);
                 return res;
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 utf::Utf8String res;
-                object->GetRepresentation(res);
+                object->GetRepresentation(res, false);
                 return res;
             } else {
                 // return memory address as string

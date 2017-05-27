@@ -6,7 +6,7 @@ module random {
     next = (self) {
       if self.gen == null {
         if self.seed == null {
-          self.seed = 0 // time?
+          self.seed = time::now()
         }
 
         self.gen = random_utils::new_random(self.seed)

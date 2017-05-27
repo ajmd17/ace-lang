@@ -5,15 +5,18 @@ module test_random {
   import thread
 
   rgen = new random::RandomGenerator
-  rgen.gen = random_utils::new_random(time::now())
 
   new thread::Thread.spawn(() {
     stopwatch::start()
 
     i = 0
     while i < 200 {
-      //print rgen.next()
-      print random_utils::crand()
+      print rgen.next()
+
+      
+      //print random_utils::crand()
+
+
       //random_utils::get_next(rgen.gen)
       i += 1
     }

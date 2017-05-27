@@ -11,14 +11,15 @@
 void Compiler::BuildArgumentsStart(
     AstVisitor *visitor,
     Module *mod,
-    const std::vector<std::shared_ptr<AstArgument>> &args
-) {
+    const std::vector<std::shared_ptr<AstArgument>> &args)
+{
     uint8_t rp;
 
     // push a copy of each argument to the stack
     for (size_t i = 0; i < args.size(); i++) {
+        std::cout << i << "\n";
         auto &arg = args[i];
-        ASSERT(arg != nullptr);
+        ASSERT(args[i] != nullptr);
 
         arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
 

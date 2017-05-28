@@ -1,12 +1,12 @@
 module test_pure {
   y: Int = 5
-  x = (a) {
+  x: Function = (a) {
     return a + y
   }
 
   print x(6)
 
-  x = pure (a) {
+  x: Function = pure (a) {
     return a + 1
   }
 

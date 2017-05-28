@@ -7,6 +7,7 @@
 enum Keywords {
     Keyword_module,
     Keyword_import,
+    Keyword_export,
     Keyword_use,
     Keyword_let,
     Keyword_const,

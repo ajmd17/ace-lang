@@ -3,6 +3,7 @@
 const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "module",   Keyword_module },
     { "import",   Keyword_import },
+    { "export",   Keyword_export },
     { "use",      Keyword_use },
     { "let",      Keyword_let },
     { "const",    Keyword_const },

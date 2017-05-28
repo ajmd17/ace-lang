@@ -2,7 +2,7 @@ module thread {
   type Thread {
     arguments: Any
 
-    spawn = (self, f: Function) {
+    spawn: Function = (self, f: Function) {
       if self.arguments != null {
         return ::spawn_thread(f, self.arguments)
       }

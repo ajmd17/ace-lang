@@ -3,18 +3,20 @@ module io {
     open: Any
     write: Any
     close: Any
+    
+    stdout: Any
 
     type FileStream {
         filepath: String
         file_obj: Any
 
-        open = (self, filepath: String, write_mode: String) {
+        open: Function = (self, filepath: String, write_mode: String) {
             self.filepath = filepath
             self.file_obj = io::open(filepath, write_mode)
             return self
         }
 
-        close = (self) {
+        close: Function = (self) {
             if self.file_obj == null {
                 return null
             }
@@ -22,7 +24,7 @@ module io {
             io::close(self.file_obj)
         }
 
-        write = (self, args...) {
+        write: Function = (self, args...) {
             if self.file_obj == null {
                 return null
             }
@@ -38,8 +40,6 @@ module io {
             return self
         }
     }
-    
-    stdout: Any
     
     module _Detail_ {
         lib: Any = runtime::load_library('lib/libace-runtime.dylib')

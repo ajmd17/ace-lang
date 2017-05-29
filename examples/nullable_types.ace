@@ -17,7 +17,7 @@ module nullable_types {
 	type Cat {
 		name: String
 
-		meow = (self) {
+		meow: Function = (self) {
 			print fmt("% says meow!", self.name)
 		}
 	}

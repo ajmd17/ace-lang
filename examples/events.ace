@@ -13,6 +13,16 @@ module events_example {
     on 'player move': (x: Number, y: Number) => (self) {
       self.position = [x, y]
     }
+
+    /* handle values */
+    on 5 => (self) { // gets chosen before next
+
+    }
+
+    /* handle any of this type */
+    on i: Int => (self) {
+
+    }
   }
 
   my_player = new Player

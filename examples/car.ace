@@ -23,7 +23,7 @@ module car_example {
   
   
 
-  let x: array = [1,2,3]
+  x: array = [1,2,3]
   print typeof x
   print runtime::typeof(x)
 

@@ -13,10 +13,7 @@ module test_random {
     while i < 200 {
       print rgen.next()
 
-      
       //print random_utils::crand()
-
-
       //random_utils::get_next(rgen.gen)
       i += 1
     }

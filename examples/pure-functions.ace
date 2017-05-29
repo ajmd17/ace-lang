@@ -1,11 +1,11 @@
 module pure_functions {
-  i = 0
+  i: Int = 0
 
-  add_with_i = function (a: Number) {
+  add_with_i: Function = (a: Number) {
     return a + i
   }
 
-  add_numbers = pure function (a: Number, b: Number) {
+  add_numbers: Function = pure (a: Number, b: Number) {
     // return a + i would cause a compilation error,
     //   pure functions may not reference out-of-scope objects
 
@@ -22,7 +22,7 @@ module pure_functions {
   // this is because of the possibility of functions being pure by default,
   // having to be explicitly made impure.
 
-  add_with_i_again = impure function (a: Number) {
+  add_with_i_again: Function = impure (a: Number) {
     return add_with_i(a)
   }
 }

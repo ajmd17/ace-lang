@@ -26,8 +26,9 @@ module threads_example {
         print "Goodbye from thread #2!"
     }
 
-    thread::spawn(count_up, 2, 3, 5)
-    thread::spawn(count_down, null, 1)
+    new thread::Thread.spawn(count_up, 2, 3, 5)
+
+    new thread::Thread.spawn(count_down, null, 1)
 
     print "2 threads done spawning!"
 }

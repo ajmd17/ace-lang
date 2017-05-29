@@ -121,6 +121,10 @@ void VM::Invoke(InstructionHandler *handler,
     ExecutionThread *thread = handler->thread;
     BytecodeStream *bs = handler->bs;
 
+    ASSERT(state != nullptr);
+    ASSERT(thread != nullptr);
+    ASSERT(bs != nullptr);
+
     if (value.m_type != Value::FUNCTION) {
         if (value.m_type == Value::NATIVE_FUNCTION) {
             Value **args = new Value*[nargs > 0 ? nargs : 1];

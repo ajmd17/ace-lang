@@ -11,12 +11,14 @@
 #define ACE_EXPORT extern "C"
 #endif
 
+#define ACE_PARAMS ace::sdk::Params
+
 #define ACE_FUNCTION(name) ACE_EXPORT void name(ace::sdk::Params params)
 
 #define ACE_CHECK_ARGS(cmp, amt) \
     do { \
         if (!(params.nargs cmp amt)) { \
-            params.state->ThrowException(params.thread, \
+            params.handler->state->ThrowException(params.handler->thread, \
                 ace::vm::Exception::InvalidArgsException((#cmp != "==") ? (#cmp " " #amt) : (#amt), params.nargs)); \
             return; \
         } \
@@ -24,27 +26,22 @@
 
 #define ACE_RETURN(value) \
     do { \
-        params.thread->GetRegisters()[0] = value; \
+        params.handler->thread->GetRegisters()[0] = value; \
         return; \
     } while (false)
 
 namespace ace {
-
 namespace vm {
 // forward declarations
-struct VMState;
-struct ExecutionThread;
+struct InstructionHandler;
 struct Value;
-class BytecodeStream;
 } // namespace vm
 
 namespace sdk {
 
 struct Params {
-    vm::VMState* state;
-    vm::ExecutionThread* thread;
-    vm::BytecodeStream* bs;
-    vm::Value** args;
+    vm::InstructionHandler *handler;
+    vm::Value **args;
     int nargs;
 };
 

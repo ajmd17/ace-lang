@@ -8,7 +8,7 @@
 namespace ace {
 namespace vm {
 
-Array::Array(int size)
+Array::Array(size_t size)
     : m_size(size),
       m_capacity(1 << (unsigned int)std::ceil(std::log(size) / std::log(2.0))),
       m_buffer(new Value[m_capacity])
@@ -21,7 +21,7 @@ Array::Array(const Array &other)
       m_buffer(new Value[other.m_capacity])
 {
     // copy all members
-    for (int i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < m_size; i++) {
         m_buffer[i] = other.m_buffer[i];
     }
 }
@@ -42,7 +42,7 @@ Array &Array::operator=(const Array &other)
     m_buffer = new Value[other.m_capacity];
 
     // copy all objects
-    for (int i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < m_size; i++) {
         m_buffer[i] = other.m_buffer[i];
     }
 
@@ -51,17 +51,17 @@ Array &Array::operator=(const Array &other)
 
 void Array::Push(const Value &value)
 {
-    int index = m_size;
+    size_t index = m_size;
     if (index >= m_capacity) {
         // delete and copy all over again
         m_capacity = 1 << (unsigned int)std::ceil(std::log(m_size + 1) / std::log(2.0));
         Value *new_buffer = new Value[m_capacity];
         // copy all objects into new buffer
-        for (int i = 0; i < m_size; i++) {
+        for (size_t i = 0; i < m_size; i++) {
             new_buffer[i] = m_buffer[i];
         }
         // delete old buffer
-        if (m_buffer) {
+        if (m_buffer != nullptr) {
             delete[] m_buffer;
         }
         // set internal buffer to the new one
@@ -74,17 +74,17 @@ void Array::Push(const Value &value)
 
 void Array::PushMany(size_t n, Value **values)
 {
-    int index = m_size;
+    size_t index = m_size;
     if (index + n - 1 >= m_capacity) {
         // delete and copy all over again
         m_capacity = 1 << (unsigned int)std::ceil(std::log(m_size + n) / std::log(2.0));
         Value *new_buffer = new Value[m_capacity];
         // copy all objects into new buffer
-        for (int i = 0; i < m_size; i++) {
+        for (size_t i = 0; i < m_size; i++) {
             new_buffer[i] = m_buffer[i];
         }
         // delete old buffer
-        if (m_buffer) {
+        if (m_buffer != nullptr) {
             delete[] m_buffer;
         }
         // set internal buffer to the new one
@@ -113,7 +113,7 @@ void Array::GetRepresentation(utf::Utf8String &out_str, bool add_type_name) cons
     utf::Utf8String res("[", 256);
 
     // convert all array elements to string
-    for (int i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < m_size; i++) {
         m_buffer[i].ToRepresentation(res, add_type_name);
 
         if (i != m_size - 1) {

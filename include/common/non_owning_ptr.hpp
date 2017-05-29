@@ -17,11 +17,11 @@ public:
         { m_ptr = other.m_ptr; return *this; }
     inline bool operator==(const non_owning_ptr &other) const
         { return m_ptr == other.m_ptr; }
-    inline bool operator==(std::nullptr_t other) const
+    inline bool operator==(std::nullptr_t) const
         { return m_ptr == nullptr; }
     inline bool operator!=(const non_owning_ptr &other) const
         { return m_ptr != other.m_ptr; }
-    inline bool operator!=(std::nullptr_t other) const
+    inline bool operator!=(std::nullptr_t) const
         { return m_ptr != nullptr; }
 
     inline T *operator->() { return m_ptr; }

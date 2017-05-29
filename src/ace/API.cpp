@@ -49,11 +49,6 @@ static Identifier *CreateIdentifier(
     return ident;
 }
 
-static std::string MangleName(const std::string &type_name, const std::string &name)
-{
-    return "__" + type_name + "_" + name;
-}
-
 /*API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
     const SymbolTypePtr_t &member_type,
     NativeInitializerPtr_t ptr)

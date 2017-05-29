@@ -5,7 +5,8 @@
 
 class AstFloat : public AstConstant {
 public:
-    AstFloat(ace::afloat32 value, const SourceLocation &location);
+    AstFloat(ace::afloat32 value,
+        const SourceLocation &location);
 
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;

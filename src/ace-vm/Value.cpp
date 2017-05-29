@@ -32,7 +32,7 @@ void Value::Mark()
             const vm::TypeInfo *type_ptr = object->GetTypePtr();
             ASSERT(type_ptr != nullptr);
 
-            size_t size = type_ptr->GetSize();
+            const size_t size = type_ptr->GetSize();
             for (size_t i = 0; i < size; i++) {
                 object->GetMember(i).value.Mark();
             }
@@ -40,7 +40,7 @@ void Value::Mark()
             // mark the type
             object->GetTypePtrValue().Mark();
         } else if (Array *array = ptr->GetPointer<Array>()) {
-            int size = array->GetSize();
+            const size_t size = array->GetSize();
             for (int i = 0; i < size; i++) {
                 array->AtIndex(i).Mark();
             }
@@ -87,38 +87,72 @@ utf::Utf8String Value::ToString() const
             n = snprintf(buf, buf_size, "%d", m_value.i32);
             if (n >= buf_size) {
                 utf::Utf8String res((size_t)n);
-                snprintf(res.GetData(), n, "%d", m_value.i32);
+                snprintf(
+                    res.GetData(),
+                    n,
+                    "%d",
+                    m_value.i32
+                );
                 return res;
             }
             return utf::Utf8String(buf);
         }
         case Value::I64:
-            n = snprintf(buf, buf_size, "%" PRId64, m_value.i64);
+            n = snprintf(
+                buf,
+                buf_size,
+                "%" PRId64,
+                m_value.i64
+            );
             if (n >= buf_size) {
                 utf::Utf8String res((size_t)n);
-                snprintf(res.GetData(), n, "%" PRId64, m_value.i64);
+                snprintf(
+                    res.GetData(),
+                    n,
+                    "%" PRId64,
+                    m_value.i64
+                );
                 return res;
             }
             return utf::Utf8String(buf);
         case Value::F32:
-            n = snprintf(buf, buf_size, "%g", m_value.f);
+            n = snprintf(
+                buf,
+                buf_size,
+                "%g",
+                m_value.f
+            );
             if (n >= buf_size) {
                 utf::Utf8String res((size_t)n);
-                snprintf(res.GetData(), n, "%g", m_value.f);
+                snprintf(
+                    res.GetData(),
+                    n,
+                    "%g",
+                    m_value.f
+                );
                 return res;
             }
             return utf::Utf8String(buf);
         case Value::F64:
-            n = snprintf(buf, buf_size, "%g", m_value.d);
+            n = snprintf(
+                buf,
+                buf_size,
+                "%g",
+                m_value.d
+            );
             if (n >= buf_size) {
                 utf::Utf8String res((size_t)n);
-                snprintf(res.GetData(), n, "%g", m_value.d);
+                snprintf(
+                    res.GetData(),
+                    n,
+                    "%g",
+                    m_value.d
+                );
                 return res;
             }
             return utf::Utf8String(buf);
         case Value::BOOLEAN:
-            snprintf(buf, buf_size, "%s", m_value.b ? "true" : "false");
-            return utf::Utf8String(buf);
+            return utf::Utf8String(m_value.b ? "true" : "false");
         case Value::HEAP_POINTER:
         {
             if (!m_value.ptr) {
@@ -152,10 +186,6 @@ utf::Utf8String Value::ToString() const
 
 void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
 {
-    const int buf_size = 256;
-    char buf[buf_size] = {'\0'};
-    int n = 0;
-
     switch (m_type) {
         case Value::HEAP_POINTER: {
             if (!m_value.ptr) {

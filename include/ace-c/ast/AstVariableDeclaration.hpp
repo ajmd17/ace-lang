@@ -25,13 +25,12 @@ public:
     virtual void Recreate(std::ostringstream &ss) override;
     virtual Pointer<AstStatement> Clone() const override;
 
-    bool m_assignment_already_visited;
-
 protected:
     std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstExpression> m_assignment;
 
     // set while analyzing
+    bool m_assignment_already_visited;
     std::shared_ptr<AstExpression> m_real_assignment;
 
     SymbolTypeWeakPtr_t m_symbol_type;

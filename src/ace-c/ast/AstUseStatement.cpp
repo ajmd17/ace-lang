@@ -82,6 +82,8 @@ void AstUseStatement::Visit(AstVisitor *visitor, Module *mod)
                             // create type alias
 
                             break;
+                        default:
+                            break;
                     }
                 }
 

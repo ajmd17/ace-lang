@@ -7,7 +7,8 @@
 
 class AstFileImport : public AstImport {
 public:
-    AstFileImport(const std::string &path, const SourceLocation &location);
+    AstFileImport(const std::string &path,
+        const SourceLocation &location);
 
     inline const std::string &GetPath() const { return m_path; }
 

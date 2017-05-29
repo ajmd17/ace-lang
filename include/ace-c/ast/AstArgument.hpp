@@ -4,13 +4,11 @@
 #include <string>
 
 #include <ace-c/ast/AstExpression.hpp>
-#include <ace-c/ObjectType.hpp>
 #include <ace-c/SymbolType.hpp>
 
 class AstArgument : public AstExpression {
 public:
-    AstArgument(
-      const std::shared_ptr<AstExpression> &expr,
+    AstArgument(const std::shared_ptr<AstExpression> &expr,
       bool is_named,
       const std::string &name,
       const SourceLocation &location);

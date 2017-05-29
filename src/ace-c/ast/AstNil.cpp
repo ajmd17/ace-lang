@@ -118,14 +118,16 @@ std::shared_ptr<AstConstant> AstNil::operator||(AstConstant *right) const
 {
     if (!right->IsNumber()) {
         // this operator is valid to compare against null
-        if (AstNil *ast_null = dynamic_cast<AstNil*>(right)) {
+        if (dynamic_cast<AstNil*>(right) != nullptr) {
             return std::shared_ptr<AstFalse>(new AstFalse(m_location));
         }
         return nullptr;
     }
 
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(right->IntValue(), m_location));
+    return std::shared_ptr<AstInteger>(new AstInteger(
+        right->IntValue(),
+        m_location
+    ));
 }
 
 std::shared_ptr<AstConstant> AstNil::operator<(AstConstant *right) const
@@ -150,7 +152,7 @@ std::shared_ptr<AstConstant> AstNil::operator>=(AstConstant *right) const
 
 std::shared_ptr<AstConstant> AstNil::Equals(AstConstant *right) const
 {
-    if (dynamic_cast<AstNil*>(right)) {
+    if (dynamic_cast<AstNil*>(right) != nullptr) {
         // only another null value should be equal
         return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     }

@@ -7,6 +7,7 @@
 
 namespace ace {
 namespace vm {
+  
 // forward declarations
 struct Value;
 struct VMState;

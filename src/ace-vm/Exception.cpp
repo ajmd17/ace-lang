@@ -13,6 +13,19 @@ Exception::Exception(const Exception &other)
 {
 }
 
+Exception Exception::InvalidComparisonException(const char *left_type_str, const char *right_type_str)
+{
+    char buffer[256];
+    std::snprintf(
+        buffer,
+        255,
+        "cannot compare '%s' with '%s'",
+        left_type_str,
+        right_type_str
+    );
+    return Exception(utf::Utf8String(buffer));
+}
+
 Exception Exception::InvalidArgsException(int expected, int received, bool variadic)
 {
     char buffer[256];

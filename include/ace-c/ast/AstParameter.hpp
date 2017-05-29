@@ -26,9 +26,9 @@ public:
     bool IsVariadic() const { return m_is_variadic; }
 
 private:
-    bool m_is_variadic;
     std::shared_ptr<AstTypeSpecification> m_type_spec;
     std::shared_ptr<AstExpression> m_default_param;
+    bool m_is_variadic;
 
     inline Pointer<AstParameter> CloneImpl() const
     {

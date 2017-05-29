@@ -4,7 +4,6 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Module.hpp>
-#include <ace-c/ObjectType.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/instructions.hpp>
@@ -23,9 +22,9 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_parameters(parameters),
       m_type_specification(type_specification),
+      m_block(block),
       m_is_async(is_async),
       m_is_pure(is_pure),
-      m_block(block),
       m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)
 {

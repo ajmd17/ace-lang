@@ -3,6 +3,7 @@
 #include <ace-sdk/ace-sdk.hpp>
 
 #include <ace-vm/VMState.hpp>
+#include <ace-vm/InstructionHandler.hpp>
 #include <ace-vm/Exception.hpp>
 
 #include <cstdio>
@@ -46,7 +47,6 @@ private:
 File::File(std::FILE *file, bool should_close)
     : m_ref_counter(new RefCounter(1, file, should_close)) // create new ref counter
 {
-
 }
 
 File::File(const char *filepath, const char *mode, bool should_close)
@@ -107,11 +107,14 @@ void File::Close()
 } // namespace io
 } // namespace ace
 
+using namespace ace;
+
 // io.open(filename: String, mode: String)
 ACE_FUNCTION(io_open) {
     ACE_CHECK_ARGS(==, 2);
 
-    using namespace ace;
+    vm::ExecutionThread *thread = params.handler->thread;
+    vm::VMState *state = params.handler->state;
 
     vm::Value *arg0 = params.args[0];
     vm::Value *arg1 = params.args[1];
@@ -123,45 +126,58 @@ ACE_FUNCTION(io_open) {
     utf::Utf8String *path_ptr = nullptr;
     utf::Utf8String *mode_ptr = nullptr;
 
-    if (arg0->GetType() == vm::Value::ValueType::HEAP_POINTER) {
-        if (arg0->GetValue().ptr == nullptr) {
-            params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
-        } else if ((path_ptr = arg0->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
-            params.state->ThrowException(params.thread, e);
-        } else {
-            if (arg1->GetType() == vm::Value::ValueType::HEAP_POINTER) {
-                if (arg1->GetValue().ptr == nullptr) {
-                    params.state->ThrowException(params.thread, vm::Exception::NullReferenceException());
-                } else if ((mode_ptr = arg1->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
-                    params.state->ThrowException(params.thread, e);
-                } else {
-                    io::File file(path_ptr->GetData(), mode_ptr->GetData(), true);
-                    if (!file.IsOpened()) {
-                        // error opening file
-                        params.state->ThrowException(params.thread,
-                            vm::Exception::FileOpenException(path_ptr->GetData()));
-                    } else {
-                        // create an object to hold the file
-                        // create heap value for the library
-                        vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
-                        ASSERT(ptr != nullptr);
+    if (arg0->GetType() != vm::Value::ValueType::HEAP_POINTER) {
+        state->ThrowException(thread, e);
+        return;
+    }
+    if (arg0->GetValue().ptr == nullptr) {
+        state->ThrowException(thread, vm::Exception::NullReferenceException());
+        return;
+    }
+    if ((path_ptr = arg0->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
+        state->ThrowException(thread, e);
+        return;
+    }
 
-                        // assign it to the library
-                        ptr->Assign(file);
+    if (arg1->GetType() != vm::Value::ValueType::HEAP_POINTER) {
+        state->ThrowException(thread, e);
+        return;
+    }
+    if (arg1->GetValue().ptr == nullptr) {
+        state->ThrowException(thread, vm::Exception::NullReferenceException());
+        return;
+    }
+    if ((mode_ptr = arg1->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
+        state->ThrowException(thread, e);
+        return;
+    }
 
-                        vm::Value res;
-                        res.m_type = vm::Value::HEAP_POINTER;
-                        res.m_value.ptr = ptr;
+    io::File file(
+        path_ptr->GetData(),
+        mode_ptr->GetData(),
+        true
+    );
 
-                        ACE_RETURN(res);
-                    }
-                }
-            } else {
-                params.state->ThrowException(params.thread, e);
-            }
-        }
+    if (!file.IsOpened()) {
+        // error opening file
+        state->ThrowException(
+            thread,
+            vm::Exception::FileOpenException(path_ptr->GetData())
+        );
     } else {
-        params.state->ThrowException(params.thread, e);
+        // create an object to hold the file
+        // create heap value for the library
+        vm::HeapValue *ptr = state->HeapAlloc(thread);
+        ASSERT(ptr != nullptr);
+
+        // assign it to the library
+        ptr->Assign(file);
+
+        vm::Value res;
+        res.m_type = vm::Value::HEAP_POINTER;
+        res.m_value.ptr = ptr;
+
+        ACE_RETURN(res);
     }
 }
 
@@ -169,36 +185,43 @@ ACE_FUNCTION(io_open) {
 ACE_FUNCTION(io_write) {
     ACE_CHECK_ARGS(>=, 2);
 
+    vm::ExecutionThread *thread = params.handler->thread;
+    vm::VMState *state = params.handler->state;
+
     // first, read the file object (first argument)
-    ace::vm::Value *arg0 = params.args[0];
+    vm::Value *arg0 = params.args[0];
     ASSERT(arg0 != nullptr);
 
-    ace::vm::Exception e = ace::vm::Exception(utf::Utf8String("write() expects arguments of type File and Any..."));
+    vm::Exception e = vm::Exception(utf::Utf8String("write() expects arguments of type File and Any..."));
 
-    ace::io::File *file_ptr = nullptr;
-    if (arg0->GetType() == ace::vm::Value::ValueType::HEAP_POINTER) {
-        if (arg0->GetValue().ptr == nullptr) {
-            params.state->ThrowException(params.thread, ace::vm::Exception::NullReferenceException());
-        } else if ((file_ptr = arg0->GetValue().ptr->GetPointer<ace::io::File>()) == nullptr) {
-            params.state->ThrowException(params.thread, e);
-        } else {
-            // found file object
-            if (!file_ptr->IsOpened()) {
-                params.state->ThrowException(params.thread, ace::vm::Exception::UnopenedFileWriteException());
-            } else {
-                // convert each arg to string
-                for (int i = 1; i < params.nargs; i++) {
-                    ASSERT(params.args[i] != nullptr);
-                    // write to file
-                    file_ptr->Write(params.args[i]->ToString());
-                }
+    io::File *file_ptr = nullptr;
 
-                // after writing, flush file buffer
-                file_ptr->Flush();
-            }
-        }
+    if (arg0->GetType() != vm::Value::ValueType::HEAP_POINTER) {
+        state->ThrowException(thread, e);
+        return;
+    }
+    if (arg0->GetValue().ptr == nullptr) {
+        state->ThrowException(thread, vm::Exception::NullReferenceException());
+        return;
+    }
+    if ((file_ptr = arg0->GetValue().ptr->GetPointer<io::File>()) == nullptr) {
+        state->ThrowException(thread, e);
+        return;
+    }
+
+    // found file object
+    if (!file_ptr->IsOpened()) {
+        state->ThrowException(thread, vm::Exception::UnopenedFileWriteException());
     } else {
-        params.state->ThrowException(params.thread, e);
+        // convert each arg to string
+        for (int i = 1; i < params.nargs; i++) {
+            ASSERT(params.args[i] != nullptr);
+            // write to file
+            file_ptr->Write(params.args[i]->ToString());
+        }
+
+        // after writing, flush file buffer
+        file_ptr->Flush();
     }
 }
 
@@ -206,29 +229,39 @@ ACE_FUNCTION(io_write) {
 ACE_FUNCTION(io_close) {
     ACE_CHECK_ARGS(==, 1);
 
+    vm::ExecutionThread *thread = params.handler->thread;
+    vm::VMState *state = params.handler->state;
+
     // first, read the file object (first argument)
-    ace::vm::Value *arg0 = params.args[0];
+    vm::Value *arg0 = params.args[0];
     ASSERT(arg0 != nullptr);
 
-    ace::vm::Exception e = ace::vm::Exception(utf::Utf8String("close() expects argument of type File"));
+    vm::Exception e = vm::Exception(utf::Utf8String("close() expects argument of type File"));
 
-    ace::io::File *file_ptr = nullptr;
-    if (arg0->GetType() == ace::vm::Value::ValueType::HEAP_POINTER) {
-        if (arg0->GetValue().ptr == nullptr) {
-            params.state->ThrowException(params.thread, ace::vm::Exception::NullReferenceException());
-        } else if ((file_ptr = arg0->GetValue().ptr->GetPointer<ace::io::File>()) == nullptr) {
-            params.state->ThrowException(params.thread, e);
-        } else {
-            // found file object
-            if (!file_ptr->IsOpened()) {
-                params.state->ThrowException(params.thread, ace::vm::Exception::UnopenedFileCloseException());
-            } else {
-                // close the file
-                file_ptr->Close();
-            }
-        }
+    io::File *file_ptr = nullptr;
+
+    if (arg0->GetType() != vm::Value::ValueType::HEAP_POINTER) {
+        state->ThrowException(thread, e);
+        return;
+    }
+    if (arg0->GetValue().ptr == nullptr) {
+        state->ThrowException(thread,vm::Exception::NullReferenceException());
+        return;
+    }
+    if ((file_ptr = arg0->GetValue().ptr->GetPointer<io::File>()) == nullptr) {
+        state->ThrowException(thread, e);
+        return;
+    }
+
+    // found file object
+    if (!file_ptr->IsOpened()) {
+        state->ThrowException(
+            thread,
+            vm::Exception::UnopenedFileCloseException()
+        );
     } else {
-        params.state->ThrowException(params.thread, e);
+        // close the file
+        file_ptr->Close();
     }
 }
 
@@ -238,16 +271,16 @@ ACE_FUNCTION(io_get_stdout) {
 
     // create an object to hold pointer to stdout
     // create heap value for the library
-    ace::vm::HeapValue *ptr = params.state->HeapAlloc(params.thread);
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
     ASSERT(ptr != nullptr);
 
-    ace::io::File file(stdout, false);
+    io::File file(stdout, false);
 
     // assign it to the library
     ptr->Assign(file);
 
-    ace::vm::Value res;
-    res.m_type = ace::vm::Value::HEAP_POINTER;
+    vm::Value res;
+    res.m_type = vm::Value::HEAP_POINTER;
     res.m_value.ptr = ptr;
 
     ACE_RETURN(res);

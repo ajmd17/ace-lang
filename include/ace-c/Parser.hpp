@@ -6,7 +6,6 @@
 #include <ace-c/CompilationUnit.hpp>
 #include <ace-c/AstIterator.hpp>
 #include <ace-c/Keywords.hpp>
-#include <ace-c/ObjectType.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
 #include <ace-c/ast/AstDirective.hpp>
 #include <ace-c/ast/AstVariableDeclaration.hpp>
@@ -53,11 +52,11 @@
 
 class Parser {
 public:
-    Parser(AstIterator *ast_iterator, TokenStream *token_stream,
+    Parser(AstIterator *ast_iterator,
+        TokenStream *token_stream,
         CompilationUnit *compilation_unit);
     Parser(const Parser &other);
 
-    /** Generate an AST structure from the token stream */
     void Parse(bool expect_module_decl = true);
 
 private:
@@ -77,12 +76,7 @@ private:
     Token ExpectIdentifier(bool allow_keyword = false, bool read = false);
     bool ExpectEndOfStmt();
     SourceLocation CurrentLocation() const;
-
-    /** Skip past newlines and semicolons.
-        Returns true if any were hit.
-    */
     void SkipStatementTerminators();
-
     int OperatorPrecedence(const Operator *&out);
 
     std::shared_ptr<AstStatement> ParseStatement(bool top_level = false);
@@ -117,17 +111,10 @@ private:
     std::shared_ptr<AstExpression> ParseUnaryExpression();
     std::shared_ptr<AstExpression> ParseExpression();
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
-#if 0
-    std::shared_ptr<AstTypeContractExpression> ParseTypeContract();
-    std::shared_ptr<AstTypeContractExpression> ParseTypeContractExpression();
-    std::shared_ptr<AstTypeContractExpression> ParseTypeContractTerm();
-    std::shared_ptr<AstTypeContractExpression> ParseTypeContractBinaryExpression(int expr_prec,
-        std::shared_ptr<AstTypeContractExpression> left);
-#endif
-    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true, bool allow_keyword_names = false);
+    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true,
+        bool allow_keyword_names = false);
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition(bool require_keyword = true);
-    std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(
-        bool require_keyword = true,
+    std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true,
         std::vector<std::shared_ptr<AstParameter>> params = {},
         bool is_async = false,
         bool is_pure = false

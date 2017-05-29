@@ -36,8 +36,10 @@ StaticObject::StaticObject(const StaticTypeInfo &type_info)
     : m_id(0),
       m_type(TYPE_TYPE_INFO)
 {
-    ASSERT_MSG(type_info.m_names.size() == type_info.m_size,
-        "number of names must be equal to the number of members");
+    ASSERT_MSG(
+        type_info.m_names.size() == type_info.m_size,
+        "number of names must be equal to the number of members"
+    );
 
     int len = std::strlen(type_info.m_name);
     m_value.type_info.m_name = new char[len + 1];

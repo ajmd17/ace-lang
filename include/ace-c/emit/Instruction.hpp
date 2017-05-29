@@ -6,23 +6,25 @@
 #include <vector>
 #include <ostream>
 #include <cstring>
+#include <cstdint>
 #include <iostream>
 
 template <class...Ts>
 struct Instruction {
 public:
-    /** Encodes data into the byte.
-        opcode may be from 0-31,
-        data may be from 0-3.
-     */
-    static unsigned char Encode(unsigned char opcode, unsigned char data);
+    Instruction()
+    {
+    }
 
-public:
-    Instruction() {}
-    Instruction(const Instruction &other) : m_data(other.m_data) {}
+    Instruction(const Instruction &other)
+        : m_data(other.m_data)
+    {
+    }
 
-    inline bool Empty() const { return !(m_data.empty()) && !(m_data.back().empty()); }
-    inline char GetOpcode() const { return m_data.back().back(); }
+    inline bool Empty() const
+        { return !m_data.empty() && !m_data.back().empty(); }
+    inline char GetOpcode() const
+        { return m_data.back().back(); }
 
     std::vector<std::vector<char>> m_data;
 
@@ -37,6 +39,7 @@ protected:
         for (size_t j = 0; j < sizeof(name.first); j++) {
             operand.push_back(header[j]);
         }
+        
         for (size_t j = 0; j < name.second.size(); j++) {
             operand.push_back(name.second[j]);
         }
@@ -99,7 +102,8 @@ private:
 
 template <class T, class... Ts>
 struct Instruction<T, Ts...> : Instruction<Ts...> {
-    Instruction(T t, Ts...ts) : Instruction<Ts...>(ts...) { this->Accept(t); }
+    Instruction(T t, Ts...ts) : Instruction<Ts...>(ts...)
+        { this->Accept(t); }
 };
 
 #endif

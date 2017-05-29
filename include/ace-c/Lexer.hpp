@@ -10,7 +10,8 @@
 
 class Lexer {
 public:
-    Lexer(const SourceStream &source_stream, TokenStream *token_stream,
+    Lexer(const SourceStream &source_stream,
+        TokenStream *token_stream,
         CompilationUnit *compilation_unit);
     Lexer(const Lexer &other);
 

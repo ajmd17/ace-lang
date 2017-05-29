@@ -5,9 +5,6 @@
 #include <ace-c/ast/AstArgument.hpp>
 #include <common/my_assert.hpp>
 
-// forward declarations
-class AstFunctionCall;
-
 class Compiler : public AstVisitor {
 public:
     struct CondInfo {

@@ -7,8 +7,7 @@
 
 class AstHasExpression : public AstExpression {
 public:
-    AstHasExpression(
-      const std::shared_ptr<AstExpression> &target,
+    AstHasExpression(const std::shared_ptr<AstExpression> &target,
       const std::string &field_name,
       const SourceLocation &location);
     virtual ~AstHasExpression() = default;

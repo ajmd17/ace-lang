@@ -97,6 +97,8 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 m_name
             ));
             break;
+        default:
+            break;
     }
 }
 

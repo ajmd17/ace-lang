@@ -31,7 +31,8 @@ struct AstIdentifierProperties {
 
 class AstIdentifier : public AstExpression {
 public:
-    AstIdentifier(const std::string &name, const SourceLocation &location);
+    AstIdentifier(const std::string &name,
+        const SourceLocation &location);
     virtual ~AstIdentifier() = default;
 
     void PerformLookup(AstVisitor *visitor, Module *mod);

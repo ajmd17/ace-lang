@@ -4,7 +4,6 @@
 #include <string>
 
 #include <ace-c/ast/AstExpression.hpp>
-#include <ace-c/ObjectType.hpp>
 #include <ace-c/SymbolType.hpp>
 
 class AstTypeOfExpression : public AstExpression {

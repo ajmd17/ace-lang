@@ -56,7 +56,6 @@ void AstTypeAlias::Optimize(AstVisitor *visitor, Module *mod)
 
 void AstTypeAlias::Recreate(std::ostringstream &ss)
 {
-    ss << "type " << m_name << " = ";
     m_aliasee->Recreate(ss);
 }
 

@@ -77,7 +77,7 @@ void AstParameter::Build(AstVisitor *visitor, Module *mod)
     ASSERT(m_identifier != nullptr);
 
     // get current stack size
-    int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+    const int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     // set identifier stack location
     m_identifier->SetStackLocation(stack_location);
 

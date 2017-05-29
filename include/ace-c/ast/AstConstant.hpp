@@ -2,6 +2,7 @@
 #define AST_CONSTANT_HPP
 
 #include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/Operator.hpp>
 
 #include <common/typedefs.hpp>
 

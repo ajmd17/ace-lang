@@ -4,7 +4,9 @@
 namespace ace {
 namespace vm {
 
-TypeInfo::TypeInfo(char *name, int size, char **names)
+TypeInfo::TypeInfo(const char *name,
+    int size,
+    char **names)
     : m_size(size),
       m_names(new char*[size])
 {

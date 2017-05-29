@@ -17,8 +17,8 @@
     #define ASSERT(cond) \
         do { \
             if (!(cond)) { \
-                ::std::cerr << ("Assertion `" #cond "` failed in file " STRINGIFY_P2(__FILENAME__) " on line " STRINGIFY_P2(__LINE__) "\n"); \
-                ::std::terminate(); \
+                std::cerr << ("Assertion `" #cond "` failed in file " STRINGIFY_P2(__FILENAME__) " on line " STRINGIFY_P2(__LINE__) "\n"); \
+                std::terminate(); \
             } \
         } while(0)
 #endif

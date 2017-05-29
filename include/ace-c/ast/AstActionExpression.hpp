@@ -12,8 +12,7 @@
 
 class AstActionExpression : public AstExpression {
 public:
-    AstActionExpression(
-        const std::string &action_name,
+    AstActionExpression(const std::string &action_name,
         const std::shared_ptr<AstExpression> &target,
         const std::vector<std::shared_ptr<AstArgument>> &args,
         const SourceLocation &location);

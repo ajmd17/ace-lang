@@ -2,19 +2,17 @@
 #define AST_EXPRESSION_HPP
 
 #include <ace-c/ast/AstStatement.hpp>
-#include <ace-c/ObjectType.hpp>
 #include <ace-c/SymbolType.hpp>
 #include <ace-c/enums.hpp>
 
 class AstExpression : public AstStatement {
 public:
-    AstExpression(
-        const SourceLocation &location,
+    AstExpression(const SourceLocation &location,
         int access_options
     );
     virtual ~AstExpression() = default;
 
-    inline const int GetAccessOptions() const
+    inline int GetAccessOptions() const
         { return m_access_options; }
 
     inline AccessMode GetAccessMode() const

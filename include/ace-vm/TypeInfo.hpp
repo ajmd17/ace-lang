@@ -8,7 +8,7 @@ namespace vm {
 
 class TypeInfo {
 public:
-    TypeInfo(char *name, int size, char **names);
+    TypeInfo(const char *name, int size, char **names);
     TypeInfo(const TypeInfo &other);
     TypeInfo &operator=(const TypeInfo &other);
     ~TypeInfo();

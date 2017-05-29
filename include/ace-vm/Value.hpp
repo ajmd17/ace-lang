@@ -12,6 +12,23 @@ namespace ace {
 namespace vm {
 
 struct Value {
+    enum ValueType {
+        /* These first four types are listed in order of precedence */
+        I32,
+        I64,
+        F32,
+        F64,
+
+        BOOLEAN,
+
+        HEAP_POINTER,
+        FUNCTION,
+        NATIVE_FUNCTION,
+        ADDRESS,
+        FUNCTION_CALL,
+        TRY_CATCH_INFO
+    } m_type;
+
     union ValueData {
         aint32 i32;
         aint64 i64;
@@ -41,23 +58,6 @@ struct Value {
             uint32_t catch_address;
         } try_catch_info;
     } m_value;
-
-    enum ValueType {
-        /* These first four types are listed in order of precedence */
-        I32,
-        I64,
-        F32,
-        F64,
-
-        BOOLEAN,
-
-        HEAP_POINTER,
-        FUNCTION,
-        NATIVE_FUNCTION,
-        ADDRESS,
-        FUNCTION_CALL,
-        TRY_CATCH_INFO
-    } m_type;
 
     Value();
     explicit Value(const Value &other);

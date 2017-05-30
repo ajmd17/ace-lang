@@ -47,7 +47,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
         for (size_t i = 0; i < sp->GetMembers().size(); i++) {
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += std::get<0>(sp->GetMembers()[i]).size();
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += std::get<0>(sp->GetMembers()[i]).length();
         }
     }
 

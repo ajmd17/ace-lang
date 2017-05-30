@@ -262,18 +262,17 @@ Token Lexer::ReadStringLiteral()
 
     // the character as utf-32
     u32char ch = m_source_stream.Next(pos_change);
+    m_source_location.GetColumn() += pos_change;
 
-    while (true) {
-        m_source_location.GetColumn() += pos_change;
+    while (ch != delim) {
 
-        if (ch == delim) {
-            // end of string
-            break;
-        } else if (ch == (u32char)'\n' || !HasNext()) {
+        if (ch == (u32char)'\n' || !HasNext()) {
             // unterminated string literal
-            m_compilation_unit->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_unterminated_string_literal,
-                    location));
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_unterminated_string_literal,
+                m_source_location
+            ));
 
             if (ch == (u32char)'\n') {
                 // increment line and reset column
@@ -295,6 +294,7 @@ Token Lexer::ReadStringLiteral()
         }
 
         ch = m_source_stream.Next(pos_change);
+        m_source_location.GetColumn() += pos_change;
     }
 
     return Token(TK_STRING, value, location);

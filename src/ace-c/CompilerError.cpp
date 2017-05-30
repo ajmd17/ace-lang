@@ -16,6 +16,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_unexpected_identifier, "unexpected identifier '%'" },
     { Msg_unexpected_token, "unexpected token '%'" },
     { Msg_unexpected_eof, "unexpected end of file" },
+    { Msg_unexpected_eol, "unexpected end of line" },
     { Msg_unrecognized_escape_sequence, "unrecognized escape sequence '%'" },
     { Msg_unterminated_string_literal, "unterminated string literal" },
     { Msg_argument_after_varargs, "argument not allowed after '...'" },

@@ -1,6 +1,11 @@
 #ifndef INSTRUCTIONS_HPP
 #define INSTRUCTIONS_HPP
 
+#include <stdint.h>
+
+using bc_address_t = uint32_t;
+using bc_reg_t = uint8_t;
+
 enum class DataStoreMode {
     DataStoreString = 0x00,
     DataStoreAddress = 0x01,

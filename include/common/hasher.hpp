@@ -3,14 +3,14 @@
 
 #include <cstdint>
 
-inline uint32_t hash_fnv_1(const char *str)
+inline std::uint32_t hash_fnv_1(const char *str)
 {
-    const uint32_t PRIME = 16777619u;
-    const uint32_t OFFSET_BASIS = 2166136261u;
+    const std::uint32_t PRIME = 16777619u;
+    const std::uint32_t OFFSET_BASIS = 2166136261u;
 
-    uint32_t hash = OFFSET_BASIS;
+    std::uint32_t hash = OFFSET_BASIS;
 
-    char c = '\0';
+    char c = 0;
     while ((c = *str++)) {
         hash *= PRIME;
         hash ^= c;

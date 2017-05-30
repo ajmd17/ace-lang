@@ -4,7 +4,7 @@ module test_random {
   import random
   import thread
 
-  rgen = new random::RandomGenerator
+  rgen: random::RandomGenerator
 
   new thread::Thread.spawn(() {
     stopwatch::start()
@@ -12,9 +12,6 @@ module test_random {
     i = 0
     while i < 200 {
       print rgen.next()
-
-      //print random_utils::crand()
-      //random_utils::get_next(rgen.gen)
       i += 1
     }
 

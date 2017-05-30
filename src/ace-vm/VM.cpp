@@ -107,9 +107,7 @@ void VM::Print(const Value &value)
 
             break;
         }
-        case Value::FUNCTION: utf::fputs(UTF8_CSTR("Function"), stdout); break;
-        case Value::NATIVE_FUNCTION: utf::fputs(UTF8_CSTR("NativeFunction"), stdout); break;
-        default: utf::fputs(UTF8_CSTR("??"), stdout); break;
+        default: utf::cout << value.GetTypeString(); break;
     }
 }
 
@@ -143,7 +141,7 @@ void VM::Invoke(InstructionHandler *handler,
 
             delete[] args;
         } else {
-            char buffer[256];
+            char buffer[255];
             std::sprintf(
                 buffer,
                 "cannot invoke type '%s' as a function",
@@ -229,7 +227,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     BytecodeStream *bs = handler->bs;
     
     if (thread->m_exception_state.HasExceptionOccurred()) {
-        if (thread->m_exception_state.m_try_counter < 0) {
+        if (thread->m_exception_state.m_try_counter > 0) {
             // handle exception
             thread->m_exception_state.m_try_counter--;
 
@@ -273,16 +271,16 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case STORE_STATIC_ADDRESS: {
-        uint32_t value; bs->Read(&value);
+        bc_address_t addr; bs->Read(&addr);
 
         handler->StoreStaticAddress(
-            value
+            addr
         );
 
         break;
     }
     case STORE_STATIC_FUNCTION: {
-        uint32_t addr; bs->Read(&addr);
+        bc_address_t addr; bs->Read(&addr);
         uint8_t nargs; bs->Read(&nargs);
         uint8_t is_variadic; bs->Read(&is_variadic);
 
@@ -334,7 +332,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_I32: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         aint32 i32; bs->Read(&i32);
 
         handler->LoadI32(
@@ -345,7 +343,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_I64: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         aint64 i64; bs->Read(&i64);
 
         handler->LoadI64(
@@ -356,7 +354,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_F32: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         afloat32 f32; bs->Read(&f32);
 
         handler->LoadF32(
@@ -367,7 +365,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_F64: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         afloat64 f64; bs->Read(&f64);
 
         handler->LoadF64(
@@ -378,7 +376,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_OFFSET: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         uint16_t offset; bs->Read(&offset);
 
         handler->LoadOffset(
@@ -389,7 +387,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_INDEX: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         uint16_t index; bs->Read(&index);
 
         handler->LoadIndex(
@@ -400,7 +398,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_STATIC: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         uint16_t index; bs->Read(&index);
 
         handler->LoadStatic(
@@ -411,7 +409,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_STRING: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         // get string length
         uint32_t len; bs->Read(&len);
 
@@ -431,8 +429,8 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_ADDR: {
-        uint8_t reg; bs->Read(&reg);
-        uint32_t addr; bs->Read(&addr);
+        bc_reg_t reg; bs->Read(&reg);
+        bc_address_t addr; bs->Read(&addr);
 
         handler->LoadAddr(
             reg,
@@ -442,8 +440,8 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_FUNC: {
-        uint8_t reg; bs->Read(&reg);
-        uint32_t addr; bs->Read(&addr);
+        bc_reg_t reg; bs->Read(&reg);
+        bc_address_t addr; bs->Read(&addr);
         uint8_t nargs; bs->Read(&nargs);
         uint8_t is_variadic; bs->Read(&is_variadic);
 
@@ -457,7 +455,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_TYPE: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         uint16_t type_name_len; bs->Read(&type_name_len);
 
         char *type_name = new char[type_name_len + 1];
@@ -502,8 +500,8 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_MEM: {
-        uint8_t dst; bs->Read(&dst);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t dst; bs->Read(&dst);
+        bc_reg_t src; bs->Read(&src);
         uint8_t index; bs->Read(&index);
 
         handler->LoadMem(
@@ -515,8 +513,8 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_MEM_HASH: {
-        uint8_t dst; bs->Read(&dst);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t dst; bs->Read(&dst);
+        bc_reg_t src; bs->Read(&src);
         uint32_t hash; bs->Read(&hash);
 
         handler->LoadMemHash(
@@ -528,20 +526,20 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_ARRAYIDX: {
-        uint8_t dst; bs->Read(&dst);
-        uint8_t src; bs->Read(&src);
-        uint8_t index_reg; bs->Read(&index_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
+        bc_reg_t src_reg; bs->Read(&src_reg);
+        bc_reg_t index_reg; bs->Read(&index_reg);
 
         handler->LoadArrayIdx(
-            dst,
-            src,
+            dst_reg,
+            src_reg,
             index_reg
         );
 
         break;
     }
     case LOAD_NULL: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->LoadNull(
             reg
@@ -550,7 +548,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_TRUE: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->LoadTrue(
             reg
@@ -559,7 +557,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case LOAD_FALSE: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->LoadFalse(
             reg
@@ -569,7 +567,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     }
     case MOV_OFFSET: {
         uint16_t offset; bs->Read(&offset);
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->MovOffset(
             offset,
@@ -580,7 +578,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     }
     case MOV_INDEX: {
         uint16_t index; bs->Read(&index);
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->MovIndex(
             index,
@@ -590,9 +588,9 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case MOV_MEM: {
-        uint8_t dst; bs->Read(&dst);
+        bc_reg_t dst; bs->Read(&dst);
         uint8_t index; bs->Read(&index);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t src; bs->Read(&src);
 
         handler->MovMem(
             dst,
@@ -603,9 +601,9 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case MOV_MEM_HASH: {
-        uint8_t dst; bs->Read(&dst);
+        bc_reg_t dst; bs->Read(&dst);
         uint32_t hash; bs->Read(&hash);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t src; bs->Read(&src);
 
         handler->MovMemHash(
             dst,
@@ -616,9 +614,9 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case MOV_ARRAYIDX: {
-        uint8_t dst; bs->Read(&dst);
+        bc_reg_t dst; bs->Read(&dst);
         uint32_t index; bs->Read(&index);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t src; bs->Read(&src);
 
         handler->MovArrayIdx(
             dst,
@@ -629,8 +627,8 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case MOV_REG: {
-        uint8_t dst; bs->Read(&dst);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t dst; bs->Read(&dst);
+        bc_reg_t src; bs->Read(&src);
         
         handler->MovReg(
             dst,
@@ -640,11 +638,11 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case HAS_MEM_HASH: {
-        uint8_t dst; bs->Read(&dst);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t dst; bs->Read(&dst);
+        bc_reg_t src; bs->Read(&src);
         uint32_t hash; bs->Read(&hash);
 
-        handler->HashMemHash(
+        handler->HasMemHash(
             dst,
             src,
             hash
@@ -653,7 +651,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case PUSH: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->Push(
             reg
@@ -662,7 +660,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case POP: {
-        handler->Pop(thread);
+        handler->Pop();
 
         break;
     }
@@ -676,8 +674,8 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case PUSH_ARRAY: {
-        uint8_t dst; bs->Read(&dst);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t dst; bs->Read(&dst);
+        bc_reg_t src; bs->Read(&src);
 
         handler->PushArray(
             dst,
@@ -687,7 +685,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case ECHO: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         handler->Echo(
             reg
         );
@@ -695,12 +693,12 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case ECHO_NEWLINE: {
-        handler->EchoNewline(thread);
+        handler->EchoNewline();
 
         break;
     }
     case JMP: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->Jmp(
             reg
@@ -709,7 +707,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case JE: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->Je(
             reg
@@ -718,7 +716,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case JNE: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->Jne(
             reg
@@ -727,7 +725,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case JG: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->Jg(
             reg
@@ -736,7 +734,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case JGE: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->Jge(
             reg
@@ -745,7 +743,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case CALL: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
         uint8_t nargs; bs->Read(&nargs);
 
         handler->Call(
@@ -756,13 +754,13 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case RET: {
-        handler->Ret(thread);
+        handler->Ret();
         
         break;
     }
     case BEGIN_TRY: {
         // register that holds address of catch block
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->BeginTry(
             reg
@@ -771,13 +769,13 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case END_TRY: {
-        handler->EndTry(thread);
+        handler->EndTry();
 
         break;
     }
     case NEW: {
-        uint8_t dst; bs->Read(&dst);
-        uint8_t src; bs->Read(&src);
+        bc_reg_t dst; bs->Read(&dst);
+        bc_reg_t src; bs->Read(&src);
 
         handler->New(
             dst,
@@ -787,7 +785,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case NEW_ARRAY: {
-        uint8_t dst; bs->Read(&dst);
+        bc_reg_t dst; bs->Read(&dst);
         uint32_t size; bs->Read(&size);
 
         handler->NewArray(
@@ -798,8 +796,8 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case CMP: {
-        uint8_t lhs_reg; bs->Read(&lhs_reg);
-        uint8_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
 
         handler->Cmp(
             lhs_reg,
@@ -809,7 +807,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case CMPZ: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->CmpZ(
             reg
@@ -818,9 +816,9 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case ADD: {
-        uint8_t lhs_reg; bs->Read(&lhs_reg);
-        uint8_t rhs_reg; bs->Read(&rhs_reg);
-        uint8_t dst_reg; bs->Read(&dst_reg);
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
 
         handler->Add(
             lhs_reg,
@@ -831,9 +829,9 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case SUB: {
-        uint8_t lhs_reg; bs->Read(&lhs_reg);
-        uint8_t rhs_reg; bs->Read(&rhs_reg);
-        uint8_t dst_reg; bs->Read(&dst_reg);
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
 
         handler->Sub(
             lhs_reg,
@@ -844,9 +842,9 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case MUL: {
-        uint8_t lhs_reg; bs->Read(&lhs_reg);
-        uint8_t rhs_reg; bs->Read(&rhs_reg);
-        uint8_t dst_reg; bs->Read(&dst_reg);
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
 
         handler->Mul(
             lhs_reg,
@@ -857,9 +855,9 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case DIV: {
-        uint8_t lhs_reg; bs->Read(&lhs_reg);
-        uint8_t rhs_reg; bs->Read(&rhs_reg);
-        uint8_t dst_reg; bs->Read(&dst_reg);
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
 
         handler->Div(
             lhs_reg,
@@ -869,8 +867,21 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
 
         break;
     }
+    case MOD: {
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
+
+        handler->Mod(
+            lhs_reg,
+            rhs_reg,
+            dst_reg
+        );
+
+        break;
+    }
     case NEG: {
-        uint8_t reg; bs->Read(&reg);
+        bc_reg_t reg; bs->Read(&reg);
 
         handler->Neg(
             reg
@@ -879,7 +890,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     default: {
-        int64_t last_pos = (int64_t)bs->Position() - sizeof(int8_t);
+        int64_t last_pos = (int64_t)bs->Position() - sizeof(uint8_t);
         utf::printf(UTF8_CSTR("unknown instruction '%d' referenced at location: 0x%" PRIx64 "\n"), code, last_pos);
         // seek to end of bytecode stream
         bs->Seek(bs->Size());

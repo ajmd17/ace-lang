@@ -47,7 +47,7 @@ struct InstructionHandler {
         state->m_static_memory.Store(std::move(sv));
     }
 
-    inline void StoreStaticAddress(uint32_t addr)
+    inline void StoreStaticAddress(bc_address_t addr)
     {
         Value sv;
         sv.m_type = Value::ADDRESS;
@@ -56,7 +56,7 @@ struct InstructionHandler {
         state->m_static_memory.Store(std::move(sv));
     }
 
-    inline void StoreStaticFunction(uint32_t addr,
+    inline void StoreStaticFunction(bc_address_t addr,
         uint8_t nargs,
         uint8_t is_variadic)
     {
@@ -84,7 +84,7 @@ struct InstructionHandler {
         state->m_static_memory.Store(std::move(sv));
     }
 
-    inline void LoadI32(uint8_t reg, aint32 i32)
+    inline void LoadI32(bc_reg_t reg, aint32 i32)
     {
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -92,7 +92,7 @@ struct InstructionHandler {
         value.m_value.i32 = i32;
     }
 
-    inline void LoadI64(uint8_t reg, aint64 i64)
+    inline void LoadI64(bc_reg_t reg, aint64 i64)
     {
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -100,7 +100,7 @@ struct InstructionHandler {
         value.m_value.i64 = i64;
     }
 
-    inline void LoadF32(uint8_t reg, afloat32 f32)
+    inline void LoadF32(bc_reg_t reg, afloat32 f32)
     {
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -108,7 +108,7 @@ struct InstructionHandler {
         value.m_value.f = f32;
     }
 
-    inline void LoadF64(uint8_t reg, afloat64 f64)
+    inline void LoadF64(bc_reg_t reg, afloat64 f64)
     {
         // get register value given
         Value &value = thread->m_regs[reg];
@@ -116,28 +116,28 @@ struct InstructionHandler {
         value.m_value.d = f64;
     }
 
-    inline void LoadOffset(uint8_t reg, uint8_t offset)
+    inline void LoadOffset(bc_reg_t reg, uint8_t offset)
     {
         // read value from stack at (sp - offset)
         // into the the register
         thread->m_regs[reg] = thread->m_stack[thread->m_stack.GetStackPointer() - offset];
     }
 
-    inline void LoadIndex(uint8_t reg, uint16_t index)
+    inline void LoadIndex(bc_reg_t reg, uint16_t index)
     {
         // read value from stack at the index into the the register
         // NOTE: read from main thread
         thread->m_regs[reg] = state->MAIN_THREAD->m_stack[index];
     }
 
-    inline void LoadStatic(uint8_t reg, uint16_t index)
+    inline void LoadStatic(bc_reg_t reg, uint16_t index)
     {
         // read value from static memory
         // at the index into the the register
         thread->m_regs[reg] = state->m_static_memory[index];
     }
 
-    inline void LoadString(uint8_t reg, uint32_t len, const char *str)
+    inline void LoadString(bc_reg_t reg, uint32_t len, const char *str)
     {
         // allocate heap value
         HeapValue *hv = state->HeapAlloc(thread);
@@ -151,15 +151,15 @@ struct InstructionHandler {
         }
     }
 
-    inline void LoadAddr(uint8_t reg, uint8_t addr)
+    inline void LoadAddr(bc_reg_t reg, bc_address_t addr)
     {
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::ADDRESS;
         sv.m_value.addr = addr;
     }
 
-    inline void LoadFunc(uint8_t reg,
-        uint32_t addr,
+    inline void LoadFunc(bc_reg_t reg,
+        bc_address_t addr,
         uint8_t nargs,
         uint8_t is_variadic)
     {
@@ -170,7 +170,7 @@ struct InstructionHandler {
         sv.m_value.func.m_is_variadic = is_variadic;
     }
 
-    inline void LoadType(uint8_t reg,
+    inline void LoadType(bc_reg_t reg,
         uint16_t type_name_len,
         const char *type_name,
         uint16_t size,
@@ -188,246 +188,337 @@ struct InstructionHandler {
         sv.m_value.ptr = hv;
     }
 
-    inline void LoadMem(uint8_t dst, uint8_t src, uint8_t index)
+    inline void LoadMem(bc_reg_t dst, bc_reg_t src, uint8_t index)
     {
         Value &sv = thread->m_regs[src];
-        ASSERT(sv.m_type == Value::HEAP_POINTER);
-
-        HeapValue *hv = sv.m_value.ptr;
-        if (hv == nullptr) {
-            state->ThrowException(thread, Exception::NullReferenceException());
-        } else {
-            if (Object *obj_ptr = hv->GetPointer<Object>()) {
+        
+        if (sv.m_type == Value::HEAP_POINTER) {
+            HeapValue *hv = sv.m_value.ptr;
+            if (hv == nullptr) {
+                state->ThrowException(
+                    thread,
+                    Exception::NullReferenceException()
+                );
+                return;
+            } else if (Object *obj_ptr = hv->GetPointer<Object>()) {
                 const vm::TypeInfo *type_ptr = obj_ptr->GetTypePtr();
                 
                 ASSERT(type_ptr != nullptr);
-                ASSERT_MSG(index < type_ptr->GetSize(), "member index out of bounds");
+                ASSERT(index < type_ptr->GetSize());
                 
                 thread->m_regs[dst] = obj_ptr->GetMember(index).value;
-            } else {
-                state->ThrowException(
-                    thread,
-                    Exception(utf::Utf8String("not a standard object"))
-                );
+                return;
             }
         }
+
+        state->ThrowException(
+            thread,
+            Exception(utf::Utf8String("Not an Object"))
+        );
     }
 
-    inline void LoadMemHash(uint8_t dst, uint8_t src, uint32_t hash)
+    inline void LoadMemHash(bc_reg_t dst_reg, bc_reg_t src_reg, uint32_t hash)
     {
-        Value &sv = thread->m_regs[src];
-        ASSERT(sv.m_type == Value::HEAP_POINTER);
+        Value &sv = thread->m_regs[src_reg];
 
-        HeapValue *hv = sv.m_value.ptr;
-        if (hv == nullptr) {
-            state->ThrowException(thread, Exception::NullReferenceException());
-        } else {
-            if (Object *objptr = hv->GetPointer<Object>()) {
-                if (Member *member = objptr->LookupMemberFromHash(hash)) {
-                    thread->m_regs[dst] = member->value;
+        if (sv.m_type == Value::HEAP_POINTER) {
+            HeapValue *hv = sv.m_value.ptr;
+
+            if (hv == nullptr) {
+                state->ThrowException(
+                    thread,
+                    Exception::NullReferenceException()
+                );
+                return;
+            } else if (Object *object = hv->GetPointer<Object>()) {
+                if (Member *member = object->LookupMemberFromHash(hash)) {
+                    thread->m_regs[dst_reg] = member->value;
                 } else {
                     state->ThrowException(
                         thread,
                         Exception::MemberNotFoundException()
                     );
                 }
-            } else {
+                return;
+            }
+        }
+
+        state->ThrowException(
+            thread,
+            Exception("Not an Object")
+        );
+    }
+
+    inline void LoadArrayIdx(bc_reg_t dst_reg, bc_reg_t src_reg, bc_reg_t index_reg)
+    {
+        Value &sv = thread->m_regs[src_reg];
+
+        if (sv.m_type != Value::HEAP_POINTER) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Array")
+            );
+            return;
+        }
+
+        HeapValue *ptr = sv.m_value.ptr;
+        if (ptr == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception::NullReferenceException()
+            );
+            return;
+        }
+
+        union {
+            aint64 index;
+            utf::Utf8String *str;
+        } key;
+
+        if (!thread->m_regs[index_reg].GetInteger(&key.index)) {
+            state->ThrowException(
+                thread,
+                Exception("Array index must be of type Int or String")
+            );
+            return;
+        }
+
+        Array *array = ptr->GetPointer<Array>();
+        if (array == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Array")
+            );
+            return;
+        }
+        
+        if (key.index >= array->GetSize()) {
+            state->ThrowException(
+                thread,
+                Exception::OutOfBoundsException()
+            );
+            return;
+        }
+        
+        if (key.index < 0) {
+            // wrap around (python style)
+            key.index = array->GetSize() + key.index;
+            if (key.index < 0 || key.index >= array->GetSize()) {
                 state->ThrowException(
                     thread,
-                    Exception(utf::Utf8String("not a standard object"))
+                    Exception::OutOfBoundsException()
                 );
+                return;
             }
         }
+
+        thread->m_regs[dst_reg] = array->AtIndex(key.index);
     }
 
-    inline void LoadArrayIdx(uint8_t dst, uint8_t src, uint8_t index_reg)
-    {
-        Value &sv = thread->m_regs[src];
-        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "source must be a pointer");
-
-        Value &idx_sv = thread->m_regs[index_reg];
-
-        if (HeapValue *hv = sv.m_value.ptr) {
-            union {
-                aint64 index;
-                utf::Utf8String *str_ptr;
-            };
-
-            if (idx_sv.GetInteger(&index)) {
-                if (Array *arrayptr = hv->GetPointer<Array>()) {
-                    if (index >= arrayptr->GetSize()) {
-                        state->ThrowException(thread, Exception::OutOfBoundsException());
-                    } else if (index < 0) {
-                        // wrap around (python style)
-                        index = arrayptr->GetSize() + index;
-                        if (index < 0 || index >= arrayptr->GetSize()) {
-                            state->ThrowException(thread, Exception::OutOfBoundsException());
-                        } else {
-                            thread->m_regs[dst] = arrayptr->AtIndex(index);
-                        }
-                    } else {
-                        thread->m_regs[dst] = arrayptr->AtIndex(index);
-                    }
-                } else {
-                    state->ThrowException(thread,
-                        Exception(utf::Utf8String("object is not an array")));
-                }
-            } else if (IS_VALUE_STRING(idx_sv, str_ptr)) {
-                state->ThrowException(thread,
-                    Exception(utf::Utf8String("Map is not yet supported")));
-            } else {
-                state->ThrowException(thread,
-                    Exception(utf::Utf8String("array index must be of type Int or String")));
-            }
-        } else {
-            state->ThrowException(thread, Exception::NullReferenceException());
-        }
-    }
-
-    inline void LoadNull(uint8_t reg)
+    inline void LoadNull(bc_reg_t reg)
     {
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::HEAP_POINTER;
         sv.m_value.ptr = nullptr;
     }
 
-    inline void LoadTrue(uint8_t reg)
+    inline void LoadTrue(bc_reg_t reg)
     {
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::BOOLEAN;
         sv.m_value.b = true;
     }
 
-    inline void LoadFalse(uint8_t reg)
+    inline void LoadFalse(bc_reg_t reg)
     {
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::BOOLEAN;
         sv.m_value.b = false;
     }
 
-    inline void MovOffset(uint16_t offset, uint8_t reg)
+    inline void MovOffset(uint16_t offset, bc_reg_t reg)
     {
         // copy value from register to stack value at (sp - offset)
         thread->m_stack[thread->m_stack.GetStackPointer() - offset] =
             thread->m_regs[reg];
     }
 
-    inline void MovIndex(uint16_t index, uint8_t reg)
+    inline void MovIndex(uint16_t index, bc_reg_t reg)
     {
         // copy value from register to stack value at index
         // NOTE: storing on main thread
         state->MAIN_THREAD->m_stack[index] = thread->m_regs[reg];
     }
 
-    inline void MovMem(uint8_t dst, uint8_t index, uint8_t src)
+    inline void MovMem(bc_reg_t dst_reg, uint8_t index, bc_reg_t src_reg)
     {
-        Value &sv = thread->m_regs[dst];
-        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
-
-        if (HeapValue *hv = sv.m_value.ptr) {
-            if (Object *objptr = hv->GetPointer<Object>()) {
-                const vm::TypeInfo *type_ptr = objptr->GetTypePtr();
-                
-                ASSERT(type_ptr != nullptr);
-                ASSERT_MSG(index < type_ptr->GetSize(), "member index out of bounds");
-                
-                objptr->GetMember(index).value = thread->m_regs[src];
-            } else {
-                state->ThrowException(thread,
-                    Exception(utf::Utf8String("not a standard object")));
-            }
-        } else {
-            state->ThrowException(thread, Exception::NullReferenceException());
+        Value &sv = thread->m_regs[dst_reg];
+        if (sv.m_type != Value::HEAP_POINTER) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Object")
+            );
+            return;
         }
-    }
-
-    inline void MovMemHash(uint8_t dst, uint32_t hash, uint8_t src)
-    {
-        Value &sv = thread->m_regs[dst];
-        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
 
         HeapValue *hv = sv.m_value.ptr;
-
         if (hv == nullptr) {
             state->ThrowException(
                 thread,
                 Exception::NullReferenceException()
             );
-        } else {
-            if (Object *obj_ptr = hv->GetPointer<Object>()) {
-                if (Member *member = obj_ptr->LookupMemberFromHash(hash)) {
-                    // set value in member
-                    member->value = thread->m_regs[src];
-                } else {
-                    state->ThrowException(
-                        thread,
-                        Exception::MemberNotFoundException()
-                    );
-                }
-            } else {
+            return;
+        }
+        
+        Object *object = hv->GetPointer<Object>();
+        if (object == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Object")
+            );
+            return;
+        }
+
+        const vm::TypeInfo *type_ptr = object->GetTypePtr();
+        ASSERT(type_ptr != nullptr);
+
+        if (index >= type_ptr->GetSize()) {
+            state->ThrowException(
+                thread,
+                Exception::OutOfBoundsException()
+            );
+            return;
+        }
+        
+        object->GetMember(index).value = thread->m_regs[src_reg];
+    }
+
+    inline void MovMemHash(bc_reg_t dst_reg, uint32_t hash, bc_reg_t src_reg)
+    {
+        Value &sv = thread->m_regs[dst_reg];
+
+        if (sv.m_type != Value::HEAP_POINTER) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Object")
+            );
+            return;
+        }
+
+        HeapValue *hv = sv.m_value.ptr;
+        if (hv == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception::NullReferenceException()
+            );
+            return;
+        }
+
+        Object *object = hv->GetPointer<Object>();
+        if (object == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Object")
+            );
+            return;
+        }
+
+        Member *member = object->LookupMemberFromHash(hash);
+        if (member == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception::MemberNotFoundException()
+            );
+            return;
+        }
+        
+        // set value in member
+        member->value = thread->m_regs[src_reg];
+    }
+
+    inline void MovArrayIdx(bc_reg_t dst_reg, uint32_t index, bc_reg_t src_reg)
+    {
+        Value &sv = thread->m_regs[dst_reg];
+
+        if (sv.m_type != Value::HEAP_POINTER) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Array")
+            );
+            return;
+        }
+
+        HeapValue *hv = sv.m_value.ptr;
+        if (hv == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception::NullReferenceException()
+            );
+            return;
+        }
+
+        Array *array = hv->GetPointer<Array>();
+        if (array == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Array")
+            );
+            return;
+        }
+
+        if (index >= array->GetSize()) {
+            state->ThrowException(
+                thread,
+                Exception::OutOfBoundsException()
+            );
+            return;
+        }
+
+        if (index < 0) {
+            // wrap around (python style)
+            index = array->GetSize() + index;
+            if (index < 0 || index >= array->GetSize()) {
                 state->ThrowException(
                     thread,
-                    Exception(utf::Utf8String("not a standard object"))
+                    Exception::OutOfBoundsException()
                 );
+                return;
             }
         }
+        
+        array->AtIndex(index) = thread->m_regs[src_reg];
     }
 
-    inline void MovArrayIdx(uint8_t dst, uint32_t index, uint8_t src)
+    inline void MovReg(bc_reg_t dst_reg, bc_reg_t src_reg)
     {
-        Value &sv = thread->m_regs[dst];
-        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
-
-        if (HeapValue *hv = sv.m_value.ptr) {
-            if (Array *arrayptr = hv->GetPointer<Array>()) {
-                if (index >= arrayptr->GetSize()) {
-                    state->ThrowException(thread, Exception::OutOfBoundsException());
-                } else {
-                    arrayptr->AtIndex(index) = thread->m_regs[src];
-                }
-            } else {
-                state->ThrowException(thread,
-                    Exception(utf::Utf8String("object is not an array")));
-            }
-        } else {
-            state->ThrowException(thread, Exception::NullReferenceException());
-        }
+        thread->m_regs[dst_reg] = thread->m_regs[src_reg];
     }
 
-    inline void MovReg(uint8_t dst, uint8_t src)
+    inline void HasMemHash(bc_reg_t dst_reg, bc_reg_t src_reg, uint32_t hash)
     {
-        thread->m_regs[dst] = thread->m_regs[src];
-    }
+        Value &src = thread->m_regs[src_reg];
 
-    inline void HashMemHash(uint8_t dst, uint8_t src, uint32_t hash)
-    {
-        Value &sv = thread->m_regs[src];
-        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
+        Value &dst = thread->m_regs[dst_reg];
+        dst.m_type = Value::BOOLEAN;
 
-        Value &res = thread->m_regs[dst];
-        res.m_type = Value::BOOLEAN;
-
-        if (sv.m_value.ptr != nullptr) {
-            if (Object *obj_ptr = sv.m_value.ptr->GetPointer<Object>()) {
-                if (obj_ptr->LookupMemberFromHash(hash) != nullptr) {
-                    res.m_value.b = true;
-                    // leave the case statement
-                    return;
-                }
+        if (src.m_type == Value::HEAP_POINTER && src.m_value.ptr != nullptr) {
+            if (Object *object = src.m_value.ptr->GetPointer<Object>()) {
+                dst.m_value.b = (object->LookupMemberFromHash(hash) != nullptr);
+                return;
             }
         }
 
         // not found, set it to false
-        res.m_value.b = false;
+        dst.m_value.b = false;
     }
 
-    inline void Push(uint8_t reg)
+    inline void Push(bc_reg_t reg)
     {
         // push a copy of the register value to the top of the stack
         thread->m_stack.Push(thread->m_regs[reg]);
     }
 
-    inline void Pop(ExecutionThread *thread)
+    inline void Pop()
     {
         thread->m_stack.Pop();
     }
@@ -437,53 +528,66 @@ struct InstructionHandler {
         thread->m_stack.Pop(n);
     }
 
-    inline void PushArray(uint8_t dst, uint8_t src)
+    inline void PushArray(bc_reg_t dst_reg, bc_reg_t src_reg)
     {
-        Value &sv = thread->m_regs[dst];
-        ASSERT_MSG(sv.m_type == Value::HEAP_POINTER, "destination must be a pointer");
-
-        if (HeapValue *hv = sv.m_value.ptr) {
-            if (Array *arrayptr = hv->GetPointer<Array>()) {
-                arrayptr->Push(thread->m_regs[src]);
-            } else {
-                state->ThrowException(thread,
-                    Exception(utf::Utf8String("object is not an array")));
-            }
-        } else {
-            state->ThrowException(thread,
-                Exception::NullReferenceException());
+        Value &dst = thread->m_regs[dst_reg];
+        if (dst.m_type != Value::HEAP_POINTER) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Array")
+            );
+            return;
         }
+
+        HeapValue *hv = dst.m_value.ptr;
+        if (hv == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception::NullReferenceException()
+            );
+            return;
+        }
+
+        Array *array = hv->GetPointer<Array>();
+        if (array == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception("Not an Array")
+            );
+            return;
+        }
+
+        array->Push(thread->m_regs[src_reg]);
     }
 
-    inline void Echo(uint8_t reg)
+    inline void Echo(bc_reg_t reg)
     {
         VM::Print(thread->m_regs[reg]);
     }
 
-    inline void EchoNewline(ExecutionThread *thread)
+    inline void EchoNewline()
     {
         utf::fputs(UTF8_CSTR("\n"), stdout);
     }
 
-    inline void Jmp(uint8_t reg)
+    inline void Jmp(bc_reg_t reg)
     {
         const Value &addr = thread->m_regs[reg];
         ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
-
         bs->Seek(addr.m_value.addr);
     }
 
-    inline void Je(uint8_t reg)
+    inline void Je(bc_reg_t reg)
     {
         if (thread->m_regs.m_flags == EQUAL) {
             const Value &addr = thread->m_regs[reg];
             ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
-
+            
             bs->Seek(addr.m_value.addr);
         }
     }
 
-    inline void Jne(uint8_t reg)
+    inline void Jne(bc_reg_t reg)
     {
         if (thread->m_regs.m_flags != EQUAL) {
             const Value &addr = thread->m_regs[reg];
@@ -493,7 +597,7 @@ struct InstructionHandler {
         }
     }
 
-    inline void Jg(uint8_t reg)
+    inline void Jg(bc_reg_t reg)
     {
         if (thread->m_regs.m_flags == GREATER) {
             const Value &addr = thread->m_regs[reg];
@@ -503,7 +607,7 @@ struct InstructionHandler {
         }
     }
 
-    inline void Jge(uint8_t reg)
+    inline void Jge(bc_reg_t reg)
     {
         if (thread->m_regs.m_flags == GREATER || thread->m_regs.m_flags == EQUAL) {
             const Value &addr = thread->m_regs[reg];
@@ -513,7 +617,7 @@ struct InstructionHandler {
         }
     }
 
-    inline void Call(uint8_t reg, uint8_t nargs)
+    inline void Call(bc_reg_t reg, uint8_t nargs)
     {
         VM::Invoke(
             this,
@@ -522,7 +626,7 @@ struct InstructionHandler {
         );
     }
 
-    inline void Ret(ExecutionThread *thread)
+    inline void Ret()
     {
         // get top of stack (should be the address before jumping)
         Value &top = thread->GetStack().Top();
@@ -540,7 +644,7 @@ struct InstructionHandler {
         thread->m_func_depth--;
     }
 
-    inline void BeginTry(uint8_t reg)
+    inline void BeginTry(bc_reg_t reg)
     {
         // copy the value of the address for the catch-block
         const Value &catch_address = thread->m_regs[reg];
@@ -557,17 +661,18 @@ struct InstructionHandler {
         thread->m_stack.Push(info);
     }
 
-    inline void EndTry(ExecutionThread *thread)
+    inline void EndTry()
     {
         // pop the try catch info from the stack
         ASSERT(thread->m_stack.Top().m_type == Value::TRY_CATCH_INFO);
-        ASSERT(thread->m_exception_state.m_try_counter < 0);
+        ASSERT(thread->m_exception_state.m_try_counter > 0);
 
+        // pop try catch info
         thread->m_stack.Pop();
         thread->m_exception_state.m_try_counter--;
     }
 
-    inline void New(uint8_t dst, uint8_t src)
+    inline void New(bc_reg_t dst, bc_reg_t src)
     {
         // read value from register
         Value &type_sv = thread->m_regs[src];
@@ -589,7 +694,7 @@ struct InstructionHandler {
         sv.m_value.ptr = hv;
     }
 
-    inline void NewArray(uint8_t dst, uint32_t size)
+    inline void NewArray(bc_reg_t dst, uint32_t size)
     {
         // allocate heap object
         HeapValue *hv = state->HeapAlloc(thread);
@@ -603,8 +708,7 @@ struct InstructionHandler {
         sv.m_value.ptr = hv;
     }
 
-    inline void Cmp(uint8_t lhs_reg,
-        uint8_t rhs_reg)
+    inline void Cmp(bc_reg_t lhs_reg, bc_reg_t rhs_reg)
     {
         // dropout early for comparing something against itself
         if (lhs_reg == rhs_reg) {
@@ -629,7 +733,7 @@ struct InstructionHandler {
         } else if (lhs->m_type == Value::BOOLEAN && rhs->m_type == Value::BOOLEAN) {
             thread->m_regs.m_flags = (lhs->m_value.b == rhs->m_value.b) ? EQUAL 
                 : ((lhs->m_value.b > rhs->m_value.b) ? GREATER : NONE);
-        } else if (lhs->m_type == Value::HEAP_POINTER || rhs->m_type == Value::HEAP_POINTER) {
+        } else if (lhs->m_type == Value::HEAP_POINTER && rhs->m_type == Value::HEAP_POINTER) {
             int res = VM::CompareAsPointers(lhs, rhs);
             if (res != -1) {
                 thread->m_regs.m_flags = res;
@@ -657,7 +761,7 @@ struct InstructionHandler {
         }
     }
 
-    inline void CmpZ(uint8_t reg)
+    inline void CmpZ(bc_reg_t reg)
     {
         // load values from registers
         Value *lhs = &thread->m_regs[reg];
@@ -684,9 +788,9 @@ struct InstructionHandler {
         }
     }
 
-    inline void Add(uint8_t lhs_reg,
-        uint8_t rhs_reg,
-        uint8_t dst_reg)
+    inline void Add(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
     {
         // load values from registers
         Value *lhs = &thread->m_regs[lhs_reg];
@@ -716,7 +820,7 @@ struct InstructionHandler {
             }
         } else {
             char buffer[256];
-            std::sprintf(buffer, "cannot add types '%s' and '%s'",
+            std::sprintf(buffer, "cannot ADD types '%s' and '%s'",
                 lhs->GetTypeString(), rhs->GetTypeString());
             state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
@@ -725,9 +829,9 @@ struct InstructionHandler {
         thread->m_regs[dst_reg] = result;
     }
 
-    inline void Sub(uint8_t lhs_reg,
-        uint8_t rhs_reg,
-        uint8_t dst_reg)
+    inline void Sub(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
     {
         // load values from registers
         Value *lhs = &thread->m_regs[lhs_reg];
@@ -757,7 +861,7 @@ struct InstructionHandler {
             }
         } else {
             char buffer[256];
-            std::sprintf(buffer, "cannot subtract types '%s' and '%s'",
+            std::sprintf(buffer, "cannot SUB types '%s' and '%s'",
                 lhs->GetTypeString(), rhs->GetTypeString());
             state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
@@ -766,9 +870,9 @@ struct InstructionHandler {
         thread->m_regs[dst_reg] = result;
     }
 
-    inline void Mul(uint8_t lhs_reg,
-        uint8_t rhs_reg,
-        uint8_t dst_reg)
+    inline void Mul(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
     {
         // load values from registers
         Value *lhs = &thread->m_regs[lhs_reg];
@@ -798,7 +902,7 @@ struct InstructionHandler {
             }
         } else {
             char buffer[256];
-            std::sprintf(buffer, "cannot multiply types '%s' and '%s'",
+            std::sprintf(buffer, "cannot MUL types '%s' and '%s'",
                 lhs->GetTypeString(), rhs->GetTypeString());
             state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
@@ -807,9 +911,7 @@ struct InstructionHandler {
         thread->m_regs[dst_reg] = result;
     }
 
-    inline void Div(uint8_t lhs_reg,
-        uint8_t rhs_reg,
-        uint8_t dst_reg)
+    inline void Div(bc_reg_t lhs_reg, bc_reg_t rhs_reg, bc_reg_t dst_reg)
     {
         // load values from registers
         Value *lhs = &thread->m_regs[lhs_reg];
@@ -849,7 +951,7 @@ struct InstructionHandler {
             }
         } else {
             char buffer[256];
-            std::sprintf(buffer, "cannot divide types '%s' and '%s'",
+            std::sprintf(buffer, "cannot DIV types '%s' and '%s'",
                 lhs->GetTypeString(), rhs->GetTypeString());
             state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
         }
@@ -858,7 +960,62 @@ struct InstructionHandler {
         thread->m_regs[dst_reg] = result;
     }
 
-    inline void Neg(uint8_t reg)
+    inline void Mod(bc_reg_t lhs_reg, bc_reg_t rhs_reg, bc_reg_t dst_reg)
+    {
+        // load values from registers
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
+
+        Value result;
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
+
+        union {
+            aint64 i;
+            afloat64 f;
+        } a, b;
+
+        if (lhs->GetInteger(&a.i) && rhs->GetInteger(&b.i)) {
+            if (b.i == 0) {
+                // division by zero
+                state->ThrowException(
+                    thread,
+                    Exception::DivisionByZeroException()
+                );
+            } else {
+                aint64 result_value = a.i % b.i;
+                if (result.m_type == Value::I32) {
+                    result.m_value.i32 = result_value;
+                } else {
+                    result.m_value.i64 = result_value;
+                }
+            }
+        } else if (lhs->GetNumber(&a.f) && rhs->GetNumber(&b.f)) {
+            if (b.f == 0.0) {
+                // division by zero
+                state->ThrowException(
+                    thread,
+                    Exception::DivisionByZeroException()
+                );
+            } else {
+                afloat64 result_value = std::fmod(a.f, b.f);
+                if (result.m_type == Value::F32) {
+                    result.m_value.f = result_value;
+                } else {
+                    result.m_value.d = result_value;
+                }
+            }
+        } else {
+            char buffer[256];
+            std::sprintf(buffer, "Cannot MOD types '%s' and '%s'",
+                lhs->GetTypeString(), rhs->GetTypeString());
+            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+        }
+
+        // set the destination register to be the result
+        thread->m_regs[dst_reg] = result;
+    }
+
+    inline void Neg(bc_reg_t reg)
     {
         // load value from register
         Value *value = &thread->m_regs[reg];
@@ -889,61 +1046,61 @@ struct InstructionHandler {
 
     #if 0
     inline void StoreStaticString(uint32_t len, const char *str);
-    void StoreStaticAddress(uint32_t addr);
-    void StoreStaticFunction(uint32_t addr,
+    void StoreStaticAddress(bc_address_t addr);
+    void StoreStaticFunction(bc_address_t addr,
         uint8_t nargs, uint8_t is_variadic);
     void StoreStaticType(const char *type_name,
         uint16_t size, char **names);
-    void LoadI32(uint8_t reg, aint32 i32);
-    void LoadI64(uint8_t reg, aint64 i64);
-    void LoadF32(uint8_t reg, afloat32 f32);
-    void LoadF64(uint8_t reg, afloat64 f64);
-    void LoadOffset(uint8_t reg, uint8_t offset);
-    void LoadIndex(uint8_t reg, uint16_t index);
-    void LoadStatic(uint8_t reg, uint16_t index);
-    void LoadString(uint8_t reg, uint32_t len, const char *str);
-    void LoadAddr(uint8_t reg, uint8_t addr);
-    void LoadFunc(uint8_t reg, uint32_t addr,
+    void LoadI32(bc_reg_t reg, aint32 i32);
+    void LoadI64(bc_reg_t reg, aint64 i64);
+    void LoadF32(bc_reg_t reg, afloat32 f32);
+    void LoadF64(bc_reg_t reg, afloat64 f64);
+    void LoadOffset(bc_reg_t reg, uint8_t offset);
+    void LoadIndex(bc_reg_t reg, uint16_t index);
+    void LoadStatic(bc_reg_t reg, uint16_t index);
+    void LoadString(bc_reg_t reg, uint32_t len, const char *str);
+    void LoadAddr(bc_reg_t reg, uint8_t addr);
+    void LoadFunc(bc_reg_t reg, bc_address_t addr,
         uint8_t nargs, uint8_t is_variadic);
-    void LoadType(uint8_t reg, uint16_t type_name_len,
+    void LoadType(bc_reg_t reg, uint16_t type_name_len,
         const char *type_name, uint16_t size, char **names);
     void LoadMem(uint8_t dst, uint8_t src, uint8_t index);
     void LoadMemHash(uint8_t dst, uint8_t src, uint32_t hash);
     void LoadArrayIdx(uint8_t dst, uint8_t src, uint8_t index_reg);
-    void LoadNull(uint8_t reg);
-    void LoadTrue(uint8_t reg);
-    void LoadFalse(uint8_t reg);
-    void MovOffset(uint16_t offset, uint8_t reg);
-    void MovIndex(uint16_t index, uint8_t reg);
+    void LoadNull(bc_reg_t reg);
+    void LoadTrue(bc_reg_t reg);
+    void LoadFalse(bc_reg_t reg);
+    void MovOffset(uint16_t offset, bc_reg_t reg);
+    void MovIndex(uint16_t index, bc_reg_t reg);
     void MovMem(uint8_t dst, uint8_t index, uint8_t src);
     void MovMemHash(uint8_t dst, uint32_t hash, uint8_t src);
     void MovArrayIdx(uint8_t dst, uint32_t index, uint8_t src);
     void MovReg(uint8_t dst, uint8_t src);
     void HashMemHash(uint8_t dst, uint8_t src, uint32_t hash);
-    void Push(uint8_t reg);
+    void Push(bc_reg_t reg);
     void Pop(ExecutionThread *thread);
     void PopN(uint8_t n);
     void PushArray(uint8_t dst, uint8_t src);
-    void Echo(uint8_t reg);
+    void Echo(bc_reg_t reg);
     void EchoNewline(ExecutionThread *thread);
-    void Jmp(uint8_t reg);
-    void Je(uint8_t reg);
-    void Jne(uint8_t reg);
-    void Jg(uint8_t reg);
-    void Jge(uint8_t reg);
-    void Call(uint8_t reg, uint8_t nargs);
+    void Jmp(bc_reg_t reg);
+    void Je(bc_reg_t reg);
+    void Jne(bc_reg_t reg);
+    void Jg(bc_reg_t reg);
+    void Jge(bc_reg_t reg);
+    void Call(bc_reg_t reg, uint8_t nargs);
     void Ret(ExecutionThread *thread);
-    void BeginTry(uint8_t reg);
+    void BeginTry(bc_reg_t reg);
     void EndTry(ExecutionThread *thread);
     void New(uint8_t dst, uint8_t src);
     void NewArray(uint8_t dst, uint32_t size);
     void Cmp(uint8_t lhs_reg, uint8_t rhs_reg);
-    void CmpZ(uint8_t reg);
+    void CmpZ(bc_reg_t reg);
     void Add(uint8_t lhs_reg, uint8_t rhs_reg, uint8_t dst_reg);
     void Sub(uint8_t lhs_reg, uint8_t rhs_reg, uint8_t dst_reg);
     void Mul(uint8_t lhs_reg, uint8_t rhs_reg, uint8_t dst_reg);
     void Div(uint8_t lhs_reg, uint8_t rhs_reg, uint8_t dst_reg);
-    void Neg(uint8_t reg);
+    void Neg(bc_reg_t reg);
 
     #endif
 };

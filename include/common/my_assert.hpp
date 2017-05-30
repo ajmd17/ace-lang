@@ -20,7 +20,7 @@
                 std::cerr << ("Assertion `" #cond "` failed in file " STRINGIFY_P2(__FILENAME__) " on line " STRINGIFY_P2(__LINE__) "\n"); \
                 std::terminate(); \
             } \
-        } while(0)
+        } while (0)
 #endif
 
 
@@ -34,7 +34,7 @@
                           << (msg) << "`\n"; \
                 std::terminate(); \
             } \
-        } while(0)
+        } while (0)
 #endif
 
 #endif

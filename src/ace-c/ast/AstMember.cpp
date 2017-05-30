@@ -29,7 +29,6 @@ AstMember::AstMember(
 void AstMember::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_target != nullptr);
-
     m_target->Visit(visitor, mod);
     
     m_target_type = m_target->GetSymbolType();
@@ -38,7 +37,6 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
     if (m_target_type != SymbolType::Builtin::ANY) {
         // start looking at the target type,
         // iterate through base type
-
         SymbolTypePtr_t field_type = nullptr;
 
         while (field_type == nullptr && m_target_type != nullptr) {

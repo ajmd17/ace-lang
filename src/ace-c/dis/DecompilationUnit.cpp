@@ -14,7 +14,7 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
 {
     const size_t pos = bs.GetPosition();
     
-    (*os) << pos << "\t";
+    (*os) << std::hex << pos << std::dec << "\t";
 
     uint8_t code = bs.Next();
     switch (code) {
@@ -59,7 +59,7 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
 
         if (os != nullptr) {
             
-            (*os) << "addr [@(" << val << ")]" << std::endl;
+            (*os) << "addr [@(" << std::hex << val << std::dec << ")]" << std::endl;
         }
 
         is << Instruction<uint8_t, uint32_t>(code, val);
@@ -79,7 +79,7 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
 
         if (os != nullptr) {
             
-            (*os) << "function [@(" << addr << "), "
+            (*os) << "function [@(" << std::hex << addr << std::dec << "), "
                     << "u8(" << (int)nargs << ")], "
                     << "u8(" << (int)is_variadic << ")]"
                     << std::endl;
@@ -325,7 +325,7 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
 
         if (os != nullptr) {
             
-            (*os) << "load_addr [%" << (int)reg << ", @(" << val << ")]" << std::endl;
+            (*os) << "load_addr [%" << (int)reg << ", @(" << std::hex << val << std::dec << ")]" << std::endl;
         }
 
         is << Instruction<uint8_t, uint8_t, uint32_t>(code, reg, val);
@@ -349,7 +349,7 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         if (os != nullptr) {
             
             (*os) << "load_func [%" << (int)reg
-                    << ", @(" << addr << "), "
+                    << ", @(" << std::hex << addr << std::dec << "), "
                     << "u8(" << (int)nargs << ")], "
                     << "u8(" << (int)is_variadic << ")]"
                     << std::endl;

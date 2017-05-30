@@ -15,10 +15,12 @@
 AstCallExpression::AstCallExpression(
     const std::shared_ptr<AstExpression> &target,
     const std::vector<std::shared_ptr<AstArgument>> &args,
+    bool insert_self,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_target(target),
       m_args(args),
+      m_insert_self(insert_self),
       m_return_type(SymbolType::Builtin::ANY),
       m_is_method_call(false)
 {
@@ -32,25 +34,27 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t target_type = m_target->GetSymbolType();
     ASSERT(target_type != nullptr);
 
-    // if the target is a member expression,
-    // place it as 'self' argument to the call
-    if (AstMember *target_mem = dynamic_cast<AstMember*>(m_target.get())) {
-        m_is_method_call = true;
+    if (m_insert_self) {
+        // if the target is a member expression,
+        // place it as 'self' argument to the call
+        if (AstMember *target_mem = dynamic_cast<AstMember*>(m_target.get())) {
+            m_is_method_call = true;
 
-        std::shared_ptr<AstArgument> self_arg(new AstArgument(
-            target_mem->GetTarget(),
-            true,
-            "self",
-            m_target->GetLocation()
-        ));
-        
-        // insert at front
-        m_args.insert(m_args.begin(), self_arg);
+            std::shared_ptr<AstArgument> self_arg(new AstArgument(
+                target_mem->GetTarget(),
+                true,
+                "self",
+                m_target->GetLocation()
+            ));
+            
+            // insert at front
+            m_args.insert(m_args.begin(), self_arg);
+        }
     }
 
     // visit each argument
     for (auto &arg : m_args) {
-        if (arg) {
+        if (arg != nullptr) {
             arg->Visit(visitor, mod);
         }
     }

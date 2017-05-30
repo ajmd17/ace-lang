@@ -1,0 +1,19 @@
+module counter {
+  use library ['../acelib']
+  
+  import math
+
+  count: Function = (from: Number, to: Number, cb: Function) {
+    i: Number = from
+    step: Number = math::sign(to - from)
+
+    while to - i {
+      cb(i)
+      i += step
+    }
+  }
+
+  count(from: 50, to: 150, (i) {
+    print i
+  })
+}

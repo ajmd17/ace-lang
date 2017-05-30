@@ -96,7 +96,7 @@ private:
     std::shared_ptr<AstMember> ParseMemberExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstHasExpression> ParseHasExpression(std::shared_ptr<AstExpression> target);
-    std::shared_ptr<AstActionExpression> ParseActionExpression();
+    std::shared_ptr<AstActionExpression> ParseActionExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstNewExpression> ParseNewExpression();
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();

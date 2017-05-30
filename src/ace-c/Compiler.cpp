@@ -17,7 +17,6 @@ void Compiler::BuildArgumentsStart(
 
     // push a copy of each argument to the stack
     for (size_t i = 0; i < args.size(); i++) {
-        std::cout << i << "\n";
         auto &arg = args[i];
         ASSERT(args[i] != nullptr);
 
@@ -35,13 +34,7 @@ void Compiler::BuildArgumentsStart(
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
     }
 
-    // the reason we decrement the compiler's record of the stack size directly after
-    // is because the function body will actually handle the management of the stack size,
-    // so that the parameters are actually local variables to the function body.
-    for (int i = 0; i < args.size(); i++) {
-        // increment stack size
-        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-    }
+   
 }
 
 void Compiler::BuildArgumentsEnd(
@@ -49,6 +42,14 @@ void Compiler::BuildArgumentsEnd(
     Module *mod,
     size_t nargs
 ) {
+     // the reason we decrement the compiler's record of the stack size directly after
+    // is because the function body will actually handle the management of the stack size,
+    // so that the parameters are actually local variables to the function body.
+    for (int i = 0; i < nargs; i++) {
+        // increment stack size
+        visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+    }
+
     // pop arguments from stack
     Compiler::PopStack(visitor, nargs);
 }

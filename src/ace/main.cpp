@@ -28,6 +28,7 @@
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/EventArray.hpp>
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 
@@ -36,6 +37,7 @@
 #include <common/instructions.hpp>
 #include <common/typedefs.hpp>
 #include <common/timer.hpp>
+#include <common/termcolor.hpp>
 
 #include <vector>
 #include <string>
@@ -58,6 +60,187 @@ std::vector<std::thread> threads;
 std::string exec_path;
 
 static Timer stopwatch;
+
+void Events_new_event_array(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(<=, 1);
+
+    ace::aint64 size_value = 0;
+
+    if (params.nargs == 1) {
+        const vm::Value *target_ptr = params.args[0];
+        ASSERT(target_ptr != nullptr);
+
+        // target_ptr should hold size integer
+        if (!target_ptr->GetInteger(&size_value)) {
+            params.handler->state->ThrowException(
+                params.handler->thread,
+                vm::Exception(utf::Utf8String("invalid size value"))
+            );
+        }
+    }
+
+    // create heap value for random generator
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+
+    ptr->Assign(vm::EventArray(size_value));
+
+    // assign register value to the allocated object
+    vm::Value res;
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
+void Events_get_action_handler(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 2);
+
+    const vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    const vm::Value *value_ptr = params.args[1];
+    ASSERT(value_ptr != nullptr);
+
+    const vm::Value &value = *value_ptr;
+
+    vm::Exception ex("get_action_handler() expects an Array as the first argument");
+    vm::Exception ex1("Each item in event array should be of type Array");
+
+    if (target_ptr->GetType() != vm::Value::ValueType::HEAP_POINTER) {
+        params.handler->state->ThrowException(params.handler->thread, ex);
+        return;
+    }
+
+    if (vm::Array *array = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) {
+        // used for comparing values
+        union {
+            aint64 i;
+            afloat64 f;
+        } a, b;
+
+        enum {
+            MATCH_TYPES,
+            MATCH_VALUES
+        } match_mode = MATCH_VALUES;
+
+        vm::Value *res_func = nullptr;
+
+        // look thru all array items until we find a match.
+        for (size_t i = 0; i < array->GetSize(); i++) {
+            vm::Value &el = array->AtIndex(i);
+
+            if (el.m_type != vm::Value::HEAP_POINTER) {
+                params.handler->state->ThrowException(
+                    params.handler->thread,
+                    ex1
+                );
+                return;
+            }
+
+            // make sure each item is an array (this could be changed to a tuple,
+            // or something more efficient?)
+            if (vm::Array *el_array = el.m_value.ptr->GetPointer<vm::Array>()) {
+                if (el_array->GetSize() < 2) { // each item has at least 2 elements
+                    params.handler->state->ThrowException(
+                        params.handler->thread,
+                        vm::Exception::OutOfBoundsException()
+                    );
+                    return;
+                }
+
+                // el[0]: the value to test against
+                // el[1]: the handler function
+                vm::Value &handler_value = el_array->AtIndex(0);
+                vm::Value &handler_func = el_array->AtIndex(1);
+
+                // compare integers
+                if (value.GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
+                    if (match_mode == MATCH_TYPES || a.i == b.i) {
+                        res_func = &handler_func;
+                        break;
+                    }
+                } else if (value.GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
+                    if (match_mode == MATCH_TYPES || a.f == b.f) {
+                        res_func = &handler_func;
+                        break;
+                    }
+                } else if (value.m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
+                    if (match_mode == MATCH_TYPES || value.m_value.b == handler_value.m_value.b) {
+                        res_func = &handler_func;
+                        break;
+                    }
+                } else if (value.m_type == vm::Value::HEAP_POINTER && handler_value.m_type == vm::Value::HEAP_POINTER) {
+                    vm::HeapValue *hv_a = value.m_value.ptr;
+                    vm::HeapValue *hv_b = handler_value.m_value.ptr;
+
+                    // drop out early for same pointer value
+                    if (hv_a == hv_b) {
+                        res_func = &handler_func;
+                        break;
+                    } else if (hv_a == nullptr || hv_b == nullptr) {
+                        // one is null... not same
+                        // continue.
+                    } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
+                        if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {
+                            res_func = &handler_func;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                params.handler->state->ThrowException(
+                    params.handler->thread,
+                    ex1
+                );
+                return;
+            }
+        }
+
+        if (res_func != nullptr) {
+            ACE_RETURN(*res_func);
+        } else {
+            // assign register value to the allocated object
+            vm::Value res;
+            res.m_type = vm::Value::HEAP_POINTER;
+            res.m_value.ptr = nullptr;
+            ACE_RETURN(res);
+        }
+
+    } else {
+        params.handler->state->ThrowException(params.handler->thread, ex);
+        return;
+    }
+
+    /*vm::Exception ex("get_action_handler() expects an EventArray as the first argument");
+
+    if (target_ptr->GetType() != vm::Value::ValueType::HEAP_POINTER) {
+        params.handler->state->ThrowException(params.handler->thread, ex);
+        return;
+    }
+
+    if (vm::EventArray *event_array = target_ptr->GetValue().ptr->GetPointer<vm::EventArray>()) {
+        const vm::Value *match_value = params.args[1];
+        ASSERT(match_value != nullptr);
+
+        // return the handler function
+        if (vm::Value *handler_func = event_array->Match(*match_value)) {
+            ACE_RETURN(*handler_func);
+        } else {
+            // assign register value to the allocated object
+            vm::Value res;
+            res.m_type = vm::Value::HEAP_POINTER;
+            res.m_value.ptr = nullptr;
+
+            ACE_RETURN(res);
+        }
+    } else {
+        params.handler->state->ThrowException(params.handler->thread, ex);
+        return;
+    }*/
+}
 
 void Random_new_random(ace::sdk::Params params)
 {
@@ -854,7 +1037,7 @@ static int REPL(
         semantic_analyzer.Analyze(false);
     }
 
-    utf::Utf8String line;
+    std::vector<utf::Utf8String> lines;
     std::string tmp_line;
 
     utf::cout << "> ";
@@ -892,7 +1075,7 @@ static int REPL(
                 bracket_counter > 0 ||
                 cont_token;
 
-        line += current_line + "\n";
+        lines.push_back(current_line);
 
         if (!wait_for_next) {
             // so we can rewind upon errors
@@ -910,9 +1093,14 @@ static int REPL(
                 .GetIdentifiers()
                 .size();
 
+            utf::Utf8String lines_combined;
+            for (size_t i = 0; i < lines.size(); i++) {
+                lines_combined += lines[i] + "\n";
+            }
+
             // send code to be compiled
-            SourceFile source_file("<stdin>", line.GetBufferSize());
-            source_file.ReadIntoBuffer(line.GetData(), line.GetBufferSize());
+            SourceFile source_file("<stdin>", lines_combined.GetBufferSize());
+            source_file.ReadIntoBuffer(lines_combined.GetData(), lines_combined.GetBufferSize());
             SourceStream source_stream(&source_file);
 
             TokenStream token_stream;
@@ -927,29 +1115,39 @@ static int REPL(
             semantic_analyzer.Analyze(false);
 
             compilation_unit.GetErrorList().SortErrors();
+
             for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
                 const std::string &filename = error.GetLocation().GetFileName();
                 const std::string &error_text = error.GetText();
 
-                utf::cout << "* ";
-
                 switch (error.GetLevel()) {
                     case LEVEL_INFO:
-                        utf::cout << "Info";
+                        utf::cout << termcolor::white << termcolor::on_blue << termcolor::bold << "Info";
                         break;
                     case LEVEL_WARN:
-                        utf::cout << "Warning";
+                        utf::cout << termcolor::white << termcolor::on_yellow << termcolor::bold << "Warning";
                         break;
                     case LEVEL_ERROR:
-                        utf::cout << "Error";
+                        utf::cout << termcolor::white << termcolor::on_red << termcolor::bold << "Error";
                         break;
                 }
 
-                utf::cout << " in file " << utf::Utf8String(filename.c_str())
+                utf::cout << termcolor::reset << " in file " << utf::Utf8String(filename.c_str())
                           << " at line "    << (error.GetLocation().GetLine() + 1)
                           << ", col " << (error.GetLocation().GetColumn() + 1);
-                utf::cout << "\n\t" << utf::Utf8String(error_text.c_str()) << "\n";
-                          //<< "): " << utf::Utf8String(error_text.c_str()) << "\n";
+
+                if (lines.size() > error.GetLocation().GetLine()) {
+                    // render the line in question
+                    utf::cout << "\n\t" << lines[error.GetLocation().GetLine()];
+                    utf::cout << "\n\t";
+
+                    for (size_t i = 0; i < error.GetLocation().GetColumn(); i++) {
+                        utf::cout << " ";
+                    }
+                    utf::cout << termcolor::green << "^";
+                }
+
+                utf::cout << termcolor::reset << "\n\t" << utf::Utf8String(error_text.c_str()) << "\n";
             }
 
             if (!compilation_unit.GetErrorList().HasFatalErrors()) {
@@ -966,7 +1164,7 @@ static int REPL(
 
                 // get active register
                 int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();
-
+                
                 // emit bytecode instructions to file
                 std::ofstream temp_bytecode_file(out_filename.GetData(),
                     std::ios::out | std::ios::binary | std::ios::app | std::ios::ate);
@@ -998,8 +1196,10 @@ static int REPL(
 
                         RunBytecodeFile(vm, out_filename, false, file_pos);
 
+                        utf::cout << termcolor::green;
                         // print whatever is in active_reg
                         vm->Print(main_thread->GetRegisters()[active_reg]);
+                        utf::cout << termcolor::reset;
                         utf::printf(UTF8_CSTR("\n"));
 
                         if (!vm->GetState().good) {
@@ -1010,8 +1210,9 @@ static int REPL(
                                 out_filename.GetData(),
                                 std::ios::in | std::ios::binary | std::ios::ate
                             );
+
                             // len is only the amount of bytes up to where we were before in the file.
-                            int64_t len = std::min((int64_t) tmp_is.tellg(), file_pos);
+                            int64_t len = std::min((int64_t)tmp_is.tellg(), file_pos);
                             // create buffer
                             char *buf = new char[len];
                             // seek to beginning
@@ -1061,7 +1262,7 @@ static int REPL(
                         } else {
                             // everything is good, no compile or runtime errors here
                             // store the line
-                            code += line;
+                            code += lines_combined;
                         }
                     }
                 }
@@ -1088,17 +1289,17 @@ static int REPL(
                 compilation_unit.GetErrorList().ClearErrors();
             }
 
-            line = "";
+            lines.clear();
 
             utf::cout << "> ";
         } else {
             if (indent) {
                 for (int i = 0; i < indent; i++) {
-                    utf::cout << "..";
+                    utf::cout << "  ";
                 }
             } else {
                 if (parentheses_counter || bracket_counter || cont_token) {
-                    utf::cout << "..";
+                    utf::cout << "  ";
                 }
             }
             utf::cout << "  ";
@@ -1132,6 +1333,7 @@ void HandleArgs(
         enum {
             COMPILE_SOURCE,
             DECOMPILE_BYTECODE,
+            RUN_BYTECODE
         } mode = COMPILE_SOURCE;
 
         utf::Utf8String src_filename;
@@ -1145,6 +1347,9 @@ void HandleArgs(
             if (CLI::HasOption(argv, argv + argc, "-o")) {
                 out_filename = CLI::GetOptionValue(argv, argv + argc, "-o");
             }
+        } else if (CLI::HasOption(argv, argv + argc, "-b")) {
+            mode = RUN_BYTECODE;
+            src_filename = CLI::GetOptionValue(argv, argv + argc, "-b");
         } else {
             mode = COMPILE_SOURCE;
 
@@ -1172,6 +1377,8 @@ void HandleArgs(
             }
         } else if (mode == DECOMPILE_BYTECODE) {
             ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
+        } else if (mode == RUN_BYTECODE) {
+            RunBytecodeFile(&vm, src_filename, true);
         }
     }
 }
@@ -1181,6 +1388,15 @@ void BuildLibraries(
     CompilationUnit &compilation_unit,
     APIInstance &api)
 {
+    api.Module("events")
+        .Function("new_event_array", SymbolType::Builtin::EVENT_ARRAY, {
+            { "size", SymbolType::Builtin::INT }
+        }, Events_new_event_array)
+        .Function("get_action_handler", SymbolType::Builtin::FUNCTION, {
+            { "event_array", SymbolType::Builtin::ANY },
+            { "match", SymbolType::Builtin::ANY }
+        }, Events_get_action_handler);
+
     api.Module("random_utils")
         .Function("new_random", SymbolType::Builtin::ANY, {
             { "seed", SymbolType::Builtin::INT }

@@ -21,13 +21,13 @@ AstTypeOfExpression::AstTypeOfExpression(
 
 void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-    ASSERT(m_expr != nullptr);
-    m_expr->Visit(visitor, mod);
+    // ASSERT(m_expr != nullptr);
+    // m_expr->Visit(visitor, mod);
     
-    SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
-    ASSERT(expr_type != nullptr);
+    // SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
+    // ASSERT(expr_type != nullptr);
 
-   /* if (expr_type == SymbolType::Builtin::ANY) {
+    // if (expr_type == SymbolType::Builtin::ANY) {
         // add runtime::typeof call
         m_runtime_typeof_call = visitor->GetCompilationUnit()->GetAstNodeBuilder()
             .Module("runtime")
@@ -43,7 +43,7 @@ void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
 
         ASSERT(m_runtime_typeof_call != nullptr);
         m_runtime_typeof_call->Visit(visitor, mod);
-    //}*/
+    //}
 }
 
 void AstTypeOfExpression::Build(AstVisitor *visitor, Module *mod)

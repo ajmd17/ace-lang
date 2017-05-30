@@ -498,11 +498,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     } else if (Match(TK_FLOAT)) {
         expr = ParseFloatLiteral();
     } else if (Match(TK_STRING)) {
-        if (MatchAhead(TK_FAT_ARROW, 1)) {
-            expr = ParseActionExpression();
-        } else {
-            expr = ParseStringLiteral();
-        }
+        expr = ParseStringLiteral();
     } else if (Match(TK_IDENT)) {
         if (MatchAhead(TK_DOUBLE_COLON, 1)) {
             expr = ParseModuleAccess();
@@ -515,7 +511,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         expr = ParseModuleProperty();
     } else if (MatchKeyword(Keyword_self)) {
         expr = ParseIdentifier(true);
-    }  else if (MatchKeyword(Keyword_true)) {
+    } else if (MatchKeyword(Keyword_true)) {
         expr = ParseTrue();
     } else if (MatchKeyword(Keyword_false)) {
         expr = ParseFalse();
@@ -538,9 +534,20 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
     } else if (Match(TK_OPERATOR)) {
         expr = ParseUnaryExpression();
     } else {
-        CompilerError error(LEVEL_ERROR, Msg_unexpected_token,
-            token.GetLocation(), token.GetValue());
-        m_compilation_unit->GetErrorList().AddError(error);
+        if (token.GetTokenClass() == TK_NEWLINE) {
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_unexpected_eol,
+                token.GetLocation()
+            ));
+        } else {
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_unexpected_token,
+                token.GetLocation(),
+                token.GetValue()
+            ));
+        }
 
         if (m_token_stream->HasNext()) {
             m_token_stream->Next();
@@ -553,11 +560,9 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
            (Match(TK_DOT) ||
             Match(TK_OPEN_BRACKET) ||
             Match(TK_OPEN_PARENTH) ||
+            Match(TK_FAT_ARROW) ||
             MatchKeyword(Keyword_has)))
     {
-        if (MatchKeyword(Keyword_has)) {
-            expr = ParseHasExpression(expr);
-        }
         if (Match(TK_DOT)) {
             expr = ParseMemberExpression(expr);
         }
@@ -566,6 +571,12 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         }
         if (Match(TK_OPEN_PARENTH)) {
             expr = ParseCallExpression(expr);
+        }
+        if (Match(TK_FAT_ARROW)) {
+            expr = ParseActionExpression(expr);
+        }
+        if (MatchKeyword(Keyword_has)) {
+            expr = ParseHasExpression(expr);
         }
     }
 
@@ -816,6 +827,7 @@ std::shared_ptr<AstCallExpression> Parser::ParseCallExpression(std::shared_ptr<A
     return std::shared_ptr<AstCallExpression>(new AstCallExpression(
         target,
         ParseArguments(),
+        true, // allow 'self'
         target->GetLocation()
     ));
 }
@@ -927,19 +939,17 @@ std::shared_ptr<AstHasExpression> Parser::ParseHasExpression(std::shared_ptr<Ast
     return nullptr;
 }
 
-std::shared_ptr<AstActionExpression> Parser::ParseActionExpression()
+std::shared_ptr<AstActionExpression> Parser::ParseActionExpression(std::shared_ptr<AstExpression> action)
 {
-    if (Token action_name = Expect(TK_STRING, true)) {
-        if (Expect(TK_FAT_ARROW, true)) {
-            // TODO: args
-            if (auto target = ParseExpression()) {
-                return std::shared_ptr<AstActionExpression>(new AstActionExpression(
-                    action_name.GetValue(),
-                    target,
-                    {},
-                    target->GetLocation()
-                ));
-            }
+    if (Expect(TK_FAT_ARROW, true)) {
+        // TODO: args
+        if (auto target = ParseExpression()) {
+            return std::shared_ptr<AstActionExpression>(new AstActionExpression(
+                action,
+                target,
+                {},
+                target->GetLocation()
+            ));
         }
     }
 
@@ -1737,18 +1747,33 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
             if (Expect(TK_OPEN_BRACE, true)) {
                 while (!Match(TK_CLOSE_BRACE, true)) {
                     // check for events
-                    if (MatchKeyword(Keyword_on, true)) {
-                        // match a string
-                        if (Token event_key = Expect(TK_STRING, true)) {
+                    if (Token on_token = MatchKeyword(Keyword_on, true)) {
+                        std::shared_ptr<AstConstant> key_constant;
+
+                        if (MatchKeyword(Keyword_true)) {
+                            key_constant = ParseTrue();
+                        } else if (MatchKeyword(Keyword_false)) {
+                            key_constant = ParseFalse();
+                        } else if (MatchKeyword(Keyword_null)) {
+                            key_constant = ParseNil();
+                        } else if (Match(TK_STRING)) {
+                            key_constant = ParseStringLiteral();
+                        } else if (Match(TK_INTEGER)) {
+                            key_constant = ParseIntegerLiteral();
+                        } else if (Match(TK_FLOAT)) {
+                            key_constant = ParseFloatLiteral();
+                        } 
+
+                        if (key_constant != nullptr) {
                             // expect =>
                             if (Expect(TK_FAT_ARROW, true)) {
                                 // read function expression
                                 MatchKeyword(Keyword_function, true); // skip 'function' keyword if found
                                 if (auto event_trigger = ParseFunctionExpression(false, ParseFunctionParameters())) {
-                                    events.push_back(std::shared_ptr<AstEvent>(new AstEvent(
-                                        event_key.GetValue(),
+                                    events.push_back(std::shared_ptr<AstConstantEvent>(new AstConstantEvent(
+                                        key_constant,
                                         event_trigger,
-                                        event_key.GetLocation()
+                                        on_token.GetLocation()
                                     )));
                                 }
                             }

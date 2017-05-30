@@ -2,16 +2,15 @@
 #define AST_EVENT_HPP
 
 #include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/ast/AstConstant.hpp>
 #include <ace-c/ast/AstFunctionExpression.hpp>
 
 class AstEvent : public AstExpression {
 public:
-    AstEvent(const std::string &key,
-      const std::shared_ptr<AstFunctionExpression> &trigger,
+    AstEvent(const std::shared_ptr<AstFunctionExpression> &trigger,
       const SourceLocation &location);
     virtual ~AstEvent() = default;
 
-    inline const std::string &GetKey() const { return m_key; }
     inline const std::shared_ptr<AstFunctionExpression> &GetTrigger() const
       { return m_trigger; }
 
@@ -19,20 +18,40 @@ public:
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
-    virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
     virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual std::shared_ptr<AstExpression> GetKey() const = 0;
+    virtual std::string GetKeyName() const = 0;
+
+protected:
+    std::shared_ptr<AstFunctionExpression> m_trigger;
+};
+
+class AstConstantEvent : public AstEvent {
+public:
+    AstConstantEvent(const std::shared_ptr<AstConstant> &key,
+      const std::shared_ptr<AstFunctionExpression> &trigger,
+      const SourceLocation &location);
+    virtual ~AstConstantEvent() = default;
+
+    virtual std::shared_ptr<AstExpression> GetKey() const override;
+    virtual std::string GetKeyName() const override;
+
+    virtual void Visit(AstVisitor *visitor, Module *mod) override;
+    virtual void Build(AstVisitor *visitor, Module *mod) override;
+    virtual void Optimize(AstVisitor *visitor, Module *mod) override;
+    virtual void Recreate(std::ostringstream &ss) override;
+    virtual Pointer<AstStatement> Clone() const override;
 
 private:
-    std::string m_key;
-    std::shared_ptr<AstFunctionExpression> m_trigger;
+    std::shared_ptr<AstConstant> m_key;
 
-    inline Pointer<AstEvent> CloneImpl() const
+    inline Pointer<AstConstantEvent> CloneImpl() const
     {
-        return Pointer<AstEvent>(new AstEvent(
-            m_key,
+        return Pointer<AstConstantEvent>(new AstConstantEvent(
+            CloneAstNode(m_key),
             CloneAstNode(m_trigger),
             m_location
         ));

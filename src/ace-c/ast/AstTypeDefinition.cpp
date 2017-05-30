@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstTypeDefinition.hpp>
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstObject.hpp>
+#include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Module.hpp>
@@ -79,13 +80,39 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         }
 
         if (!m_events.empty()) {
-            std::vector<SymbolMember_t> events_members;
+            std::vector<std::shared_ptr<AstExpression>> event_items;
+            // each event item is an array of size 2 (could be tuple in the future?)
+            for (size_t i = 0; i < m_events.size(); i++) {
+                const std::shared_ptr<AstEvent> &event = m_events[i];
+                if (event != nullptr) {
+                    //event->Visit(visitor, mod);
+                    event_items.push_back(std::shared_ptr<AstArrayExpression>(new AstArrayExpression(
+                        { event->GetKey(), event->GetTrigger() },
+                        m_location
+                    )));
+                }
+            }
+
+            // builtin members:
+            m_members.push_back(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
+                "__events",
+                nullptr,
+                std::shared_ptr<AstArrayExpression>(new AstArrayExpression(
+                    event_items,
+                    m_location
+                )),
+                m_location
+            )));
+
+
+            /*std::vector<SymbolMember_t> events_members;
             
-            for (const auto &event : m_events) {
+            for (size_t i = 0; i < m_events.size(); i++) {
+                const auto &event = m_events[i];
                 if (event != nullptr) {
                     event->Visit(visitor, mod);
                     events_members.push_back({
-                        event->GetKey(),
+                        event->GetKeyName(),
                         SymbolType::Builtin::FUNCTION,
                         event->GetTrigger()
                     });
@@ -104,23 +131,10 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             // builtin members:
             m_members.push_back(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
                 "events",
-                // std::shared_ptr<AstTypeSpecification>(new AstTypeSpecification(
-                //     SymbolType::Builtin::ARRAY->GetName(),
-                //     {
-                //         std::shared_ptr<AstTypeSpecification>(new AstTypeSpecification(
-                //             SymbolType::Builtin::EVENT->GetName(),
-                //             {},
-                //             nullptr,
-                //             m_location
-                //         ))
-                //     },
-                //     nullptr,
-                //     m_location
-                // )),
                 nullptr,
                 m_event_field_type->GetDefaultValue(),
                 m_location
-            )));
+            )));*/
         }
 
         std::vector<SymbolMember_t> member_types;

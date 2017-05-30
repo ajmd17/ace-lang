@@ -13,6 +13,7 @@ public:
     AstCallExpression(
         const std::shared_ptr<AstExpression> &target,
         const std::vector<std::shared_ptr<AstArgument>> &args,
+        bool insert_self,
         const SourceLocation &location);
     virtual ~AstCallExpression() = default;
 
@@ -44,6 +45,7 @@ public:
 protected:
     std::shared_ptr<AstExpression> m_target;
     std::vector<std::shared_ptr<AstArgument>> m_args;
+    bool m_insert_self;
 
     // set while analyzing
     bool m_is_method_call;
@@ -56,6 +58,7 @@ protected:
             new AstCallExpression(
                 CloneAstNode(m_target),
                 CloneAllAstNodes(m_args),
+                m_insert_self,
                 m_location
             ));
     }

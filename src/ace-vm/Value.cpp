@@ -6,16 +6,17 @@
 
 #include <stdio.h>
 #include <cinttypes>
+#include <iostream>
 
 namespace ace {
 namespace vm {
 
-Value::Value()
+/*Value::Value()
     : m_type(HEAP_POINTER)
 {
     // initialize to null reference
     m_value.ptr = nullptr;
-}
+}*/
 
 Value::Value(const Value &other)
     : m_type(other.m_type),
@@ -53,10 +54,10 @@ void Value::Mark()
 const char *Value::GetTypeString() const
 {
     switch (m_type) {
-        case I32: return "Int32";
-        case I64: return "Int64";
-        case F32: return "Float32";
-        case F64: return "Float64";
+        case I32: // fallthrough
+        case I64: return "Int";
+        case F32: // fallthrough
+        case F64: return "Float";
         case BOOLEAN: return "Boolean";
         case HEAP_POINTER: 
             if (!m_value.ptr) {
@@ -72,7 +73,13 @@ const char *Value::GetTypeString() const
             return "Object";
         case FUNCTION: return "Function";
         case NATIVE_FUNCTION: return "NativeFunction";
-        default: return "??";
+        case ADDRESS: return "Address";
+        case FUNCTION_CALL: return "FunctionCallInfo";
+        case TRY_CATCH_INFO: return "TryCatchInfo";
+        default: {
+            std::cout << "type = " << m_type << "\n";
+            return "??";
+        }
     }
 }
 
@@ -161,11 +168,11 @@ utf::Utf8String Value::ToString() const
                 return *string;
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
                 utf::Utf8String res(256);
-                array->GetRepresentation(res, false);
+                array->GetRepresentation(res, true);
                 return res;
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 utf::Utf8String res;
-                object->GetRepresentation(res, false);
+                object->GetRepresentation(res, true);
                 return res;
             } else {
                 // return memory address as string
@@ -187,21 +194,13 @@ utf::Utf8String Value::ToString() const
 void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
 {
     switch (m_type) {
-        case Value::HEAP_POINTER: {
+        case Value::HEAP_POINTER:
             if (!m_value.ptr) {
                 out_str += "null";
             } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
-                if (add_type_name) {
-                    out_str += "String(";
-                }
-
                 out_str += "\"";
                 out_str += *string;
                 out_str += "\"";
-
-                if (add_type_name) {
-                    out_str += ")";
-                }
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
                 array->GetRepresentation(out_str, add_type_name);
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
@@ -220,31 +219,8 @@ void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
             }
 
             break;
-        }
-        case Value::FUNCTION: {
-            if (add_type_name) {
-                out_str += GetTypeString();
-            }
-            break;
-        }
-        case Value::NATIVE_FUNCTION: {
-            if (add_type_name) {
-                out_str += GetTypeString();
-            }
-            break;
-        }
-        default: {
-            if (add_type_name) {
-                out_str += GetTypeString();
-                out_str += "(";
-            }
-            
+        default:
             out_str += ToString();
-
-            if (add_type_name) {
-                out_str += ")";
-            }
-        }
     }
 }
 

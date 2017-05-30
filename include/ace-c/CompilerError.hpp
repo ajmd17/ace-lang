@@ -29,6 +29,7 @@ enum ErrorMessage {
     Msg_unexpected_identifier,
     Msg_unexpected_token,
     Msg_unexpected_eof,
+    Msg_unexpected_eol,
     Msg_unrecognized_escape_sequence,
     Msg_unterminated_string_literal,
     Msg_argument_after_varargs,

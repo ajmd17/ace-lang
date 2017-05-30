@@ -69,7 +69,6 @@ void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
     } else {
         // indeterminate at compile time.
         // check at runtime.
-
         uint32_t hash = hash_fnv_1(m_field_name.c_str());
 
         int found_member_reg = -1;
@@ -84,9 +83,7 @@ void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
         else_label.m_type = StaticObject::TYPE_LABEL;
         else_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
 
-
         m_target->Build(visitor, mod);
-
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -119,7 +116,6 @@ void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
 
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
-        
 
         // this is the `else` part
         // jump to the very end now that we've accepted the if-block

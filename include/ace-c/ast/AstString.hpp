@@ -9,6 +9,8 @@ class AstString : public AstConstant {
 public:
     AstString(const std::string &value, const SourceLocation &location);
 
+    const std::string &GetValue() const { return m_value; }
+
     virtual void Build(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
     virtual Pointer<AstStatement> Clone() const override;

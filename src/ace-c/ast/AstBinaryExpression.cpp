@@ -139,6 +139,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 opcode = MUL;
             } else if (m_op == &Operator::operator_divide) {
                 opcode = DIV;
+            } else if (m_op == &Operator::operator_modulus) {
+                opcode = MOD;
             }
 
             uint8_t rp;
@@ -657,6 +659,8 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     opcode = MUL;
                 } else if (m_op == &Operator::operator_divide_assign) {
                     opcode = DIV;
+                } else if (m_op == &Operator::operator_modulus_assign) {
+                    opcode = MOD;
                 }
 
                 // load right-hand side into register 0

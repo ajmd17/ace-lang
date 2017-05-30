@@ -123,7 +123,8 @@ static int ArgIndex(
 }
 
 std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAnalyzer::SubstituteFunctionArgs(
-    AstVisitor *visitor, Module *mod, 
+    AstVisitor *visitor,
+    Module *mod, 
     const SymbolTypePtr_t &identifier_type, 
     const std::vector<std::shared_ptr<AstArgument>> &args,
     const SourceLocation &location)
@@ -158,54 +159,11 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
 
                         ASSERT(!last_generic_arg_type->GetGenericInstanceInfo().m_generic_args.empty());
                         vararg_type = last_generic_arg_type->GetGenericInstanceInfo().m_generic_args.front().m_type;
-                        std::cout << "type = " << vararg_type->GetName() << "\n";
                     }
                 }
             }
 
             std::set<int> used_indices;
-
-            /*for (size_t i = 0; i < args.size(); i++) {
-                ASSERT(args[i] != nullptr);
-
-                ArgInfo arg_info;
-                arg_info.is_named = args[i]->IsNamed();
-                arg_info.name = args[i]->GetName();
-                arg_info.type = args[i]->GetSymbolType();
-
-                const int found_index = ArgIndex(
-                    i, used_indices, generic_args, arg_info
-                );
-
-                if (found_index != -1) {
-                    used_indices.insert(found_index);
-                }
-
-                std::cout << "arg index for " << arg_info.name << "(" << i << ") = " << found_index << "\n";
-            }*/
-
-            // add default params
-            /*for (size_t i = 1; i < generic_args.size(); i++) {
-                const auto &param = generic_args[i];
-                bool found_sub = false;
-
-                for (size_t j = 0; j < args.size(); j++) {
-                    const auto &arg = args[j];
-                    ASSERT(arg != nullptr);
-
-                    if (arg->IsNamed()) {
-                        if (arg->GetName() == param.m_name) {
-                            // found, break out
-                            found_sub = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!found_sub) {
-                    // still in index, use the one at the index
-                }
-            }*/
 
             if (generic_args.size() - 1 <= args.size() ||
                 (is_varargs && generic_args.size() - 2 <= args.size()))
@@ -261,7 +219,6 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
                         );
 
                         res_args[found_index] = std::get<1>(arg);
-                        std::cout << "arg index for " << std::get<0>(arg).name << "(" << i << ") = " << found_index << "\n";
                     } else {
                         // not found so add error
                         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
@@ -296,14 +253,10 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
                         
                         if (found_index == -1 || found_index >= res_args.size()) {
 
-                            std::cout << "arg index (push) for " << std::get<0>(arg).name << "(" << i << ") = " << found_index << "\n";
-
                             used_indices.insert(res_args.size());
                             // at end, push
                             res_args.push_back(std::get<1>(arg));
                         } else {
-                            std::cout << "arg index for " << std::get<0>(arg).name << "(" << i << ") = " << found_index << "\n";
-
                             res_args[found_index] = std::get<1>(arg);
                             used_indices.insert(found_index);
                         }
@@ -376,13 +329,6 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
     } else if (identifier_type == SymbolType::Builtin::FUNCTION ||
                identifier_type == SymbolType::Builtin::ANY)
     {
-        // the indices of the arguments (will be returned)
-        std::vector<int> substituted_param_ids;
-
-        for (size_t i = 0; i < args.size(); i++) {
-            substituted_param_ids.push_back(i);
-        }
-
         // abstract function, allow any params
         return {
             SymbolType::Builtin::ANY,

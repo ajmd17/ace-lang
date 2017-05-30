@@ -12,7 +12,7 @@
 
 class AstActionExpression : public AstExpression {
 public:
-    AstActionExpression(const std::string &action_name,
+    AstActionExpression(const std::shared_ptr<AstExpression> &action,
         const std::shared_ptr<AstExpression> &target,
         const std::vector<std::shared_ptr<AstArgument>> &args,
         const SourceLocation &location);
@@ -46,12 +46,13 @@ public:
     virtual SymbolTypePtr_t GetSymbolType() const override;
 
 protected:
-    std::string m_action_name;
+    std::shared_ptr<AstExpression> m_action;
     std::shared_ptr<AstExpression> m_target;
     std::vector<std::shared_ptr<AstArgument>> m_args;
 
     // set while analyzing
     bool m_is_method_call;
+    int m_member_found;
     std::vector<int> m_arg_ordering;
     SymbolTypePtr_t m_return_type;
     std::shared_ptr<AstExpression> m_expr;
@@ -59,7 +60,7 @@ protected:
     inline Pointer<AstActionExpression> CloneImpl() const
     {
         return Pointer<AstActionExpression>(new AstActionExpression(
-            m_action_name,
+            CloneAstNode(m_action),
             CloneAstNode(m_target),
             CloneAllAstNodes(m_args),
             m_location

@@ -9,8 +9,7 @@
 
 #include <unordered_set>
 
-AstArrayExpression::AstArrayExpression(
-    const std::vector<std::shared_ptr<AstExpression>> &members,
+AstArrayExpression::AstArrayExpression(const std::vector<std::shared_ptr<AstExpression>> &members,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_members(members),

@@ -5,6 +5,7 @@
 
 #include <common/typedefs.hpp>
 #include <common/utf8.hpp>
+#include <common/hasher.hpp>
 
 #include <stdexcept>
 
@@ -59,11 +60,17 @@ struct Value {
         } try_catch_info;
     } m_value;
 
-    Value();
+    //Value();
+    Value() = default;
     explicit Value(const Value &other);
 
     inline Value::ValueType GetType()  const { return m_type; }
     inline Value::ValueData GetValue() const { return m_value; }
+
+    inline std::uint32_t GetHash() const {
+        utf::Utf8String tmp = ToString();
+        return hash_fnv_1(tmp.GetData());
+    }
 
     inline bool GetInteger(aint64 *out) const
     {

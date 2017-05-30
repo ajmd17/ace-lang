@@ -76,6 +76,7 @@ sp<AstExpression> FunctionBuilder::Call(const std::vector<sp<AstArgument>> &args
             SourceLocation::eof
         )),
         args,
+        false,
         SourceLocation::eof
     ));
 

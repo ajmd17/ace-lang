@@ -4,44 +4,36 @@ module events_example {
     username: String
     position = [0, 0] // x, y
 
-    on 'save': (fs: FileStream) => (self) {
-      fs => self.x
-      fs => self.y
-      fs => self.id
+    on 'save' => (self) {
+      // save self
+      print 'got save'
     }
 
-    on 'player move': (x: Number, y: Number) => (self) {
-      self.position = [x, y]
+    on 'player move' => (self) {
+      // handle move
+      print 'got player move'
     }
 
     /* handle values */
     on 5 => (self) { // gets chosen before next
-
+      print 'got number 5'
     }
 
     /* handle any of this type */
+    /*
     on i: Int => (self) {
 
-    }
+    } //not implemented
+    */
   }
 
-  my_player = new Player
+  my_player: Player
   my_player.id = 9999
   my_player.username = 'asdfghjk'
   my_player.position = [10, 25]
 
   // throw an event into my_player object
-  //@Move => my_player
   'player move' => my_player
-  
 
-  print new FilePath(pathname: '/home/test.txt')
-    => new FileStream
-    => @Save
-    => my_player
-
-  // implemented as a queue
-  // filepath goes into FileStream
-  // filestream object goes into 'save' command's queue,
-  // the 'save' command's queue gets passed into my_player as params
+  5 => my_player
 }

@@ -44,9 +44,10 @@
 #include <ace-c/ast/AstTryCatch.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/ast/AstTypeOfExpression.hpp>
-#include <ace-c/ast/AstReturnStatement.hpp>
 #include <ace-c/ast/AstEvent.hpp>
 #include <ace-c/ast/AstActionExpression.hpp>
+#include <ace-c/ast/AstReturnStatement.hpp>
+#include <ace-c/ast/AstYieldStatement.hpp>
 
 #include <string>
 
@@ -88,7 +89,7 @@ private:
     std::shared_ptr<AstFloat> ParseFloatLiteral();
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier(bool allow_keyword = false);
-    std::shared_ptr<AstArgument> ParseArgument();
+    std::shared_ptr<AstArgument> ParseArgument(std::shared_ptr<AstExpression> expr);
     std::vector<std::shared_ptr<AstArgument>> ParseArguments();
     std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
@@ -96,7 +97,7 @@ private:
     std::shared_ptr<AstMember> ParseMemberExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstHasExpression> ParseHasExpression(std::shared_ptr<AstExpression> target);
-    std::shared_ptr<AstActionExpression> ParseActionExpression(std::shared_ptr<AstExpression> target);
+    std::shared_ptr<AstActionExpression> ParseActionExpression(std::shared_ptr<AstExpression> expr);
     std::shared_ptr<AstNewExpression> ParseNewExpression();
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
@@ -133,6 +134,7 @@ private:
     std::shared_ptr<AstModuleImport> ParseModuleImport();
     std::shared_ptr<AstModuleImportPart> ParseModuleImportPart(bool allow_braces = false);
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
+    std::shared_ptr<AstYieldStatement> ParseYieldStatement();
 };
 
 #endif

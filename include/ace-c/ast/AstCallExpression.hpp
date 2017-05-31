@@ -48,9 +48,9 @@ protected:
     bool m_insert_self;
 
     // set while analyzing
-    bool m_is_method_call;
     std::vector<int> m_arg_ordering;
     SymbolTypePtr_t m_return_type;
+    bool m_is_method_call;
 
     inline Pointer<AstCallExpression> CloneImpl() const
     {

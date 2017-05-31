@@ -61,7 +61,7 @@ void VM::Print(const Value &value)
             utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
             break;
         case Value::HEAP_POINTER: {
-            if (!value.m_value.ptr) {
+            if (value.m_value.ptr == nullptr) {
                 // special case for null pointers
                 utf::fputs(UTF8_CSTR("null"), stdout);
             } else if (utf::Utf8String *str = value.m_value.ptr->GetPointer<utf::Utf8String>()) {
@@ -149,7 +149,7 @@ void VM::Invoke(InstructionHandler *handler,
             );
             state->ThrowException(thread, Exception(buffer));
         }
-    } else if (value.m_value.func.m_is_variadic && nargs < value.m_value.func.m_nargs - 1) {
+    } else if ((value.m_value.func.m_flags & FunctionFlags::VARIADIC) && nargs < value.m_value.func.m_nargs - 1) {
         // if variadic, make sure the arg count is /at least/ what is required
         state->ThrowException(
             thread,
@@ -159,7 +159,7 @@ void VM::Invoke(InstructionHandler *handler,
                 true
             )
         );
-    } else if (!value.m_value.func.m_is_variadic && value.m_value.func.m_nargs != nargs) {
+    } else if (!(value.m_value.func.m_flags & FunctionFlags::VARIADIC) && value.m_value.func.m_nargs != nargs) {
         state->ThrowException(
             thread,
             Exception::InvalidArgsException(
@@ -174,7 +174,7 @@ void VM::Invoke(InstructionHandler *handler,
         // store current address
         previous_addr.m_value.call.addr = (uint32_t)bs->Position();
 
-        if (value.m_value.func.m_is_variadic) {
+        if (value.m_value.func.m_flags & FunctionFlags::VARIADIC) {
             // for each argument that is over the expected size, we must pop it from
             // the stack and add it to a new array.
             int varargs_amt = nargs - value.m_value.func.m_nargs + 1;
@@ -282,12 +282,12 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     case STORE_STATIC_FUNCTION: {
         bc_address_t addr; bs->Read(&addr);
         uint8_t nargs; bs->Read(&nargs);
-        uint8_t is_variadic; bs->Read(&is_variadic);
+        uint8_t flags; bs->Read(&flags);
 
         handler->StoreStaticFunction(
             addr,
             nargs,
-            is_variadic
+            flags
         );
 
         break;
@@ -443,13 +443,15 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         bc_reg_t reg; bs->Read(&reg);
         bc_address_t addr; bs->Read(&addr);
         uint8_t nargs; bs->Read(&nargs);
-        uint8_t is_variadic; bs->Read(&is_variadic);
+        uint8_t flags; bs->Read(&flags);
+
+        std::cout << "new function, flags = " << (int)flags << "\n";
 
         handler->LoadFunc(
             reg,
             addr,
             nargs,
-            is_variadic
+            flags
         );
 
         break;

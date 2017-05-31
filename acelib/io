@@ -49,6 +49,6 @@ module io {
         io::write = runtime::load_function(lib,'io_write')
         io::close = runtime::load_function(lib, 'io_close')
 
-        io::stdout = ::call(runtime::load_function(lib, 'io_get_stdout'))
+        io::stdout = runtime::load_function(lib, 'io_get_stdout')()
     }
 }

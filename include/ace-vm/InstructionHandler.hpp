@@ -58,13 +58,13 @@ struct InstructionHandler {
 
     inline void StoreStaticFunction(bc_address_t addr,
         uint8_t nargs,
-        uint8_t is_variadic)
+        uint8_t flags)
     {
         Value sv;
         sv.m_type = Value::FUNCTION;
         sv.m_value.func.m_addr = addr;
         sv.m_value.func.m_nargs = nargs;
-        sv.m_value.func.m_is_variadic = is_variadic;
+        sv.m_value.func.m_flags = flags;
 
         state->m_static_memory.Store(std::move(sv));
     }
@@ -116,7 +116,7 @@ struct InstructionHandler {
         value.m_value.d = f64;
     }
 
-    inline void LoadOffset(bc_reg_t reg, uint8_t offset)
+    inline void LoadOffset(bc_reg_t reg, uint16_t offset)
     {
         // read value from stack at (sp - offset)
         // into the the register
@@ -161,13 +161,13 @@ struct InstructionHandler {
     inline void LoadFunc(bc_reg_t reg,
         bc_address_t addr,
         uint8_t nargs,
-        uint8_t is_variadic)
+        uint8_t flags)
     {
         Value &sv = thread->m_regs[reg];
         sv.m_type = Value::FUNCTION;
         sv.m_value.func.m_addr = addr;
         sv.m_value.func.m_nargs = nargs;
-        sv.m_value.func.m_is_variadic = is_variadic;
+        sv.m_value.func.m_flags = flags;
     }
 
     inline void LoadType(bc_reg_t reg,
@@ -819,10 +819,15 @@ struct InstructionHandler {
                 result.m_value.d = result_value;
             }
         } else {
-            char buffer[256];
-            std::sprintf(buffer, "cannot ADD types '%s' and '%s'",
-                lhs->GetTypeString(), rhs->GetTypeString());
-            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "ADD",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
         }
 
         // set the destination register to be the result
@@ -860,10 +865,15 @@ struct InstructionHandler {
                 result.m_value.d = result_value;
             }
         } else {
-            char buffer[256];
-            std::sprintf(buffer, "cannot SUB types '%s' and '%s'",
-                lhs->GetTypeString(), rhs->GetTypeString());
-            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "SUB",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
         }
 
         // set the destination register to be the result
@@ -901,10 +911,15 @@ struct InstructionHandler {
                 result.m_value.d = result_value;
             }
         } else {
-            char buffer[256];
-            std::sprintf(buffer, "cannot MUL types '%s' and '%s'",
-                lhs->GetTypeString(), rhs->GetTypeString());
-            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "MUL",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
         }
 
         // set the destination register to be the result
@@ -950,10 +965,15 @@ struct InstructionHandler {
                 }
             }
         } else {
-            char buffer[256];
-            std::sprintf(buffer, "cannot DIV types '%s' and '%s'",
-                lhs->GetTypeString(), rhs->GetTypeString());
-            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "DIV",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
         }
 
         // set the destination register to be the result
@@ -1005,10 +1025,15 @@ struct InstructionHandler {
                 }
             }
         } else {
-            char buffer[256];
-            std::sprintf(buffer, "Cannot MOD types '%s' and '%s'",
-                lhs->GetTypeString(), rhs->GetTypeString());
-            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "MOD",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
         }
 
         // set the destination register to be the result
@@ -1038,9 +1063,14 @@ struct InstructionHandler {
                 value->m_value.d = -f;
             }
         } else {
-            char buffer[256];
-            std::sprintf(buffer, "cannot negate type '%s'", value->GetTypeString());
-            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "NEG",
+                    value->GetTypeString()
+                )
+            );
+            return;
         }
     }
 

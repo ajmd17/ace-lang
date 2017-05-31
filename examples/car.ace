@@ -17,15 +17,9 @@ module car_example {
   type bool = Boolean
   type string = String
   type array = Array
-
-
-  //mg.t = 999.4
   
-  
-
   x: array = [1,2,3]
-  print typeof x
-  print runtime::typeof(x)
+  print typeof x // Array
 
   type Car {
     name: String

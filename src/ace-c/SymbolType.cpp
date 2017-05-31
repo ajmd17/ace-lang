@@ -149,6 +149,20 @@ const SymbolTypePtr_t SymbolType::Builtin::MODULE_INFO = SymbolType::Object(
     }
 );
 
+const SymbolTypePtr_t SymbolType::Builtin::GENERATOR = SymbolType::Generic(
+    "Generator",
+    sp<AstFunctionExpression>(new AstFunctionExpression(
+        {},
+        nullptr, 
+        sp<AstBlock>(new AstBlock(SourceLocation::eof)),
+        false,
+        false,
+        SourceLocation::eof
+    )),
+    {},
+    GenericTypeInfo{ 1 }
+);
+
 SymbolType::SymbolType(const std::string &name, 
     SymbolTypeClass type_class, 
     const SymbolTypePtr_t &base)

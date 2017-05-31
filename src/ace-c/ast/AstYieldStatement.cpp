@@ -1,4 +1,4 @@
-#include <ace-c/ast/AstReturnStatement.hpp>
+#include <ace-c/ast/AstYieldStatement.hpp>
 #include <ace-c/Optimizer.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
@@ -7,7 +7,7 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
-AstReturnStatement::AstReturnStatement(const std::shared_ptr<AstExpression> &expr,
+AstYieldStatement::AstYieldStatement(const std::shared_ptr<AstExpression> &expr,
     const SourceLocation &location)
     : AstStatement(location),
       m_expr(expr),
@@ -15,7 +15,7 @@ AstReturnStatement::AstReturnStatement(const std::shared_ptr<AstExpression> &exp
 {
 }
 
-void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
+void AstYieldStatement::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
     m_expr->Visit(visitor, mod);
@@ -26,8 +26,7 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
     TreeNode<Scope> *top = mod->m_scopes.TopNode();
     while (top != nullptr) {
         if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION ||
-            top->m_value.GetScopeType() == SCOPE_TYPE_PURE_FUNCTION)
-        {
+            top->m_value.GetScopeType() == SCOPE_TYPE_PURE_FUNCTION) {
             in_function = true;
             break;
         }
@@ -37,19 +36,30 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
 
     if (in_function) {
         ASSERT(top != nullptr);
-        // add return type
-        top->m_value.AddReturnType(m_expr->GetSymbolType(), m_location);
+        ASSERT(m_expr->GetSymbolType() != nullptr);
+        
+        top->m_value.AddReturnType(
+            SymbolType::GenericInstance(
+                SymbolType::Builtin::GENERATOR,
+                GenericInstanceTypeInfo {
+                    {
+                        { "@generates", m_expr->GetSymbolType() }
+                    }
+                }
+            ),
+            m_location
+        );
     } else {
-        // error; 'return' not allowed outside of a function
+        // error; 'yield' not allowed outside of a function
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
-            Msg_return_outside_function,
+            Msg_yield_outside_function,
             m_location
         ));
     }
 }
 
-void AstReturnStatement::Build(AstVisitor *visitor, Module *mod)
+void AstYieldStatement::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
     m_expr->Build(visitor, mod);
@@ -64,20 +74,20 @@ void AstReturnStatement::Build(AstVisitor *visitor, Module *mod)
     visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
 }
 
-void AstReturnStatement::Optimize(AstVisitor *visitor, Module *mod)
+void AstYieldStatement::Optimize(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
     m_expr->Optimize(visitor, mod);
 }
 
-void AstReturnStatement::Recreate(std::ostringstream &ss)
+void AstYieldStatement::Recreate(std::ostringstream &ss)
 {
     ASSERT(m_expr != nullptr);
-    ss << Keyword::ToString(Keyword_return) << " ";
+    ss << Keyword::ToString(Keyword_yield) << " ";
     m_expr->Recreate(ss);
 }
 
-Pointer<AstStatement> AstReturnStatement::Clone() const
+Pointer<AstStatement> AstYieldStatement::Clone() const
 {
     return CloneImpl();
 }

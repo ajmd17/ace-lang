@@ -159,5 +159,6 @@ bool AstMember::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstMember::GetSymbolType() const
 {
+    ASSERT(m_symbol_type != nullptr);
     return m_symbol_type;
 }

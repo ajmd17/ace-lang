@@ -36,6 +36,7 @@ enum Keywords {
     Keyword_true,
     Keyword_false,
     Keyword_return,
+    Keyword_yield,
     Keyword_break,
     Keyword_continue,
     Keyword_async,

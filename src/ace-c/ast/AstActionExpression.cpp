@@ -16,14 +16,12 @@
 #include <iostream>
 
 AstActionExpression::AstActionExpression(
-    const std::shared_ptr<AstExpression> &action,
+    const std::vector<std::shared_ptr<AstArgument>> &actions,
     const std::shared_ptr<AstExpression> &target,
-    const std::vector<std::shared_ptr<AstArgument>> &args,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
-      m_action(action),
+      m_actions(actions),
       m_target(target),
-      m_args(args),
       m_return_type(SymbolType::Builtin::ANY),
       m_is_method_call(false),
       m_member_found(-1)
@@ -32,10 +30,13 @@ AstActionExpression::AstActionExpression(
 
 void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-    ASSERT(m_target != nullptr);
-    m_target->Visit(visitor, mod);
+    ASSERT(!m_actions.empty());
+    //m_action->Visit(visitor, mod);
 
-    std::shared_ptr<AstArgument> self_arg(new AstArgument(
+    ASSERT(m_target != nullptr);
+    //m_target->Visit(visitor, mod);
+
+    /*std::shared_ptr<AstArgument> self_arg(new AstArgument(
         m_target,
         true,
         "self",
@@ -43,50 +44,50 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     ));
     
     // insert self to front
-    m_args.insert(m_args.begin(), self_arg);
+    m_args.insert(m_args.begin(), self_arg);*/
+    
+    /*std::shared_ptr<AstArgument> action_arg((new AstArgument(
+        m_action,
+        false,
+        "",
+        SourceLocation::eof
+    )));
 
-    // build in a member access to get the objects 'events' field
-    m_expr = std::shared_ptr<AstMember>(new AstMember(
-        "__events",
+    m_args.push_back(action_arg);*/
+
+    std::shared_ptr<AstArgument> self_arg((new AstArgument(
         m_target,
-        m_location
-    ));
+        false,
+        "",
+        SourceLocation::eof
+    )));
+
+    m_actions.insert(
+        m_actions.begin(),
+        self_arg
+    );
 
     // add events::get_action_handler call
     m_expr = visitor->GetCompilationUnit()->GetAstNodeBuilder()
         .Module("events")
-        .Function("get_action_handler")
-        .Call({
-            std::shared_ptr<AstArgument>((new AstArgument(
-                m_expr,
-                false,
-                "",
-                SourceLocation::eof
-            ))),
-            
-            std::shared_ptr<AstArgument>((new AstArgument(
-                m_action,
-                false,
-                "",
-                SourceLocation::eof
-            )))
-        });
+        .Function("call_action")
+        .Call(m_actions);
 
-    m_expr = std::shared_ptr<AstCallExpression>(new AstCallExpression(
+    /*m_expr = std::shared_ptr<AstCallExpression>(new AstCallExpression(
         m_expr,
-        m_args,
+        m_actions,
         false, // no 'self' - do not pass in object.events,
                // instead pass object (see above)
         m_location
-    ));
+    ));*/
 
     ASSERT(m_expr != nullptr);
     m_expr->Visit(visitor, mod);
 
-    SymbolTypePtr_t target_type = m_target->GetSymbolType();
-    ASSERT(target_type != nullptr);
+    //SymbolTypePtr_t target_type = m_target->GetSymbolType();
+    //ASSERT(target_type != nullptr);
 
-    if (target_type != SymbolType::Builtin::ANY) {
+    /*if (target_type != SymbolType::Builtin::ANY) {
         if (SymbolTypePtr_t member_type = target_type->FindMember("__events")) {
             m_member_found = 1;
         } else {
@@ -94,13 +95,14 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
         }
     } else {
         m_member_found = -1;
-    }
+    }*/
 }
 
 void AstActionExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-
+    m_expr->Build(visitor, mod);
+#if 0
     if (m_member_found == 1) {
         // found, build expr
         m_expr->Build(visitor, mod);
@@ -186,9 +188,9 @@ void AstActionExpression::Build(AstVisitor *visitor, Module *mod)
         end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
         visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
     }
-
+#endif
     // re-build in the target. actions return their target after call
-    m_target->Build(visitor, mod);
+    //m_target->Build(visitor, mod);
 }
 
 void AstActionExpression::Optimize(AstVisitor *visitor, Module *mod)
@@ -196,17 +198,17 @@ void AstActionExpression::Optimize(AstVisitor *visitor, Module *mod)
     ASSERT(m_expr != nullptr);
     m_expr->Optimize(visitor, mod);
 
-    // optimize each argument
+   /* // optimize each argument
     for (auto &arg : m_args) {
         if (arg != nullptr) {
             arg->Optimize(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
         }
-    }
+    }*/
 }
 
 void AstActionExpression::Recreate(std::ostringstream &ss)
 {
-    ASSERT(m_action != nullptr);
+    /*ASSERT(m_action != nullptr);
     m_action->Recreate(ss);
 
     ss << "(";
@@ -224,7 +226,7 @@ void AstActionExpression::Recreate(std::ostringstream &ss)
     ss << " => ";
 
     ASSERT(m_target != nullptr);
-    m_target->Recreate(ss);
+    m_target->Recreate(ss);*/
 }
 
 Pointer<AstStatement> AstActionExpression::Clone() const
@@ -247,8 +249,8 @@ bool AstActionExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstActionExpression::GetSymbolType() const
 {
-    ASSERT(m_target != nullptr);
-    ASSERT(m_target->GetSymbolType() != nullptr);
+    ASSERT(m_expr != nullptr);
+    ASSERT(m_expr->GetSymbolType() != nullptr);
 
-    return m_target->GetSymbolType();
+    return m_expr->GetSymbolType();
 }

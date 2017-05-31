@@ -32,6 +32,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "true",     Keyword_true },
     { "false",    Keyword_false },
     { "return",   Keyword_return },
+    { "yield",    Keyword_yield },
     { "break",    Keyword_break },
     { "continue", Keyword_continue },
     { "async",    Keyword_async },

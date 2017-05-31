@@ -11,7 +11,7 @@
 
 namespace ace {
 namespace vm {
-
+    
 struct Value {
     enum ValueType {
         /* These first four types are listed in order of precedence */
@@ -43,7 +43,7 @@ struct Value {
         struct {
             uint32_t m_addr;
             uint8_t m_nargs;
-            uint8_t m_is_variadic;
+            uint8_t m_flags;
         } func;
 
         NativeFunctionPtr_t native_func;

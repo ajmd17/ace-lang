@@ -20,6 +20,7 @@ void Compiler::BuildArgumentsStart(
         auto &arg = args[i];
         ASSERT(args[i] != nullptr);
 
+        // build in current module (not mod)
         arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
 
         // get active register
@@ -33,8 +34,6 @@ void Compiler::BuildArgumentsStart(
         // increment stack size
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
     }
-
-   
 }
 
 void Compiler::BuildArgumentsEnd(

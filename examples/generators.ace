@@ -1,0 +1,47 @@
+module generators {
+  // does not work yet
+
+  /*foreach: Function = (arr: Array) {
+    i: Int = 0
+    len: Int = ::length(arr)
+
+    print 'hi'
+
+    while i < len {
+      yield arr[i]
+      i += 1
+    }
+  }
+  
+  ======
+  transformed to:
+  */
+
+  foreach: Function = (arr: Array) {
+    gen: Function = (cb: Function) {
+      i: Int = 0
+      len: Int = ::length(arr)
+
+      print 'hi'
+
+      while i < len {
+        cb(arr[i])
+        i += 1
+      }
+    }
+
+    return gen
+  }
+
+  /*
+
+  print foreach([1,2,3]) => (i) {
+    print i
+  }
+
+  */
+
+  print foreach([1,2,3])((i) {
+    print i
+  })
+}

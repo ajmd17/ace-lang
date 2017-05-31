@@ -387,6 +387,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseTryCatchStatement();
         } else if (MatchKeyword(Keyword_return, false)) {
             res = ParseReturnStatement();
+        } else if (MatchKeyword(Keyword_yield, false)) {
+            res = ParseYieldStatement();
         } else {
             res = ParseExpression();
         }
@@ -395,7 +397,13 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
     } else if (Match(TK_OPEN_BRACE, false)) {
         res = ParseBlock();
     } else {
-        res = ParseExpression();
+        std::shared_ptr<AstExpression> expr = ParseExpression();
+        
+        while (Match(TK_COMMA) || Match(TK_FAT_ARROW)) {
+            expr = ParseActionExpression(expr);
+        }
+
+        res = expr;
     }
 
     if (res != nullptr && m_token_stream->HasNext()) {
@@ -560,7 +568,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
            (Match(TK_DOT) ||
             Match(TK_OPEN_BRACKET) ||
             Match(TK_OPEN_PARENTH) ||
-            Match(TK_FAT_ARROW) ||
+            //Match(TK_FAT_ARROW) ||
             MatchKeyword(Keyword_has)))
     {
         if (Match(TK_DOT)) {
@@ -572,9 +580,9 @@ std::shared_ptr<AstExpression> Parser::ParseTerm()
         if (Match(TK_OPEN_PARENTH)) {
             expr = ParseCallExpression(expr);
         }
-        if (Match(TK_FAT_ARROW)) {
-            expr = ParseActionExpression(expr);
-        }
+        // if (Match(TK_FAT_ARROW)) {
+        //     expr = ParseActionExpression(expr);
+        // }
         if (MatchKeyword(Keyword_has)) {
             expr = ParseHasExpression(expr);
         }
@@ -761,27 +769,31 @@ std::shared_ptr<AstIdentifier> Parser::ParseIdentifier(bool allow_keyword)
     return nullptr;
 }
 
-std::shared_ptr<AstArgument> Parser::ParseArgument()
+std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression> expr)
 {
     SourceLocation location = CurrentLocation();
 
     bool is_named_arg = false;
     std::string arg_name;
 
-    // check for name: value expressions (named arguments)
-    if (Match(TK_IDENT)) {
-        if (MatchAhead(TK_COLON, 1)) {
-            // named argument
-            is_named_arg = true;
-            Token name_token = Expect(TK_IDENT, true);
-            arg_name = name_token.GetValue();
+    if (expr == nullptr) {
+        expr = ParseExpression();
 
-            // read the colon
-            Expect(TK_COLON, true);
+        // check for name: value expressions (named arguments)
+        if (Match(TK_IDENT)) {
+            if (MatchAhead(TK_COLON, 1)) {
+                // named argument
+                is_named_arg = true;
+                Token name_token = Expect(TK_IDENT, true);
+                arg_name = name_token.GetValue();
+
+                // read the colon
+                Expect(TK_COLON, true);
+            }
         }
     }
 
-    if (auto expr = ParseExpression()) {
+    if (expr != nullptr) {
         return std::shared_ptr<AstArgument>(
             new AstArgument(
                 expr,
@@ -804,7 +816,7 @@ std::vector<std::shared_ptr<AstArgument>> Parser::ParseArguments()
     Expect(TK_OPEN_PARENTH, true);
 
     while (!Match(TK_CLOSE_PARENTH, false)) {
-        auto arg = ParseArgument();
+        auto arg = ParseArgument(nullptr);
         if (arg == nullptr) {
             break;
         }
@@ -939,17 +951,31 @@ std::shared_ptr<AstHasExpression> Parser::ParseHasExpression(std::shared_ptr<Ast
     return nullptr;
 }
 
-std::shared_ptr<AstActionExpression> Parser::ParseActionExpression(std::shared_ptr<AstExpression> action)
+std::shared_ptr<AstActionExpression> Parser::ParseActionExpression(std::shared_ptr<AstExpression> expr)
 {
-    if (Expect(TK_FAT_ARROW, true)) {
-        // TODO: args
-        if (auto target = ParseExpression()) {
-            return std::shared_ptr<AstActionExpression>(new AstActionExpression(
-                action,
-                target,
-                {},
-                target->GetLocation()
-            ));
+    std::vector<std::shared_ptr<AstArgument>> actions;
+
+    if (auto action = ParseArgument(expr)) {
+        actions.push_back(action);
+
+        // parse more actions
+        while (Match(TK_COMMA, true)) {
+            if (auto action = ParseArgument(nullptr)) {
+                actions.push_back(action);
+            } else {
+                break;
+            }
+        }
+
+        if (Expect(TK_FAT_ARROW, true)) {
+            // TODO: args
+            if (auto target = ParseExpression()) {
+                return std::shared_ptr<AstActionExpression>(new AstActionExpression(
+                    actions,
+                    target,
+                    target->GetLocation()
+                ));
+            }
         }
     }
 
@@ -1152,6 +1178,7 @@ std::shared_ptr<AstExpression> Parser::ParseBinaryExpression(int expr_prec,
         if (auto right = ParseTerm()) {
             // next part of expression's precedence
             const Operator *next_op = nullptr;
+            
             int next_prec = OperatorPrecedence(next_op);
             if (precedence < next_prec) {
                 right = ParseBinaryExpression(precedence + 1, right);
@@ -1967,6 +1994,22 @@ std::shared_ptr<AstReturnStatement> Parser::ParseReturnStatement()
     if (Token token = ExpectKeyword(Keyword_return, true)) {
         if (auto expr = ParseExpression()) {
             return std::shared_ptr<AstReturnStatement>(new AstReturnStatement(
+                expr,
+                location
+            ));
+        }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstYieldStatement> Parser::ParseYieldStatement()
+{
+    SourceLocation location = CurrentLocation();
+
+    if (Token token = ExpectKeyword(Keyword_yield, true)) {
+        if (auto expr = ParseExpression()) {
+            return std::shared_ptr<AstYieldStatement>(new AstYieldStatement(
                 expr,
                 location
             ));

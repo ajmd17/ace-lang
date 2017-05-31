@@ -74,18 +74,18 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         uint8_t nargs;
         bs.Read(&nargs);
 
-        uint8_t is_variadic;
-        bs.Read(&is_variadic);
+        uint8_t flags;
+        bs.Read(&flags);
 
         if (os != nullptr) {
             
             (*os) << "function [@(" << std::hex << addr << std::dec << "), "
                     << "u8(" << (int)nargs << ")], "
-                    << "u8(" << (int)is_variadic << ")]"
+                    << "u8(" << (int)flags << ")]"
                     << std::endl;
         }
 
-        is << Instruction<uint8_t, uint32_t, uint8_t, uint8_t>(code, addr, nargs, is_variadic);
+        is << Instruction<uint8_t, uint32_t, uint8_t, uint8_t>(code, addr, nargs, flags);
 
         break;
     }
@@ -343,19 +343,18 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
         uint8_t nargs;
         bs.Read(&nargs);
 
-        uint8_t is_variadic;
-        bs.Read(&is_variadic);
+        uint8_t flags;
+        bs.Read(&flags);
 
         if (os != nullptr) {
-            
             (*os) << "load_func [%" << (int)reg
                     << ", @(" << std::hex << addr << std::dec << "), "
                     << "u8(" << (int)nargs << ")], "
-                    << "u8(" << (int)is_variadic << ")]"
+                    << "u8(" << (int)flags << ")]"
                     << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t, uint8_t>(code, reg, addr, nargs, is_variadic);
+        is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t, uint8_t>(code, reg, addr, nargs, flags);
 
         break;
     }

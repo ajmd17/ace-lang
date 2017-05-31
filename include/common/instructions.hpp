@@ -73,6 +73,14 @@ enum class Instructions_2 {
     HALT,
 };
 
+
+
+enum FunctionFlags : uint8_t {
+    NONE = 0x00,
+    VARIADIC = 0x01,
+    GENERATOR = 0x02
+};
+
 // arguments should be placed in the format:
 // dest, src
 
@@ -103,7 +111,7 @@ enum Instructions : char {
     /* Store values in static memory */
     STORE_STATIC_STRING,   // str      [u32 len, i8[] str]
     STORE_STATIC_ADDRESS,  // addr     [@ addr]
-    STORE_STATIC_FUNCTION, // function [@ addr, u8 nargs, u8 is_variadic]
+    STORE_STATIC_FUNCTION, // function [@ addr, u8 nargs, u8 flags]
     STORE_STATIC_TYPE,     // type     [u16 size, u32... hashes]
 
     /* Load a value into a register */
@@ -116,7 +124,7 @@ enum Instructions : char {
     LOAD_STATIC,   // load_static   [% reg, # idx]
     LOAD_STRING,   // load_str      [% reg, u32 len, i8[] str]
     LOAD_ADDR,     // load_addr     [% reg, @ addr]
-    LOAD_FUNC,     // load_func     [% reg, @ addr, u8 nargs, u8 is_variadic]
+    LOAD_FUNC,     // load_func     [% reg, @ addr, u8 nargs, u8 flags]
     LOAD_TYPE,     // load_type     [% reg, u16 size, u32... hashes]
     LOAD_MEM,      // load_mem      [% reg, % src, u8 idx]
     LOAD_MEM_HASH, // load_mem_hash [% reg, % src, u32 hash]

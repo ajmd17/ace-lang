@@ -7,7 +7,7 @@ module loop {
 		fun(lol)
 	}
 	
-	type (T, J) MyGeneric {
+	type MyGeneric <T, J> {
 		name: T
 		sayhi = () {
 			print "hi!!!"
@@ -15,34 +15,34 @@ module loop {
 	}
 	
 	
-	type (T) Range {
+	type Range<T> {
 		start : T
 		end   : T
 		lol   : Int
 		
 		fun = () {
-		    t: T
+			t: T
 			print "t == ", t
 			print "Hi"
 		}
 	}
 	
-	range: Range(Int)
+	range: Range<Int>
 	range.start = 50
 	range.end   = 1000
 	
 	range.fun()
 	
-	forloop : Function = (the_range: Range(Any)) {
+	forloop : Function = (the_range: Range<Any>) {
 		let start = the_range.start
 		let end   = the_range.end
 		
 		print 'end - start == ', end - start
 	}
-	
+
 	forloop(range)
 	
-	myobj: MyGeneric(Int, String)
+	//myobj: MyGeneric<Int, String>
 	
 	print 'myobj == ', myobj
 	print 'myobj.j == ', myobj.name
@@ -70,32 +70,4 @@ module loop {
 			start += increment
 		}
 	}
-	
-	/*type Range {
-		start = null
-		end   = null
-	}*/
-
-	
-	/*type Range(T) {
-		start: T
-		end:   T
-	}*/
-	
-	
-	//print 'myrange = ', myrange
-	//myrange.start = 0
-	//myrange.end = 1000
-	
-	//myrange.foreach_range(func(it) {
-	//	print 'it(1) = ', it
-	//})
-	
-	
-	//myrange.start = 1000
-	//myrange.end = 0
-	
-	//myrange.foreach_range(func(it) {
-	//	print 'it(2) = ', it
-	//})
 }

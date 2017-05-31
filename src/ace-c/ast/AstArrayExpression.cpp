@@ -185,7 +185,6 @@ bool AstArrayExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstArrayExpression::GetSymbolType() const
 {
-    // TODO: determine the held type?
     return SymbolType::GenericInstance(
         SymbolType::Builtin::ARRAY,
         GenericInstanceTypeInfo {

@@ -38,6 +38,7 @@
 #include <common/typedefs.hpp>
 #include <common/timer.hpp>
 #include <common/termcolor.hpp>
+#include <common/hasher.hpp>
 
 #include <vector>
 #include <string>
@@ -94,6 +95,182 @@ void Events_new_event_array(ace::sdk::Params params)
     ACE_RETURN(res);
 }
 
+void Events_call_action(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(>=, 2);
+
+    const vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    vm::Value *value_ptr = params.args[1];
+    ASSERT(value_ptr != nullptr);
+
+    vm::Value &value = *value_ptr;
+
+    vm::Exception ex("call_action() expects an Object or Function as the first argument");
+    vm::Exception ex1("Each item in event array should be of type Array");
+
+    if (value.m_type == vm::Value::ValueType::FUNCTION && (value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
+        // if the key is a generator, it should look like this internally:
+        /*
+            () {
+                return (<arguments>, callback) {
+                    // ...
+                    callback(...)
+                }
+            }
+        */
+        // so we should invoke the object which will return the nested closure,
+        // and pass our found handler to it (at the end of this function)
+        // as `callback`
+    }
+
+    switch (target_ptr->GetType()) {
+        case vm::Value::ValueType::HEAP_POINTER: {
+            if (target_ptr->m_value.ptr == nullptr) {
+                goto return_null_handler;
+            }
+
+            // lookup '__events' member
+            if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+                const std::uint32_t hash = hash_fnv_1("__events");
+
+                if (vm::Member *member = object->LookupMemberFromHash(hash)) {
+                    // __events member found
+                    if (member->value.m_type != vm::Value::ValueType::HEAP_POINTER) {
+                        params.handler->state->ThrowException(
+                            params.handler->thread,
+                            vm::Exception("__events must be an Array")
+                        );
+                        return;
+                    }
+
+                    if (vm::Array *array = member->value.m_value.ptr->GetPointer<vm::Array>()) {
+                        // used for comparing values
+                        union {
+                            aint64 i;
+                            afloat64 f;
+                        } a, b;
+
+                        enum {
+                            MATCH_TYPES,
+                            MATCH_VALUES
+                        } match_mode = MATCH_VALUES;
+
+                        vm::Value *res_func = nullptr;
+
+                        // look thru all array items until we find a match.
+                        for (size_t i = 0; i < array->GetSize(); i++) {
+                            vm::Value &el = array->AtIndex(i);
+
+                            if (el.m_type != vm::Value::HEAP_POINTER) {
+                                params.handler->state->ThrowException(
+                                    params.handler->thread,
+                                    ex1
+                                );
+                                return;
+                            }
+
+                            // make sure each item is an array (this could be changed to a tuple,
+                            // or something more efficient?)
+                            if (vm::Array *el_array = el.m_value.ptr->GetPointer<vm::Array>()) {
+                                if (el_array->GetSize() < 2) { // each item has at least 2 elements
+                                    params.handler->state->ThrowException(
+                                        params.handler->thread,
+                                        vm::Exception::OutOfBoundsException()
+                                    );
+                                    return;
+                                }
+
+                                // el[0]: the value to test against
+                                // el[1]: the handler function
+                                vm::Value &handler_value = el_array->AtIndex(0);
+                                vm::Value &handler_func = el_array->AtIndex(1);
+
+                                // compare integers
+                                if (value.GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
+                                    if (match_mode == MATCH_TYPES || a.i == b.i) {
+                                        res_func = &handler_func;
+                                        break;
+                                    }
+                                } else if (value.GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
+                                    if (match_mode == MATCH_TYPES || a.f == b.f) {
+                                        res_func = &handler_func;
+                                        break;
+                                    }
+                                } else if (value.m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
+                                    if (match_mode == MATCH_TYPES || value.m_value.b == handler_value.m_value.b) {
+                                        res_func = &handler_func;
+                                        break;
+                                    }
+                                } else if (value.m_type == vm::Value::HEAP_POINTER && handler_value.m_type == vm::Value::HEAP_POINTER) {
+                                    vm::HeapValue *hv_a = value.m_value.ptr;
+                                    vm::HeapValue *hv_b = handler_value.m_value.ptr;
+
+                                    // drop out early for same pointer value
+                                    if (hv_a == hv_b) {
+                                        res_func = &handler_func;
+                                        break;
+                                    } else if (hv_a == nullptr || hv_b == nullptr) {
+                                        // one is null... not same
+                                        // continue.
+                                    } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
+                                        if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {
+                                            res_func = &handler_func;
+                                            break;
+                                        }
+                                    }
+                                }
+                            } else {
+                                params.handler->state->ThrowException(
+                                    params.handler->thread,
+                                    ex1
+                                );
+                                return;
+                            }
+                        }
+
+                        // handler found, call it
+                        if (res_func != nullptr) {
+                            // set value to be the 'self' object because it is a member function
+                            value = *target_ptr;
+                            vm::VM::Invoke(
+                                params.handler,
+                                *res_func,
+                                params.nargs - 1
+                            );
+                            return;
+                        }
+                    }
+                }
+            }
+        
+        return_null_handler:
+            // not found, return null
+            vm::Value res;
+            res.m_type = vm::Value::HEAP_POINTER;
+            res.m_value.ptr = nullptr;
+            ACE_RETURN(res);
+        }
+        case vm::Value::ValueType::FUNCTION:
+            // fallthrough
+        case vm::Value::ValueType::NATIVE_FUNCTION:
+            // for functions, return the original function itself
+            //ACE_RETURN(*target_ptr);
+            vm::VM::Invoke(
+                params.handler,
+                *target_ptr,
+                params.nargs - 1
+            );
+            return;
+        default:
+            params.handler->state->ThrowException(
+                params.handler->thread,
+                ex
+            );
+    }
+}
+
 void Events_get_action_handler(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 2);
@@ -106,140 +283,140 @@ void Events_get_action_handler(ace::sdk::Params params)
 
     const vm::Value &value = *value_ptr;
 
-    vm::Exception ex("get_action_handler() expects an Array as the first argument");
+    vm::Exception ex("get_action_handler() expects an Object or Function as the first argument");
     vm::Exception ex1("Each item in event array should be of type Array");
 
-    if (target_ptr->GetType() != vm::Value::ValueType::HEAP_POINTER) {
-        params.handler->state->ThrowException(params.handler->thread, ex);
-        return;
-    }
-
-    if (vm::Array *array = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) {
-        // used for comparing values
-        union {
-            aint64 i;
-            afloat64 f;
-        } a, b;
-
-        enum {
-            MATCH_TYPES,
-            MATCH_VALUES
-        } match_mode = MATCH_VALUES;
-
-        vm::Value *res_func = nullptr;
-
-        // look thru all array items until we find a match.
-        for (size_t i = 0; i < array->GetSize(); i++) {
-            vm::Value &el = array->AtIndex(i);
-
-            if (el.m_type != vm::Value::HEAP_POINTER) {
-                params.handler->state->ThrowException(
-                    params.handler->thread,
-                    ex1
-                );
-                return;
+    switch (target_ptr->GetType()) {
+        case vm::Value::ValueType::HEAP_POINTER: {
+            if (target_ptr->m_value.ptr == nullptr) {
+                goto return_null_handler;
             }
 
-            // make sure each item is an array (this could be changed to a tuple,
-            // or something more efficient?)
-            if (vm::Array *el_array = el.m_value.ptr->GetPointer<vm::Array>()) {
-                if (el_array->GetSize() < 2) { // each item has at least 2 elements
-                    params.handler->state->ThrowException(
-                        params.handler->thread,
-                        vm::Exception::OutOfBoundsException()
-                    );
-                    return;
-                }
+            // lookup '__events' member
+            if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+                const std::uint32_t hash = hash_fnv_1("__events");
 
-                // el[0]: the value to test against
-                // el[1]: the handler function
-                vm::Value &handler_value = el_array->AtIndex(0);
-                vm::Value &handler_func = el_array->AtIndex(1);
+                if (vm::Member *member = object->LookupMemberFromHash(hash)) {
+                    // __events member found
+                    if (member->value.m_type != vm::Value::ValueType::HEAP_POINTER) {
+                        params.handler->state->ThrowException(
+                            params.handler->thread,
+                            vm::Exception("__events must be an Array")
+                        );
+                        return;
+                    }
 
-                // compare integers
-                if (value.GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
-                    if (match_mode == MATCH_TYPES || a.i == b.i) {
-                        res_func = &handler_func;
-                        break;
-                    }
-                } else if (value.GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
-                    if (match_mode == MATCH_TYPES || a.f == b.f) {
-                        res_func = &handler_func;
-                        break;
-                    }
-                } else if (value.m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
-                    if (match_mode == MATCH_TYPES || value.m_value.b == handler_value.m_value.b) {
-                        res_func = &handler_func;
-                        break;
-                    }
-                } else if (value.m_type == vm::Value::HEAP_POINTER && handler_value.m_type == vm::Value::HEAP_POINTER) {
-                    vm::HeapValue *hv_a = value.m_value.ptr;
-                    vm::HeapValue *hv_b = handler_value.m_value.ptr;
+                    if (vm::Array *array = member->value.m_value.ptr->GetPointer<vm::Array>()) {
+                        // used for comparing values
+                        union {
+                            aint64 i;
+                            afloat64 f;
+                        } a, b;
 
-                    // drop out early for same pointer value
-                    if (hv_a == hv_b) {
-                        res_func = &handler_func;
-                        break;
-                    } else if (hv_a == nullptr || hv_b == nullptr) {
-                        // one is null... not same
-                        // continue.
-                    } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
-                        if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {
-                            res_func = &handler_func;
-                            break;
+                        enum {
+                            MATCH_TYPES,
+                            MATCH_VALUES
+                        } match_mode = MATCH_VALUES;
+
+                        vm::Value *res_func = nullptr;
+
+                        // look thru all array items until we find a match.
+                        for (size_t i = 0; i < array->GetSize(); i++) {
+                            vm::Value &el = array->AtIndex(i);
+
+                            if (el.m_type != vm::Value::HEAP_POINTER) {
+                                params.handler->state->ThrowException(
+                                    params.handler->thread,
+                                    ex1
+                                );
+                                return;
+                            }
+
+                            // make sure each item is an array (this could be changed to a tuple,
+                            // or something more efficient?)
+                            if (vm::Array *el_array = el.m_value.ptr->GetPointer<vm::Array>()) {
+                                if (el_array->GetSize() < 2) { // each item has at least 2 elements
+                                    params.handler->state->ThrowException(
+                                        params.handler->thread,
+                                        vm::Exception::OutOfBoundsException()
+                                    );
+                                    return;
+                                }
+
+                                // el[0]: the value to test against
+                                // el[1]: the handler function
+                                vm::Value &handler_value = el_array->AtIndex(0);
+                                vm::Value &handler_func = el_array->AtIndex(1);
+
+                                // compare integers
+                                if (value.GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
+                                    if (match_mode == MATCH_TYPES || a.i == b.i) {
+                                        res_func = &handler_func;
+                                        break;
+                                    }
+                                } else if (value.GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
+                                    if (match_mode == MATCH_TYPES || a.f == b.f) {
+                                        res_func = &handler_func;
+                                        break;
+                                    }
+                                } else if (value.m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
+                                    if (match_mode == MATCH_TYPES || value.m_value.b == handler_value.m_value.b) {
+                                        res_func = &handler_func;
+                                        break;
+                                    }
+                                } else if (value.m_type == vm::Value::HEAP_POINTER && handler_value.m_type == vm::Value::HEAP_POINTER) {
+                                    vm::HeapValue *hv_a = value.m_value.ptr;
+                                    vm::HeapValue *hv_b = handler_value.m_value.ptr;
+
+                                    // drop out early for same pointer value
+                                    if (hv_a == hv_b) {
+                                        res_func = &handler_func;
+                                        break;
+                                    } else if (hv_a == nullptr || hv_b == nullptr) {
+                                        // one is null... not same
+                                        // continue.
+                                    } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
+                                        if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {
+                                            res_func = &handler_func;
+                                            break;
+                                        }
+                                    }
+                                }
+                            } else {
+                                params.handler->state->ThrowException(
+                                    params.handler->thread,
+                                    ex1
+                                );
+                                return;
+                            }
+                        }
+
+                        // handler found, return it
+                        if (res_func != nullptr) {
+                            ACE_RETURN(*res_func);
                         }
                     }
                 }
-            } else {
-                params.handler->state->ThrowException(
-                    params.handler->thread,
-                    ex1
-                );
-                return;
             }
-        }
-
-        if (res_func != nullptr) {
-            ACE_RETURN(*res_func);
-        } else {
-            // assign register value to the allocated object
+        
+        return_null_handler:
+            // not found, return null
             vm::Value res;
             res.m_type = vm::Value::HEAP_POINTER;
             res.m_value.ptr = nullptr;
             ACE_RETURN(res);
         }
-
-    } else {
-        params.handler->state->ThrowException(params.handler->thread, ex);
-        return;
+        case vm::Value::ValueType::FUNCTION:
+            // fallthrough
+        case vm::Value::ValueType::NATIVE_FUNCTION:
+            // for functions, return the original function itself
+            ACE_RETURN(*target_ptr);
+        default:
+            params.handler->state->ThrowException(
+                params.handler->thread,
+                ex
+            );
     }
-
-    /*vm::Exception ex("get_action_handler() expects an EventArray as the first argument");
-
-    if (target_ptr->GetType() != vm::Value::ValueType::HEAP_POINTER) {
-        params.handler->state->ThrowException(params.handler->thread, ex);
-        return;
-    }
-
-    if (vm::EventArray *event_array = target_ptr->GetValue().ptr->GetPointer<vm::EventArray>()) {
-        const vm::Value *match_value = params.args[1];
-        ASSERT(match_value != nullptr);
-
-        // return the handler function
-        if (vm::Value *handler_func = event_array->Match(*match_value)) {
-            ACE_RETURN(*handler_func);
-        } else {
-            // assign register value to the allocated object
-            vm::Value res;
-            res.m_type = vm::Value::HEAP_POINTER;
-            res.m_value.ptr = nullptr;
-
-            ACE_RETURN(res);
-        }
-    } else {
-        params.handler->state->ThrowException(params.handler->thread, ex);
-        return;
-    }*/
 }
 
 void Random_new_random(ace::sdk::Params params)
@@ -1395,7 +1572,17 @@ void BuildLibraries(
         .Function("get_action_handler", SymbolType::Builtin::FUNCTION, {
             { "event_array", SymbolType::Builtin::ANY },
             { "match", SymbolType::Builtin::ANY }
-        }, Events_get_action_handler);
+        }, Events_get_action_handler)
+        .Function("call_action", SymbolType::Builtin::ANY, {
+            { "obj", SymbolType::Builtin::ANY },
+            { "key", SymbolType::Builtin::ANY },
+            { "args", SymbolType::GenericInstance(
+                SymbolType::Builtin::VAR_ARGS,
+                GenericInstanceTypeInfo {
+                    { { "arg", SymbolType::Builtin::ANY } }
+                }
+            ) }
+        }, Events_call_action);
 
     api.Module("random_utils")
         .Function("new_random", SymbolType::Builtin::ANY, {

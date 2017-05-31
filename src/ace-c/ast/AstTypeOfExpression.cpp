@@ -21,8 +21,8 @@ AstTypeOfExpression::AstTypeOfExpression(
 
 void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-    // ASSERT(m_expr != nullptr);
-    // m_expr->Visit(visitor, mod);
+     ASSERT(m_expr != nullptr);
+     //m_expr->Visit(visitor, mod);
     
     // SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
     // ASSERT(expr_type != nullptr);

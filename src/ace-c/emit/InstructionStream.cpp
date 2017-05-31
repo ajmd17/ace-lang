@@ -77,7 +77,7 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                     STORE_STATIC_FUNCTION,
                     so.m_value.func.m_addr + label_offset,
                     so.m_value.func.m_nargs,
-                    so.m_value.func.m_is_variadic
+                    so.m_value.func.m_flags
                 );
 
                 for (auto it = store_ins.m_data.rbegin(); it != store_ins.m_data.rend(); ++it) {
@@ -137,7 +137,7 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
                         reg,
                         so.m_value.func.m_addr + label_offset,
                         so.m_value.func.m_nargs, 
-                        so.m_value.func.m_is_variadic
+                        so.m_value.func.m_flags
                     );
                     ins = tmp;
                 } else if (so.m_type == StaticObject::TYPE_TYPE_INFO) {

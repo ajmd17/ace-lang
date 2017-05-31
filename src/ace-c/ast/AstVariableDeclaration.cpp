@@ -68,7 +68,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
             // make sure type is compatible with assignment
             SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
-            ASSERT(m_real_assignment != nullptr);
+            ASSERT(assignment_type != nullptr);
 
             if (m_type_specification != nullptr) {
                 // symbol_type should be the user-specified type

@@ -53,6 +53,7 @@ enum ErrorMessage {
     Msg_mismatched_return_type,
     Msg_must_be_explicitly_marked_any,
     Msg_return_outside_function,
+    Msg_yield_outside_function,
     Msg_not_a_function,
     Msg_member_not_a_method,
     Msg_closure_capture_must_be_parameter,

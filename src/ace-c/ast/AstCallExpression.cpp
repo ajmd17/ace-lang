@@ -21,7 +21,7 @@ AstCallExpression::AstCallExpression(
       m_target(target),
       m_args(args),
       m_insert_self(insert_self),
-      m_return_type(SymbolType::Builtin::ANY),
+      m_return_type(SymbolType::Builtin::UNDEFINED),
       m_is_method_call(false)
 {
 }
@@ -54,9 +54,12 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
 
     // visit each argument
     for (auto &arg : m_args) {
-        if (arg != nullptr) {
-            arg->Visit(visitor, mod);
-        }
+        ASSERT(arg != nullptr);
+
+        // note, visit in current module rather than module access
+        // this is used so that we can call functions from separate modules,
+        // yet still pass variables from the local module.
+        arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
     }
 
     auto substituted = SemanticAnalyzer::SubstituteFunctionArgs(
@@ -67,11 +70,10 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         m_location
     );
 
-    //m_arg_ordering = substituted.second;
+    // change args to be newly ordered vector
     m_args = substituted.second;
-    m_return_type = substituted.first;
 
-    if (m_return_type == nullptr) {
+    if (substituted.first == nullptr) {
         // not a function type
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
@@ -79,6 +81,8 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
             m_location,
             target_type->GetName()
         ));
+    } else {
+        m_return_type = substituted.first;
     }
 }
 
@@ -172,5 +176,6 @@ bool AstCallExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstCallExpression::GetSymbolType() const
 {
+    ASSERT(m_return_type != nullptr);
     return m_return_type;
 }

@@ -58,12 +58,21 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         ASSERT(right_type != nullptr);
 
         if (!left_type->TypeCompatible(*right_type, true)) {
-            CompilerError error(LEVEL_ERROR, Msg_mismatched_types,
-                m_location, left_type->GetName(), right_type->GetName());
+            CompilerError error(
+                LEVEL_ERROR,
+                Msg_mismatched_types,
+                m_location,
+                left_type->GetName(),
+                right_type->GetName()
+            );
 
             if (right_type == SymbolType::Builtin::ANY) {
-                error = CompilerError(LEVEL_ERROR, Msg_implicit_any_mismatch,
-                    m_location, left_type->GetName());
+                error = CompilerError(
+                    LEVEL_ERROR,
+                    Msg_implicit_any_mismatch,
+                    m_location,
+                    left_type->GetName()
+                );
             }
 
             visitor->GetCompilationUnit()->GetErrorList().AddError(error);

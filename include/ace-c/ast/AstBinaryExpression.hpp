@@ -41,7 +41,9 @@ private:
             new AstBinaryExpression(
                 CloneAstNode(m_left),
                 CloneAstNode(m_right),
-                m_op, m_location));
+                m_op,
+                m_location
+            ));
     }
 };
 

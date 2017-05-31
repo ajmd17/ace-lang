@@ -25,6 +25,7 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
       m_block(block),
       m_is_async(is_async),
       m_is_pure(is_pure),
+      m_is_generator(false),
       m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)
 {
@@ -58,7 +59,6 @@ void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
 
     // decrease stack size for call stack info
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-
 }
 
 void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
@@ -102,45 +102,58 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
     const Scope &function_scope = mod->m_scopes.Top();
 
-    // deduce return type
-    if (!m_type_specification) {
-        if (!function_scope.GetReturnTypes().empty()) {
-            // search through return types for ambiguities
-            for (const auto &it : function_scope.GetReturnTypes()) {
+    if (m_type_specification != nullptr) {
+        m_type_specification->Visit(visitor, mod);
+        m_return_type = m_type_specification->GetSymbolType();
+    }
+
+    if (!function_scope.GetReturnTypes().empty()) {
+        // search through return types for ambiguities
+        for (const auto &it : function_scope.GetReturnTypes()) {
+            ASSERT(it.first != nullptr);
+
+            // check if this should be a generator
+            if (it.first->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                if (it.first->GetBaseType() != nullptr &&
+                    it.first->GetBaseType()->TypeEqual(*SymbolType::Builtin::GENERATOR))
+                {
+                    m_is_generator = true;
+                }
+            }
+
+            if (m_type_specification != nullptr) {
+                // strict mode, because user specifically stated the intended return type
+                if (!m_return_type->TypeCompatible(*it.first, true)) {
+                    // error; does not match what user specified
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(
+                        CompilerError(
+                            LEVEL_ERROR,
+                            Msg_mismatched_return_type,
+                            it.second,
+                            m_return_type->GetName(),
+                            it.first->GetName()
+                        )
+                    );
+                }
+            } else {
+                // deduce return type
                 if (m_return_type == SymbolType::Builtin::ANY || m_return_type == SymbolType::Builtin::UNDEFINED) {
                     m_return_type = it.first;
                 } else if (m_return_type->TypeCompatible(*it.first, false)) {
                     m_return_type = SymbolType::TypePromotion(m_return_type, it.first, true);
                 } else {
-                    // error; more than one possible return type.
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(LEVEL_ERROR, Msg_multiple_return_types, it.second)
-                    );
+                    // error; more than one possible deduced return type.
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_multiple_return_types,
+                        it.second
+                    ));
                 }
             }
-        } else {
-            // return null
-            m_return_type = SymbolType::Builtin::ANY;
         }
     } else {
-        m_type_specification->Visit(visitor, mod);
-        m_return_type = m_type_specification->GetSymbolType();
-        
-        for (const auto &it : function_scope.GetReturnTypes()) {
-            // use strict numbers because user specified return type
-            if (!m_return_type->TypeCompatible(*it.first, true)) {
-                // error; more than one possible return type.
-                visitor->GetCompilationUnit()->GetErrorList().AddError(
-                    CompilerError(
-                        LEVEL_ERROR,
-                        Msg_mismatched_return_type,
-                        it.second,
-                        m_return_type->GetName(),
-                        it.first->GetName()
-                    )
-                );
-            }
-        }
+        // return null
+        m_return_type = SymbolType::Builtin::ANY;
     }
 
     // close parameter scope
@@ -173,17 +186,22 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     uint8_t rp;
 
     if (!ace::compiler::Config::use_static_objects || m_static_id == 0) {
-
         // the properties of this function
         StaticFunction sf;
         sf.m_nargs = (uint8_t)m_parameters.size();
-        sf.m_is_variadic = 0;
+        sf.m_flags = FunctionFlags::NONE;
         
         if (!m_parameters.empty()) {
             const std::shared_ptr<AstParameter> &last = m_parameters.back();
             ASSERT(last != nullptr);
 
-            sf.m_is_variadic = (uint8_t)last->IsVariadic();
+            if (last->IsVariadic()) {
+                sf.m_flags |= FunctionFlags::VARIADIC;
+            }
+        }
+
+        if (m_is_generator) {
+            sf.m_flags |= FunctionFlags::GENERATOR;
         }
 
         // the label to jump to the very end

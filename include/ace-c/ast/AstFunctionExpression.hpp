@@ -38,6 +38,7 @@ protected:
     std::shared_ptr<AstBlock> m_block;
     bool m_is_async;
     bool m_is_pure;
+    bool m_is_generator;
 
     SymbolTypePtr_t m_symbol_type;
     SymbolTypePtr_t m_return_type;

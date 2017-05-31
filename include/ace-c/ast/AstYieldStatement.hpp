@@ -1,16 +1,16 @@
-#ifndef AST_RETURN_STATEMENT_HPP
-#define AST_RETURN_STATEMENT_HPP
+#ifndef AST_YIELD_STATEMENT_HPP
+#define AST_YIELD_STATEMENT_HPP
 
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 
 #include <memory>
 
-class AstReturnStatement : public AstStatement {
+class AstYieldStatement : public AstStatement {
 public:
-    AstReturnStatement(const std::shared_ptr<AstExpression> &expr,
+    AstYieldStatement(const std::shared_ptr<AstExpression> &expr,
         const SourceLocation &location);
-    virtual ~AstReturnStatement() = default;
+    virtual ~AstYieldStatement() = default;
 
     inline const std::shared_ptr<AstExpression> &GetExpression() const
         { return m_expr; }
@@ -25,9 +25,9 @@ private:
     std::shared_ptr<AstExpression> m_expr;
     int m_num_pops;
 
-    inline Pointer<AstReturnStatement> CloneImpl() const
+    inline Pointer<AstYieldStatement> CloneImpl() const
     {
-        return Pointer<AstReturnStatement>(new AstReturnStatement(
+        return Pointer<AstYieldStatement>(new AstYieldStatement(
             CloneAstNode(m_expr),
             m_location
         ));

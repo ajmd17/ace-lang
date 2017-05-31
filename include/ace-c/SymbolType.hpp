@@ -79,6 +79,7 @@ public:
         static const SymbolTypePtr_t EVENT_IMPL;
         static const SymbolTypePtr_t EVENT_ARRAY;
         static const SymbolTypePtr_t MODULE_INFO;
+        static const SymbolTypePtr_t GENERATOR;
     };
 
     static SymbolTypePtr_t Alias(

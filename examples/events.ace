@@ -2,7 +2,7 @@ module events_example {
   type Player {
     id: Int
     username: String
-    position = [0, 0] // x, y
+    position: Array = [0, 0] // x, y
 
     on 'save' => (self) {
       // save self
@@ -27,13 +27,39 @@ module events_example {
     */
   }
 
-  my_player: Player
+  /*my_player: Player
   my_player.id = 9999
   my_player.username = 'asdfghjk'
   my_player.position = [10, 25]
 
   // throw an event into my_player object
-  'player move' => my_player
+  'player move' => my_player*/
 
-  5 => my_player
+  //5 => my_player
+
+  mul_array: Function = (arr: Array, amt: Number) {
+    arr2: Array
+
+    i: Int = 0
+    len: Int = ::length(arr)
+
+    while i < len {
+      ::array_push(arr2, arr[i] * amt)
+      i += 1
+    }
+
+    return arr2
+  }
+
+  print_array: Function = (arr: Array) {
+    i: Int = 0
+    len: Int = ::length(arr)
+
+    while i < len {
+      print fmt("arr[%] == %", i, arr[i])
+      i += 1
+    }
+  }
+
+  [1, 2, 3, 4, 5], 3 => mul_array => print_array
 }

@@ -1,6 +1,8 @@
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/ast/AstConstant.hpp>
+#include <ace-c/ast/AstInteger.hpp>
+#include <ace-c/Scope.hpp>
 #include <ace-c/emit/Instruction.hpp>
 
 #include <common/instructions.hpp>
@@ -59,13 +61,47 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                         // lookup the variable by depth to make sure it was declared in the current function
                         // we do this to make sure it was declared in this scope.
                         if (!mod->LookUpIdentifierDepth(m_name, m_properties.GetDepth())) {
+                            Scope *function_scope = m_properties.GetFunctionScope();
+                            ASSERT(function_scope != nullptr);
+
+                            function_scope->AddClosureCapture(
+                                m_name,
+                                m_properties.GetIdentifier()
+                            );
+
+                            m_closure_member_access.reset(new AstMember(
+                                m_name,
+                                std::shared_ptr<AstVariable>(new AstVariable(
+                                    "self",
+                                    m_location
+                                )),
+                                m_location
+                            ));
+
+                            m_closure_member_access->Visit(visitor, mod);
+
+                            // we're in closure, lookup variable __closure_locals and get array access
+                            /*m_closure_array_access = std::shared_ptr<AstArrayAccess>(new AstArrayAccess(
+                                std::shared_ptr<AstVariable>(new AstVariable(
+                                    "__closure_locals",
+                                    m_location
+                                )),
+                                std::shared_ptr<AstInteger>(new AstInteger(
+                                    0, // TODO
+                                    m_location
+                                )),
+                                m_location
+                            ));
+
+                            m_closure_array_access->Visit(visitor, mod);*/
+                            
                             // add error that the variable must be passed as a parameter
-                            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            /*visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                                 LEVEL_ERROR,
                                 Msg_closure_capture_must_be_parameter,
                                 m_location,
                                 m_name
-                            ));
+                            ));*/
                         }
                     }
                 }
@@ -104,48 +140,52 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
 
 void AstVariable::Build(AstVisitor *visitor, Module *mod)
 {
-    ASSERT(m_properties.GetIdentifier() != nullptr);
-
-    // if alias
-    if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS) {
-        const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
-        ASSERT(current_value != nullptr);
-
-        // if alias, accept the current value instead
-        const AccessMode current_access_mode = current_value->GetAccessMode();
-        current_value->SetAccessMode(m_access_mode);
-        current_value->Build(visitor, mod);
-        // reset access mode
-        current_value->SetAccessMode(current_access_mode);
+    if (m_closure_member_access != nullptr) {
+        m_closure_member_access->SetAccessMode(m_access_mode);
+        m_closure_member_access->Build(visitor, mod);
     } else {
+        ASSERT(m_properties.GetIdentifier() != nullptr);
 
-        int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-        int stack_location = m_properties.GetIdentifier()->GetStackLocation();
-        int offset = stack_size - stack_location;
+        // if alias
+        if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS) {
+            const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
+            ASSERT(current_value != nullptr);
 
-        // get active register
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        if (!(m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
-            // load globally, rather than from offset.
-            if (m_access_mode == ACCESS_MODE_LOAD) {
-                // load stack value at index into register
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_INDEX, rp, (uint16_t)stack_location);
-            } else if (m_access_mode == ACCESS_MODE_STORE) {
-                // store the value at the index into this local variable
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint16_t, uint8_t>(MOV_INDEX, (uint16_t)stack_location, rp - 1);
-            }
+            // if alias, accept the current value instead
+            const AccessMode current_access_mode = current_value->GetAccessMode();
+            current_value->SetAccessMode(m_access_mode);
+            current_value->Build(visitor, mod);
+            // reset access mode
+            current_value->SetAccessMode(current_access_mode);
         } else {
-            if (m_access_mode == ACCESS_MODE_LOAD) {
-                // load stack value at offset value into register
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)offset);
-            } else if (m_access_mode == ACCESS_MODE_STORE) {
-                // store the value at (rp - 1) into this local variable
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint16_t, uint8_t>(MOV_OFFSET, (uint16_t)offset, rp - 1);
+            int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+            int stack_location = m_properties.GetIdentifier()->GetStackLocation();
+            int offset = stack_size - stack_location;
+
+            // get active register
+            uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+            if (!(m_properties.GetIdentifier()->GetFlags() & FLAG_DECLARED_IN_FUNCTION)) {
+                // load globally, rather than from offset.
+                if (m_access_mode == ACCESS_MODE_LOAD) {
+                    // load stack value at index into register
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_INDEX, rp, (uint16_t)stack_location);
+                } else if (m_access_mode == ACCESS_MODE_STORE) {
+                    // store the value at the index into this local variable
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint16_t, uint8_t>(MOV_INDEX, (uint16_t)stack_location, rp - 1);
+                }
+            } else {
+                if (m_access_mode == ACCESS_MODE_LOAD) {
+                    // load stack value at offset value into register
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)offset);
+                } else if (m_access_mode == ACCESS_MODE_STORE) {
+                    // store the value at (rp - 1) into this local variable
+                    visitor->GetCompilationUnit()->GetInstructionStream() <<
+                        Instruction<uint8_t, uint16_t, uint8_t>(MOV_OFFSET, (uint16_t)offset, rp - 1);
+                }
             }
         }
     }

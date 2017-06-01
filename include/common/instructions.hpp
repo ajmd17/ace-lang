@@ -78,7 +78,8 @@ enum class Instructions_2 {
 enum FunctionFlags : uint8_t {
     NONE = 0x00,
     VARIADIC = 0x01,
-    GENERATOR = 0x02
+    GENERATOR = 0x02,
+    CLOSURE = 0x04
 };
 
 // arguments should be placed in the format:

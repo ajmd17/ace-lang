@@ -1,7 +1,7 @@
 module generators {
   // does not work yet
 
-  /*foreach: Function = (arr: Array) {
+  foreach: Function = (arr: Array) {
     i: Int = 0
     len: Int = ::length(arr)
 
@@ -12,36 +12,74 @@ module generators {
       i += 1
     }
   }
-  
-  ======
-  transformed to:
-  */
 
-  foreach: Function = (arr: Array) {
+  /*foreach: Function = (arr: Array) {
     gen: Function = (cb: Function) {
       i: Int = 0
       len: Int = ::length(arr)
 
       print 'hi'
 
-      while i < len {
+      while i < l.en {
         cb(arr[i])
         i += 1
       }
     }
 
     return gen
-  }
+  }*/
 
   /*
 
-  print foreach([1,2,3]) => (i) {
+  foreach([1,2,3]) => (i) {
     print i
   }
 
   */
 
-  print foreach([1,2,3])((i) {
+  /*print foreach([1,2,3])((i) {
     print i
-  })
+  })*/
+
+  type C {
+    a: Float = 5.5
+  }
+
+  test_closure: Function = (a, b) {
+    /*f1: Any = () {
+      
+      print 'a = ', a
+      print 'b = ', b
+      print 'hi'
+    }
+
+    print closure_object
+    c: C
+    c.a += 2.0
+    //f1(closure_object)
+    print f1.b*/
+
+    fff = ((i) {
+      print 'hello ', a
+      print 'i = ', i
+    })(4, 2)
+
+    return 5
+
+    //return c
+  }
+
+  c = test_closure(4.5, 9.9)
+  print 'test_closure() returned: ', c
+
+
+  /*test_closure_2: Function = (a, b) {
+    return () {
+      print 'a = ', a
+      print 'b = ', b
+    }
+  }
+
+  c2 = test_closure_2(1.2, 4.3)
+  print typeof c2*/
 }

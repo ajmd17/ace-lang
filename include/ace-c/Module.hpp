@@ -13,20 +13,28 @@
 
 class Module {
 public:
-    Module(const std::string &name, const SourceLocation &location);
+    Module(const std::string &name,
+        const SourceLocation &location);
     Module(const Module &other) = delete;
 
-    inline const std::string &GetName() const { return m_name; }
-    inline const SourceLocation &GetLocation() const { return m_location; }
+    inline const std::string &GetName() const
+        { return m_name; }
+    inline const SourceLocation &GetLocation() const
+        { return m_location; }
     
     inline const std::unordered_set<std::string> &GetScanPaths() const
         { return m_scan_paths; }
     inline void AddScanPath(const std::string &path)
         { m_scan_paths.insert(path); }
 
-    inline TreeNode<Module*> *GetImportTreeLink() { return m_tree_link; }
-    inline const TreeNode<Module*> *GetImportTreeLink() const { return m_tree_link; }
-    inline void SetImportTreeLink(TreeNode<Module*> *tree_link) { m_tree_link = tree_link; }
+    inline TreeNode<Module*> *GetImportTreeLink()
+        { return m_tree_link; }
+    inline const TreeNode<Module*> *GetImportTreeLink() const
+        { return m_tree_link; }
+    inline void SetImportTreeLink(TreeNode<Module*> *tree_link)
+        { m_tree_link = tree_link; }
+
+    bool IsInFunction();
 
     /** Look up a child module of this module */
     Module *LookupNestedModule(const std::string &name);

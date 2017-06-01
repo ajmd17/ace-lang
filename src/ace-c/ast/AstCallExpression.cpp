@@ -34,6 +34,20 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t target_type = m_target->GetSymbolType();
     ASSERT(target_type != nullptr);
 
+    if (SymbolTypePtr_t call_member_type = target_type->FindMember("__call")) {
+        m_target.reset(new AstMember(
+            "__call",
+            m_target,
+            m_location
+        ));
+        
+        ASSERT(m_target != nullptr);
+        m_target->Visit(visitor, mod);
+
+        target_type = call_member_type;
+        ASSERT(target_type != nullptr);
+    }
+
     if (m_insert_self) {
         // if the target is a member expression,
         // place it as 'self' argument to the call

@@ -5,6 +5,8 @@
 #include <ace-c/ast/AstParameter.hpp>
 #include <ace-c/ast/AstBlock.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstVariableDeclaration.hpp>
+#include <ace-c/ast/AstObject.hpp>
 
 #include <memory>
 #include <vector>
@@ -39,9 +41,13 @@ protected:
     bool m_is_async;
     bool m_is_pure;
     bool m_is_generator;
+    bool m_is_closure;
+
+    std::shared_ptr<AstExpression> m_closure_object;
 
     SymbolTypePtr_t m_symbol_type;
     SymbolTypePtr_t m_return_type;
+    SymbolTypePtr_t m_closure_type;
 
     // set while compiling
     int m_static_id;

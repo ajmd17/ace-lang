@@ -7,6 +7,9 @@
 
 #include <string>
 
+// forward declaration
+class Scope;
+
 struct AstIdentifierProperties {
     Identifier *m_identifier = nullptr;
 
@@ -15,6 +18,7 @@ struct AstIdentifierProperties {
     bool m_is_in_function = false;
     bool m_is_in_pure_function = false;
     int m_depth = 0;
+    Scope *m_function_scope = nullptr;
 
     // getters & setters
     inline Identifier *GetIdentifier() { return m_identifier; }
@@ -27,6 +31,7 @@ struct AstIdentifierProperties {
     inline bool IsInFunction() const { return m_is_in_function; }
     inline bool IsInPureFunction() const { return m_is_in_pure_function; }
     inline int GetDepth() const { return m_depth; }
+    inline Scope *GetFunctionScope() const { return m_function_scope; }
 };
 
 class AstIdentifier : public AstExpression {

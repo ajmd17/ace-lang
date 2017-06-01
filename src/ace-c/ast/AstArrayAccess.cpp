@@ -7,8 +7,7 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
-AstArrayAccess::AstArrayAccess(
-    const std::shared_ptr<AstExpression> &target,
+AstArrayAccess::AstArrayAccess(const std::shared_ptr<AstExpression> &target,
     const std::shared_ptr<AstExpression> &index,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD | ACCESS_MODE_STORE),

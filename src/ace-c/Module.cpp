@@ -10,6 +10,21 @@ Module::Module(const std::string &name, const SourceLocation &location)
 {
 }
 
+bool Module::IsInFunction()
+{
+    TreeNode<Scope> *top = m_scopes.TopNode();
+    
+    while (top != nullptr) {
+        if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
+            return true;
+        }
+        
+        top = top->m_parent;
+    }
+
+    return false;
+}
+
 Module *Module::LookupNestedModule(const std::string &name)
 {
     ASSERT(m_tree_link != nullptr);

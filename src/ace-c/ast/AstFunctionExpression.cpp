@@ -1,19 +1,24 @@
 #include <ace-c/ast/AstFunctionExpression.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/emit/StaticObject.hpp>
+#include <ace-c/ast/AstArrayExpression.hpp>
+#include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Module.hpp>
+#include <ace-c/Scope.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
+#include <common/hasher.hpp>
 
 #include <vector>
 #include <iostream>
 
-AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<AstParameter>> &parameters,
+AstFunctionExpression::AstFunctionExpression(
+    const std::vector<std::shared_ptr<AstParameter>> &parameters,
     const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstBlock> &block,
     bool is_async,
@@ -26,6 +31,7 @@ AstFunctionExpression::AstFunctionExpression(const std::vector<std::shared_ptr<A
       m_is_async(is_async),
       m_is_pure(is_pure),
       m_is_generator(false),
+      m_is_closure(false),
       m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)
 {
@@ -63,25 +69,46 @@ void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
 
 void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-    // first item will be return type
-    std::vector<GenericInstanceTypeInfo::Arg> param_symbol_types;
+    ASSERT(visitor != nullptr);
+    ASSERT(mod != nullptr);
 
-    ScopeType scope_type = SCOPE_TYPE_FUNCTION;
+    // set m_is_closure to be true if we are already
+    // located within a function
+    m_is_closure = mod->IsInFunction();
 
+    int scope_flags = 0;
     if (m_is_pure) {
-        scope_type = SCOPE_TYPE_PURE_FUNCTION;
+        scope_flags |= ScopeFunctionFlags::PURE_FUNCTION_FLAG;
+    }
+    if (m_is_closure) {
+        scope_flags |= ScopeFunctionFlags::CLOSURE_FUNCTION_FLAG;
+
+        // closures will have 'self' as the
+        // functions are members of an object
+        m_parameters.insert(
+            m_parameters.begin(),
+            std::shared_ptr<AstParameter>(new AstParameter(
+                "self",
+                nullptr,
+                nullptr,
+                false,
+                m_location
+            ))
+        );
     }
     
     // open the new scope for parameters
-    mod->m_scopes.Open(Scope(scope_type));
+    mod->m_scopes.Open(Scope(
+        SCOPE_TYPE_FUNCTION,
+        scope_flags
+    ));
 
+    // first item will be set to return type
+    std::vector<GenericInstanceTypeInfo::Arg> param_symbol_types;
     for (auto &param : m_parameters) {
         if (param != nullptr) {
             // add the identifier to the table
             param->Visit(visitor, mod);
-
-            SymbolTypePtr_t param_symbol_type = SymbolType::Builtin::UNDEFINED;
-            // add the param's type to param_types
             
             if (param->GetIdentifier() != nullptr) {
                 // add to list of param types
@@ -100,13 +127,13 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         m_block->Visit(visitor, mod);
     }
 
-    const Scope &function_scope = mod->m_scopes.Top();
-
     if (m_type_specification != nullptr) {
         m_type_specification->Visit(visitor, mod);
         m_return_type = m_type_specification->GetSymbolType();
     }
 
+    const Scope &function_scope = mod->m_scopes.Top();
+    
     if (!function_scope.GetReturnTypes().empty()) {
         // search through return types for ambiguities
         for (const auto &it : function_scope.GetReturnTypes()) {
@@ -155,6 +182,34 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         // return null
         m_return_type = SymbolType::Builtin::ANY;
     }
+    
+    // create data members to copy closure parameters
+    std::vector<SymbolMember_t> closure_obj_members;
+
+    for (const auto &it : function_scope.GetClosureCaptures()) {
+        const std::string &name = it.first;
+        const Identifier *ident = it.second;
+
+        ASSERT(ident != nullptr);
+        ASSERT(ident->GetSymbolType() != nullptr);
+
+        std::shared_ptr<AstExpression> current_value;//(ident->GetCurrentValue());
+
+        if (current_value == nullptr) {
+            current_value.reset(new AstVariable(
+                name,
+                m_location
+            ));
+        }
+
+        ASSERT(current_value != nullptr);
+
+        closure_obj_members.push_back({
+            ident->GetName(),
+            ident->GetSymbolType(),
+            current_value
+        });
+    }
 
     // close parameter scope
     mod->m_scopes.Close();
@@ -176,6 +231,33 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             generic_param_types
         }
     );
+    
+    closure_obj_members.push_back({
+        "__call",
+        m_symbol_type
+    });
+
+    if (m_is_closure) {
+        for (auto &member : closure_obj_members) {
+            if (std::get<2>(member) != nullptr) {
+                std::get<2>(member)->Visit(visitor, mod);
+            }
+        }
+
+        // create a new type for the 'events' field containing all listeners as fields
+        m_closure_type = SymbolType::Object(
+            "Closure",
+            closure_obj_members
+        );
+
+        ASSERT(m_closure_type->GetDefaultValue() != nullptr);
+        
+        visitor->GetCompilationUnit()->RegisterType(m_closure_type);
+
+        // builtin members:
+        m_closure_object = m_closure_type->GetDefaultValue();
+        m_closure_object->Visit(visitor, mod);
+    }
 }
 
 void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
@@ -202,6 +284,10 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 
         if (m_is_generator) {
             sf.m_flags |= FunctionFlags::GENERATOR;
+        }
+
+        if (m_is_closure) {
+            sf.m_flags |= FunctionFlags::CLOSURE;
         }
 
         // the label to jump to the very end
@@ -237,10 +323,8 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
             so.m_id = m_static_id;
             visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
             
-
             // Build the function 
             BuildFunctionBody(visitor, mod);
-        
         } else {
             m_static_id = found_id;
         }
@@ -262,6 +346,40 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     if (!ace::compiler::Config::use_static_objects) {
         // fill with padding, for LOAD_FUNC instruction.
         visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 4;
+    }
+
+    if (m_closure_object != nullptr) {
+        // get register index
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        int func_expr_reg = rp;
+
+        // // temporarily store function expression on the stack
+        // visitor->GetCompilationUnit()->GetInstructionStream() <<
+        //     Instruction<uint8_t, uint8_t>(PUSH, rp);
+
+        // // increment stack size for the type
+        // visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
+        // increase reg usage for closure object to hold it while we move this function expr as a member
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        int closure_obj_reg = rp;
+
+        m_closure_object->Build(visitor, mod);
+
+        uint32_t hash = hash_fnv_1("__call");
+
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(MOV_MEM_HASH, rp, hash, (uint8_t)func_expr_reg);
+
+        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        // swap regs, so the closure object returned
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint8_t>(MOV_REG, rp, (uint8_t)closure_obj_reg);
     }
 }
 
@@ -315,5 +433,8 @@ bool AstFunctionExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstFunctionExpression::GetSymbolType() const
 {
+    if (m_closure_type != nullptr) {
+        return m_closure_type;
+    }
     return m_symbol_type;
 }

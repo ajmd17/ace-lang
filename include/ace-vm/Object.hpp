@@ -61,13 +61,20 @@ public:
     // compare by memory address
     inline bool operator==(const Object &other) const { return this == &other; }
 
-    inline Member *LookupMemberFromHash(uint32_t hash) const { return m_object_map->Get(hash); }
-    inline Member *GetMembers() const { return m_members; }
-    inline Member &GetMember(int index) { return m_members[index]; }
-    inline const Member &GetMember(int index) const { return m_members[index]; }
-    inline TypeInfo *GetTypePtr() const { return m_type_ptr; }
-    inline Value &GetTypePtrValue() { return m_type_ptr_value; }
-    inline const Value &GetTypePtrValue() const { return m_type_ptr_value; }
+    inline Member *LookupMemberFromHash(uint32_t hash) const
+        { return m_object_map->Get(hash); }
+    inline Member *GetMembers() const
+        { return m_members; }
+    inline Member &GetMember(int index)
+        { return m_members[index]; }
+    inline const Member &GetMember(int index) const
+        { return m_members[index]; }
+    inline TypeInfo *GetTypePtr() const
+        { return m_type_ptr; }
+    inline Value &GetTypePtrValue()
+        { return m_type_ptr_value; }
+    inline const Value &GetTypePtrValue() const
+        { return m_type_ptr_value; }
     
     void GetRepresentation(utf::Utf8String &out_str, bool add_type_name = true) const;
 

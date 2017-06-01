@@ -23,7 +23,7 @@ AstWhileLoop::AstWhileLoop(const std::shared_ptr<AstExpression> &conditional,
 void AstWhileLoop::Visit(AstVisitor *visitor, Module *mod)
 {
     // open scope
-    mod->m_scopes.Open(Scope(SCOPE_TYPE_LOOP));
+    mod->m_scopes.Open(Scope(SCOPE_TYPE_LOOP, 0));
 
     // visit the conditional
     m_conditional->Visit(visitor, mod);

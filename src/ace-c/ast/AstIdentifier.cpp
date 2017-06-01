@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstIdentifier.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
+#include <ace-c/Scope.hpp>
 
 #include <common/my_assert.hpp>
 
@@ -38,14 +39,16 @@ void AstIdentifier::CheckInFunction(AstVisitor *visitor, Module *mod)
     
     while (top != nullptr) {
         m_properties.m_depth++;
+
         if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
+            m_properties.m_function_scope = &top->m_value;
             m_properties.m_is_in_function = true;
-            break;
-        } else if (top->m_value.GetScopeType() == SCOPE_TYPE_PURE_FUNCTION) {
-            m_properties.m_is_in_function = true;
-            m_properties.m_is_in_pure_function = true;
+            if (top->m_value.GetScopeFlags() & ScopeFunctionFlags::PURE_FUNCTION_FLAG) {
+                m_properties.m_is_in_pure_function = true;
+            }
             break;
         }
+
         top = top->m_parent;
     }
 }

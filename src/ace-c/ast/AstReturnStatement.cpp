@@ -25,12 +25,11 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
 
     TreeNode<Scope> *top = mod->m_scopes.TopNode();
     while (top != nullptr) {
-        if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION ||
-            top->m_value.GetScopeType() == SCOPE_TYPE_PURE_FUNCTION)
-        {
+        if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
             in_function = true;
             break;
         }
+
         m_num_pops += top->m_value.GetIdentifierTable().CountUsedVariables();
         top = top->m_parent;
     }

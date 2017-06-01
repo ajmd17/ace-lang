@@ -30,13 +30,13 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
 
     // visit all children in the block
     for (auto &child : m_children) {
-        if (child) {
+        if (child != nullptr) {
             child->Visit(visitor, mod);
         }
     }
 
-    m_last_is_return = !m_children.empty() &&
-        dynamic_cast<AstReturnStatement*>(m_children.back().get()) != nullptr;
+    m_last_is_return = !(m_children.empty()) &&
+        (dynamic_cast<AstReturnStatement*>(m_children.back().get()) != nullptr);
 
     // store number of locals, so we can pop them from the stack later
     Scope &this_scope = mod->m_scopes.Top();

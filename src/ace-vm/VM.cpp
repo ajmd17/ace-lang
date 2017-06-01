@@ -137,19 +137,64 @@ void VM::Invoke(InstructionHandler *handler,
             params.args = args;
             params.nargs = nargs;
 
+            // call the native function
             value.m_value.native_func(params);
 
             delete[] args;
-        } else {
-            char buffer[255];
-            std::sprintf(
-                buffer,
-                "cannot invoke type '%s' as a function",
-                value.GetTypeString()
-            );
-            state->ThrowException(thread, Exception(buffer));
+
+            return;
+        } else if (value.m_type == Value::HEAP_POINTER) {
+            if (value.m_value.ptr == nullptr) {
+                state->ThrowException(
+                    thread,
+                    Exception::NullReferenceException()
+                );
+                return;
+            } else if (Object *object = value.m_value.ptr->GetPointer<Object>()) {
+                if (Member *member = object->LookupMemberFromHash(hash_fnv_1("__call"))) {
+                    const int sp = (int)thread->m_stack.GetStackPointer();
+                    const int args_start = sp - nargs;
+
+                    if (nargs >= 0) {
+                        // shift over by 1 -- and insert 'self' to start of args
+                        // make a copy of last item to not overwrite it
+                        thread->m_stack.Push(thread->m_stack[sp - 1]);
+
+                        for (size_t i = args_start; i < sp; i++) {
+                            thread->m_stack[i + 1] = thread->m_stack[i];
+                        }
+                    }
+
+                    // set 'self' object to start of args
+                    thread->m_stack[args_start] = value;
+                    
+                    VM::Invoke(
+                        handler,
+                        member->value,
+                        nargs + 1
+                    );
+
+                    return;
+                }
+            }
         }
-    } else if ((value.m_value.func.m_flags & FunctionFlags::VARIADIC) && nargs < value.m_value.func.m_nargs - 1) {
+
+        char buffer[255];
+        std::sprintf(
+            buffer,
+            "cannot invoke type '%s' as a function",
+            value.GetTypeString()
+        );
+
+        state->ThrowException(
+            thread,
+            Exception(buffer)
+        );
+
+        return;
+    }
+    
+    if ((value.m_value.func.m_flags & FunctionFlags::VARIADIC) && nargs < value.m_value.func.m_nargs - 1) {
         // if variadic, make sure the arg count is /at least/ what is required
         state->ThrowException(
             thread,

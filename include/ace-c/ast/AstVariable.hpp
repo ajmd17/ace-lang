@@ -2,6 +2,7 @@
 #define AST_VARIABLE_HPP
 
 #include <ace-c/ast/AstIdentifier.hpp>
+#include <ace-c/ast/AstMember.hpp>
 
 class AstVariable : public AstIdentifier {
 public:
@@ -18,6 +19,10 @@ public:
     virtual bool MayHaveSideEffects() const override;
 
 private:
+    // set while analyzing
+    // used to get locals from outer function in a closure
+    std::shared_ptr<AstMember> m_closure_member_access;
+
     inline Pointer<AstVariable> CloneImpl() const
     {
         return Pointer<AstVariable>(new AstVariable(

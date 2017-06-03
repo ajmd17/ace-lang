@@ -41,11 +41,16 @@ void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
 {
     // increase stack size by the number of parameters
     int param_stack_size = 0;
-    for (auto &param : m_parameters) {
-        if (param != nullptr) {
-            param->Build(visitor, mod);
-            param_stack_size++;
-        }
+
+    if (m_is_closure && m_closure_self_param != nullptr) {
+        m_closure_self_param->Build(visitor, mod);
+        param_stack_size++;
+    }
+
+    for (int i = 0; i < m_parameters.size(); i++) {
+        ASSERT(m_parameters[i] != nullptr);
+        m_parameters[i]->Build(visitor, mod);
+        param_stack_size++;
     }
 
     // increase stack size for call stack info
@@ -83,18 +88,24 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     if (m_is_closure) {
         scope_flags |= ScopeFunctionFlags::CLOSURE_FUNCTION_FLAG;
 
-        // closures will have 'self' as the
-        // functions are members of an object
-        m_parameters.insert(
+        m_closure_self_param.reset(new AstParameter(
+            "__closure_self",
+            nullptr,
+            nullptr,
+            false,
+            m_location
+        ));
+
+        /*m_parameters.insert(
             m_parameters.begin(),
             std::shared_ptr<AstParameter>(new AstParameter(
-                "self",
+                "__closure_self",
                 nullptr,
                 nullptr,
                 false,
                 m_location
             ))
-        );
+        );*/
     }
     
     // open the new scope for parameters
@@ -105,19 +116,33 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
     // first item will be set to return type
     std::vector<GenericInstanceTypeInfo::Arg> param_symbol_types;
+
+    if (m_is_closure) {
+        ASSERT(m_closure_self_param != nullptr);
+        m_closure_self_param->Visit(visitor, mod);
+
+        /*if (m_closure_self_param->GetIdentifier() != nullptr) {
+            // add to list of param types
+            param_symbol_types.push_back(GenericInstanceTypeInfo::Arg {
+                m_closure_self_param->GetName(),
+                m_closure_self_param->GetIdentifier()->GetSymbolType(),
+                m_closure_self_param->GetDefaultValue()
+            });
+        }*/
+    }
+
     for (auto &param : m_parameters) {
         if (param != nullptr) {
             // add the identifier to the table
             param->Visit(visitor, mod);
             
-            if (param->GetIdentifier() != nullptr) {
-                // add to list of param types
-                param_symbol_types.push_back(GenericInstanceTypeInfo::Arg {
-                    param->GetName(),
-                    param->GetIdentifier()->GetSymbolType(),
-                    param->GetDefaultValue()
-                });
-            }
+            ASSERT(param->GetIdentifier() != nullptr);
+            // add to list of param types
+            param_symbol_types.push_back(GenericInstanceTypeInfo::Arg {
+                param->GetName(),
+                param->GetIdentifier()->GetSymbolType(),
+                param->GetDefaultValue()
+            });
         }
     }
 
@@ -186,30 +211,26 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     // create data members to copy closure parameters
     std::vector<SymbolMember_t> closure_obj_members;
 
-    for (const auto &it : function_scope.GetClosureCaptures()) {
-        const std::string &name = it.first;
-        const Identifier *ident = it.second;
+    //if (m_is_closure) {
+        for (const auto &it : function_scope.GetClosureCaptures()) {
+            const std::string &name = it.first;
+            const Identifier *ident = it.second;
 
-        ASSERT(ident != nullptr);
-        ASSERT(ident->GetSymbolType() != nullptr);
+            ASSERT(ident != nullptr);
+            ASSERT(ident->GetSymbolType() != nullptr);
 
-        std::shared_ptr<AstExpression> current_value;//(ident->GetCurrentValue());
-
-        if (current_value == nullptr) {
-            current_value.reset(new AstVariable(
+            std::shared_ptr<AstExpression> current_value(new AstVariable(
                 name,
                 m_location
             ));
+
+            closure_obj_members.push_back({
+                ident->GetName(),
+                ident->GetSymbolType(),
+                current_value
+            });
         }
-
-        ASSERT(current_value != nullptr);
-
-        closure_obj_members.push_back({
-            ident->GetName(),
-            ident->GetSymbolType(),
-            current_value
-        });
-    }
+    //}
 
     // close parameter scope
     mod->m_scopes.Close();
@@ -218,9 +239,26 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     std::vector<GenericInstanceTypeInfo::Arg> generic_param_types;
     generic_param_types.reserve(param_symbol_types.size() + 1);
     generic_param_types.push_back({
-        "@return", m_return_type
+        "@return",
+        m_return_type
     });
 
+    if (m_is_closure) {
+        ASSERT(m_closure_self_param != nullptr);
+        ASSERT(m_closure_self_param->GetIdentifier() != nullptr);
+
+        if (!closure_obj_members.empty() || m_closure_self_param->GetIdentifier()->GetUseCount() > 0) {
+            generic_param_types.push_back(GenericInstanceTypeInfo::Arg {
+                m_closure_self_param->GetName(),
+                SymbolType::Builtin::ANY,
+                nullptr
+            });
+        } else {
+            // unset m_is_closure, as __closure_self param is unused.
+            m_is_closure = false;
+        }
+    }
+        
     for (auto &it : param_symbol_types) {
         generic_param_types.push_back(it);
     }
@@ -231,13 +269,13 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             generic_param_types
         }
     );
-    
-    closure_obj_members.push_back({
-        "__call",
-        m_symbol_type
-    });
 
     if (m_is_closure) {
+        closure_obj_members.push_back({
+            "$invoke",
+            m_symbol_type
+        });
+
         for (auto &member : closure_obj_members) {
             if (std::get<2>(member) != nullptr) {
                 std::get<2>(member)->Visit(visitor, mod);
@@ -271,6 +309,11 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         // the properties of this function
         StaticFunction sf;
         sf.m_nargs = (uint8_t)m_parameters.size();
+
+        if (m_is_closure) {
+            sf.m_nargs++; // make room for the closure self object
+        }
+
         sf.m_flags = FunctionFlags::NONE;
         
         if (!m_parameters.empty()) {
@@ -318,6 +361,7 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         // store function data as a static object
         StaticObject so(sf);
         int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
+
         if (!ace::compiler::Config::use_static_objects || found_id == -1) {
             m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
             so.m_id = m_static_id;
@@ -332,7 +376,6 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         // set the label's position to after the block
         end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
         visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
-
     }
 
     // store local variable
@@ -348,18 +391,10 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 4;
     }
 
-    if (m_closure_object != nullptr) {
-        // get register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    if (m_is_closure) {
+        ASSERT(m_closure_object != nullptr);
 
-        int func_expr_reg = rp;
-
-        // // temporarily store function expression on the stack
-        // visitor->GetCompilationUnit()->GetInstructionStream() <<
-        //     Instruction<uint8_t, uint8_t>(PUSH, rp);
-
-        // // increment stack size for the type
-        // visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+        int func_expr_reg = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         // increase reg usage for closure object to hold it while we move this function expr as a member
         visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
@@ -369,14 +404,14 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 
         m_closure_object->Build(visitor, mod);
 
-        uint32_t hash = hash_fnv_1("__call");
+        const uint32_t hash = hash_fnv_1("$invoke");
 
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(MOV_MEM_HASH, rp, hash, (uint8_t)func_expr_reg);
 
         visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
+        
         // swap regs, so the closure object returned
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t, uint8_t, uint8_t>(MOV_REG, rp, (uint8_t)closure_obj_reg);
@@ -433,7 +468,7 @@ bool AstFunctionExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstFunctionExpression::GetSymbolType() const
 {
-    if (m_closure_type != nullptr) {
+    if (m_is_closure && m_closure_type != nullptr) {
         return m_closure_type;
     }
     return m_symbol_type;

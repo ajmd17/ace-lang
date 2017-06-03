@@ -47,7 +47,7 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
 {
     TreeNode<Scope> *top = m_scopes.TopNode();
 
-    while (top) {
+    while (top != nullptr) {
         if (Identifier *result = top->m_value.GetIdentifierTable().LookUpIdentifier(name)) {
             // a result was found
             return result;

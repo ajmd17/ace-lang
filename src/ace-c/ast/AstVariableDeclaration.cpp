@@ -25,7 +25,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     SymbolTypePtr_t symbol_type;
 
-    if (!m_type_specification && !m_assignment) {
+    if (m_type_specification == nullptr && m_assignment == nullptr) {
         // error; requires either type, or assignment.
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
@@ -44,7 +44,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         // for example, the default type of Array is Any.
         // this flag will allow an Array(Float) to be constructed 
         // with an empty array of type Array(Any)
-        bool type_strict = true;
+        bool is_type_strict = true;
 
         if (m_type_specification != nullptr) {
             m_type_specification->Visit(visitor, mod);
@@ -56,7 +56,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 // Assign variable to the default value for the specified type.
                 m_real_assignment = symbol_type->GetDefaultValue();
                 // built-in assignment, turn off strict mode
-                type_strict = false;
+                is_type_strict = false;
             }
         }
 
@@ -89,7 +89,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     }
                 }
 
-                if (type_strict) {
+                if (is_type_strict) {
                     if (!symbol_type->TypeCompatible(*assignment_type, true)) {
                         CompilerError error(
                             LEVEL_ERROR,
@@ -120,7 +120,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
-    if (m_identifier) {
+    if (m_identifier != nullptr) {
         m_identifier->SetSymbolType(symbol_type);
         m_identifier->SetCurrentValue(m_real_assignment);
     }
@@ -132,7 +132,7 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 
     if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
         // get current stack size
-        int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        const int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         // set identifier stack location
         m_identifier->SetStackLocation(stack_location);
 
@@ -158,18 +158,18 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 
 void AstVariableDeclaration::Optimize(AstVisitor *visitor, Module *mod)
 {
-    if (m_real_assignment) {
+    if (m_real_assignment != nullptr) {
         m_real_assignment->Optimize(visitor, mod);
     }
 }
 
 void AstVariableDeclaration::Recreate(std::ostringstream &ss)
 {
-    if (m_real_assignment) {
+    if (m_real_assignment != nullptr) {
         ss << Keyword::ToString(Keyword_let) << " ";
         ss << m_name << "=";
         m_real_assignment->Recreate(ss);
-    } else if (m_type_specification) {
+    } else if (m_type_specification != nullptr) {
         ss << m_name << ":";
         m_type_specification->Recreate(ss);
     } else {

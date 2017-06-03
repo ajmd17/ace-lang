@@ -70,10 +70,10 @@ private:
     Token MatchAhead(TokenClass token_class, int n);
     Token MatchKeyword(Keywords keyword, bool read = false);
     Token MatchKeywordAhead(Keywords keyword, int n);
-    Token MatchOperator(const Operator *op, bool read = false);
+    Token MatchOperator(const std::string &op, bool read = false);
     Token Expect(TokenClass token_class, bool read = false);
     Token ExpectKeyword(Keywords keyword, bool read = false);
-    Token ExpectOperator(const Operator *op, bool read = false);
+    Token ExpectOperator(const std::string &op, bool read = false);
     Token MatchIdentifier(bool allow_keyword = false, bool read = false);
     Token ExpectIdentifier(bool allow_keyword = false, bool read = false);
     bool ExpectEndOfStmt();

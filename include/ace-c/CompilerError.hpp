@@ -66,6 +66,7 @@ enum ErrorMessage {
     Msg_undefined_type,
     Msg_redefined_type,
     Msg_redefined_builtin_type,
+    Msg_type_not_defined_globally,
     Msg_identifier_is_type,
     Msg_mismatched_types,
     Msg_implicit_any_mismatch,

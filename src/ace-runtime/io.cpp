@@ -236,7 +236,7 @@ ACE_FUNCTION(io_close) {
     vm::Value *arg0 = params.args[0];
     ASSERT(arg0 != nullptr);
 
-    vm::Exception e = vm::Exception(utf::Utf8String("close() expects argument of type File"));
+    vm::Exception e("close() expects argument of type File");
 
     io::File *file_ptr = nullptr;
 

@@ -72,7 +72,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                             m_closure_member_access.reset(new AstMember(
                                 m_name,
                                 std::shared_ptr<AstVariable>(new AstVariable(
-                                    "self",
+                                    "__closure_self",
                                     m_location
                                 )),
                                 m_location

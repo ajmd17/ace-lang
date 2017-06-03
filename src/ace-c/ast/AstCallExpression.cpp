@@ -34,20 +34,6 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t target_type = m_target->GetSymbolType();
     ASSERT(target_type != nullptr);
 
-    if (SymbolTypePtr_t call_member_type = target_type->FindMember("__call")) {
-        m_target.reset(new AstMember(
-            "__call",
-            m_target,
-            m_location
-        ));
-        
-        ASSERT(m_target != nullptr);
-        m_target->Visit(visitor, mod);
-
-        target_type = call_member_type;
-        ASSERT(target_type != nullptr);
-    }
-
     if (m_insert_self) {
         // if the target is a member expression,
         // place it as 'self' argument to the call
@@ -64,6 +50,33 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
             // insert at front
             m_args.insert(m_args.begin(), self_arg);
         }
+    }
+
+    if (SymbolTypePtr_t call_member_type = target_type->FindMember("$invoke")) {
+        m_is_method_call = true;
+
+        std::shared_ptr<AstArgument> self_arg(new AstArgument(
+            m_target,
+            true,
+            "__closure_self",
+            m_target->GetLocation()
+        ));
+        
+        // insert at front
+        m_args.insert(m_args.begin(), self_arg);
+
+
+        m_target.reset(new AstMember(
+            "$invoke",
+            m_target,
+            m_location
+        ));
+        
+        ASSERT(m_target != nullptr);
+        m_target->Visit(visitor, mod);
+
+        target_type = call_member_type;
+        ASSERT(target_type != nullptr);
     }
 
     // visit each argument

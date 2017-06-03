@@ -43,9 +43,11 @@ void AstIdentifier::CheckInFunction(AstVisitor *visitor, Module *mod)
         if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
             m_properties.m_function_scope = &top->m_value;
             m_properties.m_is_in_function = true;
+
             if (top->m_value.GetScopeFlags() & ScopeFunctionFlags::PURE_FUNCTION_FLAG) {
                 m_properties.m_is_in_pure_function = true;
             }
+            
             break;
         }
 

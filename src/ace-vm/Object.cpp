@@ -144,7 +144,8 @@ Member *ObjectMap::Get(uint32_t hash)
     return res;
 }
 
-Object::Object(TypeInfo *type_ptr, const Value &type_ptr_value)
+Object::Object(TypeInfo *type_ptr,
+    const Value &type_ptr_value)
     : m_type_ptr(type_ptr),
       m_type_ptr_value(type_ptr_value)
 {

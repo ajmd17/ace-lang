@@ -140,16 +140,22 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
         if (m_op->GetType() == ARITHMETIC) {
             uint8_t opcode = 0;
 
-            if (m_op == &Operator::operator_add) {
-                opcode = ADD;
-            } else if (m_op == &Operator::operator_subtract) {
-                opcode = SUB;
-            } else if (m_op == &Operator::operator_multiply) {
-                opcode = MUL;
-            } else if (m_op == &Operator::operator_divide) {
-                opcode = DIV;
-            } else if (m_op == &Operator::operator_modulus) {
-                opcode = MOD;
+            switch (m_op->GetOperatorType()) {
+                case Operators::OP_add:
+                    opcode = ADD;
+                    break;
+                case Operators::OP_subtract:
+                    opcode = SUB;
+                    break;
+                case Operators::OP_multiply:
+                    opcode = MUL;
+                    break;
+                case Operators::OP_divide:
+                    opcode = DIV;
+                    break;
+                case Operators::OP_modulus:
+                    opcode = MOD;
+                    break;
             }
 
             uint8_t rp;
@@ -202,7 +208,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 second = m_right;
             }
 
-            if (m_op == &Operator::operator_logical_and) {
+            if (m_op->GetOperatorType() == Operators::OP_logical_and) {
                 uint8_t rp;
 
                 // the label to jump to the very end, and set the result to false
@@ -221,7 +227,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     // attempt to constant fold the values
                     std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                     
-                    if (auto constant_folded = Optimizer::ConstantFold(first, tmp, &Operator::operator_equals, visitor)) {
+                    if (auto constant_folded = Optimizer::ConstantFold(first, tmp, Operators::OP_equals, visitor)) {
                         int folded_value = constant_folded->IsTrue();
                         folded = folded_value == 1 || folded_value == 0;
 
@@ -274,7 +280,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     // attempt to constant fold the values
                     std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                     
-                    if (auto constant_folded = Optimizer::ConstantFold(second, tmp, &Operator::operator_equals, visitor)) {
+                    if (auto constant_folded = Optimizer::ConstantFold(second, tmp, Operators::OP_equals, visitor)) {
                         int folded_value = constant_folded->IsTrue();
                         folded = folded_value == 1 || folded_value == 0;
 
@@ -357,7 +363,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 // if true, skip to here to avoid loading 'false' into the register
                 true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
                 visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
-            } else if (m_op == &Operator::operator_logical_or) {
+            } else if (m_op->GetOperatorType() == Operators::OP_logical_or) {
                 uint8_t rp;
 
                 // the label to jump to the very end, and set the result to false
@@ -376,7 +382,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     // attempt to constant fold the values
                     std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                     
-                    if (auto constant_folded = Optimizer::ConstantFold(first, tmp, &Operator::operator_equals, visitor)) {
+                    if (auto constant_folded = Optimizer::ConstantFold(first, tmp, Operators::OP_equals, visitor)) {
                         int folded_value = constant_folded->IsTrue();
                         folded = folded_value == 1 || folded_value == 0;
 
@@ -430,7 +436,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     { // attempt to constant fold the values
                         std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                         
-                        if (auto constant_folded = Optimizer::ConstantFold(second, tmp, &Operator::operator_equals, visitor)) {
+                        if (auto constant_folded = Optimizer::ConstantFold(second, tmp, Operators::OP_equals, visitor)) {
                             int folded_value = constant_folded->IsTrue();
                             folded = folded_value == 1 || folded_value == 0;
 
@@ -520,20 +526,27 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             
             bool swapped = false;
 
-            if (m_op == &Operator::operator_equals) {
-                opcode = JNE;
-            } else if (m_op == &Operator::operator_not_eql) {
-                opcode = JE;
-            } else if (m_op == &Operator::operator_less) {
-                opcode = JGE;
-            } else if (m_op == &Operator::operator_less_eql) {
-                opcode = JG;
-            } else if (m_op == &Operator::operator_greater) {
-                opcode = JGE;
-                swapped = true;
-            } else if (m_op == &Operator::operator_greater_eql) {
-                opcode = JG;
-                swapped = true;
+            switch (m_op->GetOperatorType()) {
+                case Operators::OP_equals:
+                    opcode = JNE;
+                    break;
+                case Operators::OP_not_eql:
+                    opcode = JE;
+                    break;
+                case Operators::OP_less:
+                    opcode = JGE;
+                    break;
+                case Operators::OP_less_eql:
+                    opcode = JG;
+                    break;
+                case Operators::OP_greater:
+                    opcode = JGE;
+                    swapped = true;
+                    break;
+                case Operators::OP_greater_eql:
+                    opcode = JG;
+                    swapped = true;
+                    break;
             }
 
             if (m_right) {
@@ -652,24 +665,31 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
             }
         } else if (m_op->GetType() & ASSIGNMENT) {
             uint8_t rp;
-            if (m_op == &Operator::operator_assign) {
+
+            if (m_op->GetOperatorType() == Operators::OP_assign) {
                 // load right-hand side into register 0
                 m_right->Build(visitor, mod);
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
             } else {
                 // assignment/operation
                 uint8_t opcode = 0;
-                
-                if (m_op == &Operator::operator_add_assign) {
-                    opcode = ADD;
-                } else if (m_op == &Operator::operator_subtract_assign) {
-                    opcode = SUB;
-                } else if (m_op == &Operator::operator_multiply_assign) {
-                    opcode = MUL;
-                } else if (m_op == &Operator::operator_divide_assign) {
-                    opcode = DIV;
-                } else if (m_op == &Operator::operator_modulus_assign) {
-                    opcode = MOD;
+
+                switch (m_op->GetOperatorType()) {
+                    case Operators::OP_add_assign:
+                        opcode = ADD;
+                        break;
+                    case Operators::OP_subtract_assign:
+                        opcode = SUB;
+                        break;
+                    case Operators::OP_multiply_assign:
+                        opcode = MUL;
+                        break;
+                    case Operators::OP_divide_assign:
+                        opcode = DIV;
+                        break;
+                    case Operators::OP_modulus_assign:
+                        opcode = MOD;
+                        break;
                 }
 
                 // load right-hand side into register 0
@@ -740,7 +760,12 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
         // binary expression by optimizing away the right
         // side, and combining the resulting value into
         // the left side of the operation.
-        if (auto constant_value = Optimizer::ConstantFold(m_left, m_right, m_op, visitor)) {
+        if (auto constant_value = Optimizer::ConstantFold(
+            m_left,
+            m_right,
+            m_op->GetOperatorType(),
+            visitor
+        )) {
             // compile-time evaluation was successful
             m_left = constant_value;
             m_right = nullptr;
@@ -754,7 +779,7 @@ void AstBinaryExpression::Recreate(std::ostringstream &ss)
     m_left->Recreate(ss);
 
     if (m_right) {
-        ss << m_op->ToString();
+        //ss << m_op->ToString();
         m_right->Recreate(ss);
     }
 }
@@ -827,7 +852,7 @@ SymbolTypePtr_t AstBinaryExpression::GetSymbolType() const
 
 std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaration(AstVisitor *visitor, Module *mod)
 {
-    if (ace::compiler::Config::lazy_declarations && m_op == &Operator::operator_assign) {
+    if (ace::compiler::Config::lazy_declarations && (m_op->GetOperatorType() == Operators::OP_assign)) {
         if (AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get())) {
             std::string var_name = left_as_var->GetName();
             // lookup variable name

@@ -780,6 +780,7 @@ struct InstructionHandler {
         } else if (lhs->m_type == Value::HEAP_POINTER) {
             thread->m_regs.m_flags = !lhs->m_value.ptr ? EQUAL : NONE;
         } else if (lhs->m_type == Value::FUNCTION) {
+            // functions are never null
             thread->m_regs.m_flags = NONE;
         } else {
             char buffer[256];

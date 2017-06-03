@@ -47,6 +47,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_undefined_type, "'%' is not a built-in or user-defined type" },
     { Msg_redefined_type, "type '%' has already been defined in this module" },
     { Msg_redefined_builtin_type, "cannot create type '%', it is a built-in type" },
+    { Msg_type_not_defined_globally, "type definitions are not allowed in local scopes" },
     { Msg_identifier_is_type, "'%' is the name of a type, expected an identifier" },
     { Msg_mismatched_types, "mismatched types '%' and '%'" },
     { Msg_implicit_any_mismatch, "an explicit cast to '%' is required" },

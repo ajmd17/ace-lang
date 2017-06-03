@@ -99,7 +99,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
             // if there has not been an assignment provided,
             // use the default value of the members's type.
-            if (std::get<2>(dm)) {
+            if (std::get<2>(dm) != nullptr) {
                 std::get<2>(dm)->Build(visitor, mod);
             } else {
                 // load the data member's default value.

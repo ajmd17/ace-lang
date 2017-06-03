@@ -151,28 +151,38 @@ void VM::Invoke(InstructionHandler *handler,
                 );
                 return;
             } else if (Object *object = value.m_value.ptr->GetPointer<Object>()) {
-                if (Member *member = object->LookupMemberFromHash(hash_fnv_1("__call"))) {
+                if (Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
                     const int sp = (int)thread->m_stack.GetStackPointer();
                     const int args_start = sp - nargs;
 
-                    if (nargs >= 0) {
+                    if (nargs > 0) {
                         // shift over by 1 -- and insert 'self' to start of args
                         // make a copy of last item to not overwrite it
                         thread->m_stack.Push(thread->m_stack[sp - 1]);
 
-                        for (size_t i = args_start; i < sp; i++) {
+                        for (size_t i = args_start; i < sp - 1; i++) {
                             thread->m_stack[i + 1] = thread->m_stack[i];
                         }
+                        
+                        // set 'self' object to start of args
+                        thread->m_stack[args_start] = value;
+                    } else {
+                        thread->m_stack.Push(value);
                     }
 
-                    // set 'self' object to start of args
-                    thread->m_stack[args_start] = value;
-                    
                     VM::Invoke(
                         handler,
                         member->value,
                         nargs + 1
                     );
+
+                    Value &top = thread->m_stack.Top();
+                    ASSERT(top.m_type == Value::FUNCTION_CALL);
+
+                    // bookkeeping to remove the closure object
+                    // normally, arguments are popped after the call is returned,
+                    // rather than within the body
+                    top.m_value.call.varargs_push--;
 
                     return;
                 }

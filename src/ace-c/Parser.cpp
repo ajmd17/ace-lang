@@ -82,13 +82,12 @@ Token Parser::MatchKeywordAhead(Keywords keyword, int n)
     return Token::EMPTY;
 }
 
-Token Parser::MatchOperator(const Operator *op, bool read)
+Token Parser::MatchOperator(const std::string &op, bool read)
 {
     Token peek = m_token_stream->Peek();
     
     if (peek && peek.GetTokenClass() == TK_OPERATOR) {
-        std::string str = op->ToString();
-        if (peek.GetValue() == str) {
+        if (peek.GetValue() == op) {
             if (read && m_token_stream->HasNext()) {
                 m_token_stream->Next();
             }
@@ -118,8 +117,12 @@ Token Parser::Expect(TokenClass token_class, bool read)
                 error_str = Token::TokenTypeToString(token_class);
         }
 
-        CompilerError error(LEVEL_ERROR,
-            error_msg, location, error_str);
+        CompilerError error(
+            LEVEL_ERROR,
+            error_msg,
+            location,
+            error_str
+        );
 
         m_compilation_unit->GetErrorList().AddError(error);
     }
@@ -149,8 +152,12 @@ Token Parser::ExpectKeyword(Keywords keyword, bool read)
                 error_str = Keyword::ToString(keyword);
         }
 
-        CompilerError error(LEVEL_ERROR,
-            error_msg, location, error_str);
+        CompilerError error(
+            LEVEL_ERROR,
+            error_msg,
+            location,
+            error_str
+        );
 
         m_compilation_unit->GetErrorList().AddError(error);
     }
@@ -158,7 +165,7 @@ Token Parser::ExpectKeyword(Keywords keyword, bool read)
     return token;
 }
 
-Token Parser::ExpectOperator(const Operator *op, bool read)
+Token Parser::ExpectOperator(const std::string &op, bool read)
 {
     Token token = MatchOperator(op, read);
 
@@ -167,12 +174,13 @@ Token Parser::ExpectOperator(const Operator *op, bool read)
         if (read && m_token_stream->HasNext()) {
             m_token_stream->Next();
         }
-
-        ErrorMessage error_msg = Msg_expected_token;
-        std::string error_str = op->ToString();
-
-        CompilerError error(LEVEL_ERROR,
-            error_msg, location, error_str);
+        
+        CompilerError error(
+            LEVEL_ERROR,
+            Msg_expected_token,
+            location,
+            op
+        );
 
         m_compilation_unit->GetErrorList().AddError(error);
     }
@@ -321,16 +329,19 @@ int Parser::OperatorPrecedence(const Operator *&out)
     Token token = m_token_stream->Peek();
 
     if (token && token.GetTokenClass() == TK_OPERATOR) {
-        if (!Operator::IsBinaryOperator(token.GetValue(), out)) {
+        if (!Operator::IsOperator(token.GetValue(), out)) {
             // internal error: operator not defined
-            CompilerError error(LEVEL_ERROR,
-                Msg_internal_error, token.GetLocation());
+            CompilerError error(
+                LEVEL_ERROR,
+                Msg_internal_error,
+                token.GetLocation()
+            );
 
             m_compilation_unit->GetErrorList().AddError(error);
         }
     }
 
-    if (out) {
+    if (out != nullptr) {
         return out->GetPrecedence();
     }
     
@@ -1204,13 +1215,15 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
     // read the operator token
     if (Token token = Expect(TK_OPERATOR, true)) {
         const Operator *op = nullptr;
-        if (Operator::IsUnaryOperator(token.GetValue(), op)) {
-            if (auto term = ParseTerm()) {
-                return std::shared_ptr<AstUnaryExpression>(new AstUnaryExpression(
-                    term,
-                    op,
-                    token.GetLocation()
-                ));
+        if (Operator::IsOperator(token.GetValue(), op)) {
+            if (op->IsUnary()) {
+                if (auto term = ParseTerm()) {
+                    return std::shared_ptr<AstUnaryExpression>(new AstUnaryExpression(
+                        term,
+                        op,
+                        token.GetLocation()
+                    ));
+                }
             }
             
             return nullptr;
@@ -1259,14 +1272,14 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
 
         // check generics
         std::vector<std::shared_ptr<AstTypeSpecification>> generic_params;
-        if (MatchOperator(&Operator::operator_less, true)) {
+        if (MatchOperator("<", true)) {
             do {
                 if (std::shared_ptr<AstTypeSpecification> generic_param = ParseTypeSpecification()) {
                     generic_params.push_back(generic_param);
                 }
             } while (Match(TK_COMMA, true));
 
-            ExpectOperator(&Operator::operator_greater, true);
+            ExpectOperator(">", true);
         }
 
         while (Match(TK_OPEN_BRACKET) || Match(TK_QUESTION_MARK)) {
@@ -1436,7 +1449,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
         std::shared_ptr<AstExpression> assignment;
 
         if (Token op = Match(TK_OPERATOR, true)) {
-            if (op.GetValue() == Operator::operator_assign.ToString()) {
+            if (op.GetValue() == "=") {
                 // read assignment expression
                 SourceLocation expr_location = CurrentLocation();
                 if (!(assignment = ParseExpression())) {
@@ -1704,7 +1717,7 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
                 }
 
                 // check for default assignment
-                if (MatchOperator(&Operator::operator_assign, true)) {
+                if (MatchOperator("=", true)) {
                     default_param = ParseExpression();
                 }
 
@@ -1741,33 +1754,26 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
             std::vector<std::shared_ptr<AstEvent>> events;
 
             // parse generic parameters after '<'
-            if (MatchOperator(&Operator::operator_less, true)) {
+            if (MatchOperator("<", true)) {
                 while (Token ident = ExpectIdentifier(false, true)) {
                     generic_params.push_back(ident.GetValue());
                     if (!Match(TK_COMMA, true)) {
                         break;
                     }
                 }
-                ExpectOperator(&Operator::operator_greater, true);
+                ExpectOperator(">", true);
             }
 
             // check type alias
-            if (Token op = Match(TK_OPERATOR, false)) {
-                if (op.GetValue() == Operator::operator_assign.ToString()) {
-                    // read the operator
-                    if (m_token_stream->HasNext()) {
-                        m_token_stream->Next();
-                    }
-
-                    if (auto aliasee = ParseTypeSpecification()) {
-                        return std::shared_ptr<AstTypeAlias>(new AstTypeAlias(
-                            identifier.GetValue(), 
-                            aliasee,
-                            identifier.GetLocation()
-                        ));
-                    } else {
-                        return nullptr;
-                    }
+            if (MatchOperator("=", true)) {
+                if (auto aliasee = ParseTypeSpecification()) {
+                    return std::shared_ptr<AstTypeAlias>(new AstTypeAlias(
+                        identifier.GetValue(), 
+                        aliasee,
+                        identifier.GetLocation()
+                    ));
+                } else {
+                    return nullptr;
                 }
             }
 
@@ -1877,7 +1883,7 @@ std::shared_ptr<AstAliasDeclaration> Parser::ParseAliasDeclaration()
         return nullptr;
     }
 
-    const Token op = ExpectOperator(&Operator::operator_assign, true);
+    const Token op = ExpectOperator("=", true);
     if (!op) {
         return nullptr;
     }

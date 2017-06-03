@@ -219,12 +219,12 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
             }
 
             for (const SymbolTypePtr_t &i : m_function_info.m_param_types) {
-                if (!i) {
+                if (i == nullptr) {
                     return false;
                 }
 
                 for (const SymbolTypePtr_t &j : other.m_function_info.m_param_types) {
-                    if (!j || !((*i) == (*j))) {
+                    if (j == nullptr || !((*i) == (*j))) {
                         return false;
                     }
                 }
@@ -254,7 +254,8 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
             }
 
             break;
-        default: break;
+        default:
+            break;
     }
 
     if (m_name != other.m_name) {
@@ -290,15 +291,10 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
 
 bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) const
 {
-    /*if (right.TypeEqual(*SymbolType::Builtin::ANY)) {
-        return true;
-    }*/
-
     if (TypeEqual(right)) {
         return true;
     } else if (right.GetTypeClass() == TYPE_GENERIC_PARAMETER && 
-              !right.GetGenericParameterInfo().m_substitution.lock())
-    {
+               right.GetGenericParameterInfo().m_substitution.lock() == nullptr) {
         // right is a generic paramter that has not yet been substituted
         return true;
     }
@@ -311,7 +307,6 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
             return sp->TypeCompatible(right, strict_numbers);
         }
         case TYPE_GENERIC: {
-
             if (right.m_type_class != TYPE_GENERIC) {
                 if (auto other_base = right.m_base.lock()) {
                     return TypeCompatible(*other_base, strict_numbers);
@@ -347,10 +342,7 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
                     ASSERT(param_type != nullptr);
                     ASSERT(other_param_type != nullptr);
 
-                    if (param_type != other_param_type && 
-                        !param_type->TypeEqual(*other_param_type))
-                    {
-                        //!param_type->TypeCompatible(*other_param_type, strict_numbers)) {
+                    if (param_type != other_param_type && !param_type->TypeEqual(*other_param_type)) {
                         return false;
                     }
                 }

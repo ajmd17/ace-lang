@@ -126,9 +126,28 @@ bool StaticObject::operator==(const StaticObject &other) const
         return m_value.func.m_addr == other.m_value.func.m_addr;
         break;
     case TYPE_TYPE_INFO:
-        return !(std::strcmp(m_value.type_info.m_name, other.m_value.type_info.m_name)) &&
-                m_value.type_info.m_size == other.m_value.type_info.m_size;
-        break;
+        if (m_value.type_info.m_size != other.m_value.type_info.m_size) {
+            return false;
+        }
+
+        if (std::strcmp(m_value.type_info.m_name, other.m_value.type_info.m_name) != 0) {
+            return false;
+        }
+
+        for (size_t i = 0; i < m_value.type_info.m_size; i++) {
+            const NamesPair_t &a = m_value.type_info.m_names[i];
+            const NamesPair_t &b = other.m_value.type_info.m_names[i];
+
+            if (a.first != b.first) {
+                return false;
+            }
+            
+            if (std::memcmp(a.second.data(), b.second.data(), a.first) != 0) {
+                return false;
+            }
+        }
+
+        return true;
     default:
         return false;
     }

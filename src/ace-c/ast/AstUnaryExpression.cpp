@@ -13,14 +13,16 @@
 #include <common/my_assert.hpp>
 
 /** Attempts to evaluate the optimized expression at compile-time. */
-static std::shared_ptr<AstConstant> ConstantFold(std::shared_ptr<AstExpression> &target, 
-    const Operator *oper, AstVisitor *visitor)
+static std::shared_ptr<AstConstant> ConstantFold(
+    std::shared_ptr<AstExpression> &target, 
+    Operators op_type,
+    AstVisitor *visitor)
 {
     std::shared_ptr<AstConstant> result;
 
     if (AstConstant *target_as_constant = dynamic_cast<AstConstant*>(target.get())) {
         // perform operations on these constants
-        if (oper == &Operator::operator_negative) {
+        if (op_type == Operators::OP_negative) {
             result = -(*target_as_constant);
         }
     }
@@ -51,13 +53,26 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
         visitor->Assert((type == SymbolType::Builtin::INT || 
             type == SymbolType::Builtin::NUMBER ||
             type == SymbolType::Builtin::ANY),
-            CompilerError(LEVEL_ERROR, Msg_bitwise_operand_must_be_int, m_target->GetLocation(), type->GetName()));
+            CompilerError(
+                LEVEL_ERROR,
+                Msg_bitwise_operand_must_be_int,
+                m_target->GetLocation(),
+                type->GetName()
+            )
+        );
     } else if (m_op->GetType() & ARITHMETIC) {
         visitor->Assert(type == SymbolType::Builtin::INT ||
             type == SymbolType::Builtin::FLOAT ||
             type == SymbolType::Builtin::NUMBER ||
             type == SymbolType::Builtin::ANY,
-            CompilerError(LEVEL_ERROR, Msg_invalid_operator_for_type, m_target->GetLocation(), m_op->ToString(), type->GetName()));
+            CompilerError(
+                LEVEL_ERROR,
+                Msg_invalid_operator_for_type,
+                m_target->GetLocation(),
+                m_op->GetOperatorType(),
+                type->GetName()
+            )
+        );
     }
 
     if (m_op->ModifiesValue()) {
@@ -98,7 +113,7 @@ void AstUnaryExpression::Build(AstVisitor *visitor, Module *mod)
         if (m_op->GetType() == ARITHMETIC) {
             uint8_t opcode = 0;
 
-            if (m_op == &Operator::operator_negative) {
+            if (m_op->GetOperatorType() == Operators::OP_negative) {
                 opcode = NEG;
             }
 
@@ -107,7 +122,7 @@ void AstUnaryExpression::Build(AstVisitor *visitor, Module *mod)
                 Instruction<uint8_t, uint8_t>(opcode, rp);
 
         } else if (m_op->GetType() == LOGICAL) {
-            if (m_op == &Operator::operator_logical_not) {
+            if (m_op->GetOperatorType() == Operators::OP_logical_not) {
                 
                 // the label to jump to the very end, and set the result to false
                 StaticObject false_label;
@@ -181,9 +196,13 @@ void AstUnaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     m_target->Optimize(visitor, mod);
 
-    if (m_op == &Operator::operator_positive) {
+    if (m_op->GetOperatorType() == Operators::OP_positive) {
         m_folded = true;
-    } else if (auto constant_value = ConstantFold(m_target, m_op, visitor)) {
+    } else if (auto constant_value = ConstantFold(
+        m_target,
+        m_op->GetOperatorType(),
+        visitor
+    )) {
         m_target = constant_value;
         m_folded = true;
     }
@@ -193,7 +212,7 @@ void AstUnaryExpression::Recreate(std::ostringstream &ss)
 {
     ASSERT(m_target != nullptr);
     if (!m_folded) {
-        ss << m_op->ToString();
+        //ss << m_op->ToString();
     }
     m_target->Recreate(ss);
 }

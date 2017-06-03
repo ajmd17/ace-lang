@@ -44,12 +44,14 @@ protected:
     bool m_is_closure;
 
     std::shared_ptr<AstExpression> m_closure_object;
+    std::shared_ptr<AstParameter> m_closure_self_param;
 
     SymbolTypePtr_t m_symbol_type;
     SymbolTypePtr_t m_return_type;
     SymbolTypePtr_t m_closure_type;
 
-    // set while compiling
+    int m_closure_object_location;
+
     int m_static_id;
 
     void BuildFunctionBody(AstVisitor *visitor, Module *mod);

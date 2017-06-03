@@ -17,11 +17,13 @@ public:
     static std::shared_ptr<AstConstant> ConstantFold(
         std::shared_ptr<AstExpression> &left,
         std::shared_ptr<AstExpression> &right, 
-        const Operator *oper, AstVisitor *visitor);
+        Operators op_type,
+        AstVisitor *visitor);
 
     /** Attemps to reduce a variable that is const literal to the actual value. */
     static void OptimizeExpr(std::shared_ptr<AstExpression> &expr,
-        AstVisitor *visitor, Module *mod);
+        AstVisitor *visitor,
+        Module *mod);
 
 public:
     Optimizer(AstIterator *ast_iterator,

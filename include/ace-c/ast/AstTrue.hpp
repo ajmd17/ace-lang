@@ -51,7 +51,8 @@ private:
     inline Pointer<AstTrue> CloneImpl() const
     {
         return Pointer<AstTrue>(new AstTrue(
-            m_location));
+            m_location
+        ));
     }
 };
 

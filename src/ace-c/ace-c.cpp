@@ -3,6 +3,7 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Optimizer.hpp>
+#include <ace-vm/BytecodeStream.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/Lexer.hpp>
@@ -10,7 +11,6 @@
 #include <ace-c/Compiler.hpp>
 #include <ace-c/Minifier.hpp>
 #include <ace-c/dis/DecompilationUnit.hpp>
-#include <ace-c/dis/ByteStream.hpp>
 
 #include <common/str_util.hpp>
 
@@ -28,7 +28,8 @@ bool BuildSourceFile(
 }
 
 bool BuildSourceFile(const utf::Utf8String &filename,
-    const utf::Utf8String &out_filename, CompilationUnit &compilation_unit)
+    const utf::Utf8String &out_filename,
+    CompilationUnit &compilation_unit)
 {
     std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
 
@@ -88,17 +89,6 @@ bool BuildSourceFile(const utf::Utf8String &filename,
             Compiler compiler(&ast_iterator, &compilation_unit);
             compiler.Compile();
 
-            // emit bytecode instructions to file
-            std::ofstream out_file(out_filename.GetData(), std::ios::out | std::ios::binary);
-            
-            if (!out_file.is_open()) {
-                utf::cout << "Could not open file for writing: " << out_filename << "\n";
-            } else {
-                out_file << compilation_unit.GetInstructionStream();
-            }
-
-            out_file.close();
-
             return true;
         }
     }
@@ -108,7 +98,8 @@ bool BuildSourceFile(const utf::Utf8String &filename,
 
 void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
 {
-    std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
+    std::ifstream in_file(filename.GetData(),
+        std::ios::in | std::ios::ate | std::ios::binary);
 
     if (!in_file.is_open()) {
         utf::cout << "Could not open file: " << filename << "\n";
@@ -122,7 +113,7 @@ void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8Strin
         in_file.read(source_file.GetBuffer(), max);
         in_file.close();
 
-        ByteStream bs(&source_file);
+        ace::vm::BytecodeStream bs = ace::vm::BytecodeStream::FromSourceFile(&source_file);
 
         DecompilationUnit decompilation_unit;
 

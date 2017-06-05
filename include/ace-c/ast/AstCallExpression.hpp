@@ -2,7 +2,7 @@
 #define AST_CALL_EXPRESSION_HPP
 
 #include <ace-c/ast/AstIdentifier.hpp>
-#include <ace-c/ast/AstArgument.hpp>
+#include <ace-c/ast/AstArgumentList.hpp>
 
 #include <string>
 #include <vector>
@@ -54,13 +54,12 @@ protected:
 
     inline Pointer<AstCallExpression> CloneImpl() const
     {
-        return Pointer<AstCallExpression>(
-            new AstCallExpression(
-                CloneAstNode(m_target),
-                CloneAllAstNodes(m_args),
-                m_insert_self,
-                m_location
-            ));
+        return Pointer<AstCallExpression>(new AstCallExpression(
+            CloneAstNode(m_target),
+            CloneAllAstNodes(m_args),
+            m_insert_self,
+            m_location
+        ));
     }
 };
 

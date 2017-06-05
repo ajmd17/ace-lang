@@ -37,7 +37,8 @@ private:
         return Pointer<AstModuleDeclaration>(new AstModuleDeclaration(
             m_name, 
             CloneAllAstNodes(m_children), 
-            m_location));
+            m_location
+        ));
     }
 };
 

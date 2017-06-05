@@ -43,6 +43,7 @@ private:
 
 class InstructionStream {
     friend std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream);
+    
 public:
     InstructionStream();
     InstructionStream(const InstructionStream &other);

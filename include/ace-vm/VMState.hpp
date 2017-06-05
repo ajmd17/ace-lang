@@ -7,6 +7,8 @@
 #include <ace-vm/Exception.hpp>
 #include <ace-vm/BytecodeStream.hpp>
 
+#include <common/non_owning_ptr.hpp>
+
 #define GC_THRESHOLD_MIN 20
 #define GC_THRESHOLD_MAX 1000
 

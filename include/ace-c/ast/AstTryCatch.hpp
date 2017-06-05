@@ -29,7 +29,8 @@ private:
         return Pointer<AstTryCatch>(new AstTryCatch(
             CloneAstNode(m_try_block),
             CloneAstNode(m_catch_block),
-            m_location));
+            m_location
+        ));
     }
 };
 

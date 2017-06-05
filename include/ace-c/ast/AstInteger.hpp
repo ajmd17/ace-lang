@@ -55,8 +55,9 @@ private:
     inline Pointer<AstInteger> CloneImpl() const
     {
         return Pointer<AstInteger>(new AstInteger(
-                m_value,
-                m_location));
+            m_value,
+            m_location
+        ));
     }
 };
 

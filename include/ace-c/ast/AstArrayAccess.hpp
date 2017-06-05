@@ -31,11 +31,11 @@ private:
 
     inline std::shared_ptr<AstArrayAccess> CloneImpl() const
     {
-        return std::shared_ptr<AstArrayAccess>(
-            new AstArrayAccess(
-                CloneAstNode(m_target),
-                CloneAstNode(m_index),
-                m_location));
+        return std::shared_ptr<AstArrayAccess>(new AstArrayAccess(
+            CloneAstNode(m_target),
+            CloneAstNode(m_index),
+            m_location
+        ));
     }
 };
 

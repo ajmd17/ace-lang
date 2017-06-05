@@ -56,8 +56,10 @@ Identifier *IdentifierTable::AddIdentifier(const std::string &name, int flags)
 Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
 {
     for (auto &ident : m_identifiers) {
-        if (ident->GetName() == name) {
-            return ident.get();
+        if (ident != nullptr) {
+            if (ident->GetName() == name) {
+                return ident.get();
+            }
         }
     }
 

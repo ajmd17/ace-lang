@@ -26,7 +26,8 @@ private:
     {
         return Pointer<AstPrintStatement>(new AstPrintStatement(
             CloneAllAstNodes(m_arguments),
-            m_location));
+            m_location
+        ));
     }
 };
 

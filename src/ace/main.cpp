@@ -25,6 +25,7 @@
 #include <ace-c/Parser.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/dis/DecompilationUnit.hpp>
+#include <ace-c/emit/cppgen/CppGenerator.hpp>
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
@@ -99,18 +100,17 @@ void Events_call_action(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(>=, 2);
 
-    const vm::Value *target_ptr = params.args[0];
+    vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
     vm::Value *value_ptr = params.args[1];
     ASSERT(value_ptr != nullptr);
 
-    vm::Value &value = *value_ptr;
-
     vm::Exception ex("call_action() expects an Object or Function as the first argument");
     vm::Exception ex1("Each item in event array should be of type Array");
 
-    if (value.m_type == vm::Value::ValueType::FUNCTION && (value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
+    if (value_ptr->m_type == vm::Value::FUNCTION &&
+       (value_ptr->m_value.func.m_flags & FunctionFlags::GENERATOR)) {
         // if the key is a generator, it should look like this internally:
         /*
             () {
@@ -123,19 +123,33 @@ void Events_call_action(ace::sdk::Params params)
         // so we should invoke the object which will return the nested closure,
         // and pass our found handler to it (at the end of this function)
         // as `callback`
+        //std::swap(params.args[0], params.args[1]);
+        std::swap(*target_ptr, *value_ptr);
+    } else if (value_ptr->m_type == vm::Value::HEAP_POINTER &&
+               value_ptr->m_value.ptr != nullptr) {
+        if (vm::Object *object = value_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+            if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
+                if (member->value.m_type == vm::Value::FUNCTION &&
+                   (member->value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
+                    // value is a generator, so swap.
+
+                    //std::swap(params.args[0], params.args[1]);
+                    std::swap(*target_ptr, *value_ptr);
+                }
+            }
+        }
     }
 
     switch (target_ptr->GetType()) {
-        case vm::Value::ValueType::HEAP_POINTER: {
+        case vm::Value::HEAP_POINTER: {
             if (target_ptr->m_value.ptr == nullptr) {
                 goto return_null_handler;
             }
 
             // lookup '__events' member
             if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
-                const std::uint32_t hash = hash_fnv_1("__events");
 
-                if (vm::Member *member = object->LookupMemberFromHash(hash)) {
+                if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("__events"))) {
                     // __events member found
                     if (member->value.m_type != vm::Value::ValueType::HEAP_POINTER) {
                         params.handler->state->ThrowException(
@@ -188,23 +202,23 @@ void Events_call_action(ace::sdk::Params params)
                                 vm::Value &handler_func = el_array->AtIndex(1);
 
                                 // compare integers
-                                if (value.GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
+                                if (value_ptr->GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
                                     if (match_mode == MATCH_TYPES || a.i == b.i) {
                                         res_func = &handler_func;
                                         break;
                                     }
-                                } else if (value.GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
+                                } else if (value_ptr->GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
                                     if (match_mode == MATCH_TYPES || a.f == b.f) {
                                         res_func = &handler_func;
                                         break;
                                     }
-                                } else if (value.m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
-                                    if (match_mode == MATCH_TYPES || value.m_value.b == handler_value.m_value.b) {
+                                } else if (value_ptr->m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
+                                    if (match_mode == MATCH_TYPES || value_ptr->m_value.b == handler_value.m_value.b) {
                                         res_func = &handler_func;
                                         break;
                                     }
-                                } else if (value.m_type == vm::Value::HEAP_POINTER && handler_value.m_type == vm::Value::HEAP_POINTER) {
-                                    vm::HeapValue *hv_a = value.m_value.ptr;
+                                } else if (value_ptr->m_type == vm::Value::HEAP_POINTER && handler_value.m_type == vm::Value::HEAP_POINTER) {
+                                    vm::HeapValue *hv_a = value_ptr->m_value.ptr;
                                     vm::HeapValue *hv_b = handler_value.m_value.ptr;
 
                                     // drop out early for same pointer value
@@ -233,7 +247,7 @@ void Events_call_action(ace::sdk::Params params)
                         // handler found, call it
                         if (res_func != nullptr) {
                             // set value to be the 'self' object because it is a member function
-                            value = *target_ptr;
+                            *value_ptr = *target_ptr;
                             vm::VM::Invoke(
                                 params.handler,
                                 *res_func,
@@ -241,6 +255,17 @@ void Events_call_action(ace::sdk::Params params)
                             );
                             return;
                         }
+                    }
+                } else if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
+                    if (member->value.m_type == vm::Value::FUNCTION || 
+                        member->value.m_type == vm::Value::NATIVE_FUNCTION) {
+                        // callable object
+                        vm::VM::Invoke(
+                            params.handler,
+                            member->value,
+                            params.nargs
+                        );
+                        return;
                     }
                 }
             }
@@ -252,9 +277,9 @@ void Events_call_action(ace::sdk::Params params)
             res.m_value.ptr = nullptr;
             ACE_RETURN(res);
         }
-        case vm::Value::ValueType::FUNCTION:
+        case vm::Value::FUNCTION:
             // fallthrough
-        case vm::Value::ValueType::NATIVE_FUNCTION:
+        case vm::Value::NATIVE_FUNCTION:
             // for functions, return the original function itself
             //ACE_RETURN(*target_ptr);
             vm::VM::Invoke(
@@ -751,7 +776,7 @@ void Global_decompile(ace::sdk::Params params)
 
         // note: this is different than BytecodeStream
         // soon, it should be refactored into one
-        ByteStream byte_stream(&source_file);
+        vm::BytecodeStream byte_stream = vm::BytecodeStream::FromSourceFile(&source_file);
 
         // create DecompilationUnit
         DecompilationUnit dec;
@@ -760,11 +785,11 @@ void Global_decompile(ace::sdk::Params params)
 
         uint8_t code;
         do {
-            code = byte_stream.Peek();
+            byte_stream.Read(&code);
 
             // decompile the instruction
-            dec.DecodeNext(byte_stream, is, &ss);
-        } while (code != RET && byte_stream.HasNext());
+            dec.DecodeNext(code, byte_stream, is, &ss);
+        } while (code != RET && !byte_stream.Eof());
 
         std::string ss_str = ss.str();
         bytecode_str += ss_str.data();
@@ -1145,7 +1170,7 @@ static int RunBytecodeFile(
     file.close();
 
     vm::BytecodeStream bytecode_stream(
-        non_owning_ptr<char>(bytecodes),
+        bytecodes,
         (size_t)bytecode_size,
         pos
     );
@@ -1516,6 +1541,14 @@ void HandleArgs(
         utf::Utf8String src_filename;
         utf::Utf8String out_filename;
 
+        int arg_pos = 1;
+
+        bool native_mode = false;
+        
+        if (CLI::HasOption(argv, argv + argc, "cppgen")) {
+            native_mode = true;
+        }
+
         if (CLI::HasOption(argv, argv + argc, "-d")) {
             // disassembly mode
             mode = DECOMPILE_BYTECODE;
@@ -1535,7 +1568,7 @@ void HandleArgs(
             }
 
             if (src_filename == "") {
-                src_filename = argv[1];
+                src_filename = argv[argc - 1];
             }
 
             if (CLI::HasOption(argv, argv + argc, "-o")) {
@@ -1549,8 +1582,29 @@ void HandleArgs(
 
         if (mode == COMPILE_SOURCE) {
             if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
-                // execute the compiled bytecode file
-                RunBytecodeFile(&vm, out_filename, true);
+                if (native_mode) {
+                    // generate cpp code file
+                    CppGenerator cppgen;
+
+                    cppgen << compilation_unit.GetInstructionStream();
+                    utf::cout << "Gen cpp: \n" << cppgen << "\n";
+
+                } else {
+                    // emit bytecode instructions to file
+                    std::ofstream out_file(out_filename.GetData(),
+                        std::ios::out | std::ios::binary);
+                    
+                    if (!out_file.is_open()) {
+                        utf::cout << "Could not open file for writing: " << out_filename << "\n";
+                    } else {
+                        out_file << compilation_unit.GetInstructionStream();
+                    }
+
+                    out_file.close();
+
+                    // execute the compiled bytecode file
+                    RunBytecodeFile(&vm, out_filename, true);
+                }
             }
         } else if (mode == DECOMPILE_BYTECODE) {
             ace_compiler::DecompileBytecodeFile(src_filename, out_filename);

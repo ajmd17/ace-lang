@@ -1,22 +1,26 @@
 #ifndef BYTECODE_STREAM_HPP
 #define BYTECODE_STREAM_HPP
 
+#include <ace-c/SourceFile.hpp>
+
 #include <common/my_assert.hpp>
-#include <common/non_owning_ptr.hpp>
 
 namespace ace {
 namespace vm {
 
 class BytecodeStream {
 public:
+    static BytecodeStream FromSourceFile(SourceFile *file_ptr);
+
+public:
     BytecodeStream();
-    BytecodeStream(const non_owning_ptr<char> &buffer, size_t size, size_t position = 0);
+    BytecodeStream(const char *buffer, size_t size, size_t position = 0);
     BytecodeStream(const BytecodeStream &other);
     ~BytecodeStream() = default;
 
     BytecodeStream &operator=(const BytecodeStream &other);
 
-    inline const non_owning_ptr<char> GetBuffer() const { return m_buffer; }
+    inline const char *GetBuffer() const { return m_buffer; }
 
     inline void ReadBytes(char *ptr, size_t num_bytes)
     {
@@ -27,16 +31,23 @@ public:
     }
 
     template <typename T>
-    inline void Read(T *ptr, size_t num_bytes = sizeof(T)) { ReadBytes(reinterpret_cast<char*>(ptr), num_bytes); }
-    inline size_t Position() const { return m_position; }
-    inline void SetPosition(size_t position) { m_position = position; }
-    inline size_t Size() const { return m_size; }
-    inline void Seek(size_t address) { m_position = address; }
-    inline void Skip(size_t amount) { m_position += amount; }
-    inline bool Eof() const { return m_position >= m_size; }
+    inline void Read(T *ptr, size_t num_bytes = sizeof(T))
+        { ReadBytes(reinterpret_cast<char*>(ptr), num_bytes); }
+    inline size_t Position() const
+        { return m_position; }
+    inline void SetPosition(size_t position)
+        { m_position = position; }
+    inline size_t Size() const
+        { return m_size; }
+    inline void Seek(size_t address)
+        { m_position = address; }
+    inline void Skip(size_t amount)
+        { m_position += amount; }
+    inline bool Eof() const
+        { return m_position >= m_size; }
 
 private:
-    non_owning_ptr<char> m_buffer;
+    const char *m_buffer;
     size_t m_size;
     size_t m_position;
 };

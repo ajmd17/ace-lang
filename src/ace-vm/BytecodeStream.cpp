@@ -1,22 +1,29 @@
 #include <ace-vm/BytecodeStream.hpp>
 
+#include <common/my_assert.hpp>
+
 namespace ace {
 namespace vm {
 
+BytecodeStream BytecodeStream::FromSourceFile(SourceFile *file_ptr)
+{
+    ASSERT(file_ptr != nullptr);
+    return BytecodeStream(file_ptr->GetBuffer(), file_ptr->GetSize());
+}
+
 BytecodeStream::BytecodeStream()
-    : m_buffer(non_owning_ptr<char>()),
+    : m_buffer(nullptr),
       m_size(0),
       m_position(0)
 {
 }
 
-BytecodeStream::BytecodeStream(const non_owning_ptr<char> &buffer, size_t size, size_t position)
+BytecodeStream::BytecodeStream(const char *buffer, size_t size, size_t position)
     : m_buffer(buffer),
       m_size(size),
       m_position(position)
 {
 }
-
 
 BytecodeStream::BytecodeStream(const BytecodeStream &other)
     : m_buffer(other.m_buffer),

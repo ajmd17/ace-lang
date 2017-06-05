@@ -30,7 +30,8 @@ private:
         return Pointer<AstWhileLoop>(new AstWhileLoop(
             CloneAstNode(m_conditional),
             CloneAstNode(m_block),
-            m_location));
+            m_location
+        ));
     }
 };
 

@@ -67,7 +67,7 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
         self_arg
     );
 
-    // add events::get_action_handler call
+    // add events::call_action call
     m_expr = visitor->GetCompilationUnit()->GetAstNodeBuilder()
         .Module("events")
         .Function("call_action")
@@ -84,111 +84,36 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_expr != nullptr);
     m_expr->Visit(visitor, mod);
 
-    //SymbolTypePtr_t target_type = m_target->GetSymbolType();
-    //ASSERT(target_type != nullptr);
+    SymbolTypePtr_t target_type = m_target->GetSymbolType();
+    ASSERT(target_type != nullptr);
 
-    /*if (target_type != SymbolType::Builtin::ANY) {
+    if (target_type != SymbolType::Builtin::ANY) {
         if (SymbolTypePtr_t member_type = target_type->FindMember("__events")) {
             m_member_found = 1;
+
+            // see if there is an action handler with this key.
+            // if it is not found, do not worry about it,
+            // it will be resolved at runtime by returning null.
+            // however, if it is found, type-check the other arguments.
+
+            // TODO: iterate through the items on the type, find any matches,
+            // and attempt to substitute function arguments with the second item in the array
+            // (the callback/handler)
+
         } else {
             m_member_found = 0;
         }
     } else {
+        // if it is ANY type do not bother checking,
+        // we will be resolved at runtime.
         m_member_found = -1;
-    }*/
+    }
 }
 
 void AstActionExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
     m_expr->Build(visitor, mod);
-#if 0
-    if (m_member_found == 1) {
-        // found, build expr
-        m_expr->Build(visitor, mod);
-    } else if (m_member_found == -1) {
-        // run-time check
-        uint32_t hash = hash_fnv_1("__events");
-
-        int found_member_reg = -1;
-
-        // the label to jump to the very end
-        StaticObject end_label;
-        end_label.m_type = StaticObject::TYPE_LABEL;
-        end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-        // the label to jump to the else-part
-        StaticObject else_label;
-        else_label.m_type = StaticObject::TYPE_LABEL;
-        else_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-        m_target->Build(visitor, mod);
-
-        // get active register
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // compile in the instruction to check if it has the member
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(HAS_MEM_HASH, rp, rp, hash);
-
-        found_member_reg = rp;
-
-        // compare the found member to zero
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(CMPZ, found_member_reg);
-
-        // load the label address from static memory into register 0
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
-
-        // jump if condition is false or zero.
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JE, rp);
-
-        // not found here
-
-        // this is the `else` part
-        // jump to the very end now that we've accepted the if-block
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage(); // 1
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // load the label address from static memory into register 1
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
-        
-        // jump if they are equal: i.e the value is false
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JMP, rp);
-
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage(); // 0
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // set the label's position to where the else-block would be
-        else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
-
-        // enter the block
-        // the member was found here, so build the expr
-        m_expr->Build(visitor, mod);
-
-        // set the label's position to after the block,
-        // so we can skip it if the condition is false
-        end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
-    }
-#endif
     // re-build in the target. actions return their target after call
     //m_target->Build(visitor, mod);
 }

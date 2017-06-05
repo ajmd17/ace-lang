@@ -28,10 +28,11 @@ protected:
 
     inline Pointer<AstFunctionDefinition> CloneImpl() const
     {
-        return Pointer<AstFunctionDefinition>(
-            new AstFunctionDefinition(m_name,
-                CloneAstNode(m_expr),
-                m_location));
+        return Pointer<AstFunctionDefinition>(new AstFunctionDefinition(
+            m_name,
+            CloneAstNode(m_expr),
+            m_location
+        ));
     }
 };
 

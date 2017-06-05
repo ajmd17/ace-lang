@@ -43,7 +43,8 @@ private:
             m_left,
             CloneAllAstNodes(m_generic_params),
             CloneAstNode(m_right),
-            m_location));
+            m_location
+        ));
     }
 };
 

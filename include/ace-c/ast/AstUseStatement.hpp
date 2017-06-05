@@ -29,7 +29,8 @@ protected:
         return Pointer<AstUseStatement>(new AstUseStatement(
             CloneAstNode(m_target),
             m_alias,
-            m_location));
+            m_location
+        ));
     }
 };
 

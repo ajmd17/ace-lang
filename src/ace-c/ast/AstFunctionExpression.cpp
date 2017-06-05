@@ -23,6 +23,7 @@ AstFunctionExpression::AstFunctionExpression(
     const std::shared_ptr<AstBlock> &block,
     bool is_async,
     bool is_pure,
+    bool is_generator,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_parameters(parameters),
@@ -30,8 +31,9 @@ AstFunctionExpression::AstFunctionExpression(
       m_block(block),
       m_is_async(is_async),
       m_is_pure(is_pure),
-      m_is_generator(false),
+      m_is_generator(is_generator),
       m_is_closure(false),
+      m_is_generator_closure(false),
       m_return_type(SymbolType::Builtin::UNDEFINED),
       m_static_id(0)
 {
@@ -56,12 +58,20 @@ void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
     // increase stack size for call stack info
     visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 
-    // build the function body
-    m_block->Build(visitor, mod);
+    if (m_is_generator) {
+        ASSERT(m_generator_closure != nullptr);
 
-    if (!m_block->IsLastStatementReturn()) {
-        // add RET instruction
+        m_generator_closure->Build(visitor, mod);
+        // return the generator closure object
         visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+    } else {
+        // build the function body
+        m_block->Build(visitor, mod);
+
+        if (!m_block->IsLastStatementReturn()) {
+            // add RET instruction
+            visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+        }
     }
 
     for (int i = 0; i < param_stack_size; i++) {
@@ -95,17 +105,27 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             false,
             m_location
         ));
+    }
+    if (m_is_generator) {
+        scope_flags |= ScopeFunctionFlags::GENERATOR_FUNCTION_FLAG;
 
-        /*m_parameters.insert(
-            m_parameters.begin(),
-            std::shared_ptr<AstParameter>(new AstParameter(
-                "__closure_self",
+        m_generator_closure.reset(new AstFunctionExpression(
+            { std::shared_ptr<AstParameter>(new AstParameter(
+                "__generator_callback",
                 nullptr,
                 nullptr,
                 false,
                 m_location
-            ))
-        );*/
+            )) },
+            m_type_specification,
+            m_block,
+            m_is_async,
+            m_is_pure,
+            false,
+            m_location
+        ));
+
+        m_generator_closure->SetIsGeneratorClosure(true);
     }
     
     // open the new scope for parameters
@@ -120,15 +140,6 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     if (m_is_closure) {
         ASSERT(m_closure_self_param != nullptr);
         m_closure_self_param->Visit(visitor, mod);
-
-        /*if (m_closure_self_param->GetIdentifier() != nullptr) {
-            // add to list of param types
-            param_symbol_types.push_back(GenericInstanceTypeInfo::Arg {
-                m_closure_self_param->GetName(),
-                m_closure_self_param->GetIdentifier()->GetSymbolType(),
-                m_closure_self_param->GetDefaultValue()
-            });
-        }*/
     }
 
     for (auto &param : m_parameters) {
@@ -146,91 +157,101 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    // function body
-    if (m_block != nullptr) {
-        // visit the function body
-        m_block->Visit(visitor, mod);
-    }
+    if (m_is_generator) {
+        ASSERT(m_generator_closure != nullptr);
+        m_generator_closure->Visit(visitor, mod);
 
-    if (m_type_specification != nullptr) {
-        m_type_specification->Visit(visitor, mod);
-        m_return_type = m_type_specification->GetSymbolType();
-    }
+        ASSERT(m_generator_closure->GetSymbolType() != nullptr);
 
-    const Scope &function_scope = mod->m_scopes.Top();
-    
-    if (!function_scope.GetReturnTypes().empty()) {
-        // search through return types for ambiguities
-        for (const auto &it : function_scope.GetReturnTypes()) {
-            ASSERT(it.first != nullptr);
-
-            // check if this should be a generator
-            if (it.first->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                if (it.first->GetBaseType() != nullptr &&
-                    it.first->GetBaseType()->TypeEqual(*SymbolType::Builtin::GENERATOR))
-                {
-                    m_is_generator = true;
-                }
-            }
-
-            if (m_type_specification != nullptr) {
-                // strict mode, because user specifically stated the intended return type
-                if (!m_return_type->TypeCompatible(*it.first, true)) {
-                    // error; does not match what user specified
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(
-                            LEVEL_ERROR,
-                            Msg_mismatched_return_type,
-                            it.second,
-                            m_return_type->GetName(),
-                            it.first->GetName()
-                        )
-                    );
-                }
-            } else {
-                // deduce return type
-                if (m_return_type == SymbolType::Builtin::ANY || m_return_type == SymbolType::Builtin::UNDEFINED) {
-                    m_return_type = it.first;
-                } else if (m_return_type->TypeCompatible(*it.first, false)) {
-                    m_return_type = SymbolType::TypePromotion(m_return_type, it.first, true);
-                } else {
-                    // error; more than one possible deduced return type.
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_multiple_return_types,
-                        it.second
-                    ));
-                }
-            }
-        }
+        m_return_type = m_generator_closure->GetSymbolType();
     } else {
-        // return null
-        m_return_type = SymbolType::Builtin::ANY;
+        // function body
+        if (m_block != nullptr) {
+            // visit the function body
+            m_block->Visit(visitor, mod);
+        }
+
+        if (m_type_specification != nullptr) {
+            m_type_specification->Visit(visitor, mod);
+            m_return_type = m_type_specification->GetSymbolType();
+        }
+
+        const Scope &function_scope = mod->m_scopes.Top();
+        
+        if (!function_scope.GetReturnTypes().empty()) {
+            // search through return types for ambiguities
+            for (const auto &it : function_scope.GetReturnTypes()) {
+                ASSERT(it.first != nullptr);
+
+                /* // check if this should be a generator
+                if (it.first->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                    if (it.first->GetBaseType() != nullptr &&
+                        it.first->GetBaseType()->TypeEqual(*SymbolType::Builtin::GENERATOR))
+                    {
+                        m_is_generator = true;
+                    }
+                } */
+
+                if (m_type_specification != nullptr) {
+                    // strict mode, because user specifically stated the intended return type
+                    if (!m_return_type->TypeCompatible(*it.first, true)) {
+                        // error; does not match what user specified
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(
+                            CompilerError(
+                                LEVEL_ERROR,
+                                Msg_mismatched_return_type,
+                                it.second,
+                                m_return_type->GetName(),
+                                it.first->GetName()
+                            )
+                        );
+                    }
+                } else {
+                    // deduce return type
+                    if (m_return_type == SymbolType::Builtin::ANY || m_return_type == SymbolType::Builtin::UNDEFINED) {
+                        m_return_type = it.first;
+                    } else if (m_return_type->TypeCompatible(*it.first, false)) {
+                        m_return_type = SymbolType::TypePromotion(m_return_type, it.first, true);
+                    } else {
+                        // error; more than one possible deduced return type.
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_multiple_return_types,
+                            it.second
+                        ));
+                    }
+                }
+            }
+        } else {
+            // return null
+            m_return_type = SymbolType::Builtin::ANY;
+        }
+
     }
     
     // create data members to copy closure parameters
     std::vector<SymbolMember_t> closure_obj_members;
 
-    //if (m_is_closure) {
-        for (const auto &it : function_scope.GetClosureCaptures()) {
-            const std::string &name = it.first;
-            const Identifier *ident = it.second;
+    const Scope &function_scope = mod->m_scopes.Top();
 
-            ASSERT(ident != nullptr);
-            ASSERT(ident->GetSymbolType() != nullptr);
+    for (const auto &it : function_scope.GetClosureCaptures()) {
+        const std::string &name = it.first;
+        const Identifier *ident = it.second;
 
-            std::shared_ptr<AstExpression> current_value(new AstVariable(
-                name,
-                m_location
-            ));
+        ASSERT(ident != nullptr);
+        ASSERT(ident->GetSymbolType() != nullptr);
 
-            closure_obj_members.push_back({
-                ident->GetName(),
-                ident->GetSymbolType(),
-                current_value
-            });
-        }
-    //}
+        std::shared_ptr<AstExpression> current_value(new AstVariable(
+            name,
+            m_location
+        ));
+
+        closure_obj_members.push_back({
+            ident->GetName(),
+            ident->GetSymbolType(),
+            current_value
+        });
+    }
 
     // close parameter scope
     mod->m_scopes.Close();
@@ -325,7 +346,7 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
             }
         }
 
-        if (m_is_generator) {
+        if (m_is_generator_closure) {
             sf.m_flags |= FunctionFlags::GENERATOR;
         }
 
@@ -360,7 +381,7 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 
         // store function data as a static object
         StaticObject so(sf);
-        int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
+        const int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
 
         if (!ace::compiler::Config::use_static_objects || found_id == -1) {
             m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
@@ -394,13 +415,13 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
     if (m_is_closure) {
         ASSERT(m_closure_object != nullptr);
 
-        int func_expr_reg = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        const int func_expr_reg = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         // increase reg usage for closure object to hold it while we move this function expr as a member
         visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        int closure_obj_reg = rp;
+        const int closure_obj_reg = rp;
 
         m_closure_object->Build(visitor, mod);
 
@@ -421,19 +442,19 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 void AstFunctionExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &param : m_parameters) {
-        if (param) {
+        if (param != nullptr) {
             param->Optimize(visitor, mod);
         }
     }
 
-    if (m_block) {
+    if (m_block != nullptr) {
         m_block->Optimize(visitor, mod);
     }
 }
 
 void AstFunctionExpression::Recreate(std::ostringstream &ss)
 {
-    ss << Keyword::ToString(Keyword_function);
+    ss << Keyword::ToString(Keyword_func);
     ss << "(";
 
     for (auto &param : m_parameters) {

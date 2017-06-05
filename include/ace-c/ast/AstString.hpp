@@ -61,7 +61,8 @@ private:
     {
         return Pointer<AstString>(new AstString(
             m_value,
-            m_location));
+            m_location
+        ));
     }
 };
 

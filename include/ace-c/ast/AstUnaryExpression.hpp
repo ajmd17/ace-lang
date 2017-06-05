@@ -32,7 +32,8 @@ private:
         return Pointer<AstUnaryExpression>(new AstUnaryExpression(
             CloneAstNode(m_target),
             m_op,
-            m_location));
+            m_location
+        ));
     }
 };
 

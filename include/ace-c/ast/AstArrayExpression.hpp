@@ -31,10 +31,10 @@ protected:
 
     inline std::shared_ptr<AstArrayExpression> CloneImpl() const
     {
-        return std::shared_ptr<AstArrayExpression>(
-            new AstArrayExpression(
-                CloneAllAstNodes(m_members),
-                m_location));
+        return std::shared_ptr<AstArrayExpression>(new AstArrayExpression(
+            CloneAllAstNodes(m_members),
+            m_location
+        ));
     }
 };
 

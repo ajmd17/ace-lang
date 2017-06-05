@@ -10,13 +10,13 @@ DecompilationUnit::DecompilationUnit()
 {
 }
 
-void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::utf8_ostream *os)
+void DecompilationUnit::DecodeNext(
+    uint8_t code,
+    ace::vm::BytecodeStream &bs,
+    InstructionStream &is,
+    utf::utf8_ostream *os)
 {
-    const size_t pos = bs.GetPosition();
-    
-    (*os) << std::hex << pos << std::dec << "\t";
 
-    uint8_t code = bs.Next();
     switch (code) {
     case NOP:
     {
@@ -1208,12 +1208,21 @@ void DecompilationUnit::DecodeNext(ByteStream &bs, InstructionStream &is, utf::u
     }
 }
 
-InstructionStream DecompilationUnit::Decompile(ByteStream &bs, utf::utf8_ostream *os)
+InstructionStream DecompilationUnit::Decompile(ace::vm::BytecodeStream &bs, utf::utf8_ostream *os)
 {
     InstructionStream is;
 
-    while (bs.HasNext()) {
-        DecodeNext(bs, is, os);
+    while (!bs.Eof()) {
+        const size_t pos = bs.Position();
+        
+        if (os != nullptr) {
+            (*os) << std::hex << pos << std::dec << "\t";
+        }
+
+        uint8_t code;
+        bs.Read(&code);
+
+        DecodeNext(code, bs, is, os);
     }
 
     return is;

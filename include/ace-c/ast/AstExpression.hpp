@@ -8,8 +8,7 @@
 class AstExpression : public AstStatement {
 public:
     AstExpression(const SourceLocation &location,
-        int access_options
-    );
+        int access_options);
     virtual ~AstExpression() = default;
 
     inline int GetAccessOptions() const

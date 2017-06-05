@@ -5,7 +5,6 @@ template <typename T> class non_owning_ptr {
 public:
     explicit non_owning_ptr() : m_ptr(nullptr) {}
     explicit non_owning_ptr(T *ptr) : m_ptr(ptr) {}
-    explicit non_owning_ptr(const T *ptr) : m_ptr(ptr) {}
     non_owning_ptr(const non_owning_ptr &other)
         : m_ptr(other.m_ptr) {}
     ~non_owning_ptr() = default;

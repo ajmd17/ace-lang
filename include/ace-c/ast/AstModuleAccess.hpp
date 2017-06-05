@@ -46,7 +46,8 @@ private:
         return Pointer<AstModuleAccess>(new AstModuleAccess(
             m_target,
             CloneAstNode(m_expr),
-            m_location));
+            m_location
+        ));
     }
 };
 

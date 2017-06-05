@@ -3,6 +3,7 @@
 
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/ast/AstCallExpression.hpp>
 
 #include <memory>
 
@@ -24,6 +25,8 @@ public:
 private:
     std::shared_ptr<AstExpression> m_expr;
     int m_num_pops;
+
+    std::shared_ptr<AstCallExpression> m_yield_callback_call;
 
     inline Pointer<AstYieldStatement> CloneImpl() const
     {

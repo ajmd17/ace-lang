@@ -62,6 +62,7 @@ const SymbolTypePtr_t SymbolType::Builtin::FUNCTION = SymbolType::Generic(
         sp<AstBlock>(new AstBlock(SourceLocation::eof)),
         false,
         false,
+        false,
         SourceLocation::eof
     )),
     {},
@@ -155,6 +156,7 @@ const SymbolTypePtr_t SymbolType::Builtin::GENERATOR = SymbolType::Generic(
         {},
         nullptr, 
         sp<AstBlock>(new AstBlock(SourceLocation::eof)),
+        false,
         false,
         false,
         SourceLocation::eof

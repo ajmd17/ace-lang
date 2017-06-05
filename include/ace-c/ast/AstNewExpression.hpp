@@ -2,7 +2,7 @@
 #define AST_NEW_EXPRESSION_HPP
 
 #include <ace-c/ast/AstExpression.hpp>
-#include <ace-c/ast/AstArgument.hpp>
+#include <ace-c/ast/AstArgumentList.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/SymbolType.hpp>
 
@@ -13,7 +13,7 @@ class AstNewExpression: public AstExpression {
 public:
     AstNewExpression(
         const std::shared_ptr<AstTypeSpecification> &type_expr,
-        const std::vector<std::shared_ptr<AstArgument>> &args,
+        const std::shared_ptr<AstArgumentList> &arg_list,
         const SourceLocation &location);
     virtual ~AstNewExpression() = default;
 
@@ -29,7 +29,7 @@ public:
 
 private:
     std::shared_ptr<AstTypeSpecification> m_type_expr;
-    std::vector<std::shared_ptr<AstArgument>> m_args;
+    std::shared_ptr<AstArgumentList> m_arg_list;
 
     /** Set while analyzing */
     std::shared_ptr<AstExpression> m_object_value;
@@ -38,7 +38,7 @@ private:
     {
         return Pointer<AstNewExpression>(new AstNewExpression(
             CloneAstNode(m_type_expr),
-            CloneAllAstNodes(m_args),
+            CloneAstNode(m_arg_list),
             m_location
         ));
     }

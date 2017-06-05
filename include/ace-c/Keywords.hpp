@@ -13,7 +13,7 @@ enum Keywords {
     Keyword_const,
     Keyword_ref,
     Keyword_val,
-    Keyword_function,
+    Keyword_func,
     Keyword_type,
     Keyword_alias,
     Keyword_as,

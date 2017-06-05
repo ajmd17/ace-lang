@@ -28,6 +28,7 @@
 #include <ace-c/ast/AstUnaryExpression.hpp>
 #include <ace-c/ast/AstCallExpression.hpp>
 #include <ace-c/ast/AstArgument.hpp>
+#include <ace-c/ast/AstArgumentList.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstModuleAccess.hpp>
 #include <ace-c/ast/AstModuleProperty.hpp>
@@ -91,7 +92,7 @@ private:
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier(bool allow_keyword = false);
     std::shared_ptr<AstArgument> ParseArgument(std::shared_ptr<AstExpression> expr);
-    std::vector<std::shared_ptr<AstArgument>> ParseArguments();
+    std::shared_ptr<AstArgumentList> ParseArguments();
     std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstModuleProperty> ParseModuleProperty();

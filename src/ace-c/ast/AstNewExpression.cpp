@@ -7,11 +7,11 @@
 
 AstNewExpression::AstNewExpression(
     const std::shared_ptr<AstTypeSpecification> &type_expr,
-    const std::vector<std::shared_ptr<AstArgument>> &args,
+    const std::shared_ptr<AstArgumentList> &arg_list,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_type_expr(type_expr),
-      m_args(args)
+      m_arg_list(arg_list)
 {
 }
 
@@ -23,8 +23,8 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_type_expr != nullptr);
     m_type_expr->Visit(visitor, mod);
 
-    for (auto &arg : m_args) {
-      arg->Visit(visitor, mod);
+    if (m_arg_list != nullptr) {
+        m_arg_list->Visit(visitor, mod);
     }
 
     SymbolTypePtr_t object_type = m_type_expr->GetSymbolType();
@@ -41,9 +41,8 @@ void AstNewExpression::Build(AstVisitor *visitor, Module *mod)
     ASSERT(m_type_expr != nullptr);
     m_type_expr->Build(visitor, mod);
 
-    for (size_t i = 0; i < m_args.size(); i++) {
-        ASSERT(m_args[i] != nullptr);
-        m_args[i]->Build(visitor, mod);
+    if (m_arg_list != nullptr) {
+        m_arg_list->Build(visitor, mod);
     }
 
     // build in the value
@@ -56,9 +55,8 @@ void AstNewExpression::Optimize(AstVisitor *visitor, Module *mod)
     ASSERT(m_type_expr != nullptr);
     m_type_expr->Optimize(visitor, mod);
 
-    for (size_t i = 0; i < m_args.size(); i++) {
-        ASSERT(m_args[i] != nullptr);
-        m_args[i]->Optimize(visitor, mod);
+    if (m_arg_list != nullptr) {
+        m_arg_list->Optimize(visitor, mod);
     }
 
     // build in the value
@@ -73,11 +71,8 @@ void AstNewExpression::Recreate(std::ostringstream &ss)
     ss << "new ";
     m_type_expr->Recreate(ss);
     ss << "(";
-    for (size_t i = 0; i < m_args.size(); i++) {
-        m_args[i]->Recreate(ss);
-        if (i != m_args.size() - 1) {
-            ss << ", ";
-        }
+    if (m_arg_list != nullptr) {
+        m_arg_list->Recreate(ss);
     }
     ss << ")";
 }

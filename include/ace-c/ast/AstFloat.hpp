@@ -53,7 +53,10 @@ private:
 
     inline Pointer<AstFloat> CloneImpl() const
     {
-        return Pointer<AstFloat>(new AstFloat(m_value, m_location));
+        return Pointer<AstFloat>(new AstFloat(
+            m_value,
+            m_location
+        ));
     }
 };
 

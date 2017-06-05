@@ -1,11 +1,7 @@
 module generators {
-  // does not work yet
-
-  foreach: Function = (arr: Array) {
+  foreach: Function = (arr: Array) * {
     i: Int = 0
-    len: Int = ::length(arr)
-
-    print 'hi'
+    len: Int = length(arr)
 
     while i < len {
       yield arr[i]
@@ -14,19 +10,15 @@ module generators {
   }
 
   /*foreach: Function = (arr: Array) {
-    gen: Function = (cb: Function) {
+    return (cb: Function) {
       i: Int = 0
-      len: Int = ::length(arr)
+      len: Int = length(arr)
 
-      print 'hi'
-
-      while i < l.en {
+      while i < len {
         cb(arr[i])
         i += 1
       }
     }
-
-    return gen
   }*/
 
   /*
@@ -37,40 +29,14 @@ module generators {
 
   */
 
-  /*print foreach([1,2,3])((i) {
-    print i
-  })*/
-
-  type C {
-    a: Float = 5.5
+  foreach([1,2,3]) => (i) {
+    print 'i = ', i
   }
 
-  test_closure: Function = (a, b) {
-    /*f1: Any = () {
-      
-      print 'a = ', a
-      print 'b = ', b
-      print 'hi'
-    }
 
-    print closure_object
-    c: C
-    c.a += 2.0
-    //f1(closure_object)
-    print f1.b*/
-
-    fff = ((i) {
-      print 'hello ', a
-      print 'i = ', i
-    })(4, 2)
-
-    return 5
-
-    //return c
-  }
-
-  c = test_closure(4.5, 9.9)
-  print 'test_closure() returned: ', c
+  /*foreach([1,2,3]) => (i) {
+    print 'i = ', i
+  }*/
 
 
   /*test_closure_2: Function = (a, b) {

@@ -13,7 +13,7 @@ module counter {
     }
   }
 
-  count(from: 50, to: 150, (i) {
+  count(to: 50, from: 150, (i) {
     print i
   })
 }

@@ -55,14 +55,26 @@ enum Operators {
 
 class Operator {
 public:
-    static const std::map<std::string, Operator> operator_objects;
+    static const std::map<std::string, Operator> binary_operators;
+    static const std::map<std::string, Operator> unary_operators;
 
-    static inline bool IsOperator(const std::string &str)
-        { return operator_objects.find(str) != operator_objects.end(); }
-    static inline bool IsOperator(const std::string &str, const Operator *&out)
+    static inline bool IsBinaryOperator(const std::string &str)
+        { return binary_operators.find(str) != binary_operators.end(); }
+    static inline bool IsBinaryOperator(const std::string &str, const Operator *&out)
     {
-        auto it = operator_objects.find(str);
-        if (it != operator_objects.end()) {
+        auto it = binary_operators.find(str);
+        if (it != binary_operators.end()) {
+            out = &it->second;
+            return true;
+        }
+        return false;
+    }
+    static inline bool IsUnaryOperator(const std::string &str)
+        { return unary_operators.find(str) != unary_operators.end(); }
+    static inline bool IsUnaryOperator(const std::string &str, const Operator *&out)
+    {
+        auto it = unary_operators.find(str);
+        if (it != unary_operators.end()) {
             out = &it->second;
             return true;
         }

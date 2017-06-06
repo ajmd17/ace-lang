@@ -500,8 +500,6 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         uint8_t nargs; bs->Read(&nargs);
         uint8_t flags; bs->Read(&flags);
 
-        std::cout << "new function, flags = " << (int)flags << "\n";
-
         handler->LoadFunc(
             reg,
             addr,

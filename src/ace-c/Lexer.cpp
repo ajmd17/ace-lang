@@ -497,13 +497,13 @@ Token Lexer::ReadOperator()
     std::string op_1 = utf::get_bytes(ch[0]);
     std::string op_2 = op_1 + utf::get_bytes(ch[1]);
 
-    if (Operator::IsOperator(op_2)) {
+    if (Operator::IsUnaryOperator(op_2) || Operator::IsBinaryOperator(op_2)) {
         int pos_change_1 = 0, pos_change_2 = 0;
         m_source_stream.Next(pos_change_1);
         m_source_stream.Next(pos_change_2);
         m_source_location.GetColumn() += (pos_change_1 + pos_change_2);
         return Token(TK_OPERATOR, op_2, location);
-    } else if (Operator::IsOperator(op_1)) {
+    } else if (Operator::IsUnaryOperator(op_1) || Operator::IsBinaryOperator(op_1)) {
         int pos_change = 0;
         m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;

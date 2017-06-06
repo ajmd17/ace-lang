@@ -77,7 +77,6 @@ const char *Value::GetTypeString() const
         case FUNCTION_CALL: return "FunctionCallInfo";
         case TRY_CATCH_INFO: return "TryCatchInfo";
         default: {
-            std::cout << "type = " << m_type << "\n";
             return "??";
         }
     }

@@ -188,6 +188,42 @@ InstructionStream::InstructionStream(const InstructionStream &other)
 {
 }
 
+size_t InstructionStream::Allot(const Instruction<> &instruction)
+{
+    size_t sz = 0;
+
+    for (const std::vector<char> &operand : instruction.m_data) {
+        sz += operand.size();
+    }
+
+    m_position += sz;
+
+    size_t index = m_instruction_block.m_allotted.size();
+    m_instruction_block.m_allotted.push_back(sz);
+
+    return index;
+}
+
+bool InstructionStream::Write(size_t allotted_index, const Instruction<> &instruction)
+{
+    if (allotted_index >= m_instruction_block.m_allotted.size()) {
+        return false;
+    }
+
+    size_t sz = 0;
+    for (const std::vector<char> &operand : instruction.m_data) {
+        sz += operand.size();
+    }
+
+    if (m_instruction_block.m_allotted[allotted_index] != sz) {
+        return false;
+    }
+
+    m_data.push_back(instruction);
+
+    return true;
+}
+
 InstructionStream &InstructionStream::operator<<(const Instruction<> &instruction)
 {
     m_data.push_back(instruction);

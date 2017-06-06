@@ -49,6 +49,7 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
 void AstBlock::Build(AstVisitor *visitor, Module *mod)
 {
     for (std::shared_ptr<AstStatement> &stmt : m_children) {
+        ASSERT(stmt != nullptr);
         stmt->Build(visitor, mod);
     }
 

@@ -329,7 +329,7 @@ int Parser::OperatorPrecedence(const Operator *&out)
     Token token = m_token_stream->Peek();
 
     if (token && token.GetTokenClass() == TK_OPERATOR) {
-        if (!Operator::IsOperator(token.GetValue(), out)) {
+        if (!Operator::IsBinaryOperator(token.GetValue(), out)) {
             // internal error: operator not defined
             CompilerError error(
                 LEVEL_ERROR,
@@ -799,8 +799,6 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
     std::string arg_name;
 
     if (expr == nullptr) {
-        expr = ParseExpression();
-
         // check for name: value expressions (named arguments)
         if (Match(TK_IDENT)) {
             if (MatchAhead(TK_COLON, 1)) {
@@ -813,6 +811,8 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
                 Expect(TK_COLON, true);
             }
         }
+
+        expr = ParseExpression();
     }
 
     if (expr != nullptr) {
@@ -842,11 +842,10 @@ std::shared_ptr<AstArgumentList> Parser::ParseArguments()
             args.push_back(arg);
 
             if (!Match(TK_COMMA, true)) {
-                // unexpected token
                 break;
             }
         } else {
-            break;
+            return nullptr;
         }
     }
 
@@ -1070,13 +1069,18 @@ std::shared_ptr<AstBlock> Parser::ParseBlock()
             token.GetLocation()
         ));
 
-        while (!Match(TK_CLOSE_BRACE, true)) {
+        while (!Match(TK_CLOSE_BRACE, false)) {
             // skip statement terminator tokens
             if (!Match(TK_SEMICOLON, true) && !Match(TK_NEWLINE, true)) {
-                block->AddChild(ParseStatement());
+                if (auto stmt = ParseStatement()) {
+                    block->AddChild(stmt);
+                } else {
+                    break;
+                }
             }
         }
 
+        Expect(TK_CLOSE_BRACE, true);
         return block;
     }
 
@@ -1106,10 +1110,14 @@ std::shared_ptr<AstIfStatement> Parser::ParseIfStatement()
                 else_block = std::shared_ptr<AstBlock>(new AstBlock(
                     else_token.GetLocation()
                 ));
-                else_block->AddChild(ParseIfStatement());
+                if (auto else_if_block = ParseIfStatement()) {
+                    else_block->AddChild(else_if_block);
+                }
             } else {
                 // parse block after "else keyword
-                else_block = ParseBlock();
+                if (!(else_block = ParseBlock())) {
+                    return nullptr;
+                }
             }
         }
 
@@ -1244,17 +1252,15 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
     // read the operator token
     if (Token token = Expect(TK_OPERATOR, true)) {
         const Operator *op = nullptr;
-        if (Operator::IsOperator(token.GetValue(), op)) {
-            if (op->IsUnary()) {
-                if (auto term = ParseTerm()) {
-                    return std::shared_ptr<AstUnaryExpression>(new AstUnaryExpression(
-                        term,
-                        op,
-                        token.GetLocation()
-                    ));
-                }
+        if (Operator::IsUnaryOperator(token.GetValue(), op)) {
+            if (auto term = ParseTerm()) {
+                return std::shared_ptr<AstUnaryExpression>(new AstUnaryExpression(
+                    term,
+                    op,
+                    token.GetLocation()
+                ));
             }
-            
+
             return nullptr;
         } else {
             // internal error: operator not defined
@@ -1477,23 +1483,14 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
 
         std::shared_ptr<AstExpression> assignment;
 
-        if (Token op = Match(TK_OPERATOR, true)) {
-            if (op.GetValue() == "=") {
-                // read assignment expression
-                SourceLocation expr_location = CurrentLocation();
-                if (!(assignment = ParseExpression())) {
-                    m_compilation_unit->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_illegal_expression,
-                        expr_location
-                    ));
-                }
-            } else {
-                // unexpected operator
+        if (Token op = MatchOperator("=", true)) {
+            // read assignment expression
+            SourceLocation expr_location = CurrentLocation();
+            if (!(assignment = ParseExpression())) {
                 m_compilation_unit->GetErrorList().AddError(CompilerError(
                     LEVEL_ERROR,
-                    Msg_illegal_operator,
-                    op.GetLocation()
+                    Msg_illegal_expression,
+                    expr_location
                 ));
             }
         }

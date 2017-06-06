@@ -78,9 +78,26 @@ public:
         return -1;
     }
 
+    inline void BeginBlock()
+    {
+        m_instruction_block.m_allotted.clear();
+    }
+
+    inline void EndBlock()
+    {
+        m_instruction_block.m_allotted.clear();
+    }
+
+    size_t Allot(const Instruction<> &instruction);
+    bool Write(size_t allotted_index, const Instruction<> &instruction);
+
     InstructionStream &operator<<(const Instruction<> &instruction);
 
 private:
+    struct {
+        std::vector<size_t> m_allotted;
+    } m_instruction_block;
+
     size_t m_position;
     std::vector<Instruction<>> m_data;
     // incremented and decremented each time a register

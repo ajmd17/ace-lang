@@ -2,7 +2,7 @@
 
 #include <array>
 
-const std::map<std::string, Operator> Operator::operator_objects = {
+const std::map<std::string, Operator> Operator::binary_operators = {
     { "+", Operator(OP_add, 11, ARITHMETIC) },
     { "-", Operator(OP_subtract, 11, ARITHMETIC) },
     { "*", Operator(OP_multiply, 12, ARITHMETIC) },
@@ -38,7 +38,9 @@ const std::map<std::string, Operator> Operator::operator_objects = {
     { "^=", Operator(OP_bitwise_xor_assign, 2, ASSIGNMENT | BITWISE, true) },
     { "&=", Operator(OP_bitwise_and_assign, 2, ASSIGNMENT | BITWISE, true) },
     { "|=", Operator(OP_bitwise_or_assign, 2, ASSIGNMENT | BITWISE, true) },
+};
 
+const std::map<std::string, Operator> Operator::unary_operators = {
     // Unary operators
     { "!", Operator(OP_logical_not, 0, LOGICAL) },
     { "-", Operator(OP_negative, 0, ARITHMETIC) },
@@ -47,6 +49,7 @@ const std::map<std::string, Operator> Operator::operator_objects = {
     { "++", Operator(OP_increment, 0, ASSIGNMENT | ARITHMETIC, true) },
     { "--", Operator(OP_decrement, 0, ASSIGNMENT | ARITHMETIC, true) }
 };
+
 
 Operator::Operator(Operators op_type,
     int precedence,

@@ -61,8 +61,6 @@ std::vector<std::thread> threads;
 
 std::string exec_path;
 
-static Timer stopwatch;
-
 void Events_new_event_array(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(<=, 1);
@@ -513,38 +511,6 @@ void Random_crand(ace::sdk::Params params)
     ACE_RETURN(res);
 }
 
-void Stopwatch_start(ace::sdk::Params params)
-{
-    ACE_CHECK_ARGS(==, 0);
-
-    // start timer
-    if (std::int64_t now = stopwatch.Start()) {
-        // return the timestamp
-        vm::Value res;
-        res.m_type = vm::Value::ValueType::I64;
-        res.m_value.i64 = now;
-        ACE_RETURN(res);
-    } else {
-        params.handler->state->ThrowException(
-            params.handler->thread,
-            vm::Exception(utf::Utf8String("failed to start stopwatch"))
-        );
-    }
-}
-
-void Stopwatch_stop(ace::sdk::Params params)
-{
-    ACE_CHECK_ARGS(==, 0);
-
-    double elapsed = stopwatch.Elapsed();
-
-    // return the elapsed time
-    vm::Value res;
-    res.m_type = vm::Value::ValueType::F64;
-    res.m_value.d = elapsed;
-    ACE_RETURN(res);
-}
-
 void Time_now(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 0);
@@ -614,7 +580,10 @@ void Runtime_load_library(ace::sdk::Params params)
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (target_ptr->GetValue().ptr == nullptr) {
-            params.handler->state->ThrowException(params.handler->thread, vm::Exception::NullReferenceException());
+            params.handler->state->ThrowException(
+                params.handler->thread,
+                vm::Exception::NullReferenceException()
+            );
         } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
             // load library from string
             utf::Utf8String full_path;
@@ -624,12 +593,17 @@ void Runtime_load_library(ace::sdk::Params params)
             } else {
                 full_path = utf::Utf8String(exec_path.c_str()) + *strptr;
             }
+
+            full_path += "." ACE_DYLIB_EXT;
             
             Library lib = Runtime::Load(full_path.GetData());
 
-            if (!lib.GetHandle()) {
+            if (lib.GetHandle() == nullptr) {
                 // could not load library
-                params.handler->state->ThrowException(params.handler->thread, vm::Exception::LibraryLoadException(full_path.GetData()));
+                params.handler->state->ThrowException(
+                    params.handler->thread,
+                    vm::Exception::LibraryLoadException(full_path.GetData())
+                );
             } else {
                 // store the library in a variable
 
@@ -1282,6 +1256,7 @@ static int REPL(
         if (!wait_for_next) {
             // so we can rewind upon errors
             int old_pos = ast_iterator.GetPosition();
+            int old_stack_record = compilation_unit.GetInstructionStream().GetStackSize();
             // store the number of identifiers in the global scope,
             // so we can remove them on error
             
@@ -1436,10 +1411,8 @@ static int REPL(
                             delete[] buf;
 
                             size_t stack_size_now = main_thread->GetStack().GetStackPointer();
-                            while (stack_size_now > stack_size_before) {
-                                main_thread->GetStack().Pop();
-                                stack_size_now--;
-                            }
+                            main_thread->GetStack().Pop(stack_size_now - stack_size_before);
+                            stack_size_now = stack_size_before;
 
                             // kill off any thread that isn't the main thread
                             for (int i = 1; i < vm->GetState().GetNumThreads(); i++) {
@@ -1458,6 +1431,13 @@ static int REPL(
 
                             // we're good to go now
                             vm->GetState().good = true;
+
+                            // undo compilation
+                            compilation_unit.GetInstructionStream().SetStackSize(old_stack_record);
+                            for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
+                                ast_iterator.Pop();
+                            }
+                            ast_iterator.SetPosition(old_pos);
 
                             // restart the script
                             return REPL(vm, compilation_unit, "", false);
@@ -1646,10 +1626,6 @@ void BuildLibraries(
             { "gen", SymbolType::Builtin::ANY }
         }, Random_get_next)
         .Function("crand", SymbolType::Builtin::INT, {}, Random_crand);
-
-    api.Module("stopwatch")
-        .Function("start", SymbolType::Builtin::FLOAT, {}, Stopwatch_start)
-        .Function("stop", SymbolType::Builtin::FLOAT, {}, Stopwatch_stop);
 
     api.Module("time")
         .Function("now", SymbolType::Builtin::INT, {}, Time_now);

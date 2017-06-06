@@ -52,7 +52,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             symbol_type = m_type_specification->GetSymbolType();
 
             // if no assignment provided, set the assignment to be the default value of the provided type
-            if (!m_real_assignment && symbol_type) {
+            if (m_real_assignment == nullptr && symbol_type != nullptr) {
                 // Assign variable to the default value for the specified type.
                 m_real_assignment = symbol_type->GetDefaultValue();
                 // built-in assignment, turn off strict mode
@@ -79,14 +79,19 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     // i.e: let x: Array = [1,2,3]
                     // will actually be of the type `Array(Int)`
 
-                    if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                    // NOTE: removed because if somebody writes a: Array = [1,2,3]
+                    // and later wants to assign it to ["hi"] they shouldn't receive an array,
+                    // as they did not explicitly specify that it is Array<Int> in this case.
+
+                    /*if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
                         if (auto base = assignment_type->GetBaseType()) {
                             if (symbol_type->TypeEqual(*base)) {
                                 // here is where type promotion is performed
+                                
                                 symbol_type = assignment_type;
                             }
                         }
-                    }
+                    }*/
                 }
 
                 if (is_type_strict) {

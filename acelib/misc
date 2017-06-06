@@ -1,10 +1,11 @@
 module misc {
-  iterate: Function = (it: Array, callback: Function) {
+  iterate: Function = (it: Array) * {
+    print 'iterate'
     i: Int
     len: Int = ::length(it)
 
     while i < len {
-      callback(it[i])
+      yield it[i]
       i += 1
     }
   }

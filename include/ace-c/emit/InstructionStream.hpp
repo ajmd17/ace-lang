@@ -60,6 +60,7 @@ public:
     inline uint8_t DecRegisterUsage() { return --m_register_counter; }
 
     inline int GetStackSize() const { return m_stack_size; }
+    inline void SetStackSize(int stack_size) { m_stack_size = stack_size; }
     inline int IncStackSize() { return ++m_stack_size; }
     inline int DecStackSize() { return --m_stack_size; }
 

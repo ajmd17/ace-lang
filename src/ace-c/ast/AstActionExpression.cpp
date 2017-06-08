@@ -100,6 +100,8 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
             // and attempt to substitute function arguments with the second item in the array
             // (the callback/handler)
 
+            std::cout << "member type = " << member_type->GetName() << "\n";
+
         } else {
             m_member_found = 0;
         }

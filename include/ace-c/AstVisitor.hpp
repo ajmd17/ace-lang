@@ -8,7 +8,8 @@
 
 class AstVisitor {
 public:
-    AstVisitor(AstIterator *ast_iterator, CompilationUnit *compilation_unit);
+    AstVisitor(AstIterator *ast_iterator,
+        CompilationUnit *compilation_unit);
     virtual ~AstVisitor() = default;
 
     inline AstIterator *GetIterator() const { return m_ast_iterator; }

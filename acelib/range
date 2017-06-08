@@ -6,13 +6,26 @@ module range {
     last: Number
     step: Number
 
-    '$invoke' = (self) * {
+    '$invoke'(self) * {
       i: Number = self.first
-      
+
       while self.last - i != 0 {
         yield i
         i += self.step
       }
+    }
+
+    to_array(self) -> Array {
+      // TODO: preallocate this array!
+      res: Array
+
+      i: Number = self.first
+      while self.last - i != 0 {
+        ::array_push(res, i)
+        i += self.step
+      }
+
+      return res
     }
   }
 
@@ -20,7 +33,7 @@ module range {
     r: Range
     r.first = first
     r.last = last
-    r.step = math::sign(first - last)
+    r.step = math::sign(last - first)
     return r
   }
 }

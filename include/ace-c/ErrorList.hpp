@@ -2,9 +2,11 @@
 #define ERROR_LIST_HPP
 
 #include <ace-c/CompilerError.hpp>
+#include <common/utf8.hpp>
 
 #include <vector>
 #include <algorithm>
+#include <ostream>
 
 class ErrorList {
 public:
@@ -16,6 +18,7 @@ public:
     inline void SortErrors() { std::sort(m_errors.begin(), m_errors.end()); }
 
     bool HasFatalErrors() const;
+    std::ostream &WriteOutput(std::ostream &os) const;
 
     std::vector<CompilerError> m_errors;
 };

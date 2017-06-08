@@ -8,7 +8,8 @@ public:
     static const SourceLocation eof;
 
 public:
-    SourceLocation(int line = 0, int column = 0, const std::string &filename = "");
+    SourceLocation(int line, int column,
+        const std::string &filename);
     SourceLocation(const SourceLocation &other);
 
     inline int GetLine() const { return m_line; }

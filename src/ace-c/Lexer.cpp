@@ -18,9 +18,9 @@ Lexer::Lexer(
     CompilationUnit *compilation_unit)
     : m_source_stream(source_stream),
       m_token_stream(token_stream),
-      m_compilation_unit(compilation_unit)
+      m_compilation_unit(compilation_unit),
+      m_source_location(0, 0, source_stream.GetFile()->GetFilePath())
 {
-    m_source_location.SetFileName(m_source_stream.GetFile()->GetFilePath());
 }
 
 Lexer::Lexer(const Lexer &other)
@@ -44,6 +44,7 @@ void Lexer::Analyze()
 
         // SkipWhitespace() returns true if there was a newline
         const SourceLocation location = m_source_location;
+
         if (SkipWhitespace()) {
             // add the `newline` statement terminator if not a continuation token
             if (token && token.GetTokenClass() != TK_NEWLINE && !token.IsContinuationToken()) {
@@ -77,6 +78,7 @@ Token Lexer::NextToken()
         ch[i] = m_source_stream.Next(pos_change);
         total_pos_change += pos_change;
     }
+
     // go back to previous position
     m_source_stream.GoBack(total_pos_change);
 
@@ -206,11 +208,14 @@ Token Lexer::NextToken()
 
         char bad_token_str[sizeof(bad_token)] = { '\0' };
         utf::char32to8(bad_token, bad_token_str);
+        
+        m_compilation_unit->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_unexpected_token,
+            location,
+            std::string(bad_token_str)
+        ));
 
-        CompilerError error(LEVEL_ERROR, Msg_unexpected_token,
-            location, std::string(bad_token_str));
-
-        m_compilation_unit->GetErrorList().AddError(error);
         m_source_location.GetColumn() += pos_change;
 
         return Token::EMPTY;
@@ -240,9 +245,12 @@ u32char Lexer::ReadEscapeCode()
             // return the escape itself
             return esc;
         default:
-            m_compilation_unit->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_unrecognized_escape_sequence,
-                    location, std::string("\\") + utf::get_bytes(esc)));
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_unrecognized_escape_sequence,
+                location,
+                std::string("\\") + utf::get_bytes(esc)
+            ));
         }
     }
 
@@ -265,7 +273,6 @@ Token Lexer::ReadStringLiteral()
     m_source_location.GetColumn() += pos_change;
 
     while (ch != delim) {
-
         if (ch == (u32char)'\n' || !HasNext()) {
             // unterminated string literal
             m_compilation_unit->GetErrorList().AddError(CompilerError(
@@ -501,7 +508,7 @@ Token Lexer::ReadOperator()
         int pos_change_1 = 0, pos_change_2 = 0;
         m_source_stream.Next(pos_change_1);
         m_source_stream.Next(pos_change_2);
-        m_source_location.GetColumn() += (pos_change_1 + pos_change_2);
+        m_source_location.GetColumn() += pos_change_1 + pos_change_2;
         return Token(TK_OPERATOR, op_2, location);
     } else if (Operator::IsUnaryOperator(op_1) || Operator::IsBinaryOperator(op_1)) {
         int pos_change = 0;
@@ -567,8 +574,12 @@ Token Lexer::ReadIdentifier()
 bool Lexer::HasNext()
 {
     if (!m_source_stream.HasNext()) {
-        m_compilation_unit->GetErrorList().AddError(
-            CompilerError(LEVEL_ERROR, Msg_unexpected_eof, m_source_location));
+        m_compilation_unit->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_unexpected_eof,
+            m_source_location
+        ));
+
         return false;
     }
 

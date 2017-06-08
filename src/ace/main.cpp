@@ -1220,40 +1220,7 @@ static int REPL(
             semantic_analyzer.Analyze(false);
 
             compilation_unit.GetErrorList().SortErrors();
-
-            for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
-                const std::string &filename = error.GetLocation().GetFileName();
-                const std::string &error_text = error.GetText();
-
-                switch (error.GetLevel()) {
-                    case LEVEL_INFO:
-                        utf::cout << termcolor::white << termcolor::on_blue << termcolor::bold << "Info";
-                        break;
-                    case LEVEL_WARN:
-                        utf::cout << termcolor::white << termcolor::on_yellow << termcolor::bold << "Warning";
-                        break;
-                    case LEVEL_ERROR:
-                        utf::cout << termcolor::white << termcolor::on_red << termcolor::bold << "Error";
-                        break;
-                }
-
-                utf::cout << termcolor::reset << " in file " << utf::Utf8String(filename.c_str())
-                          << " at line "    << (error.GetLocation().GetLine() + 1)
-                          << ", col " << (error.GetLocation().GetColumn() + 1);
-
-                if (lines.size() > error.GetLocation().GetLine()) {
-                    // render the line in question
-                    utf::cout << "\n\t" << lines[error.GetLocation().GetLine()];
-                    utf::cout << "\n\t";
-
-                    for (size_t i = 0; i < error.GetLocation().GetColumn(); i++) {
-                        utf::cout << " ";
-                    }
-                    utf::cout << termcolor::green << "^";
-                }
-
-                utf::cout << termcolor::reset << "\n\t" << utf::Utf8String(error_text.c_str()) << "\n";
-            }
+            compilation_unit.GetErrorList().WriteOutput(utf::cout);
 
             if (!compilation_unit.GetErrorList().HasFatalErrors()) {
                 // only optimize if there were no errors

@@ -1,6 +1,7 @@
 #include <ace-c/AstVisitor.hpp>
 
-AstVisitor::AstVisitor(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
+AstVisitor::AstVisitor(AstIterator *ast_iterator,
+    CompilationUnit *compilation_unit)
     : m_ast_iterator(ast_iterator),
       m_compilation_unit(compilation_unit)
 {

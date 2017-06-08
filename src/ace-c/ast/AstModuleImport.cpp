@@ -125,19 +125,23 @@ void AstModuleImport::Visit(AstVisitor *visitor, Module *mod)
         // iterate through library paths to try and find a file
         for (const std::string &scan_path : scan_paths) {
             const std::string &filename = first->GetLeft();
-
-            // create relative path
-            const std::string path = current_dir + "/" + scan_path + "/";
             const std::string ext = ".ace";
 
-            found_path = path + filename + ext;
+            // create relative path
+            std::string relative_path;
+            if (!current_dir.empty()) {
+                relative_path += current_dir + "/";
+            }
+            relative_path += scan_path + "/";
+
+            found_path = relative_path + filename + ext;
             if (AstImport::TryOpenFile(found_path, file)) {
                 opened = true;
                 break;
             }
 
             // try it without extension
-            found_path = path + filename;
+            found_path = relative_path + filename;
             if (AstImport::TryOpenFile(found_path, file)) {
                 opened = true;
                 break;

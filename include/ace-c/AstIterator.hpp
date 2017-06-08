@@ -15,12 +15,14 @@ public:
         { m_list.push_back(statement); }
     inline void Pop()
         { m_list.pop_back(); }
+
     inline int GetPosition() const
         { return m_position; }
     inline void ResetPosition()
         { m_position = 0; }
     inline void SetPosition(size_t position)
         { m_position = position; }
+
     inline std::shared_ptr<AstStatement> &Peek()
         { return m_list[m_position]; }
     inline const std::shared_ptr<AstStatement> &Peek() const
@@ -29,6 +31,7 @@ public:
         { return m_list[m_position++]; }
     inline bool HasNext() const
         { return m_position < m_list.size(); }
+        
     inline const SourceLocation &GetLocation() const
         { return m_list[m_position]->m_location; }
 

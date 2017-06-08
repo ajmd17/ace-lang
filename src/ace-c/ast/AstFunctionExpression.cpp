@@ -34,7 +34,7 @@ AstFunctionExpression::AstFunctionExpression(
       m_is_generator(is_generator),
       m_is_closure(false),
       m_is_generator_closure(false),
-      m_return_type(SymbolType::Builtin::UNDEFINED),
+      m_return_type(SymbolType::Builtin::ANY),
       m_static_id(0)
 {
 }
@@ -101,7 +101,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         // closures are objects with a method named '$invoke',
         // so we pass the 'self' argument when it is called.
         m_closure_self_param.reset(new AstParameter(
-            "self",
+            "__closure_self",
             nullptr,
             nullptr,
             false,
@@ -198,19 +198,17 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                     // strict mode, because user specifically stated the intended return type
                     if (!m_return_type->TypeCompatible(*it.first, true)) {
                         // error; does not match what user specified
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(
-                            CompilerError(
-                                LEVEL_ERROR,
-                                Msg_mismatched_return_type,
-                                it.second,
-                                m_return_type->GetName(),
-                                it.first->GetName()
-                            )
-                        );
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_mismatched_return_type,
+                            it.second,
+                            m_return_type->GetName(),
+                            it.first->GetName()
+                        ));
                     }
                 } else {
                     // deduce return type
-                    if (m_return_type == SymbolType::Builtin::ANY || m_return_type == SymbolType::Builtin::UNDEFINED) {
+                    if (m_return_type == SymbolType::Builtin::ANY) {
                         m_return_type = it.first;
                     } else if (m_return_type->TypeCompatible(*it.first, false)) {
                         m_return_type = SymbolType::TypePromotion(m_return_type, it.first, true);
@@ -221,6 +219,8 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                             Msg_multiple_return_types,
                             it.second
                         ));
+
+                        break;
                     }
                 }
             }
@@ -228,7 +228,6 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             // return null
             m_return_type = SymbolType::Builtin::ANY;
         }
-
     }
     
     // create data members to copy closure parameters

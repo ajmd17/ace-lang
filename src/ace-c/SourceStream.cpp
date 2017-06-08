@@ -121,6 +121,7 @@ void SourceStream::Read(char *ptr, size_t num_bytes)
         if (m_position >= m_file->GetSize()) {
             throw std::out_of_range("attempted to read past the limit");
         }
+        
         ptr[i] = m_file->GetBuffer()[m_position++];
     }
 }

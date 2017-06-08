@@ -59,10 +59,9 @@ bool BuildSourceFile(const utf::Utf8String &filename,
         semantic_analyzer.Analyze();
 
         compilation_unit.GetErrorList().SortErrors();
+        compilation_unit.GetErrorList().WriteOutput(utf::cout);
 
-        std::unordered_set<std::string> error_filenames;
-
-        for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
+        /*for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
             if (error_filenames.insert(error.GetLocation().GetFileName()).second) {
                 auto split = str_util::split_path(error.GetLocation().GetFileName());
                 std::string str = !split.empty() ? split.back() : error.GetLocation().GetFileName();
@@ -75,7 +74,7 @@ bool BuildSourceFile(const utf::Utf8String &filename,
                       << "Ln "    << (error.GetLocation().GetLine() + 1)
                       << ", Col " << (error.GetLocation().GetColumn() + 1)
                       << ":  "    << utf::Utf8String(error.GetText().c_str()) << "\n";
-        }
+        }*/
 
         if (!compilation_unit.GetErrorList().HasFatalErrors()) {
             // only optimize if there were no errors

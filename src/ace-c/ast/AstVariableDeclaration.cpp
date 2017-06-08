@@ -50,22 +50,25 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             m_type_specification->Visit(visitor, mod);
 
             symbol_type = m_type_specification->GetSymbolType();
+            ASSERT(symbol_type != nullptr);
 
             // if no assignment provided, set the assignment to be the default value of the provided type
-            if (m_real_assignment == nullptr && symbol_type != nullptr) {
+            if (m_real_assignment == nullptr) {
                 // Assign variable to the default value for the specified type.
                 m_real_assignment = symbol_type->GetDefaultValue();
                 // built-in assignment, turn off strict mode
                 is_type_strict = false;
             }
         }
+        
+        ASSERT(m_real_assignment != nullptr);
 
-        if (m_real_assignment != nullptr) {
-            if (!m_assignment_already_visited) {
-                // visit assignment
-                m_real_assignment->Visit(visitor, mod);
-            }
+        if (!m_assignment_already_visited) {
+            // visit assignment
+            m_real_assignment->Visit(visitor, mod);
+        }
 
+        if (m_assignment != nullptr) { // has received an explicit assignment
             // make sure type is compatible with assignment
             SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
             ASSERT(assignment_type != nullptr);
@@ -80,10 +83,12 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     // will actually be of the type `Array(Int)`
 
                     // NOTE: removed because if somebody writes a: Array = [1,2,3]
-                    // and later wants to assign it to ["hi"] they shouldn't receive an array,
+                    // and later wants to assign it to ["hi"] they shouldn't receive an error,
                     // as they did not explicitly specify that it is Array<Int> in this case.
 
-                    /*if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                    // Added back in
+
+                    if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
                         if (auto base = assignment_type->GetBaseType()) {
                             if (symbol_type->TypeEqual(*base)) {
                                 // here is where type promotion is performed
@@ -91,7 +96,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                                 symbol_type = assignment_type;
                             }
                         }
-                    }*/
+                    }
                 }
 
                 if (is_type_strict) {

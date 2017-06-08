@@ -58,8 +58,8 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         // closure objects have a self parameter for the '$invoke' call.
         std::shared_ptr<AstArgument> self_arg(new AstArgument(
             m_target,
-            true,
-            "self",
+            false,
+            "__closure_self",
             m_target->GetLocation()
         ));
         

@@ -2,7 +2,8 @@
 
 const SourceLocation SourceLocation::eof(-1, -1, "<eof>");
 
-SourceLocation::SourceLocation(int line, int column, const std::string &filename)
+SourceLocation::SourceLocation(int line, int column,
+    const std::string &filename)
     : m_line(line),
       m_column(column),
       m_filename(filename)
@@ -31,5 +32,6 @@ bool SourceLocation::operator==(const SourceLocation &other) const
 {
     return m_line == other.m_line &&
         m_column == other.m_column &&
-        m_filename == other.m_filename;
+        m_filename == other.m_filename &&
+        m_line == other.m_line;
 }

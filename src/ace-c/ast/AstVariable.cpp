@@ -75,36 +75,13 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                             m_closure_member_access.reset(new AstMember(
                                 m_name,
                                 std::shared_ptr<AstVariable>(new AstVariable(
-                                    "self",
+                                    "__closure_self",
                                     m_location
                                 )),
                                 m_location
                             ));
 
                             m_closure_member_access->Visit(visitor, mod);
-
-                            // we're in closure, lookup variable __closure_locals and get array access
-                            /*m_closure_array_access = std::shared_ptr<AstArrayAccess>(new AstArrayAccess(
-                                std::shared_ptr<AstVariable>(new AstVariable(
-                                    "__closure_locals",
-                                    m_location
-                                )),
-                                std::shared_ptr<AstInteger>(new AstInteger(
-                                    0, // TODO
-                                    m_location
-                                )),
-                                m_location
-                            ));
-
-                            m_closure_array_access->Visit(visitor, mod);*/
-                            
-                            // add error that the variable must be passed as a parameter
-                            /*visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                                LEVEL_ERROR,
-                                Msg_closure_capture_must_be_parameter,
-                                m_location,
-                                m_name
-                            ));*/
                         }
                     }
                 }

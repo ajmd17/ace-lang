@@ -1,8 +1,10 @@
 use library ['../acelib']
 import range
 
-module example_ranges {  
-  range::make_range(20, 150)() => (i: Int) {
+module example_ranges {
+  alias rg = range::make_range
+  
+  rg(20, 150)() => (i: Int) {
     print "i = ", i
   }
 }

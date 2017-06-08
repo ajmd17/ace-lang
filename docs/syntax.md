@@ -152,13 +152,16 @@ Example:
 
 ```
 type Person {
-    name: String
-
+    id: Int
+    name: String = "default value"
+    
+    // method
     say_hello = (self) {
         print fmt("% says hello!", self.name)
     }
 
-    say_something = (self, what_to_say) {
+    // methods can omit the '=' part:
+    say_something(self, what_to_say) {
         print fmt("% says: '%'", self.name, what_to_say)
     }
 }

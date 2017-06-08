@@ -1,17 +1,27 @@
 module random {
+  module _Detail_ {
+    __lib: Any = runtime::load_library('lib/libace-runtime')
+
+    new_random: Function = runtime::load_function(__lib, 'random_new_random')
+    get_next: Function = runtime::load_function(__lib, 'random_get_next')
+    crand: Function = runtime::load_function(__lib, 'random_crand')
+  }
+
+  crand: Function = _Detail_::crand
+  
   type RandomGenerator {
     seed: Int?
     gen: Any?
 
-    next: Function = (self) {
+    next(self) {
       if self.gen == null {
         if self.seed == null {
           self.seed = time::now()
         }
-        self.gen = random_utils::new_random(self.seed)
+        self.gen = _Detail_::new_random(self.seed)
       }
 
-      return random_utils::get_next(self.gen)
+      return _Detail_::get_next(self.gen)
     }
-  } 
+  }
 }

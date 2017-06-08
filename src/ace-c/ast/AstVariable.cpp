@@ -69,10 +69,13 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                                 m_properties.GetIdentifier()
                             );
 
+                            // closures are objects with a method named '$invoke',
+                            // because we are in the '$invoke' method currently,
+                            // we use the variable as 'self.<variable name>'
                             m_closure_member_access.reset(new AstMember(
                                 m_name,
                                 std::shared_ptr<AstVariable>(new AstVariable(
-                                    "__closure_self",
+                                    "self",
                                     m_location
                                 )),
                                 m_location
@@ -130,7 +133,8 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 LEVEL_ERROR,
                 Msg_undeclared_identifier,
                 m_location,
-                m_name
+                m_name,
+                mod->GenerateFullModuleName()
             ));
             break;
         default:

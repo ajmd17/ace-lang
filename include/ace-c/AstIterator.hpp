@@ -19,7 +19,7 @@ public:
         { return m_position; }
     inline void ResetPosition()
         { m_position = 0; }
-    inline void SetPosition(int position)
+    inline void SetPosition(size_t position)
         { m_position = position; }
     inline std::shared_ptr<AstStatement> &Peek()
         { return m_list[m_position]; }

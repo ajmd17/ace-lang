@@ -34,7 +34,6 @@ void AstModuleImportPart::Visit(AstVisitor *visitor, Module *mod)
             AstImport::CopyModules(
                 visitor,
                 this_module,
-                true,
                 false
             );
         } else {
@@ -97,18 +96,38 @@ void AstModuleImport::Visit(AstVisitor *visitor, Module *mod)
         std::string current_dir;
         const size_t index = m_location.GetFileName().find_last_of("/\\");
         if (index != std::string::npos) {
-            current_dir = m_location.GetFileName().substr(0, index) + "/";
+            current_dir = m_location.GetFileName().substr(0, index);
         }
 
         std::ifstream file;
         std::string found_path;
 
+        std::unordered_set<std::string> scan_paths;
+
+        // add current directory as first.
+        scan_paths.insert(current_dir);
+
+        // add this module's scan paths.
+        scan_paths.insert(
+            mod->GetScanPaths().begin(),
+            mod->GetScanPaths().end()
+        );
+
+        // add global module's scan paths
+        const std::unordered_set<std::string> &global_scan_paths =
+            visitor->GetCompilationUnit()->GetGlobalModule()->GetScanPaths();
+        
+        scan_paths.insert(
+            global_scan_paths.begin(),
+            global_scan_paths.end()
+        );
+
         // iterate through library paths to try and find a file
-        for (const std::string &scan_path : mod->GetScanPaths()) {
+        for (const std::string &scan_path : scan_paths) {
             const std::string &filename = first->GetLeft();
 
             // create relative path
-            const std::string path = current_dir + scan_path + "/";
+            const std::string path = current_dir + "/" + scan_path + "/";
             const std::string ext = ".ace";
 
             found_path = path + filename + ext;

@@ -22,7 +22,7 @@ AstModuleDeclaration::AstModuleDeclaration(const std::string &name, const Source
 void AstModuleDeclaration::PerformLookup(AstVisitor *visitor)
 {
     // make sure this module was not already declared/imported
-    if (visitor->GetCompilationUnit()->LookupModule(m_name)) {
+    if (visitor->GetCompilationUnit()->GetCurrentModule()->LookupNestedModule(m_name)) {
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
             Msg_module_already_defined,
@@ -36,6 +36,8 @@ void AstModuleDeclaration::PerformLookup(AstVisitor *visitor)
 
 void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(visitor != nullptr);
+
     if (m_module == nullptr) {
         PerformLookup(visitor);
     }

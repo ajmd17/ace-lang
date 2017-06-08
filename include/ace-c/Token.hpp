@@ -40,9 +40,9 @@ public:
     static const Token EMPTY;
 
 public:
-    Token(TokenClass token_class, const std::string &value,
+    Token(TokenClass token_class,
+        const std::string &value,
         const SourceLocation &location);
-    
     Token(const Token &other);
 
     inline TokenClass GetTokenClass() const { return m_token_class; }
@@ -50,6 +50,15 @@ public:
     inline const SourceLocation &GetLocation() const { return m_location; }
     inline bool Empty() const { return m_token_class == TK_EMPTY; }
     
+    inline Token &operator=(const Token &other)
+    {
+        m_token_class = other.m_token_class;
+        m_value = other.m_value;
+        m_location = other.m_location;
+        
+        return *this;
+    }
+
     // return true if not empty
     inline explicit operator bool() const { return m_token_class != TK_EMPTY; }
 

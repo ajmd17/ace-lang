@@ -10,13 +10,13 @@ module io {
         filepath: String
         file_obj: Any
 
-        open: Function = (self, filepath: String, write_mode: String) {
+        open(self, filepath: String, write_mode: String) {
             self.filepath = filepath
             self.file_obj = io::open(filepath, write_mode)
             return self
         }
 
-        close: Function = (self) {
+        close(self) {
             if self.file_obj == null {
                 return null
             }
@@ -24,7 +24,7 @@ module io {
             io::close(self.file_obj)
         }
 
-        write: Function = (self, args...) {
+        write(self, args...) {
             if self.file_obj == null {
                 return null
             }
@@ -42,13 +42,13 @@ module io {
     }
     
     module _Detail_ {
-        lib: Any = runtime::load_library('lib/libace-runtime.dylib')
+        __lib: Any = runtime::load_library('lib/libace-runtime')
 
         // file
-        io::open = runtime::load_function(lib,'io_open')
-        io::write = runtime::load_function(lib,'io_write')
-        io::close = runtime::load_function(lib, 'io_close')
+        io::open = runtime::load_function(__lib, 'io_open')
+        io::write = runtime::load_function(__lib, 'io_write')
+        io::close = runtime::load_function(__lib, 'io_close')
 
-        io::stdout = runtime::load_function(lib, 'io_get_stdout')()
+        io::stdout = runtime::load_function(__lib, 'io_get_stdout')()
     }
 }

@@ -9,43 +9,7 @@ module generators {
     }
   }
 
-  /*foreach: Function = (arr: Array) {
-    return (cb: Function) {
-      i: Int = 0
-      len: Int = length(arr)
-
-      while i < len {
-        cb(arr[i])
-        i += 1
-      }
-    }
-  }*/
-
-  /*
-
-  foreach([1,2,3]) => (i) {
-    print i
-  }
-
-  */
-
-  foreach([1,2,3]) => (i) {
+  foreach([1, 2, 3]) => (i) {
     print 'i = ', i
   }
-
-
-  /*foreach([1,2,3]) => (i) {
-    print 'i = ', i
-  }*/
-
-
-  /*test_closure_2: Function = (a, b) {
-    return () {
-      print 'a = ', a
-      print 'b = ', b
-    }
-  }
-
-  c2 = test_closure_2(1.2, 4.3)
-  print typeof c2*/
 }

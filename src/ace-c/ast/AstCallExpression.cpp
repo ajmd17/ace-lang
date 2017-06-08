@@ -55,16 +55,16 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
     if (SymbolTypePtr_t call_member_type = target_type->FindMember("$invoke")) {
         m_is_method_call = true;
 
+        // closure objects have a self parameter for the '$invoke' call.
         std::shared_ptr<AstArgument> self_arg(new AstArgument(
             m_target,
             true,
-            "__closure_self",
+            "self",
             m_target->GetLocation()
         ));
         
         // insert at front
         m_args.insert(m_args.begin(), self_arg);
-
 
         m_target.reset(new AstMember(
             "$invoke",

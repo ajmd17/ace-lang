@@ -34,6 +34,12 @@ public:
     inline void SetImportTreeLink(TreeNode<Module*> *tree_link)
         { m_tree_link = tree_link; }
 
+    /** Create a string of the module name (including parent module names)
+        relative to the global scope */
+    std::string GenerateFullModuleName() const;
+
+    /** Reverse iterate the scopes starting from the currently opened scope,
+        checking if the scope is nested within a function */
     bool IsInFunction();
 
     /** Look up a child module of this module */

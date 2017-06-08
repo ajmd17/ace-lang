@@ -268,6 +268,13 @@ void Parser::SkipStatementTerminators()
 
 void Parser::Parse(bool expect_module_decl)
 {
+    // allow 'import' and 'use' statements in global (non-module) scopes.
+    while (MatchKeyword(Keyword_use, false) ||
+           MatchKeyword(Keyword_import, false))
+    {
+        m_ast_iterator->Push(ParseStatement());
+    }
+
     if (expect_module_decl) {
         if (std::shared_ptr<AstModuleDeclaration> module_ast = ParseModuleDeclaration()) {
             m_ast_iterator->Push(module_ast);
@@ -610,7 +617,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
 {
     SourceLocation location = CurrentLocation();
     std::shared_ptr<AstExpression> expr;
-    size_t before_pos = m_token_stream->GetPosition();
+    int before_pos = m_token_stream->GetPosition();
 
     Expect(TK_OPEN_PARENTH, true);
 
@@ -626,11 +633,27 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
         } else {
             expr = ParseExpression();
 
+            bool found_function_token = false;
+
             if (Match(TK_COMMA) ||
                 Match(TK_COLON) ||
-                Match(TK_ELLIPSIS) ||
-                (Match(TK_CLOSE_PARENTH) && MatchAhead(TK_COLON, 1)))
-            {
+                Match(TK_ELLIPSIS)) {
+            
+                found_function_token = true;
+            } else if (Match(TK_CLOSE_PARENTH, false)) {
+                int before = m_token_stream->GetPosition();
+                m_token_stream->Next();
+
+                // function return type, or generator token
+                if (Match(TK_RIGHT_ARROW) || MatchOperator("*")) {
+                    found_function_token = true;
+                }
+                
+                // go back to where it was before reading the ')' token
+                m_token_stream->SetPosition(before);
+            }
+
+            if (found_function_token) {
                 // go back to before open '(' found, 
                 // to allow ParseFunctionParameters() to handle it
                 m_token_stream->SetPosition(before_pos);
@@ -859,13 +882,15 @@ std::shared_ptr<AstArgumentList> Parser::ParseArguments()
 
 std::shared_ptr<AstCallExpression> Parser::ParseCallExpression(std::shared_ptr<AstExpression> target)
 {
-    if (auto args = ParseArguments()) {
-        return std::shared_ptr<AstCallExpression>(new AstCallExpression(
-            target,
-            args->GetArguments(),
-            true, // allow 'self'
-            target->GetLocation()
-        ));
+    if (target != nullptr) {
+        if (auto args = ParseArguments()) {
+            return std::shared_ptr<AstCallExpression>(new AstCallExpression(
+                target,
+                args->GetArguments(),
+                true, // allow 'self'
+                target->GetLocation()
+            ));
+        }
     }
 
     return nullptr;
@@ -936,7 +961,12 @@ std::shared_ptr<AstMember> Parser::ParseMemberExpression(std::shared_ptr<AstExpr
 {
     Expect(TK_DOT, true);
 
-    if (Token ident = ExpectIdentifier(true, true)) {
+    // allow quoted strings as data member names
+    Token ident = Match(TK_STRING, false)
+        ? m_token_stream->Next()
+        : ExpectIdentifier(true, true);
+
+    if (ident) {
         return std::shared_ptr<AstMember>(new AstMember(
             ident.GetValue(),
             target,
@@ -1460,7 +1490,8 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractBinaryExpres
 
 std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
     bool require_keyword,
-    bool allow_keyword_names)
+    bool allow_keyword_names,
+    bool allow_quoted_names)
 {
     SourceLocation location = CurrentLocation();
 
@@ -1473,7 +1504,18 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
         MatchKeyword(Keyword_let, true);
     }
 
-    if (Token identifier = ExpectIdentifier(allow_keyword_names, true)) {
+    Token identifier = Token::EMPTY;
+    
+    // an identifier name that is enquoted in strings is valid
+    if (allow_quoted_names) {
+        identifier = Match(TK_STRING, false)
+            ? m_token_stream->Next()
+            : ExpectIdentifier(allow_keyword_names, true);
+    } else {
+        identifier = ExpectIdentifier(allow_keyword_names, true);
+    }
+
+    if (!identifier.Empty()) {
         std::shared_ptr<AstTypeSpecification> type_spec;
 
         if (Match(TK_COLON, true)) {
@@ -1538,8 +1580,12 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(
     bool is_async,
     bool is_pure)
 {
-    Token token = require_keyword ? ExpectKeyword(Keyword_func, true) : Token::EMPTY;
-    SourceLocation location = token ? token.GetLocation() : CurrentLocation();
+    Token token = require_keyword
+        ? ExpectKeyword(Keyword_func, true)
+        : Token::EMPTY;
+    SourceLocation location = token
+        ? token.GetLocation()
+        : CurrentLocation();
 
     if (require_keyword || !token) {
         if (require_keyword) {
@@ -1847,21 +1893,25 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                                 }
                             }
                         }
-                    } else if (MatchIdentifier(true, false)) {
+                    } else if (MatchIdentifier(true, false) || Match(TK_STRING, false)) {
                         // do not require declaration keyword for data members.
                         // also, data members may be keywords.
+                        // note: a variable may be declared with ANY name if it enquoted
 
-                        // if parentheses matched, it will be a function
-                        
+                        // if parentheses matched, it will be a function:
+                        /* type Whatever { 
+                             do_something() {
+                               // ...
+                             }
+                           } */
                         if (MatchAhead(TK_OPEN_PARENTH, 1)) {
                             // read the identifier token
-                            Token identifier = ExpectIdentifier(true, true);
+                            Token identifier = Match(TK_STRING, false)
+                                ? m_token_stream->Next()
+                                : ExpectIdentifier(true, true);
 
                             MatchKeyword(Keyword_func, true); // skip 'function' keyword if found
-                            if (auto expr = ParseFunctionExpression(
-                                false,
-                                ParseFunctionParameters()
-                            )) {
+                            if (auto expr = ParseFunctionExpression(false, ParseFunctionParameters())) {
                                 // first, read the identifier
                                 std::shared_ptr<AstVariableDeclaration> member(new AstVariableDeclaration(
                                     identifier.GetValue(),
@@ -1873,15 +1923,24 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                                 members.push_back(member);
                             }
                         } else {
-                            members.push_back(ParseVariableDeclaration(false, true));
+                            if (auto member = ParseVariableDeclaration(
+                                false, // do not require keyword
+                                true, // allow keyword names
+                                true // allow quoted names
+                            )) {
+                                members.push_back(member);
+                            } else {
+                                break;
+                            }
                         }
                     } else {
                         // error; unexpected token
-                        CompilerError error(LEVEL_ERROR, Msg_unexpected_token,
+                        m_compilation_unit->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_unexpected_token,
                             m_token_stream->Peek().GetLocation(),
-                            m_token_stream->Peek().GetValue());
-                            
-                        m_compilation_unit->GetErrorList().AddError(error);
+                            m_token_stream->Peek().GetValue()
+                        ));
 
                         if (m_token_stream->HasNext()) {
                             m_token_stream->Next();

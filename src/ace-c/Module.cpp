@@ -10,6 +10,39 @@ Module::Module(const std::string &name, const SourceLocation &location)
 {
 }
 
+std::string Module::GenerateFullModuleName() const
+{
+    TreeNode<Module*> *top = m_tree_link;
+    
+    if (top != nullptr) {
+        std::vector<std::string> parts;
+        size_t length = 0;
+
+        do {
+            ASSERT(top->m_value != nullptr);
+
+            parts.push_back(top->m_value->GetName());
+            length += top->m_value->GetName().length();
+
+            top = top->m_parent;
+        } while (top != nullptr);
+
+        std::string res;
+        res.reserve(length + (2 * parts.size()));
+
+        for (int i = parts.size() - 1; i >= 0; i--) {
+            res.append(parts[i]);
+            if (i != 0) {
+                res.append("::");
+            }
+        }
+
+        return res;
+    }
+
+    return m_name;
+}
+
 bool Module::IsInFunction()
 {
     TreeNode<Scope> *top = m_scopes.TopNode();
@@ -60,22 +93,24 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
         top = top->m_parent;
     }
 
-    if (m_tree_link && m_tree_link->m_parent) {
-        if (Module *other = m_tree_link->m_parent->m_value) {
-            if (other->GetLocation().GetFileName() == m_location.GetFileName()) {
-                return other->LookUpIdentifier(name, false);
-            } else {
-                // we are outside of file scope, so loop until root/global module found
-                auto *link = m_tree_link->m_parent;
+    if (ace::compiler::Config::allow_identifiers_other_modules) {
+        if (m_tree_link != nullptr && m_tree_link->m_parent != nullptr) {
+            if (Module *other = m_tree_link->m_parent->m_value) {
+                if (other->GetLocation().GetFileName() == m_location.GetFileName()) {
+                    return other->LookUpIdentifier(name, false);
+                } else {
+                    // we are outside of file scope, so loop until root/global module found
+                    const TreeNode<Module*> *mod_link = m_tree_link->m_parent;
 
-                while (link->m_parent) {
-                    link = link->m_parent;
+                    while (mod_link->m_parent != nullptr) {
+                        mod_link = mod_link->m_parent;
+                    }
+
+                    ASSERT(mod_link->m_value != nullptr);
+                    ASSERT(mod_link->m_value->GetName() == ace::compiler::Config::GLOBAL_MODULE_NAME);
+
+                    return mod_link->m_value->LookUpIdentifier(name, false);
                 }
-
-                ASSERT(link->m_value != nullptr);
-                ASSERT(link->m_value->GetName() == ace::compiler::Config::GLOBAL_MODULE_NAME);
-
-                return link->m_value->LookUpIdentifier(name, false);
             }
         }
     }

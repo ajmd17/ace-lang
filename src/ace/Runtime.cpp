@@ -5,8 +5,8 @@
 namespace ace {
 
 const int Runtime::VERSION_MAJOR = 0;
-const int Runtime::VERSION_MINOR = 1;
-const int Runtime::VERSION_PATCH = 5;
+const int Runtime::VERSION_MINOR = 2;
+const int Runtime::VERSION_PATCH = 0;
 
 const char *Runtime::OS_NAME = 
 #ifdef _WIN32
@@ -45,8 +45,8 @@ Library Runtime::Load(const char *path)
 void Runtime::UnloadLibraries()
 {
     for (auto it = libs.rbegin(); it != libs.rend(); it++) {
-        if ((*it).handle) {
-            CLOSE_LIB((*it).handle);
+        if (it->handle != nullptr) {
+            CLOSE_LIB(it->handle);
         }
     }
     libs.clear();

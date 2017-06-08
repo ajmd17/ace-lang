@@ -21,21 +21,20 @@ AstImport::AstImport(const SourceLocation &location)
 void AstImport::CopyModules(
     AstVisitor *visitor,
     Module *mod_to_copy,
-    bool check_lookup,
     bool update_tree_link)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod_to_copy != nullptr);
     
-    if (check_lookup) {
-        if (visitor->GetCompilationUnit()->LookupModule(mod_to_copy->GetName())) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_module_already_defined,
-                mod_to_copy->GetLocation(),
-                mod_to_copy->GetName()
-            ));
-        }
+    ASSERT(visitor->GetCompilationUnit()->GetCurrentModule() != nullptr);
+
+    if (visitor->GetCompilationUnit()->GetCurrentModule()->LookupNestedModule(mod_to_copy->GetName()) != nullptr) {
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_module_already_defined,
+            mod_to_copy->GetLocation(),
+            mod_to_copy->GetName()
+        ));
     }
 
     // add this module to the compilation unit
@@ -50,7 +49,7 @@ void AstImport::CopyModules(
     // function to copy nested modules 
     std::function<void(TreeNode<Module*>*)> copy_nodes =
 
-    [visitor, &copy_nodes, &check_lookup, &update_tree_link](TreeNode<Module*> *link)
+    [visitor, &copy_nodes, &update_tree_link](TreeNode<Module*> *link)
     {
         ASSERT(link != nullptr);
         ASSERT(link->m_value != nullptr);
@@ -58,22 +57,14 @@ void AstImport::CopyModules(
         for (auto *sibling : link->m_siblings) {
             ASSERT(sibling != nullptr);
 
-            bool error = false;
-
-            if (check_lookup) {
-                if (visitor->GetCompilationUnit()->LookupModule(sibling->m_value->GetName())) {
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_module_already_defined,
-                        sibling->m_value->GetLocation(),
-                        sibling->m_value->GetName()
-                    ));
-
-                    error = true;
-                }
-            }
-
-            if (!error) {
+            if (visitor->GetCompilationUnit()->GetCurrentModule()->LookupNestedModule(sibling->m_value->GetName()) != nullptr) {
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_module_already_defined,
+                    sibling->m_value->GetLocation(),
+                    sibling->m_value->GetName()
+                ));
+            } else {
                 visitor->GetCompilationUnit()->m_module_tree.Open(sibling->m_value);
 
                 if (update_tree_link) {
@@ -127,7 +118,6 @@ void AstImport::PerformImport(
             AstImport::CopyModules(
                 visitor,
                 mod.get(),
-                true,
                 false
             );
         }

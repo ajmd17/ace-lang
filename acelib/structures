@@ -1,9 +1,9 @@
 module structures {
-    use library ['../acelib']
-    import io
+  use library ['../acelib']
+  import io
 
-    type Stack<HeldType> {
-        data: Array<HeldType>
-        name: String
-    }
+  type Stack<HeldType> {
+    data: Array<HeldType>
+    name: String
+  }
 }

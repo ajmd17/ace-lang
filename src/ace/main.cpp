@@ -121,7 +121,6 @@ void Events_call_action(ace::sdk::Params params)
         // so we should invoke the object which will return the nested closure,
         // and pass our found handler to it (at the end of this function)
         // as `callback`
-        //std::swap(params.args[0], params.args[1]);
         std::swap(*target_ptr, *value_ptr);
     } else if (value_ptr->m_type == vm::Value::HEAP_POINTER &&
                value_ptr->m_value.ptr != nullptr) {
@@ -130,8 +129,6 @@ void Events_call_action(ace::sdk::Params params)
                 if (member->value.m_type == vm::Value::FUNCTION &&
                    (member->value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
                     // value is a generator, so swap.
-
-                    //std::swap(params.args[0], params.args[1]);
                     std::swap(*target_ptr, *value_ptr);
                 }
             }
@@ -144,15 +141,15 @@ void Events_call_action(ace::sdk::Params params)
                 goto return_null_handler;
             }
 
-            // lookup '__events' member
+            // lookup '$events' member
             if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
 
-                if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("__events"))) {
-                    // __events member found
+                if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$events"))) {
+                    // $events member found
                     if (member->value.m_type != vm::Value::ValueType::HEAP_POINTER) {
                         params.handler->state->ThrowException(
                             params.handler->thread,
-                            vm::Exception("__events must be an Array")
+                            vm::Exception("$events must be an Array")
                         );
                         return;
                     }
@@ -315,16 +312,16 @@ void Events_get_action_handler(ace::sdk::Params params)
                 goto return_null_handler;
             }
 
-            // lookup '__events' member
+            // lookup '$events' member
             if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
-                const std::uint32_t hash = hash_fnv_1("__events");
+                const std::uint32_t hash = hash_fnv_1("$events");
 
                 if (vm::Member *member = object->LookupMemberFromHash(hash)) {
-                    // __events member found
+                    // $events member found
                     if (member->value.m_type != vm::Value::ValueType::HEAP_POINTER) {
                         params.handler->state->ThrowException(
                             params.handler->thread,
-                            vm::Exception("__events must be an Array")
+                            vm::Exception("$events must be an Array")
                         );
                         return;
                     }
@@ -440,75 +437,6 @@ void Events_get_action_handler(ace::sdk::Params params)
                 ex
             );
     }
-}
-
-void Random_new_random(ace::sdk::Params params)
-{
-    ACE_CHECK_ARGS(==, 1);
-
-    const vm::Value *target_ptr = params.args[0];
-    ASSERT(target_ptr != nullptr);
-
-    ace::aint64 seed;
-    if (target_ptr->GetInteger(&seed)) {
-        std::mt19937_64 gen;
-        gen.seed(seed);
-
-        // create heap value for random generator
-        vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
-        ASSERT(ptr != nullptr);
-        ptr->Assign(gen);
-
-        // assign register value to the allocated object
-        vm::Value res;
-        res.m_type = vm::Value::HEAP_POINTER;
-        res.m_value.ptr = ptr;
-
-        ACE_RETURN(res);
-    } else {
-        params.handler->state->ThrowException(
-            params.handler->thread,
-            vm::Exception(utf::Utf8String("invalid seed value"))
-        );
-    }
-}
-
-void Random_get_next(ace::sdk::Params params)
-{
-    ACE_CHECK_ARGS(==, 1);
-
-    const vm::Value *target_ptr = params.args[0];
-    ASSERT(target_ptr != nullptr);
-
-    if (std::mt19937_64 *gen_ptr = target_ptr->GetValue().ptr->GetPointer<std::mt19937_64>()) {
-        ace::aint64 value = (*gen_ptr)();
-
-        // assign register value to the generated value
-        vm::Value res;
-        res.m_type = vm::Value::ValueType::I64;
-        res.m_value.i64 = value;
-
-        ACE_RETURN(res);
-    } else {
-        params.handler->state->ThrowException(
-            params.handler->thread,
-            vm::Exception(utf::Utf8String("invalid random generator"))
-        );
-    }
-}
-
-void Random_crand(ace::sdk::Params params)
-{
-    ACE_CHECK_ARGS(==, 0);
-
-    int value = std::rand();
-
-    // assign register value to the generated value
-    vm::Value res;
-    res.m_type = vm::Value::ValueType::I32;
-    res.m_value.i32 = value;
-
-    ACE_RETURN(res);
 }
 
 void Time_now(ace::sdk::Params params)
@@ -1618,15 +1546,6 @@ void BuildLibraries(
             ) }
         }, Events_call_action);
 
-    api.Module("random_utils")
-        .Function("new_random", SymbolType::Builtin::ANY, {
-            { "seed", SymbolType::Builtin::INT }
-        }, Random_new_random)
-        .Function("get_next", SymbolType::Builtin::INT, {
-            { "gen", SymbolType::Builtin::ANY }
-        }, Random_get_next)
-        .Function("crand", SymbolType::Builtin::INT, {}, Random_crand);
-
     api.Module("time")
         .Function("now", SymbolType::Builtin::INT, {}, Time_now);
 
@@ -1706,7 +1625,7 @@ void BuildLibraries(
         );
 
     api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
-        .Type(SymbolType::Object("Range", {
+        /*.Type(SymbolType::Object("Range", {
             {
                 "step",
                 SymbolType::Builtin::NUMBER,
@@ -1728,7 +1647,7 @@ void BuildLibraries(
                     10, SourceLocation::eof
                 ))
             }
-        }))
+        }))*/
         .Function("prompt", SymbolType::Builtin::STRING, {
             { "message", SymbolType::Builtin::STRING }
         }, Global_prompt)

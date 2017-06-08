@@ -112,7 +112,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
                 // builtin members:
                 m_members.push_back(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
-                    "__events",
+                    "$events",
                     nullptr,
                     std::shared_ptr<AstArrayExpression>(new AstArrayExpression(
                         event_items,

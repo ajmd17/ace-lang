@@ -119,7 +119,7 @@ Optimizer::Optimizer(const Optimizer &other)
 
 void Optimizer::Optimize(bool expect_module_decl)
 {
-    if (expect_module_decl) {
+    /*if (expect_module_decl) {
         if (m_ast_iterator->HasNext()) {
             std::shared_ptr<AstStatement> first_stmt = m_ast_iterator->Next();
 
@@ -131,12 +131,16 @@ void Optimizer::Optimize(bool expect_module_decl)
         }
     } else {
         OptimizeInner();
-    }
+    }*/
+
+    OptimizeInner();
 }
 
 void Optimizer::OptimizeInner()
 {
     Module *mod = m_compilation_unit->GetCurrentModule();
+    ASSERT(mod != nullptr);
+    
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Optimize(this, mod);
     }

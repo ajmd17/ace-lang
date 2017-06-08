@@ -1,9 +1,26 @@
 module range {
-  make_range: Function = (first: Number, last: Number, step: Number = 1) {
+  import math
+
+  type Range {
+    first: Number
+    last: Number
+    step: Number
+
+    '$invoke' = (self) * {
+      i: Number = self.first
+      
+      while self.last - i != 0 {
+        yield i
+        i += self.step
+      }
+    }
+  }
+
+  make_range: Function = (first: Number, last: Number) {
     r: Range
     r.first = first
     r.last = last
-    r.step = step
+    r.step = math::sign(first - last)
     return r
   }
 }

@@ -18,9 +18,9 @@ enum ScopeType {
 };
 
 enum ScopeFunctionFlags : int {
-    PURE_FUNCTION_FLAG = 1,
-    CLOSURE_FUNCTION_FLAG = 2,
-    GENERATOR_FUNCTION_FLAG = 4
+    PURE_FUNCTION_FLAG = 0x01,
+    CLOSURE_FUNCTION_FLAG = 0x02,
+    GENERATOR_FUNCTION_FLAG = 0x04
 };
 
 class Scope {

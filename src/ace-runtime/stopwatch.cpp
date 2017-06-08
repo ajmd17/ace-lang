@@ -10,8 +10,7 @@
 
 #include <cstdio>
 
-namespace ace {
-namespace stopwatch {
+using namespace ace;
 
 static Timer stopwatch;
 
@@ -46,5 +45,3 @@ ACE_FUNCTION(stopwatch_stop)
     res.m_value.d = elapsed;
     ACE_RETURN(res);
 }
-} // namespace stopwatch
-} // namespace ace

@@ -1,15 +1,17 @@
+use library ['../acelib']
+
+import random
+import thread
+import stopwatch
+
 module test_random {
-  use library ['../acelib']
-
-  import random
-  import thread
-
   rgen: random::RandomGenerator
 
   new thread::Thread.spawn(() {
     stopwatch::start()
 
-    i = 0
+    i: Int = 0
+
     while i < 200 {
       print rgen.next()
       i += 1

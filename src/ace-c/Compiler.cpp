@@ -418,25 +418,26 @@ Compiler::Compiler(const Compiler &other)
 
 void Compiler::Compile(bool expect_module_decl)
 {
-    if (expect_module_decl) {
+    /*if (expect_module_decl) {
         if (m_ast_iterator->HasNext()) {
-            auto first_statement = m_ast_iterator->Next();
-            auto module_declaration = std::dynamic_pointer_cast<AstModuleDeclaration>(first_statement);
-
-            if (module_declaration) {
+            if (auto first_stmt = m_ast_iterator->Next()) {
                 // all files must begin with a module declaration
-                module_declaration->Build(this, nullptr);
+                first_stmt->Build(this, nullptr);
                 CompileInner();
             }
         }
     } else {
         CompileInner();
-    }
+    }*/
+
+    CompileInner();
 }
 
 void Compiler::CompileInner()
 {
     Module *mod = m_compilation_unit->GetCurrentModule();
+    ASSERT(mod != nullptr);
+    
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Build(this, mod);
     }

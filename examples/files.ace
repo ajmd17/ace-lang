@@ -1,7 +1,8 @@
-module files {
-    // import the standard io module
-    import '../acelib/io'
+use library ['../acelib']
 
+import io
+
+module files {
     // here we create a simple function to write out
     // the runtime info as well as the host OS info.
     write_info: Function = (filename: String) {

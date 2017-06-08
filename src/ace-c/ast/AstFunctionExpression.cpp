@@ -98,8 +98,10 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     if (m_is_closure) {
         scope_flags |= ScopeFunctionFlags::CLOSURE_FUNCTION_FLAG;
 
+        // closures are objects with a method named '$invoke',
+        // so we pass the 'self' argument when it is called.
         m_closure_self_param.reset(new AstParameter(
-            "__closure_self",
+            "self",
             nullptr,
             nullptr,
             false,
@@ -275,7 +277,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 nullptr
             });
         } else {
-            // unset m_is_closure, as __closure_self param is unused.
+            // unset m_is_closure, as closure 'self' param is unused.
             m_is_closure = false;
         }
     }

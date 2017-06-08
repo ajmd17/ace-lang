@@ -88,7 +88,7 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(target_type != nullptr);
 
     if (target_type != SymbolType::Builtin::ANY) {
-        if (SymbolTypePtr_t member_type = target_type->FindMember("__events")) {
+        if (SymbolTypePtr_t member_type = target_type->FindMember("$events")) {
             m_member_found = 1;
 
             // see if there is an action handler with this key.

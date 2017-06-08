@@ -356,21 +356,24 @@ SemanticAnalyzer::SemanticAnalyzer(const SemanticAnalyzer &other)
 
 void SemanticAnalyzer::Analyze(bool expect_module_decl)
 {
-    if (expect_module_decl) {
-        while (m_ast_iterator->HasNext()) {
-            auto first_stmt = m_ast_iterator->Next();
-            if (AstModuleDeclaration *mod_decl = dynamic_cast<AstModuleDeclaration*>(first_stmt.get())) {
-                mod_decl->Visit(this, nullptr);
+    /*if (expect_module_decl) {
+        if (m_ast_iterator->HasNext()) {
+            if (auto first_stmt = m_ast_iterator->Next()) {
+                first_stmt->Visit(this, nullptr);
             }
+            AnalyzerInner();
         }
     } else {
         AnalyzerInner();
-    }
+    }*/
+    AnalyzerInner();
 }
 
 void SemanticAnalyzer::AnalyzerInner()
 {
     Module *mod = m_compilation_unit->GetCurrentModule();
+    ASSERT(mod != nullptr);
+
     while (m_ast_iterator->HasNext()) {
         m_ast_iterator->Next()->Visit(this, mod);
     }

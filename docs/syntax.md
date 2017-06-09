@@ -70,6 +70,8 @@ Built-in _value_ types include: `Number` (includes `Int` and `Float`), `Boolean`
 
 Built-in _reference_ types include: `Function`, `String`, `Array`, or any `Object` (which includes custom `type` definitions).
 
+There is also the `Any` type, which means that it able to be assigned to any possible type. Usage of incompatible types will be resolved at runtime, resulting in an exception on failure. Thus, unless you know what you're doing and have a valid use case for changing the type, it is safer to not use it.
+
 Example (showing the differences between value types and reference types):
 ```
 /* ===== value types ===== */
@@ -92,6 +94,31 @@ array2[0] = 'z'
 
 ```
 
+#### Nullable Types
+
+By default, no type can be assigned to the `null` value. This is by design, to prevent bugs. It is really easy to attempt to make use of an object which is set to `null`, expecting it to contain an actual value.
+
+To override this, you don't have to resort to using `Any`. Instead, you can use the `Maybe` generic type, or more concisely, by placing the `?` symbol at the end of the type name.
+
+Example:
+```
+i: Int = 10
+// try to set i to null
+
+print i + 5 // prints: 15
+
+// Error!
+i = null
+
+// on the other hand...
+j: Int? = 10
+
+// fine
+j = null
+
+print j + 5 // uh oh... null + 5 causes an exception!
+```
+
 #### Functions
 
 General explanation on functions: http://www.webopedia.com/TERM/F/function.html
@@ -103,7 +130,7 @@ In Ace, functions are values themseleves. A variable may be assigned to a functi
 Example:
 
 ```
-return_2_plus_2 = () {
+return_2_plus_2: Function = () {
     return 2 + 2
 }
 
@@ -112,12 +139,32 @@ print return_2_plus_2() // prints out 4
 
 Example (with arguments)
 ```
-return_a_plus_2 = (a: Number) {
+return_a_plus_2: Function = (a: Number) {
     return a + 2
 }
 
 print return_a_plus_2(10) // prints 12
 print return_a_plus_2(16) // prints 18
+```
+
+#### Variadic Functions
+
+Functions can also take a variable number of arguments, by using the `...` symbol on the last parameter of the function.
+
+Example:
+```
+multiply_args: Function = (amount: Number, args: Number...) {
+    // ...
+}
+```
+
+If you don't care about the type of the variadic arguments, you can accomplish this either by using `Any` as the type, or more simply by ommitting the type altogether.
+
+Example:
+```
+multiply_args: Function = (amount: Number, args...) {
+    // ...
+}
 ```
 
 #### Modules

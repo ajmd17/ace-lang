@@ -3,7 +3,6 @@
 #### `global` Module
 The `global` module contains everything that is usable without having to write the module name.
 
-Functions:
  - `prompt(message: String) -> String`: Prompts the user with a message in the command line and returns the line they entered in a string
  - `to_string(object: Any) -> String`: Converts an object of any type to a string representation
  - `to_json(object: Any) -> String`: Converts an object of any type to a JSON representation held in a string
@@ -23,3 +22,10 @@ Functions:
   - `load_function(lib: Any, function_name: String) -> Function`: Uses a native pointer to a library (returned from `load_library`) and finds a function with the given name. Returns the native function object.
   - `version: Int[]`: An array with 3 elements, representing the Ace runtime version (major, minor, patch)
   - `os_name: String`: The name of the host operating system in a string (Mac, Linux, Windows)
+
+## Acelib modules
+#### `io` module
+  - `open(path: String, mode: String) -> Any`: A wrapper for the C function `fopen`. Returns a native `FILE*` object.
+  - `write(file: Any, args: Any...) -> Null`: Takes a native `FILE*` object (returned from `open`) and writes the string representation of each argument
+  - `close(file: Any) -> Null`: Closes a native `FILE*` object
+  - `stdout: Any`: The native `FILE*` object that represents standard output (usually the console)

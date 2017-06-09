@@ -1,6 +1,5 @@
 module misc {
   iterate: Function = (it: Array) * {
-    print 'iterate'
     i: Int
     len: Int = ::length(it)
 

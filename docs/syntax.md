@@ -325,7 +325,7 @@ player: Player
 'move left', 2.5 => player
 ```
 
-The functionality of actions is still being worked out.
+Although these examples to work, the details of actions is still being worked out. 
 
 #### Generators
 
@@ -339,7 +339,7 @@ loop: Function = (from: Number, to: Number) * {
     i: Number = from
 
     while i < to {
-        // temporarily jump out
+        // like 'return', except that it doesn't truly leave the function.
         yield i
 
         // continue where we left off

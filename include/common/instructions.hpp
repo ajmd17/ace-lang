@@ -191,6 +191,13 @@ enum Instructions : char {
     DIV, // div [% lhs, % rhs, % dst]
     MOD, // mod [% lhs, % rhs, % dst]
 
+    /* Bitwise operations */
+    AND, // and [% lhs, % rhs, % dst]
+    OR,  // or  [% lhs, % rhs, % dst]
+    XOR, // xor [% lhs, % rhs, % dst]
+    SHL, // shl [% lhs, % rhs, % dst]
+    SHR, // shr [% lhs, % rhs, % dst]
+
     /* Unary operations */
     NEG, // neg [% src] - mathematical negation
     NOT, // not [% src] - bitwise complement

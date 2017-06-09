@@ -97,7 +97,10 @@ bool AstImport::TryOpenFile(const std::string &path, std::ifstream &is)
 void AstImport::PerformImport(
     AstVisitor *visitor,
     Module *mod,
-    const std::string &filepath)
+    const std::string &filepath
+    
+    /*bool make_parent_module,
+    const std::string &parent_module_name*/)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
@@ -122,6 +125,32 @@ void AstImport::PerformImport(
             );
         }
     } else {
+        /*if (make_parent_module) {
+            // Create a new module object called whatever the FILENAME is,
+            // and copy all the modules from that file into it.
+            // e.g a file called car.ace with module "car_example" in it:
+            // import car
+            //    to use something, write car::car_example::car1 or whatever
+            // or you can write:
+            // import car::car_example to get around having to write car
+
+            ASSERT(!parent_module_name.empty());
+
+            SourceLocation mod_location = m_location;
+            mod_location.SetFileName(filepath);
+
+            std::shared_ptr<Module> new_module(new Module(
+                parent_module_name,
+                mod_location
+            ));
+
+            // map filepath to module
+            visitor->GetCompilationUnit()->m_imported_modules[canon_path] = { new_module };
+
+            visitor->GetCompilationUnit()->m_module_tree.Open(new_module.get());
+            new_module->SetImportTreeLink(visitor->GetCompilationUnit()->m_module_tree.TopNode());
+        }*/
+
         // file hasn't been imported, so open it
         std::ifstream file;
 
@@ -142,7 +171,10 @@ void AstImport::PerformImport(
             file.read(source_file.GetBuffer(), max);
 
             // use the lexer and parser on this file buffer
-            TokenStream token_stream;
+            TokenStream token_stream(TokenStreamInfo {
+                filepath
+            });
+
             Lexer lexer(SourceStream(&source_file), &token_stream, visitor->GetCompilationUnit());
             lexer.Analyze();
 
@@ -152,6 +184,10 @@ void AstImport::PerformImport(
             SemanticAnalyzer semantic_analyzer(&m_ast_iterator, visitor->GetCompilationUnit());
             semantic_analyzer.Analyze();
         }
+
+        /*if (make_parent_module) {
+            visitor->GetCompilationUnit()->m_module_tree.Close();
+        }*/
     }
 }
 

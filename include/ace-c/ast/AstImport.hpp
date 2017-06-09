@@ -36,7 +36,10 @@ protected:
     void PerformImport(
         AstVisitor *visitor,
         Module *mod,
-        const std::string &filepath);
+        const std::string &filepath
+        /*bool make_parent_module = false, // should we pull in all modules under a single one?
+                                           // used for module-based imports, rather than includes.
+        const std::string &parent_module_name = ""*/);
 };
 
 #endif

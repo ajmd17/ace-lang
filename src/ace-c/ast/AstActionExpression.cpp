@@ -100,7 +100,19 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
             // and attempt to substitute function arguments with the second item in the array
             // (the callback/handler)
 
-            std::cout << "member type = " << member_type->GetName() << "\n";
+            
+            if (member_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                const SymbolTypePtr_t base = member_type->GetBaseType();
+                ASSERT(base != nullptr);
+
+                std::cout << "base name : " << base->GetName() << "\n";
+
+                if (base == SymbolType::Builtin::ARRAY) {
+                    // iterate through array items
+                    // each array item should be a 2d array itself
+                    const auto &generic_args = member_type->GetGenericInstanceInfo().m_generic_args;
+                }
+            }
 
         } else {
             m_member_found = 0;

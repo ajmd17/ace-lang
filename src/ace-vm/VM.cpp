@@ -935,6 +935,71 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
 
         break;
     }
+    case AND: {
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
+
+        handler->And(
+            lhs_reg,
+            rhs_reg,
+            dst_reg
+        );
+
+        break;
+    }
+    case OR: {
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
+
+        handler->Or(
+            lhs_reg,
+            rhs_reg,
+            dst_reg
+        );
+
+        break;
+    }
+    case XOR: {
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
+
+        handler->Xor(
+            lhs_reg,
+            rhs_reg,
+            dst_reg
+        );
+
+        break;
+    }
+    case SHL: {
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
+
+        handler->Shl(
+            lhs_reg,
+            rhs_reg,
+            dst_reg
+        );
+
+        break;
+    }
+    case SHR: {
+        bc_reg_t lhs_reg; bs->Read(&lhs_reg);
+        bc_reg_t rhs_reg; bs->Read(&rhs_reg);
+        bc_reg_t dst_reg; bs->Read(&dst_reg);
+
+        handler->Shr(
+            lhs_reg,
+            rhs_reg,
+            dst_reg
+        );
+
+        break;
+    }
     case NEG: {
         bc_reg_t reg; bs->Read(&reg);
 

@@ -1041,6 +1041,186 @@ struct InstructionHandler {
         thread->m_regs[dst_reg] = result;
     }
 
+    inline void And(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
+    {
+        // load values from registers
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
+
+        Value result;
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
+
+        aint64 a, b;
+
+        if (lhs->GetInteger(&a) && rhs->GetInteger(&b)) {
+            aint64 result_value = a & b;
+            if (result.m_type == Value::I32) {
+                result.m_value.i32 = result_value;
+            } else {
+                result.m_value.i64 = result_value;
+            }
+        } else {
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "AND",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
+        }
+
+        // set the destination register to be the result
+        thread->m_regs[dst_reg] = result;
+    }
+
+    inline void Or(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
+    {
+        // load values from registers
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
+
+        Value result;
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
+
+        aint64 a, b;
+
+        if (lhs->GetInteger(&a) && rhs->GetInteger(&b)) {
+            aint64 result_value = a | b;
+            if (result.m_type == Value::I32) {
+                result.m_value.i32 = result_value;
+            } else {
+                result.m_value.i64 = result_value;
+            }
+        } else {
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "OR",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
+        }
+
+        // set the destination register to be the result
+        thread->m_regs[dst_reg] = result;
+    }
+
+    inline void Xor(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
+    {
+        // load values from registers
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
+
+        Value result;
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
+
+        aint64 a, b;
+
+        if (lhs->GetInteger(&a) && rhs->GetInteger(&b)) {
+            aint64 result_value = a ^ b;
+            if (result.m_type == Value::I32) {
+                result.m_value.i32 = result_value;
+            } else {
+                result.m_value.i64 = result_value;
+            }
+        } else {
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "XOR",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
+        }
+
+        // set the destination register to be the result
+        thread->m_regs[dst_reg] = result;
+    }
+
+    inline void Shl(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
+    {
+        // load values from registers
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
+
+        Value result;
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
+
+        aint64 a, b;
+
+        if (lhs->GetInteger(&a) && rhs->GetInteger(&b)) {
+            aint64 result_value = a << b;
+            if (result.m_type == Value::I32) {
+                result.m_value.i32 = result_value;
+            } else {
+                result.m_value.i64 = result_value;
+            }
+        } else {
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "SHL",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
+        }
+
+        // set the destination register to be the result
+        thread->m_regs[dst_reg] = result;
+    }
+
+    inline void Shr(bc_reg_t lhs_reg,
+        bc_reg_t rhs_reg,
+        bc_reg_t dst_reg)
+    {
+        // load values from registers
+        Value *lhs = &thread->m_regs[lhs_reg];
+        Value *rhs = &thread->m_regs[rhs_reg];
+
+        Value result;
+        result.m_type = MATCH_TYPES(lhs->m_type, rhs->m_type);
+
+        aint64 a, b;
+
+        if (lhs->GetInteger(&a) && rhs->GetInteger(&b)) {
+            aint64 result_value = a >> b;
+            if (result.m_type == Value::I32) {
+                result.m_value.i32 = result_value;
+            } else {
+                result.m_value.i64 = result_value;
+            }
+        } else {
+            state->ThrowException(
+                thread,
+                Exception::InvalidOperationException(
+                    "SHR",
+                    lhs->GetTypeString(),
+                    rhs->GetTypeString()
+                )
+            );
+            return;
+        }
+
+        // set the destination register to be the result
+        thread->m_regs[dst_reg] = result;
+    }
+
     inline void Neg(bc_reg_t reg)
     {
         // load value from register

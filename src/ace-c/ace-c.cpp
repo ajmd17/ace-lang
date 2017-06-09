@@ -46,7 +46,10 @@ bool BuildSourceFile(const utf::Utf8String &filename,
         in_file.close();
 
         SourceStream source_stream(&source_file);
-        TokenStream token_stream;
+
+        TokenStream token_stream(TokenStreamInfo {
+            std::string(filename.GetData())
+        });
 
         Lexer lex(source_stream, &token_stream, &compilation_unit);
         lex.Analyze();

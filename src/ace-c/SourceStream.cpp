@@ -29,7 +29,8 @@ utf::u32char SourceStream::Peek() const
     char *bytes = utf::get_bytes(u32_ch);
 
     // check to see if it is a utf-8 character
-    unsigned char uc = (unsigned char)ch;
+    const unsigned char uc = (unsigned char)ch;
+
     if (uc >= 0 && uc <= 127) {
         // 1-byte character
         bytes[0] = ch;
@@ -78,7 +79,8 @@ utf::u32char SourceStream::Next(int &pos_change)
     char *bytes = utf::get_bytes(u32_ch);
 
     // check to see if it is a utf-8 character
-    unsigned char uc = (unsigned char)ch;
+    const unsigned char uc = (unsigned char)ch;
+    
     if (uc >= 0 && uc <= 127) {
         // 1-byte character
         bytes[0] = ch;

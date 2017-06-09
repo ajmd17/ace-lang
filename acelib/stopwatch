@@ -1,3 +1,4 @@
+
 module stopwatch {
   start: Function
   stop: Function

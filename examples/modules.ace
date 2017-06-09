@@ -1,0 +1,33 @@
+// import other modules
+
+// uses relative path - to add another search path, use:
+//   use library ["<path>"]
+
+import car::car_example
+// import file 'car.ace' - note, extension not required.
+
+module demo_modules {
+  print fmt("Currently within module: %", module.name)
+  
+  module nested_module {
+    A: Int = 52
+
+    print fmt("Currently within module: %", module.name)
+
+    module another_nested {
+      print fmt("Currently within module: %", module.name)
+      print fmt("Leaving module: %", module.name)
+    }
+
+    print fmt("Leaving module: %", module.name)
+  }
+
+  // access symbols/variables from nested modules
+  print fmt("nested_module::A = %", nested_module::A)
+
+  print fmt("Leaving module: %", module.name)
+}
+
+module another_module {
+  print "another_module"
+}

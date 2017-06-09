@@ -152,6 +152,8 @@ void AstModuleImport::Visit(AstVisitor *visitor, Module *mod)
             visitor,
             mod,
             found_path
+            //true,
+            //first->GetLeft()
         );
 
         // do not pull module into scope for single imports

@@ -1163,6 +1163,137 @@ void DecompilationUnit::DecodeNext(
 
         break;
     }
+    case AND:
+    {
+        uint8_t lhs;
+        bs.Read(&lhs);
+
+        uint8_t rhs;
+        bs.Read(&rhs);
+
+        uint8_t dst;
+        bs.Read(&dst);
+
+        if (os != nullptr) {
+
+            (*os)
+                << "and ["
+                    << "%" << (int)lhs << ", "
+                    << "%" << (int)rhs << ", "
+                    << "%" << (int)dst
+                << "]"
+                << std::endl;
+        }
+
+        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+        break;
+    }
+    case OR:
+    {
+        uint8_t lhs;
+        bs.Read(&lhs);
+
+        uint8_t rhs;
+        bs.Read(&rhs);
+
+        uint8_t dst;
+        bs.Read(&dst);
+
+        if (os != nullptr) {
+
+            (*os)
+                << "or ["
+                    << "%" << (int)lhs << ", "
+                    << "%" << (int)rhs << ", "
+                    << "%" << (int)dst
+                << "]"
+                << std::endl;
+        }
+
+        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+        break;
+    }
+    case XOR:
+    {
+        uint8_t lhs;
+        bs.Read(&lhs);
+
+        uint8_t rhs;
+        bs.Read(&rhs);
+
+        uint8_t dst;
+        bs.Read(&dst);
+
+        if (os != nullptr) {
+
+            (*os)
+                << "xor ["
+                    << "%" << (int)lhs << ", "
+                    << "%" << (int)rhs << ", "
+                    << "%" << (int)dst
+                << "]"
+                << std::endl;
+        }
+
+        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+        break;
+    }
+    case SHL:
+    {
+        uint8_t lhs;
+        bs.Read(&lhs);
+
+        uint8_t rhs;
+        bs.Read(&rhs);
+
+        uint8_t dst;
+        bs.Read(&dst);
+
+        if (os != nullptr) {
+
+            (*os)
+                << "shl ["
+                    << "%" << (int)lhs << ", "
+                    << "%" << (int)rhs << ", "
+                    << "%" << (int)dst
+                << "]"
+                << std::endl;
+        }
+
+        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+        break;
+    }
+
+    case SHR:
+    {
+        uint8_t lhs;
+        bs.Read(&lhs);
+
+        uint8_t rhs;
+        bs.Read(&rhs);
+
+        uint8_t dst;
+        bs.Read(&dst);
+
+        if (os != nullptr) {
+
+            (*os)
+                << "shr ["
+                    << "%" << (int)lhs << ", "
+                    << "%" << (int)rhs << ", "
+                    << "%" << (int)dst
+                << "]"
+                << std::endl;
+        }
+
+        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
+
+        break;
+    }
     case NEG:
     {
         uint8_t reg;

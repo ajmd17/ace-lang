@@ -118,9 +118,13 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     } else {
         // compare both sides because assignment does not matter in this case
         if (!left_type->TypeCompatible(*right_type, false)) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_mismatched_types,
-                    m_location, left_type->GetName(), right_type->GetName()));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_mismatched_types,
+                m_location,
+                left_type->GetName(),
+                right_type->GetName()
+            ));
         }
     }
 }
@@ -134,10 +138,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
         AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
         
         Compiler::ExprInfo info {
-            m_left.get(), m_right.get()
+            m_left.get(),
+            m_right.get()
         };
 
-        if (m_op->GetType() == ARITHMETIC) {
+        if (m_op->GetType() == ARITHMETIC || m_op->GetType() == BITWISE) {
             uint8_t opcode = 0;
 
             switch (m_op->GetOperatorType()) {
@@ -155,6 +160,21 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     break;
                 case Operators::OP_modulus:
                     opcode = MOD;
+                    break;
+                case Operators::OP_bitwise_and:
+                    opcode = AND;
+                    break;
+                case Operators::OP_bitwise_or:
+                    opcode = OR;
+                    break;
+                case Operators::OP_bitwise_xor:
+                    opcode = XOR;
+                    break;
+                case Operators::OP_bitshift_left:
+                    opcode = SHL;
+                    break;
+                case Operators::OP_bitshift_right:
+                    opcode = SHR;
                     break;
             }
 
@@ -194,8 +214,6 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 }
             }
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-        } else if (m_op->GetType() == BITWISE) {
-
         } else if (m_op->GetType() == LOGICAL) {
             std::shared_ptr<AstExpression> first = nullptr;
             std::shared_ptr<AstExpression> second = nullptr;

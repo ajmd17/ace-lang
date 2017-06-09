@@ -1130,7 +1130,10 @@ static int REPL(
         std::memcpy(source_file.GetBuffer(), code.GetData(), code.GetBufferSize());
         SourceStream source_stream(&source_file);
 
-        TokenStream token_stream;
+        TokenStream token_stream(TokenStreamInfo {
+            source_file.GetFilePath()
+        });
+
         Lexer lex(source_stream, &token_stream, &compilation_unit);
         lex.Analyze();
 
@@ -1168,16 +1171,39 @@ static int REPL(
             }
         }
 
-        // run lexer on entered line to determine
-        // if we should keep reading input
-        TokenStream tmp_ts;
-        LexLine(current_line, tmp_ts);
+        bool wait_for_next = false;
+        bool cont_token = false;
+        
+        {
 
-        bool cont_token = !tmp_ts.m_tokens.empty() && tmp_ts.m_tokens.back().IsContinuationToken();
-        bool wait_for_next = indent > 0 ||
-                parentheses_counter > 0 ||
-                bracket_counter > 0 ||
-                cont_token;
+            // run lexer on entered line to determine
+            // if we should keep reading input
+
+            CompilationUnit tmp_compilation_unit;
+
+            // send code to be compiled
+            SourceFile source_file("<stdin>", current_line.GetBufferSize());
+            source_file.ReadIntoBuffer(
+                current_line.GetData(),
+                current_line.GetBufferSize()
+            );
+            
+            SourceStream source_stream(&source_file);
+
+            TokenStream tmp_ts(TokenStreamInfo {
+                source_file.GetFilePath()
+            });
+
+            Lexer tmp_lex(source_stream, &tmp_ts, &tmp_compilation_unit);
+            tmp_lex.Analyze();
+
+            cont_token = !tmp_ts.m_tokens.empty() && tmp_ts.m_tokens.back().IsContinuationToken();
+            wait_for_next = indent > 0 ||
+                    parentheses_counter > 0 ||
+                    bracket_counter > 0 ||
+                    cont_token;
+
+        }
 
         lines.push_back(current_line);
 
@@ -1208,7 +1234,10 @@ static int REPL(
             source_file.ReadIntoBuffer(lines_combined.GetData(), lines_combined.GetBufferSize());
             SourceStream source_stream(&source_file);
 
-            TokenStream token_stream;
+            TokenStream token_stream(TokenStreamInfo {
+                source_file.GetFilePath()
+            });
+
             Lexer lex(source_stream, &token_stream, &compilation_unit);
             lex.Analyze();
 

@@ -2,6 +2,7 @@
 #include <ace-c/Configuration.hpp>
 
 #include <common/utf8.hpp>
+#include <common/str_util.hpp>
 
 #include <memory>
 #include <cstdlib>
@@ -270,15 +271,44 @@ void Parser::SkipStatementTerminators()
 
 void Parser::Parse(bool expect_module_decl)
 {
+    SkipStatementTerminators();
+
     // allow 'import' and 'use' statements in global (non-module) scopes.
-    while (MatchKeyword(Keyword_use, false) ||
-           MatchKeyword(Keyword_import, false))
-    {
+    /*while (MatchKeyword(Keyword_use, false) || MatchKeyword(Keyword_import, false)) {
         m_ast_iterator->Push(ParseStatement());
-    }
+        SkipStatementTerminators();
+    }*/
 
     if (expect_module_decl) {
-        if (std::shared_ptr<AstModuleDeclaration> module_ast = ParseModuleDeclaration()) {
+        // create a module based upon the filename
+        const std::string filepath = m_token_stream->GetInfo().filepath;
+
+        std::vector<std::string> split = str_util::split_path(filepath);
+        std::string real_filename = !split.empty()
+            ? split.back()
+            : filepath;
+
+        real_filename = str_util::strip_extension(real_filename);
+
+        std::shared_ptr<AstModuleDeclaration> module_ast(new AstModuleDeclaration(
+            real_filename,
+            SourceLocation(0, 0, filepath)
+        ));
+
+        // build up the module declaration with statements
+        while (m_token_stream->HasNext() && !Match(TK_CLOSE_BRACE, false)) {
+            // skip statement terminator tokens
+            if (!Match(TK_SEMICOLON, true) && !Match(TK_NEWLINE, true)) {
+
+                // parse at top level, to allow for nested modules
+                module_ast->AddChild(ParseStatement(true));
+            }
+        }
+
+        m_ast_iterator->Push(module_ast);
+
+
+        /*if (std::shared_ptr<AstModuleDeclaration> module_ast = ParseModuleDeclaration()) {
             m_ast_iterator->Push(module_ast);
             
             while (m_token_stream->HasNext()) {
@@ -287,8 +317,10 @@ void Parser::Parse(bool expect_module_decl)
                 }
 
                 // check for modules declared after the first
-                if (MatchKeyword(Keyword_module, false) && !MatchAhead(TK_DOT, 1)) {
+                if (MatchKeyword(Keyword_module, false)) {
                     m_ast_iterator->Push(ParseModuleDeclaration());
+                } else if (MatchKeyword(Keyword_use, false) || MatchKeyword(Keyword_import, false)) {
+                    m_ast_iterator->Push(ParseStatement());
                 } else {
                     SourceLocation location = CurrentLocation();
 
@@ -300,7 +332,7 @@ void Parser::Parse(bool expect_module_decl)
                     m_compilation_unit->GetErrorList().AddError(error);
                 }
             }
-        }
+        }*/
     } else {
         while (m_token_stream->HasNext()) {
             SourceLocation location = CurrentLocation();
@@ -1644,7 +1676,7 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
             if (auto expr = ParseExpression()) {
                 members.push_back(expr);
             }
-        } while (!Match(TK_COMMA, true));
+        } while (Match(TK_COMMA, true));
 
         Expect(TK_CLOSE_BRACKET, true);
 

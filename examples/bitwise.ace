@@ -1,0 +1,39 @@
+use library ['../acelib']
+
+import stopwatch
+
+module bitwise_test {
+  // measure time it takes to perform bitshift operations vs multiply by 2
+
+  stopwatch::start()
+  () {
+    i: Int = 0
+    a: Int = 1
+
+    while i < 1500000 {
+      a = a * 2
+
+      i += 1
+    }
+
+  }()
+
+  mul_2_time = stopwatch::stop()
+
+  stopwatch::start()
+  () {
+    i: Int = 0
+    a: Int = 1
+
+    while i < 1500000 {
+      a = a << 1
+
+      i += 1
+    }
+
+  }()
+  bitshift_time = stopwatch::stop()
+
+  print "time taken to multiply by 2: ", mul_2_time
+  print "time taken to bitshift left: ", bitshift_time
+}

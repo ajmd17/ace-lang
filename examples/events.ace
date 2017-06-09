@@ -27,16 +27,6 @@ module events_example {
     */
   }
 
-  /*my_player: Player
-  my_player.id = 9999
-  my_player.username = 'asdfghjk'
-  my_player.position = [10, 25]
-
-  // throw an event into my_player object
-  'player move' => my_player*/
-
-  //5 => my_player
-
   mul_array: Function = (arr: Array, amt: Number) {
     arr2: Array
 
@@ -61,5 +51,5 @@ module events_example {
     }
   }
 
-  [1, 2, 3, 4, 5], 3 => mul_array => print_array
+  [1, 2, 3, 4, 5], 50 => mul_array => print_array
 }

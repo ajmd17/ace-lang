@@ -1,57 +1,54 @@
-module io {
-    // file io
-    open: Function
-    write: Function
-    close: Function
-    
-    stdout: Any
+// file io
+open: Function
+write: Function
+close: Function
 
-    type FileStream {
-        filepath: String
-        file_obj: Any
+stdout: Any
+
+type FileStream {
+    filepath: String
+    file_obj: Any
+
+    open(self, filepath: String, write_mode: String) {
+        self.filepath = filepath
+        self.file_obj = io::open(filepath, write_mode)
+        return self
+    }
+
+    close(self) {
+        if self.file_obj == null {
+            return null
+        }
+
+        io::close(self.file_obj)
+    }
+
+    write(self, args...) {
+        if self.file_obj == null {
+            return null
+        }
+
+        i: Int = 0
+        len: Int = ::length(args)
         
-
-        open(self, filepath: String, write_mode: String) {
-            self.filepath = filepath
-            self.file_obj = io::open(filepath, write_mode)
-            return self
+        while i < len {
+            io::write(self.file_obj, ::to_string(args[i]))
+            i += 1
         }
-
-        close(self) {
-            if self.file_obj == null {
-                return null
-            }
-
-            io::close(self.file_obj)
-        }
-
-        write(self, args...) {
-            if self.file_obj == null {
-                return null
-            }
-
-            i: Int = 0
-            len: Int = ::length(args)
-            
-            while i < len {
-                io::write(self.file_obj, ::to_string(args[i]))
-                i += 1
-            }
-            
-            return self
-        }
+        
+        return self
     }
-    
-    module _Detail_ {
-        alias lf = runtime::load_function
+}
 
-        __lib: Any = runtime::load_library('lib/libace-runtime')
+module _Detail_ {
+    alias lf = runtime::load_function
 
-        // file
-        io::open = lf(__lib, 'io_open')
-        io::write = lf(__lib, 'io_write')
-        io::close = lf(__lib, 'io_close')
+    __lib: Any = runtime::load_library('lib/libace-runtime')
 
-        io::stdout = lf(__lib, 'io_get_stdout')()
-    }
+    // file
+    io::open = lf(__lib, 'io_open')
+    io::write = lf(__lib, 'io_write')
+    io::close = lf(__lib, 'io_close')
+
+    io::stdout = lf(__lib, 'io_get_stdout')()
 }

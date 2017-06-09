@@ -3,7 +3,7 @@
 ### Statements
 
 Statements in Ace do not require semicolons. 
-Don't use them unless you have to keep multiple statements on the same line (in which case, you should consider changing the code to be clearer anyway).
+It's recommended that you don't use them unless you have to keep multiple statements on the same line (in which case, you should possibly consider changing the code to be clearer anyway).
 
 #### Hello World
 
@@ -196,10 +196,31 @@ type Person {
 }
 
 person: Person
+
+```
+
+You can access any fields of an object using the `.` syntax.
+
+Example (continuing from the code above):
+```
 person.name = "Banana Man"
-
 print person.name // prints out: Banana Man
+```
 
+In Ace, not only is it completely valid to use reserved keywords as field names, it is also possible for field names to contain spaces, symbols, or any other character, as long as it is encased in quotes.
+
+This feature is useful for descriptive naming of fields.
+
+Example:
+```
+type UserOptions {
+    'enable autosaving': Boolean
+}
+
+options: UserOptions
+options.'enable autosaving' = true
+
+print 'Enable autosaving? ', options.'enable autosaving'
 ```
 
 #### Methods

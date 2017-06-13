@@ -21,10 +21,10 @@ const char *Runtime::OS_NAME =
 
 std::vector<Library> Runtime::libs = {};
 
-vm::NativeFunctionPtr_t Library::GetFunction(const char *name)
+NativeFunctionPtr_t Library::GetFunction(const char *name)
 {
     if (void *ptr = LOAD_LIB_FUNC(handle, name)) {
-        return (vm::NativeFunctionPtr_t)ptr;
+        return (NativeFunctionPtr_t)ptr;
     }
 
     return nullptr;

@@ -108,7 +108,7 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
                     }
 
                     ASSERT(mod_link->m_value != nullptr);
-                    ASSERT(mod_link->m_value->GetName() == ace::compiler::Config::GLOBAL_MODULE_NAME);
+                    ASSERT(mod_link->m_value->GetName() == ace::compiler::Config::global_module_name);
 
                     return mod_link->m_value->LookUpIdentifier(name, false);
                 }
@@ -189,7 +189,7 @@ SymbolTypePtr_t Module::PerformLookup(
                 }
 
                 ASSERT(link->m_value != nullptr);
-                ASSERT(link->m_value->GetName() == ace::compiler::Config::GLOBAL_MODULE_NAME);
+                ASSERT(link->m_value->GetName() == ace::compiler::Config::global_module_name);
 
                 return pred2(link->m_value);
             }

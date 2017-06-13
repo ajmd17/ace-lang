@@ -85,14 +85,15 @@ private:
     std::shared_ptr<AstStatement> ParseStatement(bool top_level = false);
     std::shared_ptr<AstModuleDeclaration> ParseModuleDeclaration();
     std::shared_ptr<AstDirective> ParseDirective();
-    std::shared_ptr<AstExpression> ParseTerm();
+    std::shared_ptr<AstExpression> ParseTerm(bool read_commas = true);
     std::shared_ptr<AstExpression> ParseParentheses();
     std::shared_ptr<AstInteger> ParseIntegerLiteral();
     std::shared_ptr<AstFloat> ParseFloatLiteral();
     std::shared_ptr<AstString> ParseStringLiteral();
     std::shared_ptr<AstIdentifier> ParseIdentifier(bool allow_keyword = false);
     std::shared_ptr<AstArgument> ParseArgument(std::shared_ptr<AstExpression> expr);
-    std::shared_ptr<AstArgumentList> ParseArguments(bool require_parentheses = true);
+    std::shared_ptr<AstArgumentList> ParseArguments(bool require_parentheses = true,
+        const std::shared_ptr<AstExpression> &expr = nullptr);
     std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstModuleProperty> ParseModuleProperty();
@@ -112,7 +113,7 @@ private:
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseUnaryExpression();
-    std::shared_ptr<AstExpression> ParseExpression();
+    std::shared_ptr<AstExpression> ParseExpression(bool read_commas = true);
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true,
         bool allow_keyword_names = false,

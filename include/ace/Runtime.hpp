@@ -3,6 +3,8 @@
 
 #include <ace-vm/Value.hpp>
 
+#include <ace-sdk/ace-sdk.hpp>
+
 #include <vector>
 #include <memory>
 
@@ -42,7 +44,7 @@ struct Library {
         { return handle == other.handle; }
 
     inline const void *GetHandle() const { return handle; }
-    vm::NativeFunctionPtr_t GetFunction(const char *name);
+    NativeFunctionPtr_t GetFunction(const char *name);
 };
 
 class Runtime {

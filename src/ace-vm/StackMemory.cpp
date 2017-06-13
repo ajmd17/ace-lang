@@ -1,5 +1,7 @@
 #include <ace-vm/StackMemory.hpp>
 
+#include <common/utf8.hpp>
+
 #include <iomanip>
 
 namespace ace {

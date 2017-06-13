@@ -1,3 +1,6 @@
+#include <ace-sdk/ace-sdk.hpp>
+
+#if 0
 #ifndef VALUE_HPP
 #define VALUE_HPP
 
@@ -5,9 +8,6 @@
 
 #include <common/typedefs.hpp>
 #include <common/utf8.hpp>
-#include <common/hasher.hpp>
-
-#include <stdexcept>
 
 namespace ace {
 namespace vm {
@@ -41,7 +41,7 @@ struct Value {
         HeapValue *ptr;
 
         struct {
-            uint32_t m_addr;
+            bc_address_t m_addr;
             uint8_t m_nargs;
             uint8_t m_flags;
         } func;
@@ -49,28 +49,22 @@ struct Value {
         NativeFunctionPtr_t native_func;
         
         struct {
-            uint32_t addr;
+            bc_address_t addr;
             int32_t varargs_push;
         } call;
 
-        uint32_t addr;
+        bc_address_t addr;
 
         struct {
-            uint32_t catch_address;
+            bc_address_t catch_address;
         } try_catch_info;
     } m_value;
 
-    //Value();
     Value() = default;
     explicit Value(const Value &other);
 
     inline Value::ValueType GetType()  const { return m_type; }
     inline Value::ValueData GetValue() const { return m_value; }
-
-    inline std::uint32_t GetHash() const {
-        utf::Utf8String tmp = ToString();
-        return hash_fnv_1(tmp.GetData());
-    }
 
     inline bool GetInteger(aint64 *out) const
     {
@@ -105,10 +99,12 @@ struct Value {
 
     const char *GetTypeString() const;
     utf::Utf8String ToString() const;
-    void ToRepresentation(utf::Utf8String &out_str, bool add_type_name = true) const;
+    void ToRepresentation(utf::Utf8String &out_str,
+        bool add_type_name = true) const;
 };
 
 } // namespace vm
 } // namespace ace
 
+#endif
 #endif

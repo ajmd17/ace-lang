@@ -8,6 +8,8 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/VM.hpp>
 
+#include <ace-sdk/ace-sdk.hpp>
+
 #include <string>
 #include <vector>
 
@@ -18,12 +20,12 @@ public:
     struct NativeVariableDefine {
         std::string name;
         SymbolTypePtr_t type;
-        vm::NativeInitializerPtr_t initializer_ptr;
+        NativeInitializerPtr_t initializer_ptr;
 
         NativeVariableDefine(
             const std::string &name,
             const SymbolTypePtr_t &type,
-            vm::NativeInitializerPtr_t initializer_ptr)
+            NativeInitializerPtr_t initializer_ptr)
             : name(name),
               type(type),
               initializer_ptr(initializer_ptr)
@@ -42,13 +44,13 @@ public:
         std::string function_name;
         SymbolTypePtr_t return_type;
         std::vector<GenericInstanceTypeInfo::Arg> param_types;
-        vm::NativeFunctionPtr_t ptr;
+        NativeFunctionPtr_t ptr;
 
         NativeFunctionDefine(
             const std::string &function_name,
             const SymbolTypePtr_t &return_type,
             const std::vector<GenericInstanceTypeInfo::Arg> &param_types,
-            vm::NativeFunctionPtr_t ptr)
+            NativeFunctionPtr_t ptr)
             : function_name(function_name),
               return_type(return_type),
               param_types(param_types),
@@ -94,12 +96,12 @@ public:
 
         ModuleDefine &Variable(const std::string &variable_name,
             const SymbolTypePtr_t &variable_type,
-            vm::NativeInitializerPtr_t ptr);
+            NativeInitializerPtr_t ptr);
 
         ModuleDefine &Function(const std::string &function_name,
             const SymbolTypePtr_t &return_type,
             const std::vector<GenericInstanceTypeInfo::Arg> &param_types,
-            vm::NativeFunctionPtr_t ptr);
+            NativeFunctionPtr_t ptr);
 
         void BindAll(vm::VM *vm, CompilationUnit *compilation_unit);
 

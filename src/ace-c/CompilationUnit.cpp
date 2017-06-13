@@ -11,7 +11,7 @@
 CompilationUnit::CompilationUnit()
     : m_module_index(0),
       m_global_module(new Module(
-          ace::compiler::Config::GLOBAL_MODULE_NAME,
+          ace::compiler::Config::global_module_name,
           SourceLocation::eof
       ))
 {
@@ -63,7 +63,7 @@ void CompilationUnit::RegisterType(SymbolTypePtr_t &type_ptr)
     // mangle the type name
     const size_t len = type_ptr->GetName().length();
 
-    ASSERT(type_ptr->GetMembers().size() < ace::compiler::Config::MAX_DATA_MEMBERS);
+    ASSERT(type_ptr->GetMembers().size() < ace::compiler::Config::max_data_members);
 
     // create static object
     StaticTypeInfo st;

@@ -29,7 +29,6 @@
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
-#include <ace-vm/EventArray.hpp>
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 
@@ -60,39 +59,6 @@ std::mutex mtx;
 std::vector<std::thread> threads;
 
 std::string exec_path;
-
-void Events_new_event_array(ace::sdk::Params params)
-{
-    ACE_CHECK_ARGS(<=, 1);
-
-    ace::aint64 size_value = 0;
-
-    if (params.nargs == 1) {
-        const vm::Value *target_ptr = params.args[0];
-        ASSERT(target_ptr != nullptr);
-
-        // target_ptr should hold size integer
-        if (!target_ptr->GetInteger(&size_value)) {
-            params.handler->state->ThrowException(
-                params.handler->thread,
-                vm::Exception(utf::Utf8String("invalid size value"))
-            );
-        }
-    }
-
-    // create heap value for random generator
-    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
-    ASSERT(ptr != nullptr);
-
-    ptr->Assign(vm::EventArray(size_value));
-
-    // assign register value to the allocated object
-    vm::Value res;
-    res.m_type = vm::Value::HEAP_POINTER;
-    res.m_value.ptr = ptr;
-
-    ACE_RETURN(res);
-}
 
 void Events_call_action(ace::sdk::Params params)
 {
@@ -1175,7 +1141,6 @@ static int REPL(
         bool cont_token = false;
         
         {
-
             // run lexer on entered line to determine
             // if we should keep reading input
 
@@ -1202,7 +1167,6 @@ static int REPL(
                     parentheses_counter > 0 ||
                     bracket_counter > 0 ||
                     cont_token;
-
         }
 
         lines.push_back(current_line);
@@ -1445,8 +1409,6 @@ void HandleArgs(
         utf::Utf8String src_filename;
         utf::Utf8String out_filename;
 
-        int arg_pos = 1;
-
         bool native_mode = false;
         
         if (CLI::HasOption(argv, argv + argc, "cppgen")) {
@@ -1524,9 +1486,6 @@ void BuildLibraries(
     APIInstance &api)
 {
     api.Module("events")
-        .Function("new_event_array", SymbolType::Builtin::EVENT_ARRAY, {
-            { "size", SymbolType::Builtin::INT }
-        }, Events_new_event_array)
         .Function("get_action_handler", SymbolType::Builtin::FUNCTION, {
             { "event_array", SymbolType::Builtin::ANY },
             { "match", SymbolType::Builtin::ANY }
@@ -1620,7 +1579,7 @@ void BuildLibraries(
             }
         );
 
-    api.Module(ace::compiler::Config::GLOBAL_MODULE_NAME)
+    api.Module(ace::compiler::Config::global_module_name)
         /*.Type(SymbolType::Object("Range", {
             {
                 "step",

@@ -1,6 +1,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/HeapValue.hpp>
 
 #include <common/my_assert.hpp>
 

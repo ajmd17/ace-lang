@@ -13,10 +13,6 @@ struct Value;
 struct VMState;
 struct ExecutionThread;
 
-// native typedefs
-typedef void(*NativeFunctionPtr_t)(ace::sdk::Params);
-typedef void(*NativeInitializerPtr_t)(VMState*, ExecutionThread *thread, Value*);
-
 } // namespace vm
 
 typedef int32_t aint32;

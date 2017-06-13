@@ -9,6 +9,7 @@
 #include <common/typedefs.hpp>
 #include <common/instructions.hpp>
 #include <common/utf8.hpp>
+#include <common/hasher.hpp>
 #include <common/my_assert.hpp>
 
 #include <algorithm>
@@ -388,7 +389,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     }
     case LOAD_I32: {
         bc_reg_t reg; bs->Read(&reg);
-        aint32 i32; bs->Read(&i32);
+        int32_t i32; bs->Read(&i32);
 
         handler->LoadI32(
             reg,
@@ -399,7 +400,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     }
     case LOAD_I64: {
         bc_reg_t reg; bs->Read(&reg);
-        aint64 i64; bs->Read(&i64);
+        int64_t i64; bs->Read(&i64);
 
         handler->LoadI64(
             reg,
@@ -410,7 +411,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     }
     case LOAD_F32: {
         bc_reg_t reg; bs->Read(&reg);
-        afloat32 f32; bs->Read(&f32);
+        float f32; bs->Read(&f32);
 
         handler->LoadF32(
             reg,
@@ -421,7 +422,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
     }
     case LOAD_F64: {
         bc_reg_t reg; bs->Read(&reg);
-        afloat64 f64; bs->Read(&f64);
+        double f64; bs->Read(&f64);
 
         handler->LoadF64(
             reg,

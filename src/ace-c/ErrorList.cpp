@@ -76,7 +76,7 @@ std::ostream &ErrorList::WriteOutput(std::ostream &os) const
            << " at line "    << (error.GetLocation().GetLine() + 1)
            << ", col " << (error.GetLocation().GetColumn() + 1);
 
-        os << ": " << error_text << "\n";
+        os << ": " << error_text << '\n';
 
         if (current_file_lines.size() > error.GetLocation().GetLine()) {
             // render the line in question
@@ -84,14 +84,15 @@ std::ostream &ErrorList::WriteOutput(std::ostream &os) const
             os << "\n\t";
 
             for (size_t i = 0; i < error.GetLocation().GetColumn(); i++) {
-                os << " ";
+                os << ' ';
             }
+
             os << termcolor::green << "^";
         } else {
-            os << "\n\t" << "<line not found>";
+            os << '\t' << "<line not found>";
         }
 
-        os << termcolor::reset << "\n";
+        os << termcolor::reset << '\n';
     }
 
     return os;

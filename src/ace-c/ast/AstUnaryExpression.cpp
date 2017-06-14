@@ -61,6 +61,20 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
             )
         );
     } else if (m_op->GetType() & ARITHMETIC) {
+        if (type != SymbolType::Builtin::ANY &&
+            type != SymbolType::Builtin::INT &&
+            type != SymbolType::Builtin::FLOAT &&
+            type != SymbolType::Builtin::NUMBER) {
+        
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_invalid_operator_for_type,
+                m_target->GetLocation(),
+                m_op->LookupStringValue(),
+                type->GetName()
+            )); 
+        }
+
         visitor->Assert(type == SymbolType::Builtin::INT ||
             type == SymbolType::Builtin::FLOAT ||
             type == SymbolType::Builtin::NUMBER ||

@@ -72,6 +72,7 @@ public:
         static const SymbolTypePtr_t STRING;
         static const SymbolTypePtr_t FUNCTION;
         static const SymbolTypePtr_t ARRAY;
+        static const SymbolTypePtr_t TUPLE;
         static const SymbolTypePtr_t VAR_ARGS;
         static const SymbolTypePtr_t MAYBE;
         static const SymbolTypePtr_t NULL_TYPE;
@@ -122,12 +123,18 @@ public:
         const std::string &name, 
         const SymbolTypePtr_t &substitution
     );
+    
+    static SymbolTypePtr_t Extend(
+        const SymbolTypePtr_t &base,
+        const vec<SymbolMember_t> &members
+    );
 
     static SymbolTypePtr_t TypePromotion(
         const SymbolTypePtr_t &lptr,
         const SymbolTypePtr_t &rptr,
         bool use_number
     );
+
 
 public:
     SymbolType(

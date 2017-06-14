@@ -8,6 +8,7 @@
 #include <ace-c/ast/AstString.hpp>
 #include <ace-c/ast/AstFunctionExpression.hpp>
 #include <ace-c/ast/AstArrayExpression.hpp>
+#include <ace-c/ast/AstTupleExpression.hpp>
 #include <ace-c/ast/AstObject.hpp>
 
 #include <common/my_assert.hpp>
@@ -77,6 +78,16 @@ const SymbolTypePtr_t SymbolType::Builtin::ARRAY = SymbolType::Generic(
     )),
     {},
     GenericTypeInfo { 1 }
+);
+
+const SymbolTypePtr_t SymbolType::Builtin::TUPLE = SymbolType::Generic(
+    "Tuple",
+    sp<AstTupleExpression>(new AstTupleExpression(
+        {},
+        SourceLocation::eof
+    )),
+    {},
+    GenericTypeInfo { -1 }
 );
 
 const SymbolTypePtr_t SymbolType::Builtin::VAR_ARGS = SymbolType::Generic(
@@ -677,6 +688,25 @@ SymbolTypePtr_t SymbolType::GenericParameter(
     res->m_generic_param_info.m_substitution = substitution;
     
     return res;
+}
+
+SymbolTypePtr_t SymbolType::Extend(
+    const SymbolTypePtr_t &base,
+    const vec<SymbolMember_t> &members)
+{
+    SymbolTypePtr_t symbol_type(new SymbolType(
+        base->GetName(),
+        TYPE_USER_DEFINED,
+        base,
+        nullptr,
+        members
+    ));
+
+    symbol_type->SetDefaultValue(sp<AstObject>(
+        new AstObject(symbol_type, SourceLocation::eof)
+    ));
+    
+    return symbol_type;
 }
 
 SymbolTypePtr_t SymbolType::TypePromotion(

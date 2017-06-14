@@ -447,7 +447,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
     } else if (Match(TK_OPEN_BRACE, false)) {
         res = ParseBlock();
     } else {
-        std::shared_ptr<AstExpression> expr = ParseExpression(true);
+        std::shared_ptr<AstExpression> expr = ParseExpression(false);
         
         if (Match(TK_FAT_ARROW)) {
             expr = ParseActionExpression(expr);
@@ -533,7 +533,7 @@ std::shared_ptr<AstDirective> Parser::ParseDirective()
     return nullptr;
 }
 
-std::shared_ptr<AstExpression> Parser::ParseTerm(bool read_commas)
+std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas)
 {
     Token token = m_token_stream->Peek();
     
@@ -626,7 +626,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool read_commas)
            (Match(TK_DOT) ||
             Match(TK_OPEN_BRACKET) ||
             Match(TK_OPEN_PARENTH) ||
-            (read_commas && Match(TK_COMMA)) ||
+            (!override_commas && Match(TK_COMMA)) ||
             MatchKeyword(Keyword_has)))
     {
         if (Match(TK_DOT)) {
@@ -638,8 +638,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool read_commas)
         if (Match(TK_OPEN_PARENTH)) {
             expr = ParseCallExpression(expr);
         }
-        if (read_commas && Match(TK_COMMA)) {
-            expr = ParseArguments(false, expr);
+        if (!override_commas && Match(TK_COMMA)) {
+            expr = ParseTupleExpression(expr);
         }
         if (MatchKeyword(Keyword_has)) {
             expr = ParseHasExpression(expr);
@@ -658,7 +658,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
     Expect(TK_OPEN_PARENTH, true);
 
     if (!Match(TK_CLOSE_PARENTH) && !Match(TK_IDENT) && !MatchKeyword(Keyword_self)) {
-        expr = ParseExpression(false);
+        expr = ParseExpression(true);
         Expect(TK_CLOSE_PARENTH, true);
     } else {
         if (Match(TK_CLOSE_PARENTH, true)) {
@@ -667,7 +667,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
             m_token_stream->SetPosition(before_pos);
             expr = ParseFunctionExpression(false, ParseFunctionParameters());
         } else {
-            expr = ParseExpression(false);
+            expr = ParseExpression(true);
 
             bool found_function_token = false;
 
@@ -873,7 +873,7 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
             }
         }
 
-        expr = ParseExpression(false);
+        expr = ParseExpression(true);
     }
 
     if (expr != nullptr) {
@@ -1355,9 +1355,9 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
     return nullptr;
 }
 
-std::shared_ptr<AstExpression> Parser::ParseExpression(bool read_commas)
+std::shared_ptr<AstExpression> Parser::ParseExpression(bool override_commas)
 {
-    if (auto term = ParseTerm(read_commas)) {
+    if (auto term = ParseTerm(override_commas)) {
         if (Match(TK_OPERATOR, false)) {
             if (auto bin_expr = ParseBinaryExpression(0, term)) {
                 term = bin_expr;
@@ -1365,14 +1365,6 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool read_commas)
                 return nullptr;
             }
         }
-
-        // if (Match(TK_COMMA)) {
-        //     term = ParseActionExpression(term);
-        // }
-        
-        // if (Match(TK_FAT_ARROW)) {
-        //     term = ParseActionExpression(term);
-        // }
 
         return term;
     }
@@ -1695,7 +1687,7 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
                 break;
             }
 
-            if (auto expr = ParseExpression(false)) {
+            if (auto expr = ParseExpression(true)) {
                 members.push_back(expr);
             }
         } while (Match(TK_COMMA, true));
@@ -1709,6 +1701,41 @@ std::shared_ptr<AstArrayExpression> Parser::ParseArrayExpression()
     }
 
     return nullptr;
+}
+
+std::shared_ptr<AstTupleExpression> Parser::ParseTupleExpression(
+    const std::shared_ptr<AstExpression> &expr)
+{
+    const SourceLocation location = CurrentLocation();
+
+    std::vector<std::shared_ptr<AstArgument>> args;
+
+    // if expr is not null, then add it as first argument
+    if (expr != nullptr) {
+        args.push_back(ParseArgument(expr));
+
+        // read any commas after
+        if (!Match(TK_COMMA, true)) {
+            // if no commas matched, return what we have now
+            return std::shared_ptr<AstTupleExpression>(new AstTupleExpression(
+                args,
+                location
+            ));
+        }
+    }
+
+    do {
+        if (auto arg = ParseArgument(nullptr)) {
+            args.push_back(arg);
+        } else {
+            return nullptr;
+        }
+    } while (Match(TK_COMMA, true));
+
+    return std::shared_ptr<AstTupleExpression>(new AstTupleExpression(
+        args,
+        location
+    ));
 }
 
 std::shared_ptr<AstExpression> Parser::ParseAsyncExpression()
@@ -1851,7 +1878,7 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
 
                 // check for default assignment
                 if (MatchOperator("=", true)) {
-                    default_param = ParseExpression(false);
+                    default_param = ParseExpression(true);
                 }
 
                 parameters.push_back(std::shared_ptr<AstParameter>(new AstParameter(

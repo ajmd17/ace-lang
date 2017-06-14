@@ -1,4 +1,4 @@
-#include <ace-c/ast/AstArrayExpression.hpp>
+#include <ace-c/ast/AstTupleExpression.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
@@ -9,50 +9,71 @@
 
 #include <unordered_set>
 
-AstArrayExpression::AstArrayExpression(const std::vector<std::shared_ptr<AstExpression>> &members,
+AstTupleExpression::AstTupleExpression(const std::vector<std::shared_ptr<AstArgument>> &members,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
-      m_members(members),
-      m_held_type(SymbolType::Builtin::ANY)
+      m_members(members)
 {
 }
 
-void AstArrayExpression::Visit(AstVisitor *visitor, Module *mod)
+void AstTupleExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-    std::unordered_set<SymbolTypePtr_t> held_types;
+    std::vector<SymbolMember_t> member_types;
+    std::vector<GenericInstanceTypeInfo::Arg> generic_param_types;
 
-    for (auto &member : m_members) {
+    for (size_t i = 0; i < m_members.size(); i++) {
+        const auto &member = m_members[i];
         ASSERT(member != nullptr);
-        ASSERT(member->GetSymbolType() != nullptr);
 
         member->Visit(visitor, mod);
-        held_types.insert(member->GetSymbolType());
+
+        std::string mem_name;
+        
+        if (member->IsNamed()) {
+            mem_name = member->GetName();
+        } else {
+            mem_name = std::to_string(i);
+        }
+
+        // TODO find a better way to set up default assignment for members!
+        // we can't  modify default values of types.
+        //mem_type.SetDefaultValue(mem->GetAssignment());
+
+        member_types.push_back(std::make_tuple(
+            mem_name,
+            member->GetSymbolType(),
+            member->GetExpr()
+        ));
+
+        generic_param_types.push_back(GenericInstanceTypeInfo::Arg {
+            mem_name,
+            member->GetSymbolType(),
+            nullptr
+        });
     }
 
-    for (const auto &it : held_types) {
-        if (it != nullptr) {
-            if (m_held_type == SymbolType::Builtin::UNDEFINED) {
-                // `Undefined` invalidates the array type
-                break;
-            }
-            
-            if (m_held_type == SymbolType::Builtin::ANY) {
-                // take first item found that is not `Any`
-                m_held_type = it;
-            } else if (m_held_type->TypeCompatible(*it, false)) {
-                m_held_type = SymbolType::TypePromotion(m_held_type, it, true);
-            } else {
-                // more than one differing type, use Any.
-                m_held_type = SymbolType::Builtin::ANY;
-                break;
-            }
+    m_symbol_type = SymbolType::Extend(SymbolType::GenericInstance(
+        SymbolType::Builtin::TUPLE, 
+        GenericInstanceTypeInfo {
+            generic_param_types
         }
-    }
+    ), member_types);
+    
+    // register the tuple type
+    visitor->GetCompilationUnit()->RegisterType(m_symbol_type);
 }
 
-void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
+void AstTupleExpression::Build(AstVisitor *visitor, Module *mod)
 {
-    bool has_side_effects = MayHaveSideEffects();
+    ASSERT(visitor != nullptr);
+    ASSERT(mod != nullptr);
+
+    ASSERT(m_symbol_type != nullptr);
+    ASSERT(m_symbol_type->GetDefaultValue() != nullptr);
+
+    m_symbol_type->GetDefaultValue()->Build(visitor, mod);
+
+    /*bool has_side_effects = MayHaveSideEffects();
     uint32_t array_size = (uint32_t)m_members.size();
     
     // get active register
@@ -62,7 +83,6 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint32_t>(NEW_ARRAY, rp, array_size);
 
-    
     int stack_size_before = 0;
 
     if (has_side_effects) {
@@ -139,10 +159,10 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
             Instruction<uint8_t>(POP);
         // decrement stack size
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
-    }
+    }*/
 }
 
-void AstArrayExpression::Optimize(AstVisitor *visitor, Module *mod)
+void AstTupleExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &member : m_members) {
         ASSERT(member != nullptr);
@@ -151,29 +171,29 @@ void AstArrayExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstArrayExpression::Recreate(std::ostringstream &ss)
+void AstTupleExpression::Recreate(std::ostringstream &ss)
 {
-    ss << "[";
+    ss << "(";
     for (auto &member : m_members) {
         ASSERT(member != nullptr);
         
         member->Recreate(ss);
         ss << ",";
     }
-    ss << "]";
+    ss << ")";
 }
 
-std::shared_ptr<AstStatement> AstArrayExpression::Clone() const
+std::shared_ptr<AstStatement> AstTupleExpression::Clone() const
 {
     return CloneImpl();
 }
 
-int AstArrayExpression::IsTrue() const
+int AstTupleExpression::IsTrue() const
 {
     return 1;
 }
 
-bool AstArrayExpression::MayHaveSideEffects() const
+bool AstTupleExpression::MayHaveSideEffects() const
 {
     bool side_effects = false;
     for (const auto &member : m_members) {
@@ -188,14 +208,8 @@ bool AstArrayExpression::MayHaveSideEffects() const
     return side_effects;
 }
 
-SymbolTypePtr_t AstArrayExpression::GetSymbolType() const
+SymbolTypePtr_t AstTupleExpression::GetSymbolType() const
 {
-    return SymbolType::GenericInstance(
-        SymbolType::Builtin::ARRAY,
-        GenericInstanceTypeInfo {
-            {
-                { "@array_of", m_held_type }
-            }
-        }
-    );
+    ASSERT(m_symbol_type != nullptr);
+    return m_symbol_type;
 }

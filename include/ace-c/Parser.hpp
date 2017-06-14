@@ -13,6 +13,7 @@
 #include <ace-c/ast/AstFunctionExpression.hpp>
 #include <ace-c/ast/AstClosure.hpp>
 #include <ace-c/ast/AstArrayExpression.hpp>
+#include <ace-c/ast/AstTupleExpression.hpp>
 #include <ace-c/ast/AstTypeDefinition.hpp>
 #include <ace-c/ast/AstTypeAlias.hpp>
 #include <ace-c/ast/AstAliasDeclaration.hpp>
@@ -85,7 +86,7 @@ private:
     std::shared_ptr<AstStatement> ParseStatement(bool top_level = false);
     std::shared_ptr<AstModuleDeclaration> ParseModuleDeclaration();
     std::shared_ptr<AstDirective> ParseDirective();
-    std::shared_ptr<AstExpression> ParseTerm(bool read_commas = true);
+    std::shared_ptr<AstExpression> ParseTerm(bool override_commas = false);
     std::shared_ptr<AstExpression> ParseParentheses();
     std::shared_ptr<AstInteger> ParseIntegerLiteral();
     std::shared_ptr<AstFloat> ParseFloatLiteral();
@@ -113,7 +114,7 @@ private:
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseUnaryExpression();
-    std::shared_ptr<AstExpression> ParseExpression(bool read_commas = true);
+    std::shared_ptr<AstExpression> ParseExpression(bool override_commas = false);
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true,
         bool allow_keyword_names = false,
@@ -124,6 +125,8 @@ private:
         bool is_async = false,
         bool is_pure = false);
     std::shared_ptr<AstArrayExpression> ParseArrayExpression();
+    std::shared_ptr<AstTupleExpression> ParseTupleExpression(
+        const std::shared_ptr<AstExpression> &expr = nullptr);
     std::shared_ptr<AstExpression> ParseAsyncExpression();
     std::shared_ptr<AstExpression> ParsePureExpression();
     std::shared_ptr<AstExpression> ParseImpureExpression();

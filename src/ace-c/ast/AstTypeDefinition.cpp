@@ -32,14 +32,12 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
     if (mod->LookupSymbolType(m_name)) {
         // error; redeclaration of type in module
-        visitor->GetCompilationUnit()->GetErrorList().AddError(
-            CompilerError(
-                LEVEL_ERROR,
-                Msg_redefined_type,
-                m_location,
-                m_name
-            )
-        );
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_redefined_type,
+            m_location,
+            m_name
+        ));
     } else {
         unsigned int depth = 0;
 
@@ -50,13 +48,11 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         }
 
         if (depth > 1) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(
-                    LEVEL_ERROR,
-                    Msg_type_not_defined_globally,
-                    m_location
-                )
-            );
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_type_not_defined_globally,
+                m_location
+            ));
         } else {
             // open the scope for data members
             mod->m_scopes.Open(Scope());

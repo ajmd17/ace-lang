@@ -70,3 +70,19 @@ Operator::Operator(const Operator &other)
 {
 }
 
+std::string Operator::LookupStringValue() const
+{
+    const std::map<std::string, Operator> *map = &Operator::binary_operators;
+
+    if (IsUnary()) {
+        map = &Operator::unary_operators;
+    }
+
+    for (auto it = map->begin(); it != map->end(); ++it) {
+        if (it->second.GetOperatorType() == m_op_type) {
+            return it->first;
+        }
+    }
+
+    return "??";
+}

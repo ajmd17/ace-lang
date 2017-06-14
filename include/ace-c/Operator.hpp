@@ -99,6 +99,8 @@ public:
     inline bool ModifiesValue() const
         { return m_modifies_value; }
 
+    std::string LookupStringValue() const;
+
 private:
     Operators m_op_type;
     int m_precedence;

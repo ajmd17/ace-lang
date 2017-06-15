@@ -222,6 +222,8 @@ void Events_call_action(ace::sdk::Params params)
                                     } else if (hv_a == nullptr || hv_b == nullptr) {
                                         // one is null... not same
                                         // continue.
+                                    } else if (TypeInfo *type_ptr = type_sv.m_value.ptr->GetPointer<TypeInfo>();) {
+                                        // left is a TypeInfo object, satisfies if type holds
                                     } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
                                         if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {
                                             res_func = &handler_func;
@@ -856,7 +858,7 @@ void Global_decompile(ace::sdk::Params params)
 
     if (target_ptr->m_type != vm::Value::FUNCTION) {
         if (target_ptr->m_type == vm::Value::NATIVE_FUNCTION) {
-            bytecode_str += "<Native Code>";
+            bytecode_str.append("<Native Code>");
         } else {
             char buffer[256];
             std::sprintf(
@@ -906,7 +908,7 @@ void Global_decompile(ace::sdk::Params params)
         } while (code != RET && !byte_stream.Eof());
 
         std::string ss_str = ss.str();
-        bytecode_str += ss_str.data();
+        bytecode_str.append(ss_str.data());
     }
     
     // create heap value for string

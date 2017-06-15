@@ -8,7 +8,7 @@
 namespace ace {
 namespace vm {
 
-const uint16_t Stack::STACK_SIZE = 20000;
+const size_t Stack::STACK_SIZE = 20000;
 
 std::ostream &operator<<(std::ostream &os, const Stack &stack)
 {

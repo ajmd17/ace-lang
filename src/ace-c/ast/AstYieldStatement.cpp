@@ -55,31 +55,6 @@ void AstYieldStatement::Visit(AstVisitor *visitor, Module *mod)
         ));
 
         m_yield_callback_call->Visit(visitor, mod);
-
-        /*if (top->m_value.GetScopeFlags() & ScopeFunctionFlags::GENERATOR_FUNCTION_FLAG) {
-            ASSERT(m_expr->GetSymbolType() != nullptr);
-        
-            top->m_value.AddReturnType(
-                SymbolType::GenericInstance(
-                    SymbolType::Builtin::GENERATOR,
-                    GenericInstanceTypeInfo {
-                        {
-                            { "@generates", m_expr->GetSymbolType() }
-                        }
-                    }
-                ),
-                m_location
-            );
-        } else {
-            // error; 'yield' not allowed outside of a generator
-            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_yield_outside_generator_function,
-                m_location
-            ));
-        }*/
-
-
     } else {
         // error; 'yield' not allowed outside of a function
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(

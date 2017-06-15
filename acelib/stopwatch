@@ -1,12 +1,9 @@
+start: Function
+stop: Function
 
-module stopwatch {
-  start: Function
-  stop: Function
-
-  module _Detail_ {
-    __lib: Any = runtime::load_library('lib/libace-runtime')
-    
-    stopwatch::start = runtime::load_function(__lib, 'stopwatch_start')
-    stopwatch::stop  = runtime::load_function(__lib, 'stopwatch_stop')
-  }
+module _Detail_ {
+  __lib: Any = runtime::load_library('lib/libace-runtime')
+  
+  stopwatch::start = runtime::load_function(__lib, 'stopwatch_start')
+  stopwatch::stop  = runtime::load_function(__lib, 'stopwatch_stop')
 }

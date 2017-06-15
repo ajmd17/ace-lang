@@ -111,7 +111,9 @@ HeapValue *Heap::Alloc()
 {
     HeapNode *node = new HeapNode;
 
-    if (m_head) {
+    node->after = nullptr;
+    
+    if (m_head != nullptr) {
         m_head->after = node;
     }
     

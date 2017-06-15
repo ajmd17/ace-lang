@@ -61,6 +61,9 @@ void VM::Print(const Value &value)
         case Value::BOOLEAN:
             utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
             break;
+        case Value::CONST_STRING:
+            utf::fputs(value.m_value.c_str, stdout);
+            break;
         case Value::HEAP_POINTER: {
             if (value.m_value.ptr == nullptr) {
                 // special case for null pointers
@@ -138,8 +141,14 @@ void VM::Invoke(InstructionHandler *handler,
             params.args = args;
             params.nargs = nargs;
 
+            // disable auto gc so no collections happen during a native function
+            state->enable_auto_gc = false;
+
             // call the native function
             value.m_value.native_func(params);
+
+            // re-enable auto gc
+            state->enable_auto_gc = true;
 
             delete[] args;
 

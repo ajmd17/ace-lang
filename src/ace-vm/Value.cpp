@@ -60,6 +60,7 @@ const char *Value::GetTypeString() const
         case F32: // fallthrough
         case F64: return "Float";
         case BOOLEAN: return "Boolean";
+        case CONST_STRING: return "CString";
         case HEAP_POINTER: 
             if (!m_value.ptr) {
                 return "Null";
@@ -160,6 +161,8 @@ utf::Utf8String Value::ToString() const
             return utf::Utf8String(buf);
         case Value::BOOLEAN:
             return utf::Utf8String(m_value.b ? "true" : "false");
+        case Value::CONST_STRING:
+            return utf::Utf8String(m_value.c_str);
         case Value::HEAP_POINTER:
         {
             if (!m_value.ptr) {

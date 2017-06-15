@@ -65,27 +65,34 @@ HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
     ASSERT(thread != nullptr);
 
     const size_t heap_size = m_heap.Size();
-    
+        
     if (heap_size >= m_max_heap_objects) {
         if (heap_size >= GC_THRESHOLD_MAX) {
             // heap overflow.
             char buffer[256];
-            std::sprintf(buffer, "heap overflow, heap size is %zu", heap_size);
+            std::sprintf(
+                buffer,
+                "heap overflow, heap size is %zu, max is %zu",
+                heap_size,
+                GC_THRESHOLD_MAX
+            );
             ThrowException(thread, Exception(buffer));
             return nullptr;
         }
 
-        // run the gc
-        GC();
+        if (enable_auto_gc) {
+            // run the gc
+            GC();
 
-        // check if size is still over the maximum,
-        // and resize the maximum if necessary.
-        if (m_heap.Size() >= m_max_heap_objects) {
-            // resize max number of objects
-            m_max_heap_objects = std::min(
-                1 << (unsigned)std::ceil(std::log(m_max_heap_objects) / std::log(2.0)),
-                GC_THRESHOLD_MAX
-            );
+            // check if size is still over the maximum,
+            // and resize the maximum if necessary.
+            if (m_heap.Size() >= m_max_heap_objects) {
+                // resize max number of objects
+                m_max_heap_objects = std::min(
+                    1 << (unsigned)std::ceil(std::log(m_max_heap_objects) / std::log(2.0)),
+                    GC_THRESHOLD_MAX
+                );
+            }
         }
     }
 

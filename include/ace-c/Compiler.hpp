@@ -83,6 +83,8 @@ public:
         and the result is computed.
     */
     static void LoadLeftAndStore(AstVisitor *visitor, Module *mod, ExprInfo info);
+    /** Build a binary operation such as ADD, SUB, MUL, etc. */
+    static void BuildBinOp(uint8_t opcode, AstVisitor *visitor, Module *mod, Compiler::ExprInfo info);
     /** Pops from the stack N times. If N is greater than 1,
         the POP_N instruction is generated. Otherwise, the POP
         instruction is generated.

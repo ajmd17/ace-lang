@@ -1,12 +1,10 @@
-module thread {
-  type Thread {
-    arguments: Any
+type Thread {
+  arguments: Any
 
-    spawn(self, function: Function) {
-      if self.arguments != null {
-        return ::spawn_thread(function, self.arguments)
-      }
-      return ::spawn_thread(function)
+  spawn(self, function: Function) {
+    if self.arguments != null {
+      return ::spawn_thread(function, self.arguments)
     }
+    return ::spawn_thread(function)
   }
 }

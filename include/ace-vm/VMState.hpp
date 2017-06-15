@@ -71,6 +71,7 @@ struct VMState {
     non_owning_ptr<VM> m_vm;
 
     bool good = true;
+    bool enable_auto_gc = true;
     int m_max_heap_objects = GC_THRESHOLD_MIN;
 
     /** Reset the state of the VM, destroying all heap objects,

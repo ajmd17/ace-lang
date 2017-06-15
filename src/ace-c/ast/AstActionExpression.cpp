@@ -99,13 +99,9 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
             // TODO: iterate through the items on the type, find any matches,
             // and attempt to substitute function arguments with the second item in the array
             // (the callback/handler)
-
-            
             if (member_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
                 const SymbolTypePtr_t base = member_type->GetBaseType();
                 ASSERT(base != nullptr);
-
-                std::cout << "base name : " << base->GetName() << "\n";
 
                 if (base == SymbolType::Builtin::ARRAY) {
                     // iterate through array items

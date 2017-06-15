@@ -727,12 +727,46 @@ struct InstructionHandler {
 
         // compare integers
         if (lhs->GetInteger(&a.i) && rhs->GetInteger(&b.i)) {
-            thread->m_regs.m_flags = (a.i == b.i) ? EQUAL : ((a.i > b.i) ? GREATER : NONE);
+            thread->m_regs.m_flags = (a.i == b.i)
+                ? EQUAL : ((a.i > b.i)
+                ? GREATER : NONE);
         } else if (lhs->GetNumber(&a.f) && rhs->GetNumber(&b.f)) {
-            thread->m_regs.m_flags = (a.f == b.f) ? EQUAL : ((a.f > b.f) ? GREATER : NONE);
+            thread->m_regs.m_flags = (a.f == b.f)
+                ? EQUAL : ((a.f > b.f)
+                ? GREATER : NONE);
         } else if (lhs->m_type == Value::BOOLEAN && rhs->m_type == Value::BOOLEAN) {
-            thread->m_regs.m_flags = (lhs->m_value.b == rhs->m_value.b) ? EQUAL 
-                : ((lhs->m_value.b > rhs->m_value.b) ? GREATER : NONE);
+            thread->m_regs.m_flags = (lhs->m_value.b == rhs->m_value.b)
+                ? EQUAL : ((lhs->m_value.b > rhs->m_value.b)
+                ? GREATER : NONE);
+        } else if (lhs->m_type == Value::CONST_STRING && rhs->m_type == Value::CONST_STRING) {
+            thread->m_regs.m_flags = std::strcmp(lhs->m_value.c_str, rhs->m_value.c_str) == 0
+                ? EQUAL : NONE;
+        } else if (lhs->m_type == Value::CONST_STRING && rhs->m_type == Value::HEAP_POINTER) {
+            if (utf::Utf8String *str = rhs->m_value.ptr->GetPointer<utf::Utf8String>()) {
+                thread->m_regs.m_flags = std::strcmp(lhs->m_value.c_str, str->GetData()) == 0
+                    ? EQUAL : NONE;
+            } else {
+                state->ThrowException(
+                    thread,
+                    Exception::InvalidComparisonException(
+                        lhs->GetTypeString(),
+                        rhs->GetTypeString()
+                    )
+                );
+            }
+        } else if (lhs->m_type == Value::HEAP_POINTER && rhs->m_type == Value::CONST_STRING) {
+            if (utf::Utf8String *str = lhs->m_value.ptr->GetPointer<utf::Utf8String>()) {
+                thread->m_regs.m_flags = std::strcmp(str->GetData(), rhs->m_value.c_str) == 0
+                    ? EQUAL : NONE;
+            } else {
+                state->ThrowException(
+                    thread,
+                    Exception::InvalidComparisonException(
+                        lhs->GetTypeString(),
+                        rhs->GetTypeString()
+                    )
+                );
+            }
         } else if (lhs->m_type == Value::HEAP_POINTER && rhs->m_type == Value::HEAP_POINTER) {
             int res = VM::CompareAsPointers(lhs, rhs);
             if (res != -1) {

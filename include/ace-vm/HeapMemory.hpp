@@ -10,8 +10,8 @@ namespace vm {
 
 struct HeapNode {
     HeapValue value;
-    HeapNode *before = nullptr;
-    HeapNode *after = nullptr;
+    HeapNode *before;
+    HeapNode *after;
 };
 
 class Heap {

@@ -23,29 +23,32 @@ void AstArrayExpression::Visit(AstVisitor *visitor, Module *mod)
 
     for (auto &member : m_members) {
         ASSERT(member != nullptr);
-        ASSERT(member->GetSymbolType() != nullptr);
-
         member->Visit(visitor, mod);
-        held_types.insert(member->GetSymbolType());
+
+        if (member->GetSymbolType() != nullptr) {
+            held_types.insert(member->GetSymbolType());
+        } else {
+            held_types.insert(SymbolType::Builtin::ANY);
+        }
     }
 
     for (const auto &it : held_types) {
-        if (it != nullptr) {
-            if (m_held_type == SymbolType::Builtin::UNDEFINED) {
-                // `Undefined` invalidates the array type
-                break;
-            }
-            
-            if (m_held_type == SymbolType::Builtin::ANY) {
-                // take first item found that is not `Any`
-                m_held_type = it;
-            } else if (m_held_type->TypeCompatible(*it, false)) {
-                m_held_type = SymbolType::TypePromotion(m_held_type, it, true);
-            } else {
-                // more than one differing type, use Any.
-                m_held_type = SymbolType::Builtin::ANY;
-                break;
-            }
+        ASSERT(it != nullptr);
+
+        if (m_held_type == SymbolType::Builtin::UNDEFINED) {
+            // `Undefined` invalidates the array type
+            break;
+        }
+        
+        if (m_held_type == SymbolType::Builtin::ANY) {
+            // take first item found that is not `Any`
+            m_held_type = it;
+        } else if (m_held_type->TypeCompatible(*it, false)) {
+            m_held_type = SymbolType::TypePromotion(m_held_type, it, true);
+        } else {
+            // more than one differing type, use Any.
+            m_held_type = SymbolType::Builtin::ANY;
+            break;
         }
     }
 }
@@ -84,7 +87,6 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
     // assign all array items
     int index = 0;
     for (auto &member : m_members) {
-        ASSERT(member != nullptr);
 
         member->Build(visitor, mod);
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -145,9 +147,9 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
 void AstArrayExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
     for (auto &member : m_members) {
-        ASSERT(member != nullptr);
-
-        member->Optimize(visitor, mod);
+        if (member != nullptr) {
+            member->Optimize(visitor, mod);
+        }
     }
 }
 
@@ -155,10 +157,10 @@ void AstArrayExpression::Recreate(std::ostringstream &ss)
 {
     ss << "[";
     for (auto &member : m_members) {
-        ASSERT(member != nullptr);
-        
-        member->Recreate(ss);
-        ss << ",";
+        if (member != nullptr) {
+            member->Recreate(ss);
+            ss << ",";
+        }
     }
     ss << "]";
 }
@@ -176,9 +178,10 @@ int AstArrayExpression::IsTrue() const
 bool AstArrayExpression::MayHaveSideEffects() const
 {
     bool side_effects = false;
+
     for (const auto &member : m_members) {
         ASSERT(member != nullptr);
-
+        
         if (member->MayHaveSideEffects()) {
             side_effects = true;
             break;

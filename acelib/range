@@ -1,39 +1,37 @@
-module range {
-  import math
+import math
 
-  type Range {
-    first: Number
-    last: Number
-    step: Number
+type Range {
+  first: Number
+  last: Number
+  step: Number
 
-    '$invoke'(self) * {
-      i: Number = self.first
+  '$invoke'(self) -> Null * {
+    i: Number = self.first
 
-      while self.last - i != 0 {
-        yield i
-        i += self.step
-      }
-    }
-
-    to_array(self) -> Array {
-      // TODO: preallocate this array!
-      res: Array
-
-      i: Number = self.first
-      while self.last - i != 0 {
-        ::array_push(res, i)
-        i += self.step
-      }
-
-      return res
+    while self.last - i != 0 {
+      yield i
+      i += self.step
     }
   }
 
-  make_range: Function = (first: Number, last: Number) {
-    r: Range
-    r.first = first
-    r.last = last
-    r.step = math::sign(last - first)
-    return r
+  to_array(self) -> Array {
+    // TODO: preallocate this array!
+    res: Array
+
+    i: Number = self.first
+    while self.last - i != 0 {
+      ::array_push(res, i)
+      i += self.step
+    }
+
+    return res
   }
+}
+
+make_range: Function = (first: Number, last: Number) {
+  r: Range
+  r.first = first
+  r.last = last
+  r.step = math::sign(last - first)
+  return r
 }

@@ -134,9 +134,6 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
     if (m_variable_declaration) {
         m_variable_declaration->Build(visitor, mod);
     } else {
-        AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
-        AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
-        
         Compiler::ExprInfo info {
             m_left.get(),
             m_right.get()
@@ -178,7 +175,11 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     break;
             }
 
-            uint8_t rp;
+            Compiler::BuildBinOp(opcode, visitor, mod, info);
+
+            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+
+            /*uint8_t rp;
 
             if (left_as_binop == nullptr && right_as_binop != nullptr) {
                 // if the right hand side is a binary operation,
@@ -206,17 +207,20 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 }
             } else {
                 Compiler::LoadLeftThenRight(visitor, mod, info);
-                if (m_right) {
+                if (m_right != nullptr) {
                     // perform operation
                     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
                     visitor->GetCompilationUnit()->GetInstructionStream() <<
                         Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
                 }
             }
-            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+            visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();*/
         } else if (m_op->GetType() == LOGICAL) {
             std::shared_ptr<AstExpression> first = nullptr;
             std::shared_ptr<AstExpression> second = nullptr;
+
+            AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
+            AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
 
             if (left_as_binop == nullptr && right_as_binop != nullptr) {
                 first = m_right;
@@ -567,7 +571,10 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                     break;
             }
 
-            if (m_right) {
+            AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(m_left.get());
+            AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(m_right.get());
+
+            if (m_right != nullptr) {
                 uint8_t r0, r1;
 
                 StaticObject true_label;
@@ -710,7 +717,7 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                         break;
                 }
 
-                // load right-hand side into register 0
+                /*// load right-hand side into register 0
                 m_right->Build(visitor, mod);
                 visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
@@ -722,7 +729,9 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
 
                 // perform operation
                 visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+                    Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);*/
+
+                Compiler::BuildBinOp(opcode, visitor, mod, info);
             }
 
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -760,7 +769,6 @@ void AstBinaryExpression::Build(AstVisitor *visitor, Module *mod)
                 left_as_array->SetAccessMode(ACCESS_MODE_STORE);
                 left_as_array->Build(visitor, mod);
             }*/
-
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         }
     }

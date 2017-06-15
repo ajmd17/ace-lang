@@ -49,27 +49,48 @@ Array &Array::operator=(const Array &other)
     return *this;
 }
 
+void Array::Resize(size_t capacity)
+{
+    // delete and copy all over again
+    m_capacity = capacity;
+    Value *new_buffer = new Value[m_capacity];
+    // copy all objects into new buffer
+    for (size_t i = 0; i < m_size; i++) {
+        new_buffer[i] = m_buffer[i];
+    }
+    // delete old buffer
+    if (m_buffer != nullptr) {
+        delete[] m_buffer;
+    }
+    // set internal buffer to the new one
+    m_buffer = new_buffer;
+}
+
 void Array::Push(const Value &value)
 {
     size_t index = m_size;
     if (index >= m_capacity) {
-        // delete and copy all over again
-        m_capacity = 1 << (unsigned int)std::ceil(std::log(m_size + 1) / std::log(2.0));
-        Value *new_buffer = new Value[m_capacity];
-        // copy all objects into new buffer
-        for (size_t i = 0; i < m_size; i++) {
-            new_buffer[i] = m_buffer[i];
-        }
-        // delete old buffer
-        if (m_buffer != nullptr) {
-            delete[] m_buffer;
-        }
-        // set internal buffer to the new one
-        m_buffer = new_buffer;
+        Resize((unsigned int)std::ceil(std::log(m_size + 1) / std::log(2.0)));
     }
     // set item at index
     m_buffer[index] = value;
     m_size++;
+}
+
+void Array::PushMany(size_t n, Value *values)
+{
+    size_t index = m_size;
+    if (index + n - 1 >= m_capacity) {
+        // delete and copy all over again
+        Resize(1 << (unsigned int)std::ceil(std::log(m_size + n) / std::log(2.0)));
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        // set item at index
+        m_buffer[index + i] = values[i];
+    }
+
+    m_size += n;
 }
 
 void Array::PushMany(size_t n, Value **values)
@@ -77,18 +98,7 @@ void Array::PushMany(size_t n, Value **values)
     size_t index = m_size;
     if (index + n - 1 >= m_capacity) {
         // delete and copy all over again
-        m_capacity = 1 << (unsigned int)std::ceil(std::log(m_size + n) / std::log(2.0));
-        Value *new_buffer = new Value[m_capacity];
-        // copy all objects into new buffer
-        for (size_t i = 0; i < m_size; i++) {
-            new_buffer[i] = m_buffer[i];
-        }
-        // delete old buffer
-        if (m_buffer != nullptr) {
-            delete[] m_buffer;
-        }
-        // set internal buffer to the new one
-        m_buffer = new_buffer;
+        Resize(1 << (unsigned int)std::ceil(std::log(m_size + n) / std::log(2.0)));
     }
 
     for (size_t i = 0; i < n; i++) {

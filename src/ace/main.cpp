@@ -73,8 +73,7 @@ void Events_call_action(ace::sdk::Params params)
     vm::Exception ex("call_action() expects an Object or Function as the first argument");
     vm::Exception ex1("Each item in event array should be of type Array");
 
-    if (value_ptr->m_type == vm::Value::FUNCTION &&
-       (value_ptr->m_value.func.m_flags & FunctionFlags::GENERATOR)) {
+    if (value_ptr->m_type == vm::Value::FUNCTION && (value_ptr->m_value.func.m_flags & FunctionFlags::GENERATOR)) {
         // if the key is a generator, it should look like this internally:
         /*
             () {
@@ -84,16 +83,50 @@ void Events_call_action(ace::sdk::Params params)
                 }
             }
         */
+        
+
         // so we should invoke the object which will return the nested closure,
         // and pass our found handler to it (at the end of this function)
         // as `callback`
         std::swap(*target_ptr, *value_ptr);
-    } else if (value_ptr->m_type == vm::Value::HEAP_POINTER &&
-               value_ptr->m_value.ptr != nullptr) {
+    } else if (value_ptr->m_type == vm::Value::HEAP_POINTER && value_ptr->m_value.ptr != nullptr) {
         if (vm::Object *object = value_ptr->m_value.ptr->GetPointer<vm::Object>()) {
             if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
-                if (member->value.m_type == vm::Value::FUNCTION &&
-                   (member->value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
+                if (member->value.m_type == vm::Value::FUNCTION && (member->value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
+
+                    
+                    // keep track of function depth so we can
+                    // quit the thread when the function returns
+                    const int func_depth_start = params.handler->thread->m_func_depth;
+
+                    params.handler->thread->GetStack().Push(*value_ptr);
+                    
+                    // call the generator function
+                    vm::VM::Invoke(
+                        params.handler,
+                        member->value,
+                        1
+                    );
+
+                    while (!params.handler->bs->Eof() && params.handler->state->good && (params.handler->thread->m_func_depth - func_depth_start)) {
+                        uint8_t code;
+                        params.handler->bs->Read(&code, 1);
+
+                        utf::cout << "pos : " << params.handler->bs->Position() << "\n";
+                        utf::cout << "code : " << (int)code << "\n";
+
+                        params.handler->state->m_vm->HandleInstruction(
+                            params.handler,
+                            code
+                        );
+                        utf::cout << "next\n";
+                    }
+
+                    params.handler->thread->GetStack().Pop();
+
+                    utf::cout << "!res : " << params.handler->thread->GetRegisters()[0].ToString() << "\n";
+                    
+
                     // value is a generator, so swap.
                     std::swap(*target_ptr, *value_ptr);
                 }
@@ -109,7 +142,6 @@ void Events_call_action(ace::sdk::Params params)
 
             // lookup '$events' member
             if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
-
                 if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$events"))) {
                     // $events member found
                     if (member->value.m_type != vm::Value::ValueType::HEAP_POINTER) {
@@ -230,13 +262,6 @@ void Events_call_action(ace::sdk::Params params)
                     }
                 }
             }
-        
-        return_null_handler:
-            // not found, return null
-            vm::Value res;
-            res.m_type = vm::Value::HEAP_POINTER;
-            res.m_value.ptr = nullptr;
-            ACE_RETURN(res);
         }
         case vm::Value::FUNCTION:
             // fallthrough
@@ -250,11 +275,15 @@ void Events_call_action(ace::sdk::Params params)
             );
             return;
         default:
-            params.handler->state->ThrowException(
-                params.handler->thread,
-                ex
-            );
+            break;
     }
+
+return_null_handler:
+    // not found, return null
+    vm::Value res;
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = nullptr;
+    ACE_RETURN(res);
 }
 
 void Events_get_action_handler(ace::sdk::Params params)
@@ -451,14 +480,18 @@ void Runtime_typeof(ace::sdk::Params params)
     ACE_CHECK_ARGS(==, 1);
 
     // create heap value for string
-    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    /*vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
     ASSERT(ptr != nullptr);
     ptr->Assign(utf::Utf8String(params.args[0]->GetTypeString()));
 
     vm::Value res;
     // assign register value to the allocated object
     res.m_type = vm::Value::HEAP_POINTER;
-    res.m_value.ptr = ptr;
+    res.m_value.ptr = ptr;*/
+
+    vm::Value res;
+    res.m_type = vm::Value::CONST_STRING;
+    res.m_value.c_str = params.args[0]->GetTypeString();
 
     ACE_RETURN(res);
 }
@@ -573,6 +606,160 @@ void Runtime_load_function(ace::sdk::Params params)
     }
 }
 
+void Global_get_keys(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    // get value
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    // create array
+    vm::Array keys_arr;
+    
+    if (target_ptr->m_type == vm::Value::HEAP_POINTER && target_ptr->m_value.ptr != nullptr) {
+        if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+            ASSERT(object->GetTypePtr() != nullptr);
+
+            keys_arr.Resize(object->GetTypePtr()->GetSize());
+
+            for (size_t i = 0; i < object->GetTypePtr()->GetSize(); i++) {
+                vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+                ASSERT(ptr != nullptr);
+                ptr->Assign(utf::Utf8String(object->GetTypePtr()->GetNames()[i]));
+
+                vm::Value res;
+                res.m_type = vm::Value::HEAP_POINTER;
+                res.m_value.ptr = ptr;
+
+                keys_arr.Push(res);
+            }
+        }
+    }
+
+    // store in memory
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(keys_arr);
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
+static void PushObjectKeysToArray(ace::sdk::Params &params,
+    vm::Object *object, vm::Array *arr)
+{
+    ASSERT(arr != nullptr);
+
+    ASSERT(object->GetTypePtr() != nullptr);
+    //arr->Resize(object->GetTypePtr()->GetSize());
+
+    for (size_t i = 0; i < object->GetTypePtr()->GetSize(); i++) {
+        vm::Array member_arr(2);
+
+        vm::HeapValue *key_ptr = params.handler->state->HeapAlloc(params.handler->thread);
+        ASSERT(key_ptr != nullptr);
+        key_ptr->Assign(utf::Utf8String(object->GetTypePtr()->GetNames()[i]));
+
+        vm::Value key;
+        key.m_type = vm::Value::HEAP_POINTER;
+        key.m_value.ptr = key_ptr;
+
+        member_arr.AtIndex(0, key);
+        member_arr.AtIndex(1, object->GetMembers()[i].value);
+
+        vm::HeapValue *member_arr_ptr = params.handler->state->HeapAlloc(params.handler->thread);
+        ASSERT(member_arr_ptr != nullptr);
+        member_arr_ptr->Assign(member_arr);
+
+        vm::Value member_arr_value;
+        member_arr_value.m_type = vm::Value::HEAP_POINTER;
+        member_arr_value.m_value.ptr = member_arr_ptr;
+
+        arr->Push(member_arr_value);
+    }
+}
+
+void Global_to_multi_array(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    // get value
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    // create array
+    vm::Array res_arr;
+
+    // if there is 1 arg, transform the target
+    // an Object will be transformed to a 2d array of arrays containing keys and values
+    if (target_ptr->m_type == vm::Value::HEAP_POINTER && target_ptr->m_value.ptr != nullptr) {
+        if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+            PushObjectKeysToArray(params, object, &res_arr);
+        } else {
+            res_arr.Resize(1);
+            res_arr.PushMany(1, params.args);
+        }
+    } else {
+        res_arr.Resize(params.nargs);
+        res_arr.PushMany(params.nargs, params.args);
+    }
+
+    // store in memory
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(res_arr);
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
+void Global_to_array(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(>=, 2);
+
+    // get value
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    // create array
+    vm::Array res_arr;
+
+    // if there is 1 arg, transform the target
+    // an Object will be transformed to a 2d array of arrays containing keys and values
+    if (params.nargs == 1 && target_ptr->m_type == vm::Value::HEAP_POINTER && target_ptr->m_value.ptr != nullptr) {
+        if (vm::Array *array = target_ptr->m_value.ptr->GetPointer<vm::Array>()) {
+            ACE_RETURN(*target_ptr);
+        } else {
+            res_arr.Resize(1);
+            res_arr.PushMany(1, params.args);
+        }
+    } else {
+        res_arr.Resize(params.nargs);
+        res_arr.PushMany(params.nargs, params.args);
+    }
+    
+    // store in memory
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(res_arr);
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
 void Global_to_json(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
@@ -589,6 +776,69 @@ void Global_to_json(ace::sdk::Params params)
     vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
     ASSERT(ptr != nullptr);
     ptr->Assign(json_string);
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
+static void MergeIntoArray(ace::sdk::Params &params, vm::Array *res_arr)
+{
+    for (size_t i = 1; i < params.nargs; i++) {
+        ASSERT(params.args[i] != nullptr);
+        if (params.args[i]->m_type == vm::Value::HEAP_POINTER && params.args[i]->m_value.ptr != nullptr) {
+            if (vm::Array *array = params.args[i]->m_value.ptr->GetPointer<vm::Array>()) {
+                res_arr->PushMany(array->GetSize(), array->GetBuffer());
+            } else if (vm::Object *object = params.args[i]->m_value.ptr->GetPointer<vm::Object>()) {
+                // merge all keys and values into array
+                PushObjectKeysToArray(params, object, res_arr);
+            } else {
+                res_arr->PushMany(1, &params.args[i]);
+            }
+        } else {
+            res_arr->PushMany(1, &params.args[i]);
+        }
+    }
+}
+
+/**
+    TODO: Support Object merging.
+*/
+void Global_merge(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(>=, 2);
+
+    // get value
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+
+    vm::Array res_arr;
+    res_arr.Resize(params.nargs);
+
+    // if there is 1 arg, transform the target
+    // an Object will be transformed to a 2d array of arrays containing keys and values
+    if (target_ptr->m_type == vm::Value::HEAP_POINTER && target_ptr->m_value.ptr != nullptr) {
+        if (vm::Array *array = target_ptr->m_value.ptr->GetPointer<vm::Array>()) {
+            res_arr.PushMany(array->GetSize(), array->GetBuffer());
+        } else if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+            PushObjectKeysToArray(params, object, &res_arr);
+        } else {
+            res_arr.PushMany(1, params.args);
+        }
+    } else {
+        res_arr.PushMany(1, params.args);
+    }
+
+    MergeIntoArray(params, &res_arr);
+
+    // store in memory
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(res_arr);
 
     vm::Value res;
     // assign register value to the allocated object
@@ -1623,9 +1873,37 @@ void BuildLibraries(
                 }
             ) }
         }, Global_fmt)
+        .Function("get_keys", SymbolType::Builtin::ARRAY, {
+            { "object", SymbolType::Builtin::ANY }
+        }, Global_get_keys)
+        .Function("to_multi_array", SymbolType::Builtin::ARRAY, {
+            { "object", SymbolType::Builtin::ANY }
+        }, Global_to_multi_array)
+        .Function("to_array", SymbolType::Builtin::ARRAY, {
+            { "args", SymbolType::GenericInstance(
+                SymbolType::Builtin::VAR_ARGS,
+                GenericInstanceTypeInfo {
+                    {
+                        { "arg", SymbolType::Builtin::ANY }
+                    }
+                }
+            ) }
+        }, Global_to_array)
         .Function("to_json", SymbolType::Builtin::STRING, {
             { "object", SymbolType::Builtin::ANY }
         }, Global_to_json)
+        .Function("merge", SymbolType::Builtin::ANY, {
+            { "a", SymbolType::Builtin::ANY },
+            { "b", SymbolType::Builtin::ANY },
+            { "more", SymbolType::GenericInstance(
+                SymbolType::Builtin::VAR_ARGS,
+                GenericInstanceTypeInfo {
+                    {
+                        { "arg", SymbolType::Builtin::ANY }
+                    }
+                }
+            ) }
+        }, Global_merge)
         .Function("array_push", SymbolType::Builtin::ARRAY, {
             { "arr", SymbolType::Builtin::ARRAY },
             { "args", SymbolType::GenericInstance(

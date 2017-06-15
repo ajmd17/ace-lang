@@ -1,6 +1,7 @@
 #include <ace-c/Compiler.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstBinaryExpression.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/instructions.hpp>
@@ -383,6 +384,51 @@ void Compiler::LoadLeftAndStore(AstVisitor *visitor, Module *mod, Compiler::Expr
     visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
     // decrement stack size
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+}
+
+void Compiler::BuildBinOp(uint8_t opcode,
+    AstVisitor *visitor,
+    Module *mod,
+    Compiler::ExprInfo info)
+{
+    AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(info.left);
+    AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(info.right);
+
+    uint8_t rp;
+
+    if (left_as_binop == nullptr && right_as_binop != nullptr) {
+        // if the right hand side is a binary operation,
+        // we should build in the rhs first in order to
+        // transverse the parse tree.
+        Compiler::LoadRightThenLeft(visitor, mod, info);
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        visitor->GetCompilationUnit()->GetInstructionStream() <<
+            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+    } else if (info.right != nullptr && info.right->MayHaveSideEffects()) {
+        // lhs must be temporary stored on the stack,
+        // to avoid the rhs overwriting it.
+        if (info.left->MayHaveSideEffects()) {
+            Compiler::LoadLeftAndStore(visitor, mod, info);
+            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+        } else {
+            // left  doesn't have side effects,
+            // so just evaluate right without storing the lhs.
+            Compiler::LoadRightThenLeft(visitor, mod, info);
+            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+        }
+    } else {
+        Compiler::LoadLeftThenRight(visitor, mod, info);
+        if (info.right != nullptr) {
+            // perform operation
+            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+            visitor->GetCompilationUnit()->GetInstructionStream() <<
+                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+        }
+    }
 }
 
 void Compiler::PopStack(AstVisitor *visitor, int amt)

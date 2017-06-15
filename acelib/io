@@ -1,4 +1,4 @@
-// file io
+// file
 open: Function
 write: Function
 close: Function

@@ -449,9 +449,9 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
     } else {
         std::shared_ptr<AstExpression> expr = ParseExpression(false);
         
-        if (Match(TK_FAT_ARROW)) {
+        /*if (Match(TK_FAT_ARROW)) {
             expr = ParseActionExpression(expr);
-        }
+        }*/
 
         res = expr;
     }
@@ -533,7 +533,8 @@ std::shared_ptr<AstDirective> Parser::ParseDirective()
     return nullptr;
 }
 
-std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas)
+std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
+    bool override_fat_arrows)
 {
     Token token = m_token_stream->Peek();
     
@@ -620,13 +621,12 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas)
         return nullptr;
     }
 
-
-
     while (expr != nullptr &&
            (Match(TK_DOT) ||
             Match(TK_OPEN_BRACKET) ||
             Match(TK_OPEN_PARENTH) ||
             (!override_commas && Match(TK_COMMA)) ||
+            (!override_fat_arrows && Match(TK_FAT_ARROW)) ||
             MatchKeyword(Keyword_has)))
     {
         if (Match(TK_DOT)) {
@@ -637,6 +637,9 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas)
         }
         if (Match(TK_OPEN_PARENTH)) {
             expr = ParseCallExpression(expr);
+        }
+        if (!override_fat_arrows && Match(TK_FAT_ARROW)) {
+            expr = ParseActionExpression(expr);
         }
         if (!override_commas && Match(TK_COMMA)) {
             expr = ParseTupleExpression(expr);
@@ -873,7 +876,7 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
             }
         }
 
-        expr = ParseExpression(true);
+        expr = ParseExpression(true, true);
     }
 
     if (expr != nullptr) {
@@ -1090,7 +1093,7 @@ std::shared_ptr<AstActionExpression> Parser::ParseActionExpression(std::shared_p
         }
 
         if (Expect(TK_FAT_ARROW, true)) {
-            if (auto target = ParseExpression()) {
+            if (auto target = ParseExpression(true, true)) {
                 return std::shared_ptr<AstActionExpression>(new AstActionExpression(
                     actions,
                     target,
@@ -1355,9 +1358,10 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
     return nullptr;
 }
 
-std::shared_ptr<AstExpression> Parser::ParseExpression(bool override_commas)
+std::shared_ptr<AstExpression> Parser::ParseExpression(bool override_commas,
+    bool override_fat_arrows)
 {
-    if (auto term = ParseTerm(override_commas)) {
+    if (auto term = ParseTerm(override_commas, override_fat_arrows)) {
         if (Match(TK_OPERATOR, false)) {
             if (auto bin_expr = ParseBinaryExpression(0, term)) {
                 term = bin_expr;

@@ -86,7 +86,8 @@ private:
     std::shared_ptr<AstStatement> ParseStatement(bool top_level = false);
     std::shared_ptr<AstModuleDeclaration> ParseModuleDeclaration();
     std::shared_ptr<AstDirective> ParseDirective();
-    std::shared_ptr<AstExpression> ParseTerm(bool override_commas = false);
+    std::shared_ptr<AstExpression> ParseTerm(bool override_commas = false,
+        bool override_fat_arrows = false);
     std::shared_ptr<AstExpression> ParseParentheses();
     std::shared_ptr<AstInteger> ParseIntegerLiteral();
     std::shared_ptr<AstFloat> ParseFloatLiteral();
@@ -114,7 +115,8 @@ private:
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseUnaryExpression();
-    std::shared_ptr<AstExpression> ParseExpression(bool override_commas = false);
+    std::shared_ptr<AstExpression> ParseExpression(bool override_commas = false,
+        bool override_fat_arrows = false);
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true,
         bool allow_keyword_names = false,

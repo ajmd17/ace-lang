@@ -88,13 +88,20 @@ void AstModuleImport::Visit(AstVisitor *visitor, Module *mod)
         opened = true;
     }
 
+    // do not pull module into scope for single imports
+    // i.e `import range` will just import the file
+    if (first->GetParts().empty()) {
+        first->SetPullInModules(false);
+    }
+
     // if this is not a direct import (i.e `import range`),
     // we will allow duplicates in imports like `import range::{_Detail_}`
     // and we won't import the 'range' module again
     if (first->GetParts().empty() || !opened) {
         // find the folder which the current file is in
-        std::string current_dir;
         const size_t index = m_location.GetFileName().find_last_of("/\\");
+
+        std::string current_dir;
         if (index != std::string::npos) {
             current_dir = m_location.GetFileName().substr(0, index);
         }
@@ -148,18 +155,12 @@ void AstModuleImport::Visit(AstVisitor *visitor, Module *mod)
             }
         }
 
-        AstImport::PerformImport(
-            visitor,
-            mod,
-            found_path
-            //true,
-            //first->GetLeft()
-        );
-
-        // do not pull module into scope for single imports
-        // i.e `import range` will just import the file
-        if (first->GetParts().empty()) {
-            first->SetPullInModules(false);
+        if (opened) {
+            AstImport::PerformImport(
+                visitor,
+                mod,
+                found_path
+            );
         }
     }
 

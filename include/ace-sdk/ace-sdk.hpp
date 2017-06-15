@@ -80,6 +80,8 @@ struct Value {
 
         BOOLEAN,
 
+        CONST_STRING,
+
         HEAP_POINTER,
         FUNCTION,
         NATIVE_FUNCTION,
@@ -95,6 +97,8 @@ struct Value {
         double d;
 
         bool b;
+
+        const char *c_str;
 
         HeapValue *ptr;
 

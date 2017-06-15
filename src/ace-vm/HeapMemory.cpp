@@ -3,13 +3,13 @@
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
 #include <ace-vm/Value.hpp>
+#include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/TypeInfo.hpp>
-
-#include <common/utf8.hpp>
 
 #include <iostream>
 #include <iomanip>
 #include <bitset>
+#include <sstream>
 
 namespace ace {
 namespace vm {
@@ -25,42 +25,45 @@ std::ostream &operator<<(std::ostream &os, const Heap &heap)
     os << std::endl;
 
     HeapNode *tmp_head = heap.m_head;
-    while (tmp_head) {
+    while (tmp_head != nullptr) {
         os << std::setw(16) << (void*)tmp_head->value.GetId() << "| ";
         os << std::setw(8) << std::bitset<sizeof(tmp_head->value.GetFlags())>(tmp_head->value.GetFlags()) << "| ";
         os << std::setw(10);
 
         {
-            utf::Utf8String *str_ptr = nullptr;
-            Array *array_ptr = nullptr;
-            Object *obj_ptr = nullptr;
-            TypeInfo *type_info_ptr = nullptr;
+            union {
+                ImmutableString *str_ptr;
+                Array *array_ptr;
+                Object *obj_ptr;
+                TypeInfo *type_info_ptr;
+            } data;
             
             if (!tmp_head->value.GetId()) {
                 os << "NullType" << "| ";
 
                 os << std::setw(16);
                 os << "null";
-            } else if ((str_ptr = tmp_head->value.GetPointer<utf::Utf8String>()) != nullptr) {
+            } else if ((data.str_ptr = tmp_head->value.GetPointer<ImmutableString>()) != nullptr) {
                 os << "String" << "| ";
 
-                os << "\"" << *str_ptr << "\"" << std::setw(16);
-            } else if ((array_ptr = tmp_head->value.GetPointer<Array>()) != nullptr) {
+                os << "\"" << data.str_ptr->GetData() << "\"" << std::setw(16);
+            } else if ((data.array_ptr = tmp_head->value.GetPointer<Array>()) != nullptr) {
                 os << "Array" << "| ";
 
                 os << std::setw(16);
-                utf::Utf8String tmp_str(256);
-                array_ptr->GetRepresentation(tmp_str, false);
-                os << tmp_str;
-            } else if ((obj_ptr = tmp_head->value.GetPointer<Object>()) != nullptr) {
-                ASSERT(obj_ptr->GetTypePtr() != nullptr);
-                os << obj_ptr->GetTypePtr()->GetName() << "| ";
+                
+                std::stringstream ss;
+                data.array_ptr->GetRepresentation(ss, false);
+                os << ss.rdbuf();
+            } else if ((data.obj_ptr = tmp_head->value.GetPointer<Object>()) != nullptr) {
+                ASSERT(data.obj_ptr->GetTypePtr() != nullptr);
+                os << data.obj_ptr->GetTypePtr()->GetName() << "| ";
 
                 os << std::setw(16);
-                utf::Utf8String tmp_str(256);
-                obj_ptr->GetRepresentation(tmp_str, false);
-                os << tmp_str;
-            } else if ((type_info_ptr = tmp_head->value.GetPointer<TypeInfo>()) != nullptr) {
+                std::stringstream ss;
+                data.obj_ptr->GetRepresentation(ss, false);
+                os << ss.rdbuf();
+            } else if ((data.type_info_ptr = tmp_head->value.GetPointer<TypeInfo>()) != nullptr) {
                 os << "TypeInfo" << "| ";
 
                 os << std::setw(16);
@@ -74,12 +77,10 @@ std::ostream &operator<<(std::ostream &os, const Heap &heap)
         }
 
         os << std::endl;
-        /*os  << tmp_head->value.GetId() << '\t'
-            << tmp_head->value.GetFlags() << '\t'
-            << '\n';*/
 
         tmp_head = tmp_head->before;
     }
+
     return os;
 }
 

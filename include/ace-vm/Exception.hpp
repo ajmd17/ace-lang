@@ -8,10 +8,11 @@ namespace vm {
 
 class Exception {
 public:
-    Exception(const utf::Utf8String &str);
+    Exception(const char *str);
     Exception(const Exception &other);
+    ~Exception();
 
-    inline const utf::Utf8String &ToString() const { return m_str; }
+    inline const char *ToString() const { return m_str; }
 
     static Exception InvalidComparisonException(const char *left_type_str, const char *right_type_str);
     static Exception InvalidOperationException(const char *op_name,
@@ -31,7 +32,7 @@ public:
     static Exception LibraryFunctionLoadException(const char *func_name);
 
 private:
-    const utf::Utf8String m_str;
+    char *m_str;
 };
 
 } // namespace vm

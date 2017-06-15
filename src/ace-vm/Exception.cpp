@@ -3,17 +3,27 @@
 namespace ace {
 namespace vm {
 
-Exception::Exception(const utf::Utf8String &str)
-    : m_str(str)
+Exception::Exception(const char *str)
 {
+    const size_t len = std::strlen(str);
+    m_str = new char[len + 1];
+    std::strcpy(m_str, str);
 }
 
 Exception::Exception(const Exception &other)
-    : m_str(other.m_str)
 {
+    const size_t len = std::strlen(other.m_str);
+    m_str = new char[len + 1];
+    std::strcpy(m_str, other.m_str);
 }
 
-Exception Exception::InvalidComparisonException(const char *left_type_str, const char *right_type_str)
+Exception::~Exception()
+{
+    delete[] m_str;
+}
+
+Exception Exception::InvalidComparisonException(const char *left_type_str,
+    const char *right_type_str)
 {
     char buffer[256];
     std::snprintf(
@@ -23,10 +33,12 @@ Exception Exception::InvalidComparisonException(const char *left_type_str, const
         left_type_str,
         right_type_str
     );
-    return Exception(utf::Utf8String(buffer));
+    return Exception(buffer);
 }
 
-Exception Exception::InvalidOperationException(const char *op_name, const char *left_type_str, const char *right_type_str)
+Exception Exception::InvalidOperationException(const char *op_name,
+    const char *left_type_str,
+    const char *right_type_str)
 {
     char buffer[256];
     std::snprintf(
@@ -37,7 +49,7 @@ Exception Exception::InvalidOperationException(const char *op_name, const char *
         left_type_str,
         right_type_str
     );
-    return Exception(utf::Utf8String(buffer));
+    return Exception(buffer);
 }
 
 Exception Exception::InvalidOperationException(const char *op_name, const char *type_str)
@@ -50,7 +62,7 @@ Exception Exception::InvalidOperationException(const char *op_name, const char *
         op_name,
         type_str
     );
-    return Exception(utf::Utf8String(buffer));
+    return Exception(buffer);
 }
 
 Exception Exception::InvalidArgsException(int expected, int received, bool variadic)
@@ -61,64 +73,73 @@ Exception Exception::InvalidArgsException(int expected, int received, bool varia
     } else {
         std::sprintf(buffer, "Invalid arguments: expected %d, received %d", expected, received);
     }
-    return Exception(utf::Utf8String(buffer));
+    return Exception(buffer);
 }
 
 Exception Exception::InvalidArgsException(const char *expected_str, int received)
 {
     char buffer[256];
     std::sprintf(buffer, "Invalid arguments: expected %s, received %d", expected_str, received);
-    return Exception(utf::Utf8String(buffer));
+    return Exception(buffer);
 }
 
 Exception Exception::NullReferenceException()
 {
-    return Exception(utf::Utf8String("Null reference exception"));
+    return Exception("Null reference exception");
 }
 
 Exception Exception::DivisionByZeroException()
 {
-    return Exception(utf::Utf8String("Division by zero"));
+    return Exception("Division by zero");
 }
 
 Exception Exception::OutOfBoundsException()
 {
-    return Exception(utf::Utf8String("Index out of bounds of Array"));
+    return Exception("Index out of bounds of Array");
 }
 
 Exception Exception::MemberNotFoundException()
 {
-    return Exception(utf::Utf8String("Member not found"));
+    return Exception("Member not found");
 }
 
 Exception Exception::FileOpenException(const char *file_name)
 {
-    return Exception(utf::Utf8String("Failed to open file `") + file_name + "`");
+    char buffer[256];
+    std::sprintf(buffer, "Failed to open file `%s`", file_name);
+
+    return Exception(buffer);
 }
 
 Exception Exception::UnopenedFileWriteException()
 {
-    return Exception(utf::Utf8String("Attempted to write to an unopened file"));
+    return Exception("Attempted to write to an unopened file");
 }
 
 Exception Exception::UnopenedFileReadException()
 {
-    return Exception(utf::Utf8String("Attempted to read from an unopened file"));
+    return Exception("Attempted to read from an unopened file");
 }
 
 Exception Exception::UnopenedFileCloseException()
 {
-    return Exception(utf::Utf8String("Attempted to close an unopened file"));
+    return Exception("Attempted to close an unopened file");
 }
 
 Exception Exception::LibraryLoadException(const char *lib_name)
 {
-    return Exception(utf::Utf8String("Failed to load library `") + lib_name + "`");
+    char buffer[256];
+    std::snprintf(buffer, 256, "Failed to open library `%s`", lib_name);
+
+    return Exception(buffer);
 }
 
 Exception Exception::LibraryFunctionLoadException(const char *func_name)
 {
-    return Exception(utf::Utf8String("Failed to load library function `") + func_name + "`");
+    char buffer[256];
+    std::snprintf(buffer, 256, "Failed to open library function `%s`", func_name);
+
+    return Exception(buffer);
 }
 
 } // namespace vm

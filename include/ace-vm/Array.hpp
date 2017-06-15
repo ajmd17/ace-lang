@@ -4,7 +4,8 @@
 #include <ace-vm/Value.hpp>
 
 #include <common/my_assert.hpp>
-#include <common/utf8.hpp>
+
+#include <sstream>
 
 namespace ace {
 namespace vm {
@@ -30,7 +31,7 @@ public:
     void PushMany(size_t n, Value **values);
     void Pop();
 
-    void GetRepresentation(utf::Utf8String &out_str, bool add_type_name = true) const;
+    void GetRepresentation(std::stringstream &ss, bool add_type_name = true) const;
 
 private:
     size_t m_size;

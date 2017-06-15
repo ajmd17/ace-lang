@@ -1,6 +1,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/HeapValue.hpp>
 
 #include <common/my_assert.hpp>
@@ -11,6 +12,13 @@
 
 namespace ace {
 namespace vm {
+
+static const ImmutableString NULL_STRING = ImmutableString("null");
+
+static const ImmutableString BOOLEAN_STRINGS[2] = {
+    ImmutableString("false"),
+    ImmutableString("true")
+};
 
 /*Value::Value()
     : m_type(HEAP_POINTER)
@@ -64,7 +72,7 @@ const char *Value::GetTypeString() const
         case HEAP_POINTER: 
             if (!m_value.ptr) {
                 return "Null";
-            } else if (m_value.ptr->GetPointer<utf::Utf8String>()) {
+            } else if (m_value.ptr->GetPointer<ImmutableString>()) {
                 return "String";
             } else if (m_value.ptr->GetPointer<Array>()) {
                 return "Array";
@@ -84,146 +92,103 @@ const char *Value::GetTypeString() const
     }
 }
 
-utf::Utf8String Value::ToString() const
+ImmutableString Value::ToString() const
 {
-    const int buf_size = 256;
-    char buf[buf_size] = {'\0'};
-    int n = 0;
+    const size_t buf_size = 256;
+    char buf[buf_size] = {0};
 
     switch (m_type) {
         case Value::I32: {
-            n = snprintf(buf, buf_size, "%d", m_value.i32);
-            if (n >= buf_size) {
-                utf::Utf8String res((size_t)n);
-                snprintf(
-                    res.GetData(),
-                    n,
-                    "%d",
-                    m_value.i32
-                );
-                return res;
-            }
-            return utf::Utf8String(buf);
+            int n = snprintf(buf, buf_size, "%d", m_value.i32);
+            return ImmutableString(buf, n);
         }
-        case Value::I64:
-            n = snprintf(
+        case Value::I64: {
+            int n = snprintf(
                 buf,
                 buf_size,
                 "%" PRId64,
                 m_value.i64
             );
-            if (n >= buf_size) {
-                utf::Utf8String res((size_t)n);
-                snprintf(
-                    res.GetData(),
-                    n,
-                    "%" PRId64,
-                    m_value.i64
-                );
-                return res;
-            }
-            return utf::Utf8String(buf);
-        case Value::F32:
-            n = snprintf(
+            return ImmutableString(buf, n);
+        }
+        case Value::F32: {
+            int n = snprintf(
                 buf,
                 buf_size,
                 "%g",
                 m_value.f
             );
-            if (n >= buf_size) {
-                utf::Utf8String res((size_t)n);
-                snprintf(
-                    res.GetData(),
-                    n,
-                    "%g",
-                    m_value.f
-                );
-                return res;
-            }
-            return utf::Utf8String(buf);
-        case Value::F64:
-            n = snprintf(
+            return ImmutableString(buf, n);
+        }
+        case Value::F64: {
+            int n = snprintf(
                 buf,
                 buf_size,
                 "%g",
                 m_value.d
             );
-            if (n >= buf_size) {
-                utf::Utf8String res((size_t)n);
-                snprintf(
-                    res.GetData(),
-                    n,
-                    "%g",
-                    m_value.d
-                );
-                return res;
-            }
-            return utf::Utf8String(buf);
+            return ImmutableString(buf, n);
+        }
         case Value::BOOLEAN:
-            return utf::Utf8String(m_value.b ? "true" : "false");
-        case Value::CONST_STRING:
-            return utf::Utf8String(m_value.c_str);
-        case Value::HEAP_POINTER:
-        {
+            return BOOLEAN_STRINGS[m_value.b];
+        case Value::HEAP_POINTER: {
             if (!m_value.ptr) {
-                return utf::Utf8String("null");
-            } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
+                return NULL_STRING;
+            } else if (ImmutableString *string = m_value.ptr->GetPointer<ImmutableString>()) {
                 return *string;
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
-                utf::Utf8String res(256);
-                array->GetRepresentation(res, true);
-                return res;
+                std::stringstream ss;
+                array->GetRepresentation(ss, true);
+                const std::string &str = ss.str();
+                return ImmutableString(str.c_str());
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
-                utf::Utf8String res;
-                object->GetRepresentation(res, true);
-                return res;
+                std::stringstream ss;
+                object->GetRepresentation(ss, true);
+                const std::string &str = ss.str();
+                return ImmutableString(str.c_str());
             } else {
                 // return memory address as string
-                n = snprintf(buf, buf_size, "%p", (void*)m_value.ptr);
-                if (n >= buf_size) {
-                    utf::Utf8String res((size_t)n);
-                    snprintf(res.GetData(), n, "%p", (void*)m_value.ptr);
-                    return res;
-                }
-                return utf::Utf8String(buf);
+                int n = snprintf(buf, buf_size, "%p", (void*)m_value.ptr);
+                return ImmutableString(buf, n);
             }
 
             break;
         }
-        default: return GetTypeString();
+        default:
+            return ImmutableString(GetTypeString());
     }
 }
 
-void Value::ToRepresentation(utf::Utf8String &out_str, bool add_type_name) const
+void Value::ToRepresentation(std::stringstream &ss, bool add_type_name) const
 {
     switch (m_type) {
         case Value::HEAP_POINTER:
             if (!m_value.ptr) {
-                out_str += "null";
-            } else if (utf::Utf8String *string = m_value.ptr->GetPointer<utf::Utf8String>()) {
-                out_str += "\"";
-                out_str += *string;
-                out_str += "\"";
+                ss << "null";
+            } else if (ImmutableString *string = m_value.ptr->GetPointer<ImmutableString>()) {
+                ss << '\"';
+                ss << string->GetData();
+                ss << '\"';
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
-                array->GetRepresentation(out_str, add_type_name);
+                array->GetRepresentation(ss, add_type_name);
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
-                object->GetRepresentation(out_str, add_type_name);
+                object->GetRepresentation(ss, add_type_name);
             } else {
                 if (add_type_name) {
-                    out_str += GetTypeString();
-                    out_str += "(";
+                    ss << GetTypeString();
+                    ss << '(';
                 }
                 
-                out_str += ToString();
+                ss << ToString().GetData();
 
                 if (add_type_name) {
-                    out_str += ")";
+                    ss << ')';
                 }
             }
 
             break;
         default:
-            out_str += ToString();
+            ss << ToString().GetData();
     }
 }
 

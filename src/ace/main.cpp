@@ -29,6 +29,7 @@
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 
@@ -124,7 +125,7 @@ void Events_call_action(ace::sdk::Params params)
 
                     params.handler->thread->GetStack().Pop();
 
-                    utf::cout << "!res : " << params.handler->thread->GetRegisters()[0].ToString() << "\n";
+                    utf::cout << "!res : " << params.handler->thread->GetRegisters()[0].ToString().GetData() << "\n";
                     
 
                     // value is a generator, so swap.
@@ -479,16 +480,6 @@ void Runtime_typeof(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
 
-    // create heap value for string
-    /*vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
-    ASSERT(ptr != nullptr);
-    ptr->Assign(utf::Utf8String(params.args[0]->GetTypeString()));
-
-    vm::Value res;
-    // assign register value to the allocated object
-    res.m_type = vm::Value::HEAP_POINTER;
-    res.m_value.ptr = ptr;*/
-
     vm::Value res;
     res.m_type = vm::Value::CONST_STRING;
     res.m_value.c_str = params.args[0]->GetTypeString();
@@ -503,7 +494,7 @@ void Runtime_load_library(ace::sdk::Params params)
     vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
-    vm::Exception e = vm::Exception(utf::Utf8String("load_library() expects a String as the first argument"));
+    vm::Exception e("load_library() expects a String as the first argument");
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (target_ptr->GetValue().ptr == nullptr) {
@@ -511,25 +502,25 @@ void Runtime_load_library(ace::sdk::Params params)
                 params.handler->thread,
                 vm::Exception::NullReferenceException()
             );
-        } else if (utf::Utf8String *strptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
+        } else if (vm::ImmutableString *strptr = target_ptr->GetValue().ptr->GetPointer<vm::ImmutableString>()) {
             // load library from string
-            utf::Utf8String full_path;
+            std::string full_path;
 
             if (strptr->GetLength() > 0 && strptr->GetData()[0] == '/') {
-                full_path = *strptr;
+                full_path.assign(strptr->GetData());
             } else {
-                full_path = utf::Utf8String(exec_path.c_str()) + *strptr;
+                full_path.assign(exec_path).append(strptr->GetData());
             }
 
-            full_path += "." ACE_DYLIB_EXT;
+            full_path.append("." ACE_DYLIB_EXT);
             
-            Library lib = Runtime::Load(full_path.GetData());
+            Library lib = Runtime::Load(full_path.c_str());
 
             if (lib.GetHandle() == nullptr) {
                 // could not load library
                 params.handler->state->ThrowException(
                     params.handler->thread,
-                    vm::Exception::LibraryLoadException(full_path.GetData())
+                    vm::Exception::LibraryLoadException(full_path.c_str())
                 );
             } else {
                 // store the library in a variable
@@ -565,10 +556,10 @@ void Runtime_load_function(ace::sdk::Params params)
     vm::Value *arg1 = params.args[1];
     ASSERT(arg1 != nullptr);
 
-    vm::Exception e = vm::Exception(utf::Utf8String("load_function() expects arguments of type Library and String"));
+    vm::Exception e("load_function() expects arguments of type Library and String");
 
     Library *lib_ptr = nullptr;
-    utf::Utf8String *str_ptr = nullptr;
+    vm::ImmutableString *str_ptr = nullptr;
 
     if (arg0->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (arg0->GetValue().ptr == nullptr) {
@@ -578,12 +569,15 @@ void Runtime_load_function(ace::sdk::Params params)
         } else {
             if (arg1->GetType() == vm::Value::ValueType::HEAP_POINTER) {
                 if (arg1->GetValue().ptr == nullptr) {
-                    params.handler->state->ThrowException(params.handler->thread, vm::Exception::NullReferenceException());
-                } else if ((str_ptr = arg1->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
+                    params.handler->state->ThrowException(
+                        params.handler->thread,
+                        vm::Exception::NullReferenceException()
+                    );
+                } else if ((str_ptr = arg1->GetValue().ptr->GetPointer<vm::ImmutableString>()) == nullptr) {
                     params.handler->state->ThrowException(params.handler->thread, e);
                 } else {
-                    auto func = lib_ptr->GetFunction(str_ptr->GetData());
-                    if (!func) {
+                    NativeFunctionPtr_t func = lib_ptr->GetFunction(str_ptr->GetData());
+                    if (func == nullptr) {
                         // could not load function from the library
                         params.handler->state->ThrowException(
                             params.handler->thread,
@@ -626,7 +620,7 @@ void Global_get_keys(ace::sdk::Params params)
             for (size_t i = 0; i < object->GetTypePtr()->GetSize(); i++) {
                 vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
                 ASSERT(ptr != nullptr);
-                ptr->Assign(utf::Utf8String(object->GetTypePtr()->GetNames()[i]));
+                ptr->Assign(vm::ImmutableString(object->GetTypePtr()->GetNames()[i]));
 
                 vm::Value res;
                 res.m_type = vm::Value::HEAP_POINTER;
@@ -663,7 +657,7 @@ static void PushObjectKeysToArray(ace::sdk::Params &params,
 
         vm::HeapValue *key_ptr = params.handler->state->HeapAlloc(params.handler->thread);
         ASSERT(key_ptr != nullptr);
-        key_ptr->Assign(utf::Utf8String(object->GetTypePtr()->GetNames()[i]));
+        key_ptr->Assign(vm::ImmutableString(object->GetTypePtr()->GetNames()[i]));
 
         vm::Value key;
         key.m_type = vm::Value::HEAP_POINTER;
@@ -769,13 +763,15 @@ void Global_to_json(ace::sdk::Params params)
     ASSERT(target_ptr != nullptr);
 
     // convert to json string
-    utf::Utf8String json_string(256);
-    target_ptr->ToRepresentation(json_string, false /* do not add type names */);
+    std::stringstream ss;
+    target_ptr->ToRepresentation(ss, false /* do not add type names */);
+
+    const std::string &str = ss.str();
 
     // store in memory
     vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
     ASSERT(ptr != nullptr);
-    ptr->Assign(json_string);
+    ptr->Assign(vm::ImmutableString(str.data()));
 
     vm::Value res;
     // assign register value to the allocated object
@@ -856,7 +852,7 @@ void Global_decompile(ace::sdk::Params params)
     vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
-    utf::Utf8String bytecode_str;
+    std::string bytecode_str;
 
     if (target_ptr->m_type != vm::Value::FUNCTION) {
         if (target_ptr->m_type == vm::Value::NATIVE_FUNCTION) {
@@ -916,7 +912,7 @@ void Global_decompile(ace::sdk::Params params)
     // create heap value for string
     vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
     ASSERT(ptr != nullptr);
-    ptr->Assign(bytecode_str);
+    ptr->Assign(vm::ImmutableString(bytecode_str.data()));
 
     vm::Value res;
     // assign register value to the allocated object
@@ -933,13 +929,13 @@ void Global_prompt(ace::sdk::Params params)
     vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
-    vm::Exception e = vm::Exception(utf::Utf8String("prompt() expects a String as the first argument"));
+    vm::Exception e("prompt() expects a String as the first argument");
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (target_ptr->GetValue().ptr == nullptr) {
             params.handler->state->ThrowException(params.handler->thread, vm::Exception::NullReferenceException());
-        } else if (utf::Utf8String *str_ptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
-            utf::cout << (*str_ptr) << ' ';
+        } else if (vm::ImmutableString *string = target_ptr->GetValue().ptr->GetPointer<vm::ImmutableString>()) {
+            utf::cout << string->GetData() << ' ';
 
             // read input...
             std::string line;
@@ -948,7 +944,7 @@ void Global_prompt(ace::sdk::Params params)
                 vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
                 ASSERT(ptr != nullptr);
                 // assign it to the formatted string
-                ptr->Assign(utf::Utf8String(line.data()));
+                ptr->Assign(vm::ImmutableString(line.data()));
 
                 vm::Value res;
                 // assign register value to the allocated object
@@ -995,21 +991,23 @@ void Global_fmt(ace::sdk::Params params)
     vm::Value *target_ptr = params.args[0];
     ASSERT(target_ptr != nullptr);
 
-    vm::Exception e = vm::Exception(utf::Utf8String("fmt() expects a String as the first argument"));
+    vm::Exception e("fmt() expects a String as the first argument");
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         if (target_ptr->GetValue().ptr == nullptr) {
             params.handler->state->ThrowException(params.handler->thread, vm::Exception::NullReferenceException());
-        } else if (utf::Utf8String *str_ptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) {
+        } else if (vm::ImmutableString *str_ptr = target_ptr->GetValue().ptr->GetPointer<vm::ImmutableString>()) {
             // scan through string and merge each argument where there is a '%'
             const size_t original_length = str_ptr->GetLength();
-            utf::Utf8String result_string(original_length);
+            
+            std::string result_string;
+            result_string.reserve(original_length);
 
             const char *original_data = str_ptr->GetData();
             ASSERT(original_data != nullptr);
 
             const int buffer_size = 256;
-            char buffer[buffer_size + 1] = {'\0'};
+            char buffer[buffer_size + 1] = {0};
 
             // number of '%' characters handled
             int num_fmts = 0;
@@ -1026,7 +1024,9 @@ void Global_fmt(ace::sdk::Params params)
                     buffer_idx = 0;
                     buffer[0] = '\0';
 
-                    result_string += params.args[++num_fmts]->ToString();
+                    vm::ImmutableString str = params.args[++num_fmts]->ToString();
+
+                    result_string.append(str.GetData());
                 } else {
                     buffer[buffer_idx] = original_data[i];
 
@@ -1048,7 +1048,7 @@ void Global_fmt(ace::sdk::Params params)
             vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
             ASSERT(ptr != nullptr);
             // assign it to the formatted string
-            ptr->Assign(result_string);
+            ptr->Assign(vm::ImmutableString(result_string.data()));
 
             vm::Value res;
             // assign register value to the allocated object
@@ -1078,13 +1078,16 @@ void Global_array_push(ace::sdk::Params params)
         buffer_size,
         "array_push() requires an Array"
     );
-    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
+    vm::Exception e(buffer);
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         vm::Array *array_ptr = nullptr;
         
         if (target_ptr->GetValue().ptr == nullptr) {
-            params.handler->state->ThrowException(params.handler->thread, vm::Exception::NullReferenceException());
+            params.handler->state->ThrowException(
+                params.handler->thread,
+                vm::Exception::NullReferenceException()
+            );
         } else if ((array_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
             array_ptr->PushMany(params.nargs - 1, &params.args[1]);
         } else {
@@ -1115,25 +1118,30 @@ void Global_length(ace::sdk::Params params)
         "length() is undefined for type '%s'",
         target_ptr->GetTypeString()
     );
-    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
+    vm::Exception e(buffer);
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
-        utf::Utf8String *str_ptr = nullptr;
-        vm::Array *array_ptr = nullptr;
-        vm::Object *obj_ptr = nullptr;
+        union {
+            vm::ImmutableString *str_ptr;
+            vm::Array *array_ptr;
+            vm::Object *obj_ptr;
+        } data;
         
         if (target_ptr->GetValue().ptr == nullptr) {
-            params.handler->state->ThrowException(params.handler->thread, vm::Exception::NullReferenceException());
-        } else if ((str_ptr = target_ptr->GetValue().ptr->GetPointer<utf::Utf8String>()) != nullptr) {
+            params.handler->state->ThrowException(
+                params.handler->thread,
+                vm::Exception::NullReferenceException()
+            );
+        } else if ((data.str_ptr = target_ptr->GetValue().ptr->GetPointer<vm::ImmutableString>()) != nullptr) {
             // get length of string
-            len = str_ptr->GetLength();
-        } else if ((array_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
+            len = data.str_ptr->GetLength();
+        } else if ((data.array_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
             // get length of array
-            len = array_ptr->GetSize();
-        } else if ((obj_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Object>()) != nullptr) {
+            len = data.array_ptr->GetSize();
+        } else if ((data.obj_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Object>()) != nullptr) {
             // get number of members in object
             // first, get type
-            const vm::TypeInfo *type_ptr = obj_ptr->GetTypePtr();
+            const vm::TypeInfo *type_ptr = data.obj_ptr->GetTypePtr();
             ASSERT(type_ptr != nullptr);
             
             len = type_ptr->GetSize();
@@ -1181,9 +1189,13 @@ void Global_spawn_thread(ace::sdk::Params params)
 
     const int buffer_size = 256;
     char buffer[buffer_size];
-    std::snprintf(buffer, buffer_size, "spawn_thread() is undefined for type '%s'",
-        target_ptr->GetTypeString());
-    vm::Exception e = vm::Exception(utf::Utf8String(buffer));
+    std::snprintf(
+        buffer,
+        buffer_size,
+        "spawn_thread() is undefined for type '%s'",
+        target_ptr->GetTypeString()
+    );
+    vm::Exception e(buffer);
 
     // the position of the bytecode stream before thread execution
     const size_t pos = params.handler->bs->Position();
@@ -1818,10 +1830,7 @@ void BuildLibraries(
                 ASSERT(hv != nullptr);
 
                 // create string and set to to hold the name
-                utf::Utf8String res = Runtime::OS_NAME;
-
-                // assign heap value to array
-                hv->Assign(res);
+                hv->Assign(vm::ImmutableString(Runtime::OS_NAME));
 
                 // assign the out value to this
                 out->m_type = vm::Value::ValueType::HEAP_POINTER;

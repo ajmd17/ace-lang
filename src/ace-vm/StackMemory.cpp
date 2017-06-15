@@ -3,6 +3,7 @@
 #include <common/utf8.hpp>
 
 #include <iomanip>
+#include <sstream>
 
 namespace ace {
 namespace vm {
@@ -25,16 +26,17 @@ std::ostream &operator<<(std::ostream &os, const Stack &stack)
 
         if (value.GetType() == Value::ValueType::HEAP_POINTER) {
             //os << std::setw(17);
-            os << std::setw(18) << utf::Utf8String(value.GetTypeString()) + "*" << "| ";
+            os << std::setw(18) << value.GetTypeString() << "| ";
         } else {
             os << std::setw(18);
             os << value.GetTypeString() << "| ";
         }
 
         os << std::setw(16);
-        utf::Utf8String tmp_str(256);
-        value.ToRepresentation(tmp_str, false);
-        os << tmp_str;
+
+        std::stringstream ss;
+        value.ToRepresentation(ss, false);
+        os << ss.rdbuf();
 
         os << std::endl;
     }

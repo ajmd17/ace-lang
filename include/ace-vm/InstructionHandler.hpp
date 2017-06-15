@@ -7,10 +7,10 @@
 #include <ace-vm/HeapValue.hpp>
 #include <ace-vm/Array.hpp>
 #include <ace-vm/Object.hpp>
+#include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/TypeInfo.hpp>
 
 #include <common/instructions.hpp>
-#include <common/utf8.hpp>
 #include <common/my_assert.hpp>
 #include <common/typedefs.hpp>
 
@@ -38,7 +38,7 @@ struct InstructionHandler {
         // the value will be freed on
         // the destructor call of state->m_static_memory
         HeapValue *hv = new HeapValue();
-        hv->Assign(utf::Utf8String(str));
+        hv->Assign(ImmutableString(str));
 
         Value sv;
         sv.m_type = Value::HEAP_POINTER;
@@ -142,7 +142,7 @@ struct InstructionHandler {
         // allocate heap value
         HeapValue *hv = state->HeapAlloc(thread);
         if (hv != nullptr) {
-            hv->Assign(utf::Utf8String(str));
+            hv->Assign(ImmutableString(str));
 
             // assign register value to the allocated object
             Value &sv = thread->m_regs[reg];
@@ -213,7 +213,7 @@ struct InstructionHandler {
 
         state->ThrowException(
             thread,
-            Exception(utf::Utf8String("Not an Object"))
+            Exception("Not an Object")
         );
     }
 
@@ -272,7 +272,7 @@ struct InstructionHandler {
 
         union {
             aint64 index;
-            utf::Utf8String *str;
+            ImmutableString *str;
         } key;
 
         if (!thread->m_regs[index_reg].GetInteger(&key.index)) {
@@ -738,35 +738,6 @@ struct InstructionHandler {
             thread->m_regs.m_flags = (lhs->m_value.b == rhs->m_value.b)
                 ? EQUAL : ((lhs->m_value.b > rhs->m_value.b)
                 ? GREATER : NONE);
-        } else if (lhs->m_type == Value::CONST_STRING && rhs->m_type == Value::CONST_STRING) {
-            thread->m_regs.m_flags = std::strcmp(lhs->m_value.c_str, rhs->m_value.c_str) == 0
-                ? EQUAL : NONE;
-        } else if (lhs->m_type == Value::CONST_STRING && rhs->m_type == Value::HEAP_POINTER) {
-            if (utf::Utf8String *str = rhs->m_value.ptr->GetPointer<utf::Utf8String>()) {
-                thread->m_regs.m_flags = std::strcmp(lhs->m_value.c_str, str->GetData()) == 0
-                    ? EQUAL : NONE;
-            } else {
-                state->ThrowException(
-                    thread,
-                    Exception::InvalidComparisonException(
-                        lhs->GetTypeString(),
-                        rhs->GetTypeString()
-                    )
-                );
-            }
-        } else if (lhs->m_type == Value::HEAP_POINTER && rhs->m_type == Value::CONST_STRING) {
-            if (utf::Utf8String *str = lhs->m_value.ptr->GetPointer<utf::Utf8String>()) {
-                thread->m_regs.m_flags = std::strcmp(str->GetData(), rhs->m_value.c_str) == 0
-                    ? EQUAL : NONE;
-            } else {
-                state->ThrowException(
-                    thread,
-                    Exception::InvalidComparisonException(
-                        lhs->GetTypeString(),
-                        rhs->GetTypeString()
-                    )
-                );
-            }
         } else if (lhs->m_type == Value::HEAP_POINTER && rhs->m_type == Value::HEAP_POINTER) {
             int res = VM::CompareAsPointers(lhs, rhs);
             if (res != -1) {
@@ -818,8 +789,15 @@ struct InstructionHandler {
             thread->m_regs.m_flags = NONE;
         } else {
             char buffer[256];
-            std::sprintf(buffer, "cannot determine if type '%s' is non-zero", lhs->GetTypeString());
-            state->ThrowException(thread, Exception(utf::Utf8String(buffer)));
+            std::sprintf(
+                buffer,
+                "Cannot determine if type '%s' is non-zero",
+                lhs->GetTypeString()
+            );
+            state->ThrowException(
+                thread,
+                Exception(buffer)
+            );
         }
     }
 

@@ -3,12 +3,12 @@
 #include <ace-vm/HeapValue.hpp>
 #include <ace-vm/Array.hpp>
 #include <ace-vm/Object.hpp>
+#include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/TypeInfo.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 
 #include <common/typedefs.hpp>
 #include <common/instructions.hpp>
-#include <common/utf8.hpp>
 #include <common/hasher.hpp>
 #include <common/my_assert.hpp>
 
@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cinttypes>
 #include <mutex>
+#include <sstream>
 
 namespace ace {
 namespace vm {
@@ -68,22 +69,27 @@ void VM::Print(const Value &value)
             if (value.m_value.ptr == nullptr) {
                 // special case for null pointers
                 utf::fputs(UTF8_CSTR("null"), stdout);
-            } else if (utf::Utf8String *str = value.m_value.ptr->GetPointer<utf::Utf8String>()) {
+            } else if (ImmutableString *str = value.m_value.ptr->GetPointer<ImmutableString>()) {
                 // print string value
-                utf::cout << *str;
+                utf::cout << str->GetData();
             } else if (Array *array = value.m_value.ptr->GetPointer<Array>()) {
                 // print array list
-                const char sep_str[] = ", ";
-                const size_t sep_str_len = std::strlen(sep_str);
+                const char sep_str[3] = ", ";
+                const size_t sep_str_len = sizeof(sep_str) - 1;
 
                 int buffer_index = 1;
                 const int buffer_size = 256;
-                utf::Utf8String res("[", buffer_size);
+
+                std::string str;
+                str.reserve(buffer_size);
+
+                str.append("[");
 
                 // convert all array elements to string
                 const size_t size = array->GetSize();
                 for (size_t i = 0; i < size; i++) {
-                    utf::Utf8String item_str = array->AtIndex(i).ToString();
+                    ImmutableString item_str = array->AtIndex(i).ToString();
+
                     size_t len = item_str.GetLength();
 
                     const bool last = i != size - 1;
@@ -93,20 +99,21 @@ void VM::Print(const Value &value)
 
                     if (buffer_index + len < buffer_size - 5) {
                         buffer_index += len;
-                        res += item_str;
+                        str.append(item_str.GetData());
                         if (last) {
-                            res += sep_str;
+                            str.append(sep_str);
                         }
                     } else {
-                        res += "... ";
+                        str.append("... ");
                         break;
                     }
                 }
 
-                res += "]";
-                utf::cout << res;
+                str.append("]");
+                utf::cout << str;
             } else {
-                utf::cout << value.ToString();
+                ImmutableString str = value.ToString();
+                utf::cout << str.GetData();
             }
 
             break;

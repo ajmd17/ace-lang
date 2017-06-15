@@ -201,36 +201,36 @@ Object::~Object()
     delete[] m_members;
 }
 
-void Object::GetRepresentation(utf::Utf8String &out_str, bool add_type_name) const
+void Object::GetRepresentation(std::stringstream &ss, bool add_type_name) const
 {
     // get type
     ASSERT(m_type_ptr != nullptr);
 
-    size_t size = m_type_ptr->GetSize();
+    const size_t size = m_type_ptr->GetSize();
     ASSERT(size > 0);
 
     if (add_type_name) {
         // add the type name
-        out_str += m_type_ptr->GetName();
+        ss << m_type_ptr->GetName();
     }
 
-    out_str += "{";
+    ss << '{';
 
     for (size_t i = 0; i < size; i++) {
         vm::Member &mem = m_members[i];
 
-        out_str += "\"";
-        out_str += m_type_ptr->GetMemberName(i);
-        out_str += "\":";
+        ss << '\"';
+        ss << m_type_ptr->GetMemberName(i);
+        ss << "\":";
 
-        mem.value.ToRepresentation(out_str, add_type_name);
+        mem.value.ToRepresentation(ss, add_type_name);
 
         if (i != size - 1) {
-            out_str += ",";
+            ss << ',';
         }
     }
 
-    out_str += "}";
+    ss << '}';
 }
 
 } // namespace vm

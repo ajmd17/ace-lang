@@ -2,6 +2,7 @@
 #define ACE_SDK_HPP
 
 #include <stdint.h>
+#include <sstream>
 
 #ifndef __cplusplus
 #error Ace SDK requires a C++ compiler
@@ -32,11 +33,6 @@
         return; \
     } while (false)
 
-namespace utf {
-    // forward declaration
-    class Utf8String;
-} // namespace utf
-
 namespace ace {
 namespace sdk {
 
@@ -54,6 +50,8 @@ struct InstructionHandler;
 struct ExecutionThread;
 struct VMState;
 struct Value;
+
+class ImmutableString;
 
 }
 }
@@ -160,8 +158,8 @@ struct Value {
     void Mark();
 
     const char *GetTypeString() const;
-    utf::Utf8String ToString() const;
-    void ToRepresentation(utf::Utf8String &out_str,
+    ImmutableString ToString() const;
+    void ToRepresentation(std::stringstream &ss,
         bool add_type_name = true) const;
 };
 

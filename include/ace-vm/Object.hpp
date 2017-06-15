@@ -4,7 +4,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/TypeInfo.hpp>
 
-#include <common/utf8.hpp>
+#include <sstream>
 
 #include <cstdint>
 #include <cmath>
@@ -76,7 +76,7 @@ public:
     inline const Value &GetTypePtrValue() const
         { return m_type_ptr_value; }
     
-    void GetRepresentation(utf::Utf8String &out_str, bool add_type_name = true) const;
+    void GetRepresentation(std::stringstream &ss, bool add_type_name = true) const;
 
 private:
     TypeInfo *m_type_ptr;

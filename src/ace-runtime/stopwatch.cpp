@@ -28,7 +28,7 @@ ACE_FUNCTION(stopwatch_start)
     } else {
         params.handler->state->ThrowException(
             params.handler->thread,
-            vm::Exception(utf::Utf8String("failed to start stopwatch"))
+            vm::Exception("Failed to start stopwatch")
         );
     }
 }

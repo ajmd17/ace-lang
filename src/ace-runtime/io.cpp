@@ -3,6 +3,7 @@
 #include <ace-sdk/ace-sdk.hpp>
 
 #include <ace-vm/VMState.hpp>
+#include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 #include <ace-vm/Exception.hpp>
 
@@ -25,7 +26,7 @@ public:
     inline bool IsOpened() const
         { return m_ref_counter->m_file != nullptr; }
 
-    void Write(const utf::Utf8String &str);
+    void Write(const vm::ImmutableString &str);
     void Flush();
     void Close();
 
@@ -79,7 +80,7 @@ File &File::operator=(const File &other)
     return *this;
 }
 
-void File::Write(const utf::Utf8String &str)
+void File::Write(const vm::ImmutableString &str)
 {
     ASSERT(m_ref_counter != nullptr);
     ASSERT(m_ref_counter->m_file != nullptr);
@@ -121,10 +122,10 @@ ACE_FUNCTION(io_open) {
     ASSERT(arg0 != nullptr);
     ASSERT(arg1 != nullptr);
 
-    vm::Exception e = vm::Exception(utf::Utf8String("open() expects arguments of type String and String"));
+    vm::Exception e("open() expects arguments of type String and String");
 
-    utf::Utf8String *path_ptr = nullptr;
-    utf::Utf8String *mode_ptr = nullptr;
+    vm::ImmutableString *path_ptr = nullptr;
+    vm::ImmutableString *mode_ptr = nullptr;
 
     if (arg0->GetType() != vm::Value::ValueType::HEAP_POINTER) {
         state->ThrowException(thread, e);
@@ -134,7 +135,7 @@ ACE_FUNCTION(io_open) {
         state->ThrowException(thread, vm::Exception::NullReferenceException());
         return;
     }
-    if ((path_ptr = arg0->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
+    if ((path_ptr = arg0->GetValue().ptr->GetPointer<vm::ImmutableString>()) == nullptr) {
         state->ThrowException(thread, e);
         return;
     }
@@ -147,7 +148,7 @@ ACE_FUNCTION(io_open) {
         state->ThrowException(thread, vm::Exception::NullReferenceException());
         return;
     }
-    if ((mode_ptr = arg1->GetValue().ptr->GetPointer<utf::Utf8String>()) == nullptr) {
+    if ((mode_ptr = arg1->GetValue().ptr->GetPointer<vm::ImmutableString>()) == nullptr) {
         state->ThrowException(thread, e);
         return;
     }
@@ -192,7 +193,7 @@ ACE_FUNCTION(io_write) {
     vm::Value *arg0 = params.args[0];
     ASSERT(arg0 != nullptr);
 
-    vm::Exception e = vm::Exception(utf::Utf8String("write() expects arguments of type File and Any..."));
+    vm::Exception e("write() expects arguments of type File and Any...");
 
     io::File *file_ptr = nullptr;
 

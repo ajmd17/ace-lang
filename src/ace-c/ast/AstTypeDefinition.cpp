@@ -55,7 +55,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             ));
         } else {
             // open the scope for data members
-            mod->m_scopes.Open(Scope());
+            mod->m_scopes.Open(Scope(SCOPE_TYPE_TYPE_DEFINITION, 0));
 
             // handle generic parameter declarations
             std::vector<SymbolTypePtr_t> generic_param_types;

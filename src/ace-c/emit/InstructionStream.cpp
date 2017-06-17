@@ -4,9 +4,10 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
+#include <cstring>
 #include <algorithm>
 #include <iostream>
-#include <cstring>
+#include <sstream>
 
 std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
 {
@@ -188,40 +189,30 @@ InstructionStream::InstructionStream(const InstructionStream &other)
 {
 }
 
-size_t InstructionStream::Allot(const Instruction<> &instruction)
+int InstructionStream::FindStaticObject(const StaticObject &static_object) const
 {
-    size_t sz = 0;
-
-    for (const std::vector<char> &operand : instruction.m_data) {
-        sz += operand.size();
+    for (const StaticObject &so : m_static_objects) {
+        if (so == static_object) {
+            return so.m_id;
+        }
     }
-
-    m_position += sz;
-
-    size_t index = m_instruction_block.m_allotted.size();
-    m_instruction_block.m_allotted.push_back(sz);
-
-    return index;
+    // not found
+    return -1;
 }
 
-bool InstructionStream::Write(size_t allotted_index, const Instruction<> &instruction)
+void InstructionStream::Write(const InstructionBlock &block)
 {
-    if (allotted_index >= m_instruction_block.m_allotted.size()) {
-        return false;
-    }
+    std::stringbuf buf;
+    block.Build(buf);
 
-    size_t sz = 0;
-    for (const std::vector<char> &operand : instruction.m_data) {
-        sz += operand.size();
-    }
+    std::vector<char> data;
 
-    if (m_instruction_block.m_allotted[allotted_index] != sz) {
-        return false;
-    }
+    std::istreambuf_iterator<char> iter(&buf);
+    std::istreambuf_iterator<char> end;
 
-    m_data.push_back(instruction);
+    data.insert(data.end(), iter, end);
 
-    return true;
+    m_position += block.GetCurrentSize();
 }
 
 InstructionStream &InstructionStream::operator<<(const Instruction<> &instruction)

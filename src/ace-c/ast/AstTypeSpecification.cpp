@@ -67,9 +67,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 if (!m_generic_params.empty()) {
                     // look up generic instance to see if it's already been created
                     if (!(m_symbol_type = visitor->GetCompilationUnit()->
-                        GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types)))
-                    {
-
+                        GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types))) {
                         // nothing found from lookup,
                         // so create new generic instance
                         if (symbol_type->GetGenericInfo().m_num_parameters == -1 ||

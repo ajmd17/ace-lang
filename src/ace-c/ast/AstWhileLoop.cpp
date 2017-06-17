@@ -2,6 +2,7 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/emit/Instruction.hpp>
+#include <ace-c/emit/InstructionBlock.hpp>
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
@@ -9,6 +10,8 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
+
+#include <sstream>
 
 AstWhileLoop::AstWhileLoop(const std::shared_ptr<AstExpression> &conditional,
     const std::shared_ptr<AstBlock> &block,
@@ -42,6 +45,17 @@ void AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
 {
     int condition_is_true = m_conditional->IsTrue();
     if (condition_is_true == -1) {
+        InstructionObject<uint8_t, uint8_t, int32_t> test_iobj;
+
+        InstructionBlock block;
+        block.Allot(&test_iobj);
+
+        test_iobj.Set<0>('A');
+        test_iobj.Set<1>('B');
+        test_iobj.Set<2>(67);
+
+        visitor->GetCompilationUnit()->GetInstructionStream().Write(block);
+
         // the condition cannot be determined at compile time
         uint8_t rp;
 

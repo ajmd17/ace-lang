@@ -4,6 +4,7 @@
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstArgumentList.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstCallExpression.hpp>
 #include <ace-c/SymbolType.hpp>
 
 #include <string>
@@ -33,6 +34,7 @@ private:
 
     /** Set while analyzing */
     std::shared_ptr<AstExpression> m_object_value;
+    std::shared_ptr<AstCallExpression> m_constructor_call;
 
     inline Pointer<AstNewExpression> CloneImpl() const
     {

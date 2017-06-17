@@ -42,6 +42,10 @@ public:
         checking if the scope is nested within a function */
     bool IsInFunction();
 
+    /** Reverse iterate the scopes starting from the currently opened scope,
+        checking if the scope is nested within a type definition */
+    bool IsInTypeDefinition();
+
     /** Look up a child module of this module */
     Module *LookupNestedModule(const std::string &name);
 

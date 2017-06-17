@@ -2,6 +2,7 @@
 #define INSTRUCTION_STREAM_HPP
 
 #include <ace-c/emit/Instruction.hpp>
+#include <ace-c/emit/InstructionBlock.hpp>
 #include <ace-c/emit/StaticObject.hpp>
 
 #include <vector>
@@ -33,31 +34,12 @@ public:
 
     inline int NewStaticId() { return m_static_id++; }
 
-    inline void AddStaticObject(const StaticObject &static_object) { m_static_objects.push_back(static_object); }
+    inline void AddStaticObject(const StaticObject &static_object)
+        { m_static_objects.push_back(static_object); }
 
-    inline int FindStaticObject(const StaticObject &static_object) const
-    {
-        for (const StaticObject &so : m_static_objects) {
-            if (so == static_object) {
-                return so.m_id;
-            }
-        }
-        // not found
-        return -1;
-    }
+    int FindStaticObject(const StaticObject &static_object) const;
 
-    inline void BeginBlock()
-    {
-        m_instruction_block.m_allotted.clear();
-    }
-
-    inline void EndBlock()
-    {
-        m_instruction_block.m_allotted.clear();
-    }
-
-    size_t Allot(const Instruction<> &instruction);
-    bool Write(size_t allotted_index, const Instruction<> &instruction);
+    void Write(const InstructionBlock &block);
 
     InstructionStream &operator<<(const Instruction<> &instruction);
 

@@ -222,7 +222,7 @@ void Events_call_action(ace::sdk::Params params)
                                     } else if (hv_a == nullptr || hv_b == nullptr) {
                                         // one is null... not same
                                         // continue.
-                                    } else if (TypeInfo *type_ptr = type_sv.m_value.ptr->GetPointer<TypeInfo>();) {
+                                    } else if (vm::TypeInfo *type_ptr = hv_a->GetPointer<vm::TypeInfo>()) {
                                         // left is a TypeInfo object, satisfies if type holds
                                     } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
                                         if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {

@@ -14,6 +14,7 @@ typedef std::pair<SymbolTypePtr_t, SourceLocation> ReturnType_t;
 enum ScopeType {
     SCOPE_TYPE_NORMAL,
     SCOPE_TYPE_FUNCTION,
+    SCOPE_TYPE_TYPE_DEFINITION,
     SCOPE_TYPE_LOOP
 };
 

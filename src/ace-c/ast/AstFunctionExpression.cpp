@@ -254,12 +254,13 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             name,
             m_location
         ));
-
-        closure_obj_members.push_back({
-            ident->GetName(),
-            ident->GetSymbolType(),
-            current_value
-        });
+        
+        SymbolMember_t closure_member;
+        std::get<0>(closure_member) = ident->GetName();
+        std::get<1>(closure_member) = ident->GetSymbolType();
+        std::get<2>(closure_member) = current_value;
+        
+        closure_obj_members.push_back(closure_member);
     }
 
     // close parameter scope
@@ -301,10 +302,11 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     );
 
     if (m_is_closure) {
-        closure_obj_members.push_back({
-            "$invoke",
-            m_symbol_type
-        });
+        SymbolMember_t closure_member;
+        std::get<0>(closure_member) = "$invoke";
+        std::get<1>(closure_member) = m_symbol_type;
+
+        closure_obj_members.push_back(closure_member);
 
         for (auto &member : closure_obj_members) {
             if (std::get<2>(member) != nullptr) {

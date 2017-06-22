@@ -90,7 +90,9 @@ void Events_call_action(ace::sdk::Params params)
         // so we should invoke the object which will return the nested closure,
         // and pass our found handler to it (at the end of this function)
         // as `callback`
-        std::swap(*target_ptr, *value_ptr);
+        ace::vm::Value tmp(*target_ptr);
+        *target_ptr = *value_ptr;
+        *value_ptr = tmp;
     } else if (value_ptr->m_type == vm::Value::HEAP_POINTER && value_ptr->m_value.ptr != nullptr) {
         if (vm::Object *object = value_ptr->m_value.ptr->GetPointer<vm::Object>()) {
             if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
@@ -128,9 +130,10 @@ void Events_call_action(ace::sdk::Params params)
 
                     utf::cout << "!res : " << params.handler->thread->GetRegisters()[0].ToString().GetData() << "\n";
                     
-
                     // value is a generator, so swap.
-                    std::swap(*target_ptr, *value_ptr);
+                    ace::vm::Value tmp(*target_ptr);
+                    *target_ptr = *value_ptr;
+                    *value_ptr = tmp;
                 }
             }
         }

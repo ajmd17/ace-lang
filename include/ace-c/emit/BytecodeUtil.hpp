@@ -12,11 +12,11 @@
 
 class BytecodeUtil {
 public:
-    template<typename T>
-    static std::unique_ptr<T> Make()
+    template<typename T, typename... Args>
+    static std::unique_ptr<T> Make(Args&&... args)
     {
         static_assert(std::is_base_of<Buildable, T>::value, "Must be a Buildable type.");
-        return std::unique_ptr<T>(new T());
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
 
     static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk)

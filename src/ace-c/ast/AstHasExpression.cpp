@@ -108,9 +108,7 @@ std::unique_ptr<Buildable> AstHasExpression::Build(AstVisitor *visitor, Module *
         }
 
         { // jump if condition is false or zero.
-            auto instr_je = BytecodeUtil::Make<Jump>();
-            instr_je->opcode = JE;
-            instr_je->label_id = else_label;
+            auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, else_label);
             chunk->Append(std::move(instr_je));
         }
         
@@ -122,9 +120,7 @@ std::unique_ptr<Buildable> AstHasExpression::Build(AstVisitor *visitor, Module *
         }
 
         { // jump to end after loading true
-            auto instr_jmp = BytecodeUtil::Make<Jump>();
-            instr_jmp->opcode = JMP;
-            instr_jmp->label_id = end_label;
+            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label);
             chunk->Append(std::move(instr_jmp));
         }
 

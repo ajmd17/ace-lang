@@ -154,9 +154,7 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
                 }
 
                 { // jump if they are not equal: i.e the value is true
-                    auto instr_je = BytecodeUtil::Make<Jump>();
-                    instr_je->opcode = JE;
-                    instr_je->label_id = true_label;
+                    auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, true_label);
                     chunk->Append(std::move(instr_je));
                 }
 
@@ -168,9 +166,7 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
                 }
 
                 { // now, jump to the very end so we don't load the true value.
-                    auto instr_jmp = BytecodeUtil::Make<Jump>();
-                    instr_jmp->opcode = JMP;
-                    instr_jmp->label_id = false_label;
+                    auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, false_label);
                     chunk->Append(std::move(instr_jmp));
                 }
 

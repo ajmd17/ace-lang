@@ -370,9 +370,7 @@ std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Mod
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
     {
-        auto instr_jmp = BytecodeUtil::Make<Jump>();
-        instr_jmp->opcode = JMP;
-        instr_jmp->label_id = end_label;
+        auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label);
         chunk->Append(std::move(instr_jmp));
     }
 

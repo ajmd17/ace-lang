@@ -167,29 +167,25 @@ std::unique_ptr<Buildable> Compiler::CreateConditional(
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    auto instr_jump = BytecodeUtil::Make<Jump>();
-    instr_jump->opcode = JMP;
+    {
+        LabelId label_id;
 
-    if (else_part != nullptr) {
-        instr_jump->label_id = else_label;
-    } else {
-        instr_jump->label_id = end_label;
+        if (else_part != nullptr) {
+            label_id = else_label;
+        } else {
+            label_id = end_label;
+        }
+
+        chunk->Append(BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, label_id));
     }
-
-    chunk->Append(std::move(instr_jump));
 
     // enter the block
     chunk->Append(then_part->Build(visitor, mod));
 
     if (else_part != nullptr) {
-        { // jump to the very end now that we've accepted the if-block
-            auto instr_jump = BytecodeUtil::Make<Jump>();
-            instr_jump->opcode = JMP;
-            instr_jump->label_id = end_label;
+        // jump to the very end now that we've accepted the if-block
+        chunk->Append(BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label));
 
-            chunk->Append(std::move(instr_jump));
-        }
-        
         // set the label's position to where the else-block would be
         chunk->MarkLabel(else_label);
         // build the else-block

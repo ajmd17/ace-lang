@@ -60,9 +60,7 @@ std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
 
     { // jump to the end, as to not execute the catch-block
-        auto instr_jmp = BytecodeUtil::Make<Jump>();
-        instr_jmp->opcode = JMP;
-        instr_jmp->label_id = end_label;
+        auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label);
         chunk->Append(std::move(instr_jmp));
     }
 

@@ -71,9 +71,7 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
         }
 
         { // break away if the condition is false (equal to zero)
-            auto instr_je = BytecodeUtil::Make<Jump>();
-            instr_je->opcode = JE;
-            instr_je->label_id = break_label;
+            auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, break_label);
             chunk->Append(std::move(instr_je));
         }
 
@@ -88,9 +86,7 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
         chunk->Append(Compiler::PopStack(visitor, m_num_locals));
 
         { // jump back to top here
-            auto instr_jmp = BytecodeUtil::Make<Jump>();
-            instr_jmp->opcode = JMP;
-            instr_jmp->label_id = top_label;
+            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, top_label);
             chunk->Append(std::move(instr_jmp));
         }
 
@@ -119,9 +115,7 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
         chunk->Append(Compiler::PopStack(visitor, m_num_locals));
 
         { // jump back to top here
-            auto instr_jmp = BytecodeUtil::Make<Jump>();
-            instr_jmp->opcode = JMP;
-            instr_jmp->label_id = top_label;
+            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, top_label);
             chunk->Append(std::move(instr_jmp));
         }
     } else {

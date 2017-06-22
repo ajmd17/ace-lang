@@ -217,9 +217,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                         if (folded_value == 1) {
                             // value is equal to 0, therefore it is false.
                             // load the label address from static memory into register 0
-                            auto instr_jmp = BytecodeUtil::Make<Jump>();
-                            instr_jmp->opcode = JMP;
-                            instr_jmp->label_id = false_label;
+                            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, false_label);
                             chunk->Append(std::move(instr_jmp));
                         } else if (folded_value == 0) {
                             // do not jump at all, only accept the code that it is true
@@ -240,9 +238,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                         chunk->Append(std::move(instr_cmpz));
 
                         // jump if they are equal: i.e the value is false
-                        auto instr_je = BytecodeUtil::Make<Jump>();
-                        instr_je->opcode = JE;
-                        instr_je->label_id = false_label;
+                        auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, false_label);
                         chunk->Append(std::move(instr_je));
                     }
                 }
@@ -260,9 +256,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                         if (folded_value == 1) {
                             // value is equal to 0, therefore it is false.
                             // load the label address from static memory into register 0
-                            auto instr_jmp = BytecodeUtil::Make<Jump>();
-                            instr_jmp->opcode = JMP;
-                            instr_jmp->label_id = false_label;
+                            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, false_label);
                             chunk->Append(std::move(instr_jmp));
                         } else if (folded_value == 0) {
                             // do not jump at all, only accept the code that it is true
@@ -283,9 +277,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                         chunk->Append(std::move(instr_cmpz));
 
                         // jump if they are equal: i.e the value is false
-                        auto instr_je = BytecodeUtil::Make<Jump>();
-                        instr_je->opcode = JE;
-                        instr_je->label_id = false_label;
+                        auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, false_label);
                         chunk->Append(std::move(instr_je));
                     }
                 }
@@ -297,12 +289,8 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                     chunk->Append(std::move(instr_load_true));
                 }
 
-                { // jump to the VERY end (so we don't load 'false' value)
-                    auto instr_jmp = BytecodeUtil::Make<Jump>();
-                    instr_jmp->opcode = JMP;
-                    instr_jmp->label_id = false_label;
-                    chunk->Append(std::move(instr_jmp));
-                }
+                // jump to the VERY end (so we don't load 'false' value)
+                chunk->Append(BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, false_label));
 
                 chunk->MarkLabel(false_label);
                 
@@ -335,9 +323,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                             // do not jump at all, we still have to test the second half of the expression
                         } else if (folded_value == 0) {
                             // jump to end, the value is true and we don't have to check the second half
-                            auto instr_jmp = BytecodeUtil::Make<Jump>();
-                            instr_jmp->opcode = JMP;
-                            instr_jmp->label_id = true_label;
+                            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, true_label);
                             chunk->Append(std::move(instr_jmp));
                         }
                     }
@@ -354,9 +340,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                         instr_cmpz->Accept<uint8_t>(rp);
                         chunk->Append(std::move(instr_cmpz));
 
-                        auto instr_jne = BytecodeUtil::Make<Jump>();
-                        instr_jne->opcode = JNE;
-                        instr_jne->label_id = true_label;
+                        auto instr_jne = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JNE, true_label);
                         chunk->Append(std::move(instr_jne));
                     }
                 }
@@ -375,9 +359,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                                 // value is equal to 0
                             } else if (folded_value == 0) {
                                 // value is equal to 1 so jump to end
-                                auto instr_jmp = BytecodeUtil::Make<Jump>();
-                                instr_jmp->opcode = JMP;
-                                instr_jmp->label_id = true_label;
+                                auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, true_label);
                                 chunk->Append(std::move(instr_jmp));
                             }
                         }
@@ -396,9 +378,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                         chunk->Append(std::move(instr_cmpz));
 
                         // jump if they are equal: i.e the value is true
-                        auto instr_jne = BytecodeUtil::Make<Jump>();
-                        instr_jne->opcode = JNE;
-                        instr_jne->label_id = true_label;
+                        auto instr_jne = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JNE, true_label);
                         chunk->Append(std::move(instr_jne));
                     }
                 }
@@ -411,9 +391,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 }
 
                 { // jump to the VERY end (so we don't load 'true' value)
-                    auto instr_jmp = BytecodeUtil::Make<Jump>();
-                    instr_jmp->opcode = JMP;
-                    instr_jmp->label_id = false_label;
+                    auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, false_label);
                     chunk->Append(std::move(instr_jmp));
                 }
                 
@@ -430,29 +408,30 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
             }
         } else if (m_op->GetType() == COMPARISON) {
             uint8_t rp;
-            uint8_t opcode;
+            
+            JumpClass jump_class;
             
             bool swapped = false;
 
             switch (m_op->GetOperatorType()) {
                 case Operators::OP_equals:
-                    opcode = JNE;
+                    jump_class = JumpClass::JUMP_CLASS_JNE;
                     break;
                 case Operators::OP_not_eql:
-                    opcode = JE;
+                    jump_class = JumpClass::JUMP_CLASS_JE;
                     break;
                 case Operators::OP_less:
-                    opcode = JGE;
+                    jump_class = JumpClass::JUMP_CLASS_JGE;
                     break;
                 case Operators::OP_less_eql:
-                    opcode = JG;
+                    jump_class = JumpClass::JUMP_CLASS_JG;
                     break;
                 case Operators::OP_greater:
-                    opcode = JGE;
+                    jump_class = JumpClass::JUMP_CLASS_JGE;
                     swapped = true;
                     break;
                 case Operators::OP_greater_eql:
-                    opcode = JG;
+                    jump_class = JumpClass::JUMP_CLASS_JG;
                     swapped = true;
                     break;
             }
@@ -520,9 +499,7 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
                 { // jump if they are equal
-                    auto instr_jump = BytecodeUtil::Make<Jump>();
-                    instr_jump->opcode = opcode;
-                    instr_jump->label_id = true_label;
+                    auto instr_jump = BytecodeUtil::Make<Jump>(jump_class, true_label);
                     chunk->Append(std::move(instr_jump));
                 }
                 
@@ -534,10 +511,8 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 }
 
                 { // jump to the false label, the value is false at this point
-                    auto instr_jump = BytecodeUtil::Make<Jump>();
-                    instr_jump->opcode = JMP;
-                    instr_jump->label_id = false_label;
-                    chunk->Append(std::move(instr_jump));
+                    auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, false_label);
+                    chunk->Append(std::move(instr_jmp));
                 }
                 
                 chunk->MarkLabel(true_label);

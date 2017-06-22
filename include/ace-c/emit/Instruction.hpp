@@ -41,17 +41,49 @@ struct Instruction : public Buildable {
     virtual void Build(Buffer &buf, BuildParams &build_params) const override = 0;
 };
 
-struct Jump final : public Instruction {
+enum JumpClass {
+    JUMP_CLASS_JMP,
+    JUMP_CLASS_JE,
+    JUMP_CLASS_JNE,
+    JUMP_CLASS_JG,
+    JUMP_CLASS_JGE,
+};
+
+struct Jump final : public Buildable {
+    JumpClass jump_class;
     LabelId label_id;
+
+    Jump() = default;
+    Jump(JumpClass jump_class, LabelId label_id)
+        : jump_class(jump_class),
+          label_id(label_id)
+    {
+    }
 
     virtual size_t GetSize() const override
     {
-        return sizeof(opcode) + sizeof(LabelPosition);
+        return sizeof(Opcode) + sizeof(LabelPosition);
     }
 
     virtual void Build(Buffer &buf, BuildParams &build_params) const override
     {
-        buf.sputc(opcode);
+        switch (jump_class) {
+            case JUMP_CLASS_JMP:
+                buf.sputc(JMP);
+                break;
+            case JUMP_CLASS_JE:
+                buf.sputc(JE);
+                break;
+            case JUMP_CLASS_JNE:
+                buf.sputc(JNE);
+                break;
+            case JUMP_CLASS_JG:
+                buf.sputc(JG);
+                break;
+            case JUMP_CLASS_JGE:
+                buf.sputc(JGE);
+                break;
+        }
 
         LabelPosition pos = build_params.block_offset
             + build_params.labels[label_id].position;

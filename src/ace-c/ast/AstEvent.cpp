@@ -49,7 +49,7 @@ void AstConstantEvent::Visit(AstVisitor *visitor, Module *mod)
     AstEvent::Visit(visitor, mod);
 }
 
-void AstConstantEvent::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstConstantEvent::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
@@ -94,13 +94,13 @@ void AstEvent::Visit(AstVisitor *visitor, Module *mod)
     m_trigger->Visit(visitor, mod);
 }
 
-void AstEvent::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstEvent::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
     ASSERT(m_trigger != nullptr);
-    m_trigger->Build(visitor, mod);
+    return m_trigger->Build(visitor, mod);
 }
 
 void AstEvent::Optimize(AstVisitor *visitor, Module *mod)

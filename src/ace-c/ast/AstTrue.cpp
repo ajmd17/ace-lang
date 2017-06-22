@@ -12,13 +12,17 @@ AstTrue::AstTrue(const SourceLocation &location)
 {
 }
 
-void AstTrue::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstTrue::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
     // load value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
+    auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
+    instr_load_true->opcode = LOAD_TRUE;
+    instr_load_true->Accept<uint8_t>(rp);
+
+    return std::move(instr_load_true);
 }
 
 void AstTrue::Recreate(std::ostringstream &ss)

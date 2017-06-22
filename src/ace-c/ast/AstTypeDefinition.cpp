@@ -205,8 +205,9 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstTypeDefinition::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstTypeDefinition::Build(AstVisitor *visitor, Module *mod)
 {
+    return nullptr;
 }
 
 void AstTypeDefinition::Optimize(AstVisitor *visitor, Module *mod)

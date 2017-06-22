@@ -1,6 +1,8 @@
 #ifndef AST_STATEMENT_HPP
 #define AST_STATEMENT_HPP
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 #include <ace-c/SourceLocation.hpp>
 
 #include <memory>
@@ -26,7 +28,7 @@ public:
     inline const SourceLocation &GetLocation() const { return m_location; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) = 0;
-    virtual void Build(AstVisitor *visitor, Module *mod) = 0;
+    virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) = 0;
     virtual void Recreate(std::ostringstream &ss) = 0;
     virtual Pointer<AstStatement> Clone() const = 0;

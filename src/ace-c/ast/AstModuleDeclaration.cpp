@@ -88,16 +88,20 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstModuleDeclaration::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstModuleDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_module != nullptr);
 
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     // build all children
     for (auto &child : m_children) {
-        if (child) {
-            child->Build(visitor, m_module.get());
+        if (child != nullptr) {
+            chunk->Append(child->Build(visitor, m_module.get()));
         }
     }
+
+    return std::move(chunk);
 }
 
 void AstModuleDeclaration::Optimize(AstVisitor *visitor, Module *mod)

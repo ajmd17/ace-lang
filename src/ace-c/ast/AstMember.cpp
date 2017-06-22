@@ -74,24 +74,27 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstMember::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstMember::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     ASSERT(m_target != nullptr);
-    m_target->Build(visitor, mod);
+    chunk->Append(m_target->Build(visitor, mod));
 
     ASSERT(m_target_type != nullptr);
 
     if (m_target_type == SymbolType::Builtin::ANY) {
         // for Any type we will have to load from hash
-        uint32_t hash = hash_fnv_1(m_field_name.c_str());
+        const uint32_t hash = hash_fnv_1(m_field_name.c_str());
 
-        if (m_access_mode == ACCESS_MODE_LOAD) {
-            Compiler::LoadMemberFromHash(visitor, mod, hash);
-        } else if (m_access_mode == ACCESS_MODE_STORE) {
-            Compiler::StoreMemberFromHash(visitor, mod, hash);
+        switch (m_access_mode) {
+            case ACCESS_MODE_LOAD:
+                chunk->Append(Compiler::LoadMemberFromHash(visitor, mod, hash));
+                break;
+            case ACCESS_MODE_STORE:
+                chunk->Append(Compiler::StoreMemberFromHash(visitor, mod, hash));
+                break;
         }
-
-        // todo: StoreMemberFromHash
     } else {
         int found_index = -1;
 
@@ -104,23 +107,28 @@ void AstMember::Build(AstVisitor *visitor, Module *mod)
         }
 
         if (found_index != -1) {
-            if (m_access_mode == ACCESS_MODE_LOAD) {
-                // just load the data member.
-                Compiler::LoadMemberAtIndex(
-                    visitor,
-                    mod,
-                    found_index
-                );
-            } else if (m_access_mode == ACCESS_MODE_STORE) {
-                // we are in storing mode, so store to LAST item in the member expr.
-                Compiler::StoreMemberAtIndex(
-                    visitor,
-                    mod,
-                    found_index
-                );
+            switch (m_access_mode) {
+                case ACCESS_MODE_LOAD:
+                    // just load the data member.
+                    chunk->Append(Compiler::LoadMemberAtIndex(
+                        visitor,
+                        mod,
+                        found_index
+                    ));
+                    break;
+                case ACCESS_MODE_STORE:
+                    // we are in storing mode, so store to LAST item in the member expr.
+                    chunk->Append(Compiler::StoreMemberAtIndex(
+                        visitor,
+                        mod,
+                        found_index
+                    ));
+                    break;
             }
         }
     }
+
+    return std::move(chunk);
 }
 
 void AstMember::Optimize(AstVisitor *visitor, Module *mod)

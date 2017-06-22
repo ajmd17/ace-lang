@@ -13,7 +13,7 @@ public:
     CppGenerator(const CppGenerator &other) = delete;
 
     CppGenerator &operator<<(ace::vm::BytecodeStream &bs);
-    CppGenerator &operator<<(InstructionStream &is);
+    //CppGenerator &operator<<(InstructionStream &is);
 
 private:
     std::stringstream m_cpp_ss;

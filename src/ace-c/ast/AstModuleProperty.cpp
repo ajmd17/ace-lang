@@ -58,13 +58,13 @@ void AstModuleProperty::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstModuleProperty::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstModuleProperty::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
     ASSERT(m_expr_value != nullptr);
-    m_expr_value->Build(visitor, mod);
+    return m_expr_value->Build(visitor, mod);
 }
 
 void AstModuleProperty::Optimize(AstVisitor *visitor, Module *mod)

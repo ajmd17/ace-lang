@@ -46,11 +46,13 @@ void AstBlock::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Close();
 }
 
-void AstBlock::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstBlock::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     for (std::shared_ptr<AstStatement> &stmt : m_children) {
         ASSERT(stmt != nullptr);
-        stmt->Build(visitor, mod);
+        chunk->Append(stmt->Build(visitor, mod));
     }
 
     // how many times to pop the stack
@@ -65,7 +67,9 @@ void AstBlock::Build(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
     }
 
-    Compiler::PopStack(visitor, pop_times);
+    chunk->Append(Compiler::PopStack(visitor, pop_times));
+
+    return std::move(chunk);
 }
 
 void AstBlock::Optimize(AstVisitor *visitor, Module *mod)

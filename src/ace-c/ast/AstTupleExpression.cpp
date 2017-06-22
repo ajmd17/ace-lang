@@ -63,7 +63,7 @@ void AstTupleExpression::Visit(AstVisitor *visitor, Module *mod)
     visitor->GetCompilationUnit()->RegisterType(m_symbol_type);
 }
 
-void AstTupleExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstTupleExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
@@ -71,7 +71,7 @@ void AstTupleExpression::Build(AstVisitor *visitor, Module *mod)
     ASSERT(m_symbol_type != nullptr);
     ASSERT(m_symbol_type->GetDefaultValue() != nullptr);
 
-    m_symbol_type->GetDefaultValue()->Build(visitor, mod);
+    return m_symbol_type->GetDefaultValue()->Build(visitor, mod);
 
     /*bool has_side_effects = MayHaveSideEffects();
     uint32_t array_size = (uint32_t)m_members.size();

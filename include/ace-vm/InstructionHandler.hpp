@@ -570,50 +570,36 @@ struct InstructionHandler {
         utf::fputs(UTF8_CSTR("\n"), stdout);
     }
 
-    inline void Jmp(bc_reg_t reg)
+    inline void Jmp(bc_address_t addr)
     {
-        const Value &addr = thread->m_regs[reg];
-        ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
-        bs->Seek(addr.m_value.addr);
+        bs->Seek(addr);
     }
 
-    inline void Je(bc_reg_t reg)
+    inline void Je(bc_address_t addr)
     {
         if (thread->m_regs.m_flags == EQUAL) {
-            const Value &addr = thread->m_regs[reg];
-            ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
-            
-            bs->Seek(addr.m_value.addr);
+            bs->Seek(addr);
         }
     }
 
-    inline void Jne(bc_reg_t reg)
+    inline void Jne(bc_address_t addr)
     {
         if (thread->m_regs.m_flags != EQUAL) {
-            const Value &addr = thread->m_regs[reg];
-            ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
-
-            bs->Seek(addr.m_value.addr);
+            bs->Seek(addr);
         }
     }
 
-    inline void Jg(bc_reg_t reg)
+    inline void Jg(bc_address_t addr)
     {
         if (thread->m_regs.m_flags == GREATER) {
-            const Value &addr = thread->m_regs[reg];
-            ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
-
-            bs->Seek(addr.m_value.addr);
+            bs->Seek(addr);
         }
     }
 
-    inline void Jge(bc_reg_t reg)
+    inline void Jge(bc_address_t addr)
     {
         if (thread->m_regs.m_flags == GREATER || thread->m_regs.m_flags == EQUAL) {
-            const Value &addr = thread->m_regs[reg];
-            ASSERT_MSG(addr.m_type == Value::ADDRESS, "register must hold an address");
-
-            bs->Seek(addr.m_value.addr);
+            bs->Seek(addr);
         }
     }
 
@@ -644,18 +630,14 @@ struct InstructionHandler {
         thread->m_func_depth--;
     }
 
-    inline void BeginTry(bc_reg_t reg)
+    inline void BeginTry(bc_address_t addr)
     {
-        // copy the value of the address for the catch-block
-        const Value &catch_address = thread->m_regs[reg];
-        ASSERT_MSG(catch_address.m_type == Value::ADDRESS, "register must hold an address");
-
         thread->m_exception_state.m_try_counter++;
 
         // increase stack size to store data about this try block
         Value info;
         info.m_type = Value::TRY_CATCH_INFO;
-        info.m_value.try_catch_info.catch_address = catch_address.m_value.addr;
+        info.m_value.try_catch_info.catch_address = addr;
 
         // store the info
         thread->m_stack.Push(info);

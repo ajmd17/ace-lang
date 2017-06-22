@@ -120,10 +120,10 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstActionExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstActionExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-    m_expr->Build(visitor, mod);
+    return m_expr->Build(visitor, mod);
     // re-build in the target. actions return their target after call
     //m_target->Build(visitor, mod);
 }

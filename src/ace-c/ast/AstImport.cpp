@@ -191,13 +191,13 @@ void AstImport::PerformImport(
     }
 }
 
-void AstImport::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstImport::Build(AstVisitor *visitor, Module *mod)
 {
     m_ast_iterator.ResetPosition();
 
     // compile the imported module
     Compiler compiler(&m_ast_iterator, visitor->GetCompilationUnit());
-    compiler.Compile();
+    return compiler.Compile();
 }
 
 void AstImport::Optimize(AstVisitor *visitor, Module *mod)

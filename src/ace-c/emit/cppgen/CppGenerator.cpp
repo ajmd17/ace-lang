@@ -20,7 +20,7 @@ CppGenerator::CppGenerator()
 {
 }
 
-CppGenerator &CppGenerator::operator<<(InstructionStream &is)
+/*CppGenerator &CppGenerator::operator<<(InstructionStream &is)
 {
     std::ostringstream ss;
     ss << is;
@@ -29,7 +29,7 @@ CppGenerator &CppGenerator::operator<<(InstructionStream &is)
 
     ace::vm::BytecodeStream bs(str.data(), str.size());
     return operator<<(bs);
-}
+}*/
 
 CppGenerator &CppGenerator::operator<<(ace::vm::BytecodeStream &bs)
 {

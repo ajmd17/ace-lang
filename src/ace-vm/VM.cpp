@@ -770,46 +770,52 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case JMP: {
-        bc_reg_t reg; bs->Read(&reg);
+        //bc_reg_t reg; bs->Read(&reg);
+        bc_address_t addr;
+        bs->Read(&addr);
 
         handler->Jmp(
-            reg
+            addr
         );
 
         break;
     }
     case JE: {
-        bc_reg_t reg; bs->Read(&reg);
+        bc_address_t addr;
+        bs->Read(&addr);
 
         handler->Je(
-            reg
+            addr
         );
 
         break;
     }
     case JNE: {
-        bc_reg_t reg; bs->Read(&reg);
+        bc_address_t addr;
+        bs->Read(&addr);
 
         handler->Jne(
-            reg
+            addr
         );
 
         break;
     }
     case JG: {
-        bc_reg_t reg; bs->Read(&reg);
+        bc_address_t addr;
+        bs->Read(&addr);
 
         handler->Jg(
-            reg
+            addr
         );
 
         break;
     }
     case JGE: {
-        bc_reg_t reg; bs->Read(&reg);
+        bc_address_t addr;
+        bs->Read(&addr);
 
         handler->Jge(
-            reg
+            addr
         );
 
         break;
@@ -831,11 +837,11 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
         break;
     }
     case BEGIN_TRY: {
-        // register that holds address of catch block
-        bc_reg_t reg; bs->Read(&reg);
+        bc_address_t catch_address;
+        bs->Read(&catch_address);
 
         handler->BeginTry(
-            reg
+            catch_address
         );
 
         break;

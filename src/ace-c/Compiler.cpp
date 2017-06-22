@@ -2,6 +2,7 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
 #include <ace-c/ast/AstBinaryExpression.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/instructions.hpp>
@@ -9,11 +10,13 @@
 
 #include <iostream>
 
-void Compiler::BuildArgumentsStart(
+std::unique_ptr<Buildable> Compiler::BuildArgumentsStart(
     AstVisitor *visitor,
     Module *mod,
     const std::vector<std::shared_ptr<AstArgument>> &args)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     uint8_t rp;
 
     // push a copy of each argument to the stack
@@ -22,26 +25,30 @@ void Compiler::BuildArgumentsStart(
         ASSERT(args[i] != nullptr);
 
         // build in current module (not mod)
-        arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
+        chunk->Append(arg->Build(visitor, visitor->GetCompilationUnit()->GetCurrentModule()));
 
         // get active register
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         // now that it's loaded into the register, make a copy
         // add instruction to store on stack
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(PUSH, rp);
+        auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+        instr_push->opcode = PUSH;
+        instr_push->Accept<uint8_t>(rp);
+        chunk->Append(std::move(instr_push));
 
         // increment stack size
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
     }
+
+    return std::move(chunk);
 }
 
-void Compiler::BuildArgumentsEnd(
+std::unique_ptr<Buildable> Compiler::BuildArgumentsEnd(
     AstVisitor *visitor,
     Module *mod,
-    size_t nargs
-) {
+    size_t nargs)
+{
      // the reason we decrement the compiler's record of the stack size directly after
     // is because the function body will actually handle the management of the stack size,
     // so that the parameters are actually local variables to the function body.
@@ -51,53 +58,84 @@ void Compiler::BuildArgumentsEnd(
     }
 
     // pop arguments from stack
-    Compiler::PopStack(visitor, nargs);
+    return Compiler::PopStack(visitor, nargs);
 }
 
-void Compiler::BuildCall(
+std::unique_ptr<Buildable> Compiler::BuildCall(
     AstVisitor *visitor,
     Module *mod,
     const std::shared_ptr<AstExpression> &target,
-    uint8_t nargs
-) {
-    target->Build(visitor, mod);
+    uint8_t nargs)
+{
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
+    chunk->Append(target->Build(visitor, mod));
 
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    
+    auto instr_call = BytecodeUtil::Make<RawOperation<>>();
+    instr_call->opcode = CALL;
+    instr_call->Accept<uint8_t>(rp);
+    instr_call->Accept<uint8_t>(nargs);
+    chunk->Append(std::move(instr_call));
 
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t>(CALL, rp, nargs);
+    return std::move(chunk);
 }
 
-void Compiler::LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
+std::unique_ptr<Buildable> Compiler::LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(LOAD_MEM_HASH, rp, rp, hash);
+
+    auto instr_load_mem_hash = BytecodeUtil::Make<RawOperation<>>();
+    instr_load_mem_hash->opcode = LOAD_MEM_HASH;
+    instr_load_mem_hash->Accept<uint8_t>(rp); // dst
+    instr_load_mem_hash->Accept<uint8_t>(rp); // src
+    instr_load_mem_hash->Accept<uint32_t>(hash); // hash
+    
+    return std::move(instr_load_mem_hash);
 }
 
-void Compiler::StoreMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
+std::unique_ptr<Buildable> Compiler::StoreMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(MOV_MEM_HASH, rp, hash, rp - 1);
+
+    auto instr_mov_mem_hash = BytecodeUtil::Make<RawOperation<>>();
+    instr_mov_mem_hash->opcode = MOV_MEM_HASH;
+    instr_mov_mem_hash->Accept<uint8_t>(rp); // dst
+    instr_mov_mem_hash->Accept<uint32_t>(hash); // hash
+    instr_mov_mem_hash->Accept<uint8_t>(rp); // src
+    
+    return std::move(instr_mov_mem_hash);
 }
 
-void Compiler::LoadMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index)
+std::unique_ptr<Buildable> Compiler::LoadMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(LOAD_MEM, rp, rp, (uint8_t)dm_index);
+
+    auto instr_load_mem = BytecodeUtil::Make<RawOperation<>>();
+    instr_load_mem->opcode = LOAD_MEM;
+    instr_load_mem->Accept<uint8_t>(rp); // dst
+    instr_load_mem->Accept<uint8_t>(rp); // src
+    instr_load_mem->Accept<uint8_t>(dm_index); // index
+    
+    return std::move(instr_load_mem);
 }
 
-void Compiler::StoreMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index)
+std::unique_ptr<Buildable> Compiler::StoreMemberAtIndex(AstVisitor *visitor, Module *mod, int dm_index)
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, rp, (uint8_t)dm_index, rp - 1);
+    
+    auto instr_mov_mem = BytecodeUtil::Make<RawOperation<>>();
+    instr_mov_mem->opcode = LOAD_MEM;
+    instr_mov_mem->Accept<uint8_t>(rp); // dst
+    instr_mov_mem->Accept<uint8_t>(dm_index); // index
+    instr_mov_mem->Accept<uint8_t>(rp - 1); // src
+    
+    return std::move(instr_mov_mem);
 }
 
-void Compiler::CreateConditional(
+std::unique_ptr<Buildable> Compiler::CreateConditional(
     AstVisitor *visitor,
     Module *mod,
     AstStatement *cond,
@@ -107,203 +145,86 @@ void Compiler::CreateConditional(
     ASSERT(cond != nullptr);
     ASSERT(then_part != nullptr);
 
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     uint8_t rp;
 
-    // the label to jump to the very end
-    StaticObject end_label;
-    end_label.m_type = StaticObject::TYPE_LABEL;
-    end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-    // the label to jump to the else-part
-    StaticObject else_label;
-    else_label.m_type = StaticObject::TYPE_LABEL;
-    else_label.m_id = (else_part != nullptr)
-        ? visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId()
-        : -1;
+    LabelId end_label = chunk->NewLabel();
+    LabelId else_label = chunk->NewLabel();
 
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     // build the conditional
-    cond->Build(visitor, mod);
-    // compare the conditional to 0
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(CMPZ, rp);
+    chunk->Append(cond->Build(visitor, mod));
+
+    { // compare the conditional to 0
+        auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
+        instr_cmpz->opcode = CMPZ;
+        instr_cmpz->Accept<uint8_t>(rp);
+        chunk->Append(std::move(instr_cmpz));
+    }
 
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    // load the label address from static memory into register 0
+    auto instr_jump = BytecodeUtil::Make<Jump>();
+    instr_jump->opcode = JMP;
+
     if (else_part != nullptr) {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
+        instr_jump->label_id = else_label;
     } else {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)end_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
+        instr_jump->label_id = end_label;
     }
 
-    // jump if condition is false or zero.
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(JE, rp);
+    chunk->Append(std::move(instr_jump));
 
     // enter the block
-    then_part->Build(visitor, mod);
+    chunk->Append(then_part->Build(visitor, mod));
 
     if (else_part != nullptr) {
-        // jump to the very end now that we've accepted the if-block
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        { // jump to the very end now that we've accepted the if-block
+            auto instr_jump = BytecodeUtil::Make<Jump>();
+            instr_jump->opcode = JMP;
+            instr_jump->label_id = end_label;
 
-        // load the label address from static memory into register 1
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+            chunk->Append(std::move(instr_jump));
         }
-        // jump if they are equal: i.e the value is false
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JMP, rp);
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
+        
         // set the label's position to where the else-block would be
-        else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
-        else_part->Build(visitor, mod);
+        chunk->MarkLabel(else_label);
+        // build the else-block
+        chunk->Append(else_part->Build(visitor, mod));
     }
 
     // set the label's position to after the block,
     // so we can skip it if the condition is false
-    end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+    chunk->MarkLabel(end_label);
+
+    return std::move(chunk);
 }
 
-void Compiler::CreateConditional(
-    AstVisitor *visitor,
-    Module *mod,
-    const std::vector<Instruction<>> &ins,
-    AstStatement *then_part,
-    AstStatement *else_part)
+std::unique_ptr<Buildable> Compiler::LoadLeftThenRight(AstVisitor *visitor, Module *mod, Compiler::ExprInfo info)
 {
-    ASSERT(then_part != nullptr);
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 
-    uint8_t rp;
-
-    // the label to jump to the very end
-    StaticObject end_label;
-    end_label.m_type = StaticObject::TYPE_LABEL;
-    end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-    // the label to jump to the else-part
-    StaticObject else_label;
-    else_label.m_type = StaticObject::TYPE_LABEL;
-    else_label.m_id = (else_part != nullptr)
-        ? visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId()
-        : -1;
-
-    // get current register index
-    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    
-    // build the conditionals
-    for (const auto &it : ins) {
-        visitor->GetCompilationUnit()->GetInstructionStream() << it;
-    }
-
-    // compare the conditional to 0
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(CMPZ, rp);
-
-    // get current register index
-    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-    // load the label address from static memory into register 0
-    if (else_part != nullptr) {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
-    } else {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)end_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
-    }
-
-    // jump if condition is false or zero.
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(JE, rp);
-
-    // enter the block
-    then_part->Build(visitor, mod);
-
-    if (else_part != nullptr) {
-        // jump to the very end now that we've accepted the if-block
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // load the label address from static memory into register 1
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
-        // jump if they are equal: i.e the value is false
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JMP, rp);
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // set the label's position to where the else-block would be
-        else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
-        else_part->Build(visitor, mod);
-    }
-
-    // set the label's position to after the block,
-    // so we can skip it if the condition is false
-    end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
-}
-
-void Compiler::LoadLeftThenRight(AstVisitor *visitor, Module *mod, Compiler::ExprInfo info)
-{
     // load left-hand side into register 0
-    info.left->Build(visitor, mod);
+    chunk->Append(info.left->Build(visitor, mod));
 
     // right side has not been optimized away
     visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
 
     if (info.right != nullptr) {
         // load right-hand side into register 1
-        info.right->Build(visitor, mod);
+        chunk->Append(info.right->Build(visitor, mod));
     }
+
+    return std::move(chunk);
 }
 
-void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::ExprInfo info)
+std::unique_ptr<Buildable> Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::ExprInfo info)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     uint8_t rp;
 
     // load right-hand side into register 0
@@ -316,8 +237,13 @@ void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::Exp
     // otherwise, the function call will overwrite what's in register 0.
     int stack_size_before = 0;
     if (left_side_effects) {
-        // store value of the right hand side on the stack
-        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(PUSH, rp);
+        { // store value of the right hand side on the stack
+            auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+            instr_push->opcode = PUSH;
+            instr_push->Accept<uint8_t>(rp);
+            chunk->Append(std::move(instr_push));
+        }
+
         stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         // increment stack size
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
@@ -326,7 +252,7 @@ void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::Exp
     }
 
     // load left-hand side into register 1
-    info.left->Build(visitor, mod);
+    chunk->Append(info.left->Build(visitor, mod));
 
     if (left_side_effects) {
         // now, we increase register usage to load rhs from the stack into register 1.
@@ -338,26 +264,47 @@ void Compiler::LoadRightThenLeft(AstVisitor *visitor, Module *mod, Compiler::Exp
         int diff = stack_size_after - stack_size_before;
         ASSERT(diff == 1);
 
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
-        // pop from stack
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
+        {
+            auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+            instr_load_offset->opcode = LOAD_OFFSET;
+            instr_load_offset->Accept<uint8_t>(rp);
+            instr_load_offset->Accept<uint16_t>(diff);
+            chunk->Append(std::move(instr_load_offset));
+        }
+
+        {
+            auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
+            instr_pop->opcode = POP;
+            chunk->Append(std::move(instr_pop));
+        }
+
         // decrement stack size
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
     }
+
+    return std::move(chunk);
 }
 
-void Compiler::LoadLeftAndStore(AstVisitor *visitor, Module *mod, Compiler::ExprInfo info)
+std::unique_ptr<Buildable> Compiler::LoadLeftAndStore(
+    AstVisitor *visitor,
+    Module *mod,
+    Compiler::ExprInfo info)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     uint8_t rp;
 
     // load left-hand side into register 0
-    info.left->Build(visitor, mod);
+    chunk->Append(info.left->Build(visitor, mod));
     // get register position
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    // store value of lhs on the stack
-    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(PUSH, rp);
+    
+    { // store value of lhs on the stack
+        auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+        instr_push->opcode = PUSH;
+        instr_push->Accept<uint8_t>(rp);
+        chunk->Append(std::move(instr_push));
+    }
 
     int stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     // increment stack size
@@ -365,7 +312,7 @@ void Compiler::LoadLeftAndStore(AstVisitor *visitor, Module *mod, Compiler::Expr
 
     // do NOT increase register usage (yet)
     // load right-hand side into register 0, overwriting previous lhs
-    info.right->Build(visitor, mod);
+    chunk->Append(info.right->Build(visitor, mod));
 
     // now, we increase register usage to load lhs from the stack into register 1.
     visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
@@ -378,19 +325,33 @@ void Compiler::LoadLeftAndStore(AstVisitor *visitor, Module *mod, Compiler::Expr
 
     ASSERT(diff == 1);
 
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
-    // pop from stack
-    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
+    {
+        auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+        instr_load_offset->opcode = LOAD_OFFSET;
+        instr_load_offset->Accept<uint8_t>(rp);
+        instr_load_offset->Accept<uint16_t>(diff);
+        chunk->Append(std::move(instr_load_offset));
+    }
+
+    { // pop from stack
+        auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
+        instr_pop->opcode = POP;
+        chunk->Append(std::move(instr_pop));
+    }
+
     // decrement stack size
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+
+    return std::move(chunk);
 }
 
-void Compiler::BuildBinOp(uint8_t opcode,
+std::unique_ptr<Buildable> Compiler::BuildBinOp(uint8_t opcode,
     AstVisitor *visitor,
     Module *mod,
     Compiler::ExprInfo info)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     AstBinaryExpression *left_as_binop = dynamic_cast<AstBinaryExpression*>(info.left);
     AstBinaryExpression *right_as_binop = dynamic_cast<AstBinaryExpression*>(info.right);
 
@@ -400,56 +361,92 @@ void Compiler::BuildBinOp(uint8_t opcode,
         // if the right hand side is a binary operation,
         // we should build in the rhs first in order to
         // transverse the parse tree.
-        Compiler::LoadRightThenLeft(visitor, mod, info);
+        chunk->Append(Compiler::LoadRightThenLeft(visitor, mod, info));
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+
+        auto raw_operation = BytecodeUtil::Make<RawOperation<>>();
+        raw_operation->opcode = opcode;
+        raw_operation->Accept<uint8_t>(rp); // lhs
+        raw_operation->Accept<uint8_t>(rp - 1); // rhs
+        raw_operation->Accept<uint8_t>(rp - 1); // dst
+
+        chunk->Append(std::move(raw_operation));
     } else if (info.right != nullptr && info.right->MayHaveSideEffects()) {
         // lhs must be temporary stored on the stack,
         // to avoid the rhs overwriting it.
         if (info.left->MayHaveSideEffects()) {
-            Compiler::LoadLeftAndStore(visitor, mod, info);
+            chunk->Append(Compiler::LoadLeftAndStore(visitor, mod, info));
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+
+            auto raw_operation = BytecodeUtil::Make<RawOperation<>>();
+            raw_operation->opcode = opcode;
+            raw_operation->Accept<uint8_t>(rp - 1); // lhs
+            raw_operation->Accept<uint8_t>(rp); // rhs
+            raw_operation->Accept<uint8_t>(rp - 1); // dst
+
+            chunk->Append(std::move(raw_operation));
         } else {
             // left  doesn't have side effects,
             // so just evaluate right without storing the lhs.
-            Compiler::LoadRightThenLeft(visitor, mod, info);
+            chunk->Append(Compiler::LoadRightThenLeft(visitor, mod, info));
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp, rp - 1, rp - 1);
+            
+            auto raw_operation = BytecodeUtil::Make<RawOperation<>>();
+            raw_operation->opcode = opcode;
+            raw_operation->Accept<uint8_t>(rp); // lhs
+            raw_operation->Accept<uint8_t>(rp - 1); // rhs
+            raw_operation->Accept<uint8_t>(rp - 1); // dst
+
+            chunk->Append(std::move(raw_operation));
         }
     } else {
-        Compiler::LoadLeftThenRight(visitor, mod, info);
+        chunk->Append(Compiler::LoadLeftThenRight(visitor, mod, info));
+
         if (info.right != nullptr) {
             // perform operation
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(opcode, rp - 1, rp, rp - 1);
+
+            auto raw_operation = BytecodeUtil::Make<RawOperation<>>();
+            raw_operation->opcode = opcode;
+            raw_operation->Accept<uint8_t>(rp - 1); // lhs
+            raw_operation->Accept<uint8_t>(rp); // rhs
+            raw_operation->Accept<uint8_t>(rp - 1); // dst
+
+            chunk->Append(std::move(raw_operation));
         }
     }
+
+    return std::move(chunk);
 }
 
-void Compiler::PopStack(AstVisitor *visitor, int amt)
+std::unique_ptr<Buildable> Compiler::PopStack(AstVisitor *visitor, int amt)
 {
     if (amt == 1) {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
-    } else {
-        for (int i = 0; i < amt;) {
-            int j = 0;
-            while (j < std::numeric_limits<uint8_t>::max() && i < amt) {
-                j++, i++;
-            }
-            
-            if (j > 0) {
-                ASSERT(j <= std::numeric_limits<uint8_t>::max());
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t>(POP_N, (uint8_t)j);
-            }
+        auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
+        instr_pop->opcode = POP;
+
+        return std::move(instr_pop);
+    }
+
+    for (int i = 0; i < amt;) {
+        int j = 0;
+
+        while (j < std::numeric_limits<uint8_t>::max() && i < amt) {
+            j++, i++;
+        }
+        
+        if (j > 0) {
+            ASSERT(j <= std::numeric_limits<uint8_t>::max());
+
+            auto instr_pop_n = BytecodeUtil::Make<RawOperation<>>();
+            instr_pop_n->opcode = POP_N;
+            instr_pop_n->Accept<uint8_t>(j);
+
+            return std::move(instr_pop_n);
         }
     }
+
+    return nullptr;
 }
 
 Compiler::Compiler(AstIterator *ast_iterator, CompilationUnit *compilation_unit)
@@ -462,29 +459,16 @@ Compiler::Compiler(const Compiler &other)
 {
 }
 
-void Compiler::Compile(bool expect_module_decl)
+std::unique_ptr<BytecodeChunk> Compiler::Compile()
 {
-    /*if (expect_module_decl) {
-        if (m_ast_iterator->HasNext()) {
-            if (auto first_stmt = m_ast_iterator->Next()) {
-                // all files must begin with a module declaration
-                first_stmt->Build(this, nullptr);
-                CompileInner();
-            }
-        }
-    } else {
-        CompileInner();
-    }*/
+    std::unique_ptr<BytecodeChunk> chunk(new BytecodeChunk);
 
-    CompileInner();
-}
-
-void Compiler::CompileInner()
-{
     Module *mod = m_compilation_unit->GetCurrentModule();
     ASSERT(mod != nullptr);
     
     while (m_ast_iterator->HasNext()) {
-        m_ast_iterator->Next()->Build(this, mod);
+        chunk->Append(m_ast_iterator->Next()->Build(this, mod));
     }
+
+    return chunk;
 }

@@ -136,8 +136,10 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     ASSERT(m_real_assignment != nullptr);
 
     if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
@@ -146,14 +148,17 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
         // set identifier stack location
         m_identifier->SetStackLocation(stack_location);
 
-        m_real_assignment->Build(visitor, mod);
+        chunk->Append(m_real_assignment->Build(visitor, mod));
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        // add instruction to store on stack
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(PUSH, rp);
+        { // add instruction to store on stack
+            auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+            instr_push->opcode = PUSH;
+            instr_push->Accept<uint8_t>(rp);
+            chunk->Append(std::move(instr_push));
+        }
 
         // increment stack size
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
@@ -161,9 +166,11 @@ void AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
         // if assignment has side effects but variable is unused,
         // compile the assignment in anyway.
         if (m_real_assignment->MayHaveSideEffects()) {
-            m_real_assignment->Build(visitor, mod);
+            chunk->Append(m_real_assignment->Build(visitor, mod));
         }
     }
+
+    return std::move(chunk);
 }
 
 void AstVariableDeclaration::Optimize(AstVisitor *visitor, Module *mod)

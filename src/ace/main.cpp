@@ -26,6 +26,7 @@
 #include <ace-c/Compiler.hpp>
 #include <ace-c/dis/DecompilationUnit.hpp>
 #include <ace-c/emit/cppgen/CppGenerator.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
@@ -1343,6 +1344,8 @@ static int REPL(
     int parentheses_counter = 0;
     int bracket_counter = 0;
 
+    size_t offset = 0;
+
     utf::Utf8String code;
     utf::Utf8String out_filename = "tmp.aex";
 
@@ -1489,14 +1492,18 @@ static int REPL(
                 // compile into bytecode instructions
                 ast_iterator.SetPosition(old_pos);
                 Compiler compiler(&ast_iterator, &compilation_unit);
-                compiler.Compile(false);
+                std::unique_ptr<BytecodeChunk> bc = compiler.Compile();
 
+                ASSERT(bc != nullptr);
+                
                 // get active register
                 int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();
                 
                 // emit bytecode instructions to file
-                std::ofstream temp_bytecode_file(out_filename.GetData(),
-                    std::ios::out | std::ios::binary | std::ios::app | std::ios::ate);
+                std::ofstream temp_bytecode_file(
+                    out_filename.GetData(),
+                    std::ios::out | std::ios::binary | std::ios::app | std::ios::ate
+                );
 
                 int64_t file_pos = temp_bytecode_file.tellp();
 
@@ -1509,8 +1516,17 @@ static int REPL(
                 } else {
                     int64_t bytecode_file_size;
 
-                    temp_bytecode_file << compilation_unit.GetInstructionStream();
-                    compilation_unit.GetInstructionStream().ClearInstructions();
+                    BuildParams build_params;
+                    // set offset
+                    build_params.block_offset = offset;
+                    build_params.local_offset = 0;
+
+                    std::vector<std::uint8_t> bytes = BytecodeUtil::GenerateBytes(bc.get(), build_params);
+
+                    temp_bytecode_file.write((char*)&bytes[0], bytes.size());
+                    offset += bytes.size();
+
+                    //compilation_unit.GetInstructionStream().ClearInstructions();
                     bytecode_file_size = temp_bytecode_file.tellp();
                     temp_bytecode_file.close();
 
@@ -1711,23 +1727,35 @@ void HandleArgs(
         }
 
         if (mode == COMPILE_SOURCE) {
-            if (ace_compiler::BuildSourceFile(src_filename, out_filename, compilation_unit)) {
+            std::unique_ptr<BytecodeChunk> bc = ace_compiler::BuildSourceFile(
+                src_filename,
+                out_filename,
+                compilation_unit
+            );
+
+            if (bc != nullptr) {
                 if (native_mode) {
                     // generate cpp code file
                     CppGenerator cppgen;
 
-                    cppgen << compilation_unit.GetInstructionStream();
-                    utf::cout << "Gen cpp: \n" << cppgen << "\n";
+                    /*cppgen << compilation_unit.GetInstructionStream();
+                    utf::cout << "Gen cpp: \n" << cppgen << "\n";*/
+                    ASSERT_MSG(false, "Removed");
 
                 } else {
                     // emit bytecode instructions to file
-                    std::ofstream out_file(out_filename.GetData(),
-                        std::ios::out | std::ios::binary);
+                    std::ofstream out_file(
+                        out_filename.GetData(),
+                        std::ios::out | std::ios::binary
+                    );
                     
                     if (!out_file.is_open()) {
                         utf::cout << "Could not open file for writing: " << out_filename << "\n";
                     } else {
-                        out_file << compilation_unit.GetInstructionStream();
+                        // write bytes to file
+                        std::vector<std::uint8_t> bytes = BytecodeUtil::GenerateBytes(bc.get());
+                        out_file.write((char*)&bytes[0], bytes.size());
+                        //out_file << compilation_unit.GetInstructionStream();
                     }
 
                     out_file.close();
@@ -1737,7 +1765,10 @@ void HandleArgs(
                 }
             }
         } else if (mode == DECOMPILE_BYTECODE) {
-            ace_compiler::DecompileBytecodeFile(src_filename, out_filename);
+            ace_compiler::DecompileBytecodeFile(
+                src_filename,
+                out_filename
+            );
         } else if (mode == RUN_BYTECODE) {
             RunBytecodeFile(&vm, src_filename, true);
         }

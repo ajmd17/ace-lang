@@ -5,8 +5,9 @@ AstUndefined::AstUndefined(const SourceLocation &location)
 {
 }
 
-void AstUndefined::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstUndefined::Build(AstVisitor *visitor, Module *mod)
 {
+    return nullptr;
 }
 
 void AstUndefined::Recreate(std::ostringstream &ss)

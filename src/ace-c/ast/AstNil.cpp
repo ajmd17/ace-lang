@@ -13,13 +13,17 @@ AstNil::AstNil(const SourceLocation &location)
 {
 }
 
-void AstNil::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstNil::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    
     // load integer value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(LOAD_NULL, rp);
+    auto instr_load_null = BytecodeUtil::Make<RawOperation<>>();
+    instr_load_null->opcode = LOAD_NULL;
+    instr_load_null->Accept<uint8_t>(rp);
+
+    return std::move(instr_load_null);
 }
 
 void AstNil::Recreate(std::ostringstream &ss)

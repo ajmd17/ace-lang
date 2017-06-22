@@ -53,26 +53,35 @@ void AstArrayExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     bool has_side_effects = MayHaveSideEffects();
     uint32_t array_size = (uint32_t)m_members.size();
     
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    // create the new array with the size
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint32_t>(NEW_ARRAY, rp, array_size);
-
+    { // add NEW_ARRAY instruction
+        auto instr_new_array = BytecodeUtil::Make<RawOperation<>>();
+        instr_new_array->opcode = NEW_ARRAY;
+        instr_new_array->Accept<uint8_t>(rp);
+        instr_new_array->Accept<uint32_t>(array_size);
+        chunk->Append(std::move(instr_new_array));
+    }
     
     int stack_size_before = 0;
 
     if (has_side_effects) {
         // move to stack temporarily
+        { // store value of the right hand side on the stack
+            auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+            instr_push->opcode = PUSH;
+            instr_push->Accept<uint8_t>(rp);
+            chunk->Append(std::move(instr_push));
+        }
         
-        // store value of the right hand side on the stack
-        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t, uint8_t>(PUSH, rp);
         stack_size_before = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         // increment stack size
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
@@ -87,8 +96,8 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
     // assign all array items
     int index = 0;
     for (auto &member : m_members) {
+        chunk->Append(member->Build(visitor, mod));
 
-        member->Build(visitor, mod);
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         if (has_side_effects) {
@@ -101,13 +110,22 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
             int diff = stack_size_after - stack_size_before;
             ASSERT(diff == 1);
 
-            // load array from stack back into register
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
-                
-            // send to the array
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(MOV_ARRAYIDX, rp, index, rp - 1);
+            { // load array from stack back into register
+                auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+                instr_load_offset->opcode = LOAD_OFFSET;
+                instr_load_offset->Accept<uint8_t>(rp);
+                instr_load_offset->Accept<uint16_t>(diff);
+                chunk->Append(std::move(instr_load_offset));
+            }
+
+            { // send to the array
+                auto instr_mov_array_idx = BytecodeUtil::Make<RawOperation<>>();
+                instr_mov_array_idx->opcode = MOV_ARRAYIDX;
+                instr_mov_array_idx->Accept<uint8_t>(rp);
+                instr_mov_array_idx->Accept<uint32_t>(index);
+                instr_mov_array_idx->Accept<uint8_t>(rp - 1);
+                chunk->Append(std::move(instr_mov_array_idx));
+            }
 
             // unclaim register for member
             visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
@@ -115,8 +133,12 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
             rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
         } else {
             // send to the array
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(MOV_ARRAYIDX, rp - 1, index, rp);
+            auto instr_mov_array_idx = BytecodeUtil::Make<RawOperation<>>();
+            instr_mov_array_idx->opcode = MOV_ARRAYIDX;
+            instr_mov_array_idx->Accept<uint8_t>(rp - 1);
+            instr_mov_array_idx->Accept<uint32_t>(index);
+            instr_mov_array_idx->Accept<uint8_t>(rp);
+            chunk->Append(std::move(instr_mov_array_idx));
         }
 
         index++;
@@ -133,15 +155,26 @@ void AstArrayExpression::Build(AstVisitor *visitor, Module *mod)
         int stack_size_after = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
         int diff = stack_size_after - stack_size_before;
         ASSERT(diff == 1);
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)diff);
+        
+        { // load array from stack back into register
+            auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+            instr_load_offset->opcode = LOAD_OFFSET;
+            instr_load_offset->Accept<uint8_t>(rp);
+            instr_load_offset->Accept<uint16_t>(diff);
+            chunk->Append(std::move(instr_load_offset));
+        }
 
-        // pop array from stack
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
+        { // pop the array from the stack
+            auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
+            instr_pop->opcode = POP;
+            chunk->Append(std::move(instr_pop));
+        }
+
         // decrement stack size
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
     }
+
+    return std::move(chunk);
 }
 
 void AstArrayExpression::Optimize(AstVisitor *visitor, Module *mod)

@@ -72,8 +72,10 @@ void AstParameter::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstParameter::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstParameter::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     ASSERT(m_identifier != nullptr);
 
     // get current stack size
@@ -95,6 +97,8 @@ void AstParameter::Build(AstVisitor *visitor, Module *mod)
 
     // increment stack size
     visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
+
+    return std::move(chunk);
 }
 
 void AstParameter::Optimize(AstVisitor *visitor, Module *mod)

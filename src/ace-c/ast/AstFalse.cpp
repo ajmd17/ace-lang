@@ -12,13 +12,17 @@ AstFalse::AstFalse(const SourceLocation &location)
 {
 }
 
-void AstFalse::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstFalse::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
     // load value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
+    auto instr_load_false = BytecodeUtil::Make<RawOperation<>>();
+    instr_load_false->opcode = LOAD_FALSE;
+    instr_load_false->Accept<uint8_t>(rp);
+
+    return std::move(instr_load_false);
 }
 
 void AstFalse::Recreate(std::ostringstream &ss)

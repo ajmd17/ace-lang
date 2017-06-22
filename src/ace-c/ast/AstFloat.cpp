@@ -18,13 +18,18 @@ AstFloat::AstFloat(ace::afloat32 value, const SourceLocation &location)
 {
 }
 
-void AstFloat::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstFloat::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    
     // load integer value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, float>(LOAD_F32, rp, m_value);
+    auto instr_load_f32 = BytecodeUtil::Make<RawOperation<>>();
+    instr_load_f32->opcode = LOAD_F32;
+    instr_load_f32->Accept<uint8_t>(rp);
+    instr_load_f32->Accept<float>(m_value);
+
+    return std::move(instr_load_f32);
 }
 
 void AstFloat::Recreate(std::ostringstream &ss)

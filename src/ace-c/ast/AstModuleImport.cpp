@@ -48,7 +48,7 @@ void AstModuleImportPart::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstModuleImportPart::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstModuleImportPart::Build(AstVisitor *visitor, Module *mod)
 {
 }
 

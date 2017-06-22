@@ -24,15 +24,19 @@ void AstArgumentList::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstArgumentList::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstArgumentList::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     for (const std::shared_ptr<AstArgument> &arg : m_args) {
         ASSERT(arg != nullptr);
-        arg->Build(visitor, mod);
+        chunk->Append(arg->Build(visitor, mod));
     }
+
+    return std::move(chunk);
 }
 
 void AstArgumentList::Optimize(AstVisitor *visitor, Module *mod)

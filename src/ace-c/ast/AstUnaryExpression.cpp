@@ -117,9 +117,13 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstUnaryExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module *mod)
 {
-    m_target->Build(visitor, mod);
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
+    ASSERT(m_target != nullptr);
+
+    chunk->Append(m_target->Build(visitor, mod));
 
     if (!m_folded) {
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -131,79 +135,65 @@ void AstUnaryExpression::Build(AstVisitor *visitor, Module *mod)
                 opcode = NEG;
             }
 
-            // load the label address from static memory into register 1
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t>(opcode, rp);
-
+            auto oper = BytecodeUtil::Make<RawOperation<>>();
+            oper->opcode = opcode;
+            oper->Accept<uint8_t>(rp);
+            chunk->Append(std::move(oper));
         } else if (m_op->GetType() == LOGICAL) {
             if (m_op->GetOperatorType() == Operators::OP_logical_not) {
-                
                 // the label to jump to the very end, and set the result to false
-                StaticObject false_label;
-                false_label.m_type = StaticObject::TYPE_LABEL;
-                false_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+                LabelId false_label = chunk->NewLabel();
 
-                StaticObject true_label;
-                true_label.m_type = StaticObject::TYPE_LABEL;
-                true_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+                LabelId true_label = chunk->NewLabel();;
 
-                // compare lhs to 0 (false)
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t>(CMPZ, rp);
-
-                    // load the label address from static memory into register 0
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, true_label.m_id);
-
-                if (!ace::compiler::Config::use_static_objects) {
-                    // fill with padding, for LOAD_ADDR instruction.
-                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                { // compare lhs to 0 (false)
+                    auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
+                    instr_cmpz->opcode = CMPZ;
+                    instr_cmpz->Accept<uint8_t>(rp);
+                    chunk->Append(std::move(instr_cmpz));
                 }
 
-                // jump if they are not equal: i.e the value is true
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t>(JE, rp);
-
-                    // no values were true at this point so load the value 'false'
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
-
-                // jump to the VERY end (so we don't load 'true' value)
-                // increment register usage
-                visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-                // get register position
-                rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                // load the label address from static memory into register 1
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, false_label.m_id);
-
-                if (!ace::compiler::Config::use_static_objects) {
-                    // fill with padding, for LOAD_ADDR instruction.
-                    visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+                { // jump if they are not equal: i.e the value is true
+                    auto instr_je = BytecodeUtil::Make<Jump>();
+                    instr_je->opcode = JE;
+                    instr_je->label_id = true_label;
+                    chunk->Append(std::move(instr_je));
                 }
 
-                // jump if they are equal: i.e the value is false
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t>(JMP, rp);
+                { // didn't skip past: load the false value
+                    auto instr_load_false = BytecodeUtil::Make<RawOperation<>>();
+                    instr_load_false->opcode = LOAD_FALSE;
+                    instr_load_false->Accept<uint8_t>(rp);
+                    chunk->Append(std::move(instr_load_false));
+                }
 
-                visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+                { // now, jump to the very end so we don't load the true value.
+                    auto instr_jmp = BytecodeUtil::Make<Jump>();
+                    instr_jmp->opcode = JMP;
+                    instr_jmp->label_id = false_label;
+                    chunk->Append(std::move(instr_jmp));
+                }
+
+                // skip to here to load true
+                chunk->MarkLabel(true_label);
+
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-                true_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(true_label);
-
-                // here is where the value is true
-                visitor->GetCompilationUnit()->GetInstructionStream() <<
-                    Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
+                
+                { // here is where the value is true
+                    auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
+                    instr_load_true->opcode = LOAD_TRUE;
+                    instr_load_true->Accept<uint8_t>(rp);
+                    chunk->Append(std::move(instr_load_true));
+                }
 
                 // skip to here to avoid loading 'true' into the register
-                false_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-                visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(false_label);
+                chunk->MarkLabel(false_label);
             }
         }
     }
+
+    return std::move(chunk);
 }
 
 void AstUnaryExpression::Optimize(AstVisitor *visitor, Module *mod)

@@ -7,7 +7,7 @@ class AstFalse : public AstConstant {
 public:
     AstFalse(const SourceLocation &location);
 
-    virtual void Build(AstVisitor *visitor, Module *mod) override;
+    virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override;
     virtual void Recreate(std::ostringstream &ss) override;
     virtual Pointer<AstStatement> Clone() const override;
 

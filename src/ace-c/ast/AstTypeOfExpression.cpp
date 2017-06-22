@@ -27,7 +27,7 @@ void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
      SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
      ASSERT(expr_type != nullptr);
 
-     /*if (expr_type == SymbolType::Builtin::ANY) {
+     //if (expr_type == SymbolType::Builtin::ANY) {
         // add runtime::typeof call
         m_runtime_typeof_call = visitor->GetCompilationUnit()->GetAstNodeBuilder()
             .Module("runtime")
@@ -43,14 +43,15 @@ void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
 
         ASSERT(m_runtime_typeof_call != nullptr);
         m_runtime_typeof_call->Visit(visitor, mod);
-    }*/
+    //}
 }
 
-void AstTypeOfExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstTypeOfExpression::Build(AstVisitor *visitor, Module *mod)
 {
-    if (m_runtime_typeof_call != nullptr) {
-        m_runtime_typeof_call->Build(visitor, mod);
-    } else {
+    ASSERT(m_runtime_typeof_call != nullptr);
+    //if (m_runtime_typeof_call != nullptr) {
+    return m_runtime_typeof_call->Build(visitor, mod);
+    /*} else {
         ASSERT(m_expr != nullptr);
 
         SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
@@ -82,7 +83,7 @@ void AstTypeOfExpression::Build(AstVisitor *visitor, Module *mod)
             // fill with padding for LOAD_STRING instruction
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2 + std::strlen(so.m_value.str);
         }
-    }
+    }*/
 }
 
 void AstTypeOfExpression::Optimize(AstVisitor *visitor, Module *mod)

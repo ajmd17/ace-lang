@@ -73,18 +73,22 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     m_object_value = object_value;
 }
 
-void AstNewExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstNewExpression::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     ASSERT(m_type_expr != nullptr);
-    m_type_expr->Build(visitor, mod);
+    chunk->Append(m_type_expr->Build(visitor, mod));
 
     if (m_constructor_call != nullptr) {
-        m_constructor_call->Build(visitor, mod);
+        chunk->Append(m_constructor_call->Build(visitor, mod));
     } else {
         // build in the value
         ASSERT(m_object_value != nullptr);
-        m_object_value->Build(visitor, mod);
+        chunk->Append(m_object_value->Build(visitor, mod));
     }
+
+    return std::move(chunk);
 }
 
 void AstNewExpression::Optimize(AstVisitor *visitor, Module *mod)

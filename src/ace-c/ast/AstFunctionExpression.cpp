@@ -39,19 +39,21 @@ AstFunctionExpression::AstFunctionExpression(
 {
 }
 
-void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     // increase stack size by the number of parameters
     int param_stack_size = 0;
 
     if (m_is_closure && m_closure_self_param != nullptr) {
-        m_closure_self_param->Build(visitor, mod);
+        chunk->Append(m_closure_self_param->Build(visitor, mod));
         param_stack_size++;
     }
 
     for (int i = 0; i < m_parameters.size(); i++) {
         ASSERT(m_parameters[i] != nullptr);
-        m_parameters[i]->Build(visitor, mod);
+        chunk->Append(m_parameters[i]->Build(visitor, mod));
         param_stack_size++;
     }
 
@@ -60,17 +62,21 @@ void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
 
     if (m_is_generator) {
         ASSERT(m_generator_closure != nullptr);
+        chunk->Append(m_generator_closure->Build(visitor, mod));
 
-        m_generator_closure->Build(visitor, mod);
         // return the generator closure object
-        visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+        auto instr_ret = BytecodeUtil::Make<RawOperation<>>();
+        instr_ret->opcode = RET;
+        chunk->Append(std::move(instr_ret));
     } else {
         // build the function body
-        m_block->Build(visitor, mod);
+        chunk->Append(m_block->Build(visitor, mod));
 
         if (!m_block->IsLastStatementReturn()) {
             // add RET instruction
-            visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+            auto instr_ret = BytecodeUtil::Make<RawOperation<>>();
+            instr_ret->opcode = RET;
+            chunk->Append(std::move(instr_ret));
         }
     }
 
@@ -80,6 +86,8 @@ void AstFunctionExpression::BuildFunctionBody(AstVisitor *visitor, Module *mod)
 
     // decrease stack size for call stack info
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
+
+    return std::move(chunk);
 }
 
 void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
@@ -320,98 +328,74 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_block != nullptr);
+    
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 
     // the register index variable we will reuse
     uint8_t rp;
 
-    if (!ace::compiler::Config::use_static_objects || m_static_id == 0) {
-        // the properties of this function
-        StaticFunction sf;
-        sf.m_nargs = (uint8_t)m_parameters.size();
-
-        if (m_is_closure) {
-            sf.m_nargs++; // make room for the closure self object
-        }
-
-        sf.m_flags = FunctionFlags::NONE;
-        
-        if (!m_parameters.empty()) {
-            const std::shared_ptr<AstParameter> &last = m_parameters.back();
-            ASSERT(last != nullptr);
-
-            if (last->IsVariadic()) {
-                sf.m_flags |= FunctionFlags::VARIADIC;
-            }
-        }
-
-        if (m_is_generator_closure) {
-            sf.m_flags |= FunctionFlags::GENERATOR;
-        }
-
-        if (m_is_closure) {
-            sf.m_flags |= FunctionFlags::CLOSURE;
-        }
-
-        // the label to jump to the very end
-        StaticObject end_label;
-        end_label.m_type = StaticObject::TYPE_LABEL;
-        end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-        // jump to end as to not execute the function body
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // load the label address from static memory into register
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
-        }
-
-        // jump if they are equal: i.e the value is false
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JMP, rp);
-
-        // store the function address before the function body
-        sf.m_addr = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-
-        // store function data as a static object
-        StaticObject so(sf);
-        const int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
-
-        if (!ace::compiler::Config::use_static_objects || found_id == -1) {
-            m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-            so.m_id = m_static_id;
-            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
-            
-            // Build the function 
-            BuildFunctionBody(visitor, mod);
-        } else {
-            m_static_id = found_id;
-        }
-
-        // set the label's position to after the block
-        end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+    // the properties of this function
+    uint8_t nargs = (uint8_t)m_parameters.size();
+    if (m_is_closure) {
+        nargs++; // make room for the closure self object
     }
+
+    uint8_t flags = FunctionFlags::NONE;
+    if (!m_parameters.empty()) {
+        const std::shared_ptr<AstParameter> &last = m_parameters.back();
+        ASSERT(last != nullptr);
+
+        if (last->IsVariadic()) {
+            flags |= FunctionFlags::VARIADIC;
+        }
+    }
+
+    if (m_is_generator_closure) {
+        flags |= FunctionFlags::GENERATOR;
+    }
+
+    if (m_is_closure) {
+        flags |= FunctionFlags::CLOSURE;
+    }
+
+    // the label to jump to the very end
+    LabelId end_label = chunk->NewLabel();
+    LabelId func_addr = chunk->NewLabel();
+
+    // jump to end as to not execute the function body
+    // get current register index
+    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+    {
+        auto instr_jmp = BytecodeUtil::Make<Jump>();
+        instr_jmp->opcode = JMP;
+        instr_jmp->label_id = end_label;
+        chunk->Append(std::move(instr_jmp));
+    }
+
+    // store the function address before the function body
+    chunk->MarkLabel(func_addr);
+    
+    // TODO add optimization to avoid duplicating the function body
+    // Build the function 
+    chunk->Append(BuildFunctionBody(visitor, mod));
+
+    // set the label's position to after the block
+    chunk->MarkLabel(end_label);
 
     // store local variable
     // get register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    // load the static object into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);
-
-    if (!ace::compiler::Config::use_static_objects) {
-        // fill with padding, for LOAD_FUNC instruction.
-        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 4;
-    }
+    auto func = BytecodeUtil::Make<BuildableFunction>();
+    func->label_id = func_addr;
+    func->reg = rp;
+    func->nargs = nargs;
+    func->flags = flags;
+    chunk->Append(std::move(func));
 
     if (m_is_closure) {
         ASSERT(m_closure_object != nullptr);
@@ -424,20 +408,29 @@ void AstFunctionExpression::Build(AstVisitor *visitor, Module *mod)
 
         const int closure_obj_reg = rp;
 
-        m_closure_object->Build(visitor, mod);
+        chunk->Append(m_closure_object->Build(visitor, mod));
 
         const uint32_t hash = hash_fnv_1("$invoke");
 
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(MOV_MEM_HASH, rp, hash, (uint8_t)func_expr_reg);
-
+        auto instr_mov_mem_hash = BytecodeUtil::Make<RawOperation<>>();
+        instr_mov_mem_hash->opcode = MOV_MEM_HASH;
+        instr_mov_mem_hash->Accept<uint8_t>(rp); // dst
+        instr_mov_mem_hash->Accept<uint32_t>(hash); // hash
+        instr_mov_mem_hash->Accept<uint8_t>(func_expr_reg); // src
+        chunk->Append(std::move(instr_mov_mem_hash));
+        
         visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
         
         // swap regs, so the closure object returned
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint8_t>(MOV_REG, rp, (uint8_t)closure_obj_reg);
+        auto instr_mov_reg = BytecodeUtil::Make<RawOperation<>>();
+        instr_mov_reg->opcode = MOV_REG;
+        instr_mov_reg->Accept<uint8_t>(rp); // dst
+        instr_mov_reg->Accept<uint8_t>(closure_obj_reg); // src
+        chunk->Append(std::move(instr_mov_reg));
     }
+
+    return std::move(chunk);
 }
 
 void AstFunctionExpression::Optimize(AstVisitor *visitor, Module *mod)

@@ -19,7 +19,7 @@
 
 namespace ace_compiler {
 
-bool BuildSourceFile(
+std::unique_ptr<BytecodeChunk> BuildSourceFile(
     const utf::Utf8String &filename,
     const utf::Utf8String &out_filename)
 {
@@ -27,11 +27,15 @@ bool BuildSourceFile(
     return BuildSourceFile(filename, out_filename, compilation_unit);
 }
 
-bool BuildSourceFile(const utf::Utf8String &filename,
+std::unique_ptr<BytecodeChunk> BuildSourceFile(
+    const utf::Utf8String &filename,
     const utf::Utf8String &out_filename,
     CompilationUnit &compilation_unit)
 {
-    std::ifstream in_file(filename.GetData(), std::ios::in | std::ios::ate | std::ios::binary);
+    std::ifstream in_file(
+        filename.GetData(),
+        std::ios::in | std::ios::ate | std::ios::binary
+    );
 
     if (!in_file.is_open()) {
         utf::cout << "Could not open file: " << filename << "\n";
@@ -89,13 +93,11 @@ bool BuildSourceFile(const utf::Utf8String &filename,
             // compile into bytecode instructions
             ast_iterator.ResetPosition();
             Compiler compiler(&ast_iterator, &compilation_unit);
-            compiler.Compile();
-
-            return true;
+            return compiler.Compile();
         }
     }
 
-    return false;
+    return nullptr;
 }
 
 void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8String &out_filename)
@@ -128,7 +130,7 @@ void DecompileBytecodeFile(const utf::Utf8String &filename, const utf::Utf8Strin
             os = new utf::utf8_ofstream(out_filename.GetData(), std::ios::out | std::ios::binary);
         }
 
-        InstructionStream instruction_stream = decompilation_unit.Decompile(bs, os);
+        decompilation_unit.Decompile(bs, os);
 
         if (write_to_file) {
             delete os;

@@ -1,5 +1,6 @@
 #include <ace-c/ast/AstTryCatch.hpp>
 #include <ace-c/AstVisitor.hpp>
+#include <ace-c/Compiler.hpp>
 #include <ace-c/emit/Instruction.hpp>
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Keywords.hpp>
@@ -25,78 +26,58 @@ void AstTryCatch::Visit(AstVisitor *visitor, Module *mod)
     m_catch_block->Visit(visitor, mod);
 }
 
-void AstTryCatch::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     uint8_t rp;
 
     // the label to jump to the very end
-    StaticObject end_label;
-    end_label.m_type = StaticObject::TYPE_LABEL;
-    end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+    LabelId end_label = chunk->NewLabel();
 
     // the label to jump to the catch-block
-    StaticObject catch_label;
-    catch_label.m_type = StaticObject::TYPE_LABEL;
-    catch_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+    LabelId catch_label = chunk->NewLabel();
 
-    // get current register index
-    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, catch_label.m_id);
-
-    if (!ace::compiler::Config::use_static_objects) {
-        // fill with padding, for LOAD_ADDR instruction.
-        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+    { // send the instruction to enter the try-block
+        auto instr_begin_try = BytecodeUtil::Make<BuildableTryCatch>();
+        instr_begin_try->catch_label_id = catch_label;
+        chunk->Append(std::move(instr_begin_try));
     }
-
-    // send the instruction to enter the try-block
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(BEGIN_TRY, rp);
 
     // try block increases stack size to hold the data about the catch block
     visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 
     // build the try-block
-    m_try_block->Build(visitor, mod);
+    chunk->Append(m_try_block->Build(visitor, mod));
 
-    // send the instruction to end the try-block
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t>(END_TRY);
-
+    { // send the instruction to end the try-block
+        auto instr_end_try = BytecodeUtil::Make<RawOperation<>>();
+        instr_end_try->opcode = END_TRY;
+        chunk->Append(std::move(instr_end_try));
+    }
+    
     // decrease stack size for the try block
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
 
-    // jump to the end, as to not execute the catch-block
-    // get current register index
-    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
-
-    if (!ace::compiler::Config::use_static_objects) {
-        // fill with padding, for LOAD_ADDR instruction.
-        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+    { // jump to the end, as to not execute the catch-block
+        auto instr_jmp = BytecodeUtil::Make<Jump>();
+        instr_jmp->opcode = JMP;
+        instr_jmp->label_id = end_label;
+        chunk->Append(std::move(instr_jmp));
     }
-
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(JMP, rp);
 
     // set the label's position to where the catch-block would be
-    catch_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(catch_label);
+    chunk->MarkLabel(catch_label);
 
     // exception was thrown, pop all local variables from the try-block
-    for (int i = 0; i < m_try_block->NumLocals(); i++) {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
-    }
+    chunk->Append(Compiler::PopStack(visitor, m_try_block->NumLocals()));
 
     // build the catch-block
-    m_catch_block->Build(visitor, mod);
+    chunk->Append(m_catch_block->Build(visitor, mod));
 
-    end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-    visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+    chunk->MarkLabel(end_label);
+
+    return std::move(chunk);
 }
 
 void AstTryCatch::Optimize(AstVisitor *visitor, Module *mod)

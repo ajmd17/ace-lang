@@ -2,7 +2,6 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/InstructionBlock.hpp>
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
@@ -41,138 +40,107 @@ void AstWhileLoop::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Close();
 }
 
-void AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     int condition_is_true = m_conditional->IsTrue();
     if (condition_is_true == -1) {
-        InstructionObject<uint8_t, uint8_t, int32_t> test_iobj;
-
-        InstructionBlock block;
-        block.Allot(&test_iobj);
-
-        test_iobj.Set<0>('A');
-        test_iobj.Set<1>('B');
-        test_iobj.Set<2>(67);
-
-        visitor->GetCompilationUnit()->GetInstructionStream().Write(block);
-
         // the condition cannot be determined at compile time
         uint8_t rp;
 
-        StaticObject top_label;
-        top_label.m_type = StaticObject::TYPE_LABEL;
-        top_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+        LabelId top_label = chunk->NewLabel();
 
         // the label to jump to the end to BREAK
-        StaticObject break_label;
-        break_label.m_type = StaticObject::TYPE_LABEL;
-        break_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
+        LabelId break_label = chunk->NewLabel();
 
         // get current register index
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         // where to jump up to
-        top_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+        chunk->MarkLabel(top_label);
 
         // build the conditional
-        m_conditional->Build(visitor, mod);
+        chunk->Append(m_conditional->Build(visitor, mod));
 
-        // compare the conditional to 0
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(CMPZ, rp);
-
-        // load the label address from static memory into register 0
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, break_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        { // compare the conditional to 0
+            auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
+            instr_cmpz->opcode = CMPZ;
+            instr_cmpz->Accept<uint8_t>(rp);
+            chunk->Append(std::move(instr_cmpz));
         }
 
-        // jump if they are equal: i.e the value is false
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JE, rp);
+        { // break away if the condition is false (equal to zero)
+            auto instr_je = BytecodeUtil::Make<Jump>();
+            instr_je->opcode = JE;
+            instr_je->label_id = break_label;
+            chunk->Append(std::move(instr_je));
+        }
 
         // enter the block
-        m_block->Build(visitor, mod);
+        chunk->Append(m_block->Build(visitor, mod));
 
         // pop all local variables off the stack
         for (int i = 0; i < m_num_locals; i++) {
             visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
         }
-        Compiler::PopStack(visitor, m_num_locals);
 
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-        // load the label address from static memory into register 0
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, top_label.m_id);
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        chunk->Append(Compiler::PopStack(visitor, m_num_locals));
+
+        { // jump back to top here
+            auto instr_jmp = BytecodeUtil::Make<Jump>();
+            instr_jmp->opcode = JMP;
+            instr_jmp->label_id = top_label;
+            chunk->Append(std::move(instr_jmp));
         }
-        // jump back to top here
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JMP, rp);
 
         // set the label's position to after the block,
         // so we can skip it if the condition is false
-        break_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(break_label);
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(top_label);
+        chunk->MarkLabel(break_label);
     } else if (condition_is_true) {
-
-        StaticObject top_label;
-        top_label.m_type = StaticObject::TYPE_LABEL;
-        top_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-        top_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
+        LabelId top_label = chunk->NewLabel();
+        chunk->MarkLabel(top_label);
 
         // the condition has been determined to be true
         if (m_conditional->MayHaveSideEffects()) {
             // if there is a possibility of side effects,
             // build the conditional into the binary
-            m_conditional->Build(visitor, mod);
+            chunk->Append(m_conditional->Build(visitor, mod));
         }
 
         // enter the block
-        m_block->Build(visitor, mod);
+        chunk->Append(m_block->Build(visitor, mod));
 
         // pop all local variables off the stack
         for (int i = 0; i < m_num_locals; i++) {
             visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
         }
-        Compiler::PopStack(visitor, m_num_locals);
 
-        // get current register index
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-        // load the label address from static memory into register 0
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, top_label.m_id);
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        chunk->Append(Compiler::PopStack(visitor, m_num_locals));
+
+        { // jump back to top here
+            auto instr_jmp = BytecodeUtil::Make<Jump>();
+            instr_jmp->opcode = JMP;
+            instr_jmp->label_id = top_label;
+            chunk->Append(std::move(instr_jmp));
         }
-        // jump back to top here
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JMP, rp);
-
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(top_label);
-
     } else {
         // the condition has been determined to be false
         if (m_conditional->MayHaveSideEffects()) {
             // if there is a possibility of side effects,
             // build the conditional into the binary
-            m_conditional->Build(visitor, mod);
+            chunk->Append(m_conditional->Build(visitor, mod));
 
             // pop all local variables off the stack
             for (int i = 0; i < m_num_locals; i++) {
                 visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
             }
-            Compiler::PopStack(visitor, m_num_locals);
+
+            chunk->Append(Compiler::PopStack(visitor, m_num_locals));
         }
     }
+
+    return std::move(chunk);
 }
 
 void AstWhileLoop::Optimize(AstVisitor *visitor, Module *mod)

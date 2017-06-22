@@ -113,41 +113,33 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstCallExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstCallExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_target != nullptr);
 
-    // sort args
-    //ASSERT(m_arg_ordering.size() >= m_args.size());
-    
-    /*std::vector<std::shared_ptr<AstArgument>> args_sorted;
-    args_sorted.resize(m_args.size());
-
-    for (size_t i = 0; i < m_args.size(); i++) {
-        ASSERT(m_arg_ordering[i] >= 0);
-        ASSERT(m_arg_ordering[i] <= m_args.size());
-        args_sorted[m_arg_ordering[i]] = m_args[i];
-    }*/
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 
     // build arguments
-    Compiler::BuildArgumentsStart(
+    chunk->Append(Compiler::BuildArgumentsStart(
         visitor,
         mod,
         m_args//args_sorted
-    );
+    ));
 
-    Compiler::BuildCall(
+    chunk->Append(Compiler::BuildCall(
         visitor,
         mod,
         m_target,
         (uint8_t)m_args.size()
-    );
+    ));
 
-    Compiler::BuildArgumentsEnd(
+    chunk->Append(Compiler::BuildArgumentsEnd(
         visitor,
         mod,
         m_args.size()
-    );
+    ));
+
+    return std::move(chunk);
 }
 
 void AstCallExpression::Optimize(AstVisitor *visitor, Module *mod)

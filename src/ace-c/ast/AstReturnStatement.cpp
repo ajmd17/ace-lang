@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstReturnStatement.hpp>
 #include <ace-c/Optimizer.hpp>
 #include <ace-c/AstVisitor.hpp>
+#include <ace-c/Compiler.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Keywords.hpp>
 
@@ -48,19 +49,30 @@ void AstReturnStatement::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstReturnStatement::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstReturnStatement::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     ASSERT(m_expr != nullptr);
-    m_expr->Build(visitor, mod);
+    chunk->Append(m_expr->Build(visitor, mod));
 
     // pop all variables in the way off of the stack
-    for (int i = 0; i < m_num_pops; i++) {
+    /*for (int i = 0; i < m_num_pops; i++) {
+        auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
+        instr_pop->opcode = 
+
         visitor->GetCompilationUnit()->GetInstructionStream() <<
             Instruction<uint8_t>(POP);
-    }
+    }*/
+
+    chunk->Append(Compiler::PopStack(visitor, m_num_pops));
 
     // add RET instruction
-    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);
+    auto instr_ret = BytecodeUtil::Make<RawOperation<>>();
+    instr_ret->opcode = RET;
+    chunk->Append(std::move(instr_ret));
+    
+    return std::move(chunk);
 }
 
 void AstReturnStatement::Optimize(AstVisitor *visitor, Module *mod)

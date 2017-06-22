@@ -20,28 +20,24 @@ AstArgument::AstArgument(
 void AstArgument::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-
     m_expr->Visit(visitor, mod);
 }
 
-void AstArgument::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstArgument::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-    
-    m_expr->Build(visitor, mod);
+    return m_expr->Build(visitor, mod);
 }
 
 void AstArgument::Optimize(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-    
     m_expr->Optimize(visitor, mod);
 }
 
 void AstArgument::Recreate(std::ostringstream &ss)
 {
     ASSERT(m_expr != nullptr);
-    
     m_expr->Recreate(ss);
 }
 
@@ -53,20 +49,17 @@ Pointer<AstStatement> AstArgument::Clone() const
 int AstArgument::IsTrue() const
 {
     ASSERT(m_expr != nullptr);
-
     return m_expr->IsTrue();
 }
 
 bool AstArgument::MayHaveSideEffects() const
 {
     ASSERT(m_expr != nullptr);
-
     return m_expr->MayHaveSideEffects();
 }
 
 SymbolTypePtr_t AstArgument::GetSymbolType() const
 {
     ASSERT(m_expr != nullptr);
-    
     return m_expr->GetSymbolType();
 }

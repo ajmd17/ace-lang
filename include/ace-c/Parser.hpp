@@ -11,7 +11,6 @@
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/ast/AstFunctionDefinition.hpp>
 #include <ace-c/ast/AstFunctionExpression.hpp>
-#include <ace-c/ast/AstClosure.hpp>
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/ast/AstTupleExpression.hpp>
 #include <ace-c/ast/AstTypeDefinition.hpp>

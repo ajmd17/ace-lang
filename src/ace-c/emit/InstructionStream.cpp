@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 
-std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
+/*std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
 {
     // sort all static objects by their id
     std::sort(
@@ -169,10 +169,10 @@ std::ostream &operator<<(std::ostream &os, InstructionStream instruction_stream)
     }
 
     return os;
-}
+}*/
 
 InstructionStream::InstructionStream()
-    : m_position(0),
+    : //m_position(0),
       m_register_counter(0),
       m_stack_size(0),
       m_static_id(0)
@@ -180,8 +180,8 @@ InstructionStream::InstructionStream()
 }
 
 InstructionStream::InstructionStream(const InstructionStream &other)
-    : m_position(other.m_position),
-      m_data(other.m_data),
+    : //m_position(other.m_position),
+      //m_data(other.m_data),
       m_register_counter(other.m_register_counter),
       m_stack_size(other.m_stack_size),
       m_static_id(other.m_static_id),
@@ -200,26 +200,11 @@ int InstructionStream::FindStaticObject(const StaticObject &static_object) const
     return -1;
 }
 
-void InstructionStream::Write(const InstructionBlock &block)
-{
-    std::stringbuf buf;
-    block.Build(buf);
-
-    std::vector<char> data;
-
-    std::istreambuf_iterator<char> iter(&buf);
-    std::istreambuf_iterator<char> end;
-
-    data.insert(data.end(), iter, end);
-
-    m_position += block.GetCurrentSize();
-}
-
-InstructionStream &InstructionStream::operator<<(const Instruction<> &instruction)
+/*InstructionStream &InstructionStream::operator<<(const Instruction<> &instruction)
 {
     m_data.push_back(instruction);
     for (const std::vector<char> &operand : instruction.m_data) {
         m_position += operand.size();
     }
     return *this;
-}
+}*/

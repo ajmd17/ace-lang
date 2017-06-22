@@ -19,13 +19,18 @@ AstInteger::AstInteger(ace::aint32 value, const SourceLocation &location)
 {
 }
 
-void AstInteger::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstInteger::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+    
     // load integer value into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, int32_t>(LOAD_I32, rp, m_value);
+    auto instr_load_i32 = BytecodeUtil::Make<RawOperation<>>();
+    instr_load_i32->opcode = LOAD_I32;
+    instr_load_i32->Accept<uint8_t>(rp);
+    instr_load_i32->Accept<int32_t>(m_value);
+
+    return std::move(instr_load_i32);
 }
 
 void AstInteger::Recreate(std::ostringstream &ss)

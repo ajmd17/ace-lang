@@ -65,26 +65,13 @@ void AstYieldStatement::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstYieldStatement::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstYieldStatement::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
     ASSERT(m_yield_callback_call != nullptr);
-
-    m_yield_callback_call->Build(visitor, mod);
-
-    /*ASSERT(m_expr != nullptr);
-    m_expr->Build(visitor, mod);
-
-    // pop all variables in the way off of the stack
-    for (int i = 0; i < m_num_pops; i++) {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
-    }
-
-    // add RET instruction
-    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(RET);*/
+    return m_yield_callback_call->Build(visitor, mod);
 }
 
 void AstYieldStatement::Optimize(AstVisitor *visitor, Module *mod)

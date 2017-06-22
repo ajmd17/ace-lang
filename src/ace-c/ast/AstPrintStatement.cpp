@@ -22,8 +22,10 @@ void AstPrintStatement::Visit(AstVisitor *visitor, Module *mod)
     m_arg_list->Visit(visitor, mod);
 }
 
-void AstPrintStatement::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstPrintStatement::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
@@ -31,20 +33,24 @@ void AstPrintStatement::Build(AstVisitor *visitor, Module *mod)
 
     // accept each argument
     for (auto &arg : m_arg_list->GetArguments()) {
-        arg->Build(visitor, mod);
+        chunk->Append(arg->Build(visitor, mod));
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->
             GetInstructionStream().GetCurrentRegister();
 
-        // emit instruction
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(ECHO, rp);
+        auto instr_echo = BytecodeUtil::Make<RawOperation<>>();
+        instr_echo->opcode = ECHO;
+        instr_echo->Accept<uint8_t>(rp);
+        chunk->Append(std::move(instr_echo));
     }
 
     // print newline
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t>(ECHO_NEWLINE);
+    auto instr_echo_newline = BytecodeUtil::Make<RawOperation<>>();
+    instr_echo_newline->opcode = ECHO_NEWLINE;
+    chunk->Append(std::move(instr_echo_newline));
+
+    return std::move(chunk);
 }
 
 void AstPrintStatement::Optimize(AstVisitor *visitor, Module *mod)

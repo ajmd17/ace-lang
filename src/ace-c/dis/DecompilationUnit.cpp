@@ -16,6 +16,8 @@ void DecompilationUnit::DecodeNext(
     InstructionStream &is,
     utf::utf8_ostream *os)
 {
+    auto opr = BytecodeUtil::Make<RawOperation<>>();
+    opr->opcode = code;
 
     switch (code) {
     case NOP:
@@ -23,8 +25,6 @@ void DecompilationUnit::DecodeNext(
         if (os != nullptr) {
             (*os) << "nop" << std::endl;
         }
-
-        is << Instruction<uint8_t>(code);
 
         break;
     }
@@ -46,8 +46,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint32_t, const char*>(code, len, str);
-
         delete[] str;
 
         break;
@@ -58,11 +56,8 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&val);
 
         if (os != nullptr) {
-            
             (*os) << "addr [@(" << std::hex << val << std::dec << ")]" << std::endl;
         }
-
-        is << Instruction<uint8_t, uint32_t>(code, val);
 
         break;
     }
@@ -78,14 +73,11 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&flags);
 
         if (os != nullptr) {
-            
             (*os) << "function [@(" << std::hex << addr << std::dec << "), "
                     << "u8(" << (int)nargs << ")], "
                     << "u8(" << (int)flags << ")]"
                     << std::endl;
         }
-
-        is << Instruction<uint8_t, uint32_t, uint8_t, uint8_t>(code, addr, nargs, flags);
 
         break;
     }
@@ -121,8 +113,7 @@ void DecompilationUnit::DecodeNext(
                     << "u16(" << (int)size << "), ";
 
             for (int i = 0; i < size; i++) {
-                (*os)
-                    << "str(" << names[i].data() << ")";
+                (*os) << "str(" << names[i].data() << ")";
                 if (i != size - 1) {
                     (*os) << ", ";
                 }
@@ -132,9 +123,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, std::vector<uint8_t>, uint16_t, std::vector<std::vector<uint8_t>>>
-            (code, type_name, size, names);
 
         break;
     }
@@ -155,8 +143,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, int32_t>(code, reg, val);
-
         break;
     }
     case LOAD_I64:
@@ -175,8 +161,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, int64_t>(code, reg, val);
 
         break;
     }
@@ -197,8 +181,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, float>(code, reg, val);
-
         break;
     }
     case LOAD_F64:
@@ -217,8 +199,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, double>(code, reg, val);
 
         break;
     }
@@ -239,8 +219,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, offset);
-
         break;
     }
     case LOAD_INDEX:
@@ -260,8 +238,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, idx);
-
         break;
     }
     case LOAD_STATIC:
@@ -280,8 +256,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint16_t>(code, reg, index);
 
         break;
     }
@@ -309,8 +283,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint32_t, const char*>(code, reg, len, str);
-
         delete[] str;
 
         break;
@@ -324,11 +296,8 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&val);
 
         if (os != nullptr) {
-            
             (*os) << "load_addr [%" << (int)reg << ", @(" << std::hex << val << std::dec << ")]" << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint32_t>(code, reg, val);
 
         break;
     }
@@ -353,8 +322,6 @@ void DecompilationUnit::DecodeNext(
                     << "u8(" << (int)flags << ")]"
                     << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t, uint8_t>(code, reg, addr, nargs, flags);
 
         break;
     }
@@ -406,9 +373,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, std::vector<uint8_t>, uint16_t, std::vector<std::vector<uint8_t>>>
-            (code, reg, type_name, size, names);
-
         break;
     }
     case LOAD_MEM:
@@ -431,8 +395,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, reg, src, idx);
 
         break;
     }
@@ -457,8 +419,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(code, reg, src, hash);
-
         break;
     }
     case LOAD_ARRAYIDX:
@@ -482,8 +442,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, reg, src, idx);
-
         break;
     }
     case LOAD_NULL:
@@ -498,8 +456,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, reg);
 
         break;
     }
@@ -516,8 +472,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t>(code, reg);
-
         break;
     }
     case LOAD_FALSE:
@@ -532,8 +486,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, reg);
 
         break;
     }
@@ -554,8 +506,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint16_t, uint8_t>(code, dst, src);
-
         break;
     }
     case MOV_INDEX:
@@ -574,8 +524,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint16_t, uint8_t>(code, dst, src);
 
         break;
     }
@@ -600,8 +548,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, reg, idx, src);
-
         break;
     }
     case MOV_MEM_HASH:
@@ -624,8 +570,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(code, reg, hash, src);
 
         break;
     }
@@ -650,8 +594,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint32_t, uint8_t>(code, reg, idx, src);
-
         break;
     }
     case MOV_REG:
@@ -670,8 +612,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t>(code, dst, src);
 
         break;
     }
@@ -696,8 +636,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(code, reg, src, hash);
-
         break;
     }
     case PUSH:
@@ -713,8 +651,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t>(code, src);
-
         break;
     }
     case POP:
@@ -724,8 +660,6 @@ void DecompilationUnit::DecodeNext(
                 << "pop"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t>(code);
 
         break;
     }
@@ -741,8 +675,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t>(code);
 
         break;
     }
@@ -762,8 +694,6 @@ void DecompilationUnit::DecodeNext(
                 << "]" << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t>(code, dst, src);
-
         break;
     }
     case ECHO:
@@ -779,8 +709,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t>(code, reg);
-
         break;
     }
     case ECHO_NEWLINE:
@@ -791,97 +719,81 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t>(code);
-
         break;
     }
     case JMP:
     {
-        uint8_t addr;
+        uint32_t addr;
         bs.Read(&addr);
 
         if (os != nullptr) {
 
             (*os)
                 << "jmp ["
-                    << "%" << (int)addr
+                    << "@(" << std::hex << addr << std::dec << ")"
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, addr);
 
         break;
     }
     case JE:
     {
-        uint8_t addr;
+        uint32_t addr;
         bs.Read(&addr);
 
         if (os != nullptr) {
-
             (*os)
                 << "je ["
-                    << "%" << (int)addr
+                    << "@(" << std::hex << addr << std::dec << ")"
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, addr);
 
         break;
     }
     case JNE:
     {
-        uint8_t addr;
+        uint32_t addr;
         bs.Read(&addr);
 
         if (os != nullptr) {
-
             (*os)
                 << "jne ["
-                    << "%" << (int)addr
+                    << "@(" << std::hex << addr << std::dec << ")"
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, addr);
 
         break;
     }
     case JG:
     {
-        uint8_t addr;
+        uint32_t addr;
         bs.Read(&addr);
 
         if (os != nullptr) {
-
             (*os)
                 << "jg ["
-                    << "%" << (int)addr
+                    << "@(" << std::hex << addr << std::dec << ")"
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, addr);
 
         break;
     }
     case JGE:
     {
-        uint8_t addr;
+        uint32_t addr;
         bs.Read(&addr);
 
         if (os != nullptr) {
-
             (*os)
                 << "jge ["
-                    << "%" << (int)addr
+                    << "@(" << std::hex << addr << std::dec << ")"
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, addr);
 
         break;
     }
@@ -894,7 +806,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&argc);
 
         if (os != nullptr) {
-
             (*os)
                 << "call ["
                     << "%" << (int)func << ", "
@@ -903,49 +814,38 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t>(code, func, argc);
-
         break;
     }
     case RET:
     {
         if (os != nullptr) {
-
             (*os)
                 << "ret"
                 << std::endl;
         }
 
-        is << Instruction<uint8_t>(code);
-
         break;
     }
     case BEGIN_TRY:
     {
-        uint8_t reg;
-        bs.Read(&reg);
+        uint32_t addr;
+        bs.Read(&addr);
 
         if (os != nullptr) {
-
             (*os)
                 << "begin_try ["
-                    << "%" << (int)reg
+                    << "@(" << std::hex << addr << std::dec << ")"
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, reg);
 
         break;
     }
     case END_TRY:
     {
         if (os != nullptr) {
-
             (*os) << "end_try" << std::endl;
         }
-
-        is << Instruction<uint8_t>(code);
 
         break;
     }
@@ -958,7 +858,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&type);
 
         if (os != nullptr) {
-
             (*os)
                 << "new ["
                     << "%" << (int)dst << ", "
@@ -966,8 +865,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t>(code, dst, type);
 
         break;
     }
@@ -980,7 +877,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&size);
 
         if (os != nullptr) {
-
             (*os)
                 << "new_array ["
                     << "%"    << (int)dst << ", "
@@ -988,8 +884,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint32_t>(code, dst, size);
 
         break;
     }
@@ -1002,7 +896,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&rhs);
 
         if (os != nullptr) {
-
             (*os)
                 << "cmp ["
                     << "%" << (int)lhs << ", "
@@ -1010,8 +903,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t>(code, lhs, rhs);
 
         break;
     }
@@ -1021,15 +912,12 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&lhs);
 
         if (os != nullptr) {
-
             (*os)
                 << "cmpz ["
                     << "%" << (int)lhs
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t>(code, lhs);
 
         break;
     }
@@ -1045,7 +933,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "add ["
                     << "%" << (int)lhs << ", "
@@ -1054,8 +941,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1071,7 +956,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "sub ["
                     << "%" << (int)lhs << ", "
@@ -1080,8 +964,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1097,7 +979,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "mul ["
                     << "%" << (int)lhs << ", "
@@ -1106,8 +987,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1123,7 +1002,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "div ["
                     << "%" << (int)lhs << ", "
@@ -1132,8 +1010,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1149,7 +1025,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "mod ["
                     << "%" << (int)lhs << ", "
@@ -1158,8 +1033,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1175,7 +1048,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "and ["
                     << "%" << (int)lhs << ", "
@@ -1184,8 +1056,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1201,7 +1071,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "or ["
                     << "%" << (int)lhs << ", "
@@ -1210,8 +1079,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1227,7 +1094,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "xor ["
                     << "%" << (int)lhs << ", "
@@ -1236,8 +1102,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1253,7 +1117,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "shl ["
                     << "%" << (int)lhs << ", "
@@ -1262,8 +1125,6 @@ void DecompilationUnit::DecodeNext(
                 << "]"
                 << std::endl;
         }
-
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
 
         break;
     }
@@ -1280,7 +1141,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&dst);
 
         if (os != nullptr) {
-
             (*os)
                 << "shr ["
                     << "%" << (int)lhs << ", "
@@ -1290,8 +1150,6 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(code, lhs, rhs, dst);
-
         break;
     }
     case NEG:
@@ -1300,7 +1158,6 @@ void DecompilationUnit::DecodeNext(
         bs.Read(&reg);
 
         if (os != nullptr) {
-
             (*os)
                 << "neg ["
                     << "%" << (int)reg
@@ -1308,32 +1165,25 @@ void DecompilationUnit::DecodeNext(
                 << std::endl;
         }
 
-        is << Instruction<uint8_t, uint8_t>(code, reg);
-
         break;
     }
     case EXIT:
     {
         if (os != nullptr) {
-
             (*os)
                 << "exit"
                 << std::endl;
         }
 
-        is << Instruction<uint8_t>(code);
-
         break;
     }
     default:
         if (os != nullptr) {
-
             (*os)
                 << "??"
                 << std::endl;
         }
         // unrecognized instruction
-        is << Instruction<uint8_t>(code);
 
         break;
     }

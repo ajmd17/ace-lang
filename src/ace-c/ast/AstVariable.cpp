@@ -119,23 +119,27 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstVariable::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstVariable::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     if (m_closure_member_access != nullptr) {
         m_closure_member_access->SetAccessMode(m_access_mode);
-        m_closure_member_access->Build(visitor, mod);
+        return m_closure_member_access->Build(visitor, mod);
     } else {
         ASSERT(m_properties.GetIdentifier() != nullptr);
 
         // if alias
         if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS) {
-            const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
+            const std::shared_ptr<AstExpression> &current_value =
+                m_properties.GetIdentifier()->GetCurrentValue();
+
             ASSERT(current_value != nullptr);
 
             // if alias, accept the current value instead
             const AccessMode current_access_mode = current_value->GetAccessMode();
             current_value->SetAccessMode(m_access_mode);
-            current_value->Build(visitor, mod);
+            chunk->Append(current_value->Build(visitor, mod));
             // reset access mode
             current_value->SetAccessMode(current_access_mode);
         } else {
@@ -150,26 +154,44 @@ void AstVariable::Build(AstVisitor *visitor, Module *mod)
                 // load globally, rather than from offset.
                 if (m_access_mode == ACCESS_MODE_LOAD) {
                     // load stack value at index into register
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_INDEX, rp, (uint16_t)stack_location);
+                    auto instr_load_index = BytecodeUtil::Make<RawOperation<>>();
+                    instr_load_index->opcode = LOAD_INDEX;
+                    instr_load_index->Accept<uint8_t>(rp);
+                    instr_load_index->Accept<uint16_t>(stack_location);
+                    
+                    chunk->Append(std::move(instr_load_index));
                 } else if (m_access_mode == ACCESS_MODE_STORE) {
                     // store the value at the index into this local variable
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint16_t, uint8_t>(MOV_INDEX, (uint16_t)stack_location, rp - 1);
+                    auto instr_mov_index = BytecodeUtil::Make<RawOperation<>>();
+                    instr_mov_index->opcode = MOV_INDEX;
+                    instr_mov_index->Accept<uint16_t>(stack_location);
+                    instr_mov_index->Accept<uint8_t>(rp - 1);
+
+                    chunk->Append(std::move(instr_mov_index));
                 }
             } else {
                 if (m_access_mode == ACCESS_MODE_LOAD) {
                     // load stack value at offset value into register
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, rp, (uint16_t)offset);
+                    auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+                    instr_load_offset->opcode = LOAD_OFFSET;
+                    instr_load_offset->Accept<uint8_t>(rp);
+                    instr_load_offset->Accept<uint16_t>(offset);
+                    
+                    chunk->Append(std::move(instr_load_offset));
                 } else if (m_access_mode == ACCESS_MODE_STORE) {
                     // store the value at (rp - 1) into this local variable
-                    visitor->GetCompilationUnit()->GetInstructionStream() <<
-                        Instruction<uint8_t, uint16_t, uint8_t>(MOV_OFFSET, (uint16_t)offset, rp - 1);
+                    auto instr_mov_offset = BytecodeUtil::Make<RawOperation<>>();
+                    instr_mov_offset->opcode = MOV_OFFSET;
+                    instr_mov_offset->Accept<uint16_t>(offset);
+                    instr_mov_offset->Accept<uint8_t>(rp - 1);
+
+                    chunk->Append(std::move(instr_mov_offset));
                 }
             }
         }
     }
+
+    return std::move(chunk);
 }
 
 void AstVariable::Optimize(AstVisitor *visitor, Module *mod)

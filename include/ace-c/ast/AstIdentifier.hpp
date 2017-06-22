@@ -48,7 +48,7 @@ public:
     inline const AstIdentifierProperties &GetProperties() const { return m_properties; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
-    virtual void Build(AstVisitor *visitor, Module *mod) override = 0;
+    virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Recreate(std::ostringstream &ss) override = 0;
     virtual Pointer<AstStatement> Clone() const override = 0;

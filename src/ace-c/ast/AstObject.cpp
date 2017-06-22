@@ -22,8 +22,10 @@ void AstObject::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(sp != nullptr);
 }
 
-void AstObject::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstObject::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     auto sp = m_symbol_type.lock();
     ASSERT(sp != nullptr);
 
@@ -37,7 +39,7 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
     // store the original register location of the object
     const uint8_t original_obj_reg = obj_reg;
 
-    // load the type into a register
+    /*// load the type into a register
     visitor->GetCompilationUnit()->GetInstructionStream() <<
         Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, obj_reg, static_id);
 
@@ -49,15 +51,30 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
             visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += std::get<0>(sp->GetMembers()[i]).length();
         }
+    }*/
+
+    auto instr_type = BytecodeUtil::Make<BuildableType>();
+    instr_type->reg = obj_reg;
+    instr_type->name = sp->GetName();
+
+    for (const SymbolMember_t &mem : sp->GetMembers()) {
+        instr_type->members.push_back(std::get<0>(mem));
     }
 
-    // store newly allocated object in same register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint8_t>(NEW, obj_reg, obj_reg);
+    { // store newly allocated object in same register
+        auto instr_new = BytecodeUtil::Make<RawOperation<>>();
+        instr_new->opcode = NEW;
+        instr_new->Accept<uint8_t>(obj_reg); // dst
+        instr_new->Accept<uint8_t>(obj_reg); // src (holds type)
+        chunk->Append(std::move(instr_new));
+    }
 
-    // store the type on the stack
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t>(PUSH, obj_reg);
+    { // store the type on the stack
+        auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+        instr_push->opcode = PUSH;
+        instr_push->Accept<uint8_t>(obj_reg); // src
+        chunk->Append(std::move(instr_push));
+    }
 
     int obj_stack_loc = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
     // increment stack size for the type
@@ -69,62 +86,42 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
         ASSERT(std::get<1>(dm) != nullptr);
         ASSERT(std::get<1>(dm)->GetDefaultValue() != nullptr);
 
-        /*if (!std::get<1>(dm)->GetDefaultValue()->MayHaveSideEffects()) {
-            // the member is a record type, and there is no chance of the 
-            // register being overwritten,  so just load the type from obj_reg
+        // if there has not been an assignment provided,
+        // use the default value of the members's type.
+        if (std::get<2>(dm) != nullptr) {
+            chunk->Append(std::get<2>(dm)->Build(visitor, mod));
+        } else {
+            // load the data member's default value.
+            chunk->Append(std::get<1>(dm)->GetDefaultValue()->Build(visitor, mod));
+        }
 
-            // claim register for the type
-            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-            // get active register
-            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        // claim register for the data member
+        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
+        // get register position
+        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        // set obj_reg for future data members
+        obj_reg = rp;
 
-            // if there has not been an assignment provided,
-            // use the default value of the members's type.
-            if (std::get<2>(dm)) {
-                std::get<2>(dm)->Build(visitor, mod);
-            } else {
-                // load the data member's default value.
-                std::get<1>(dm)->GetDefaultValue()->Build(visitor, mod);
-            }
+        int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
+        int diff = stack_size - obj_stack_loc;
+        ASSERT(diff == 1);
 
-            // get active register
-            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-            // store data member
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, obj_reg, (uint8_t)i, rp);
-        } else {*/
-            // if the member has side effects, load the type
-            // from stack memory into a register /after/ loading the
-            // data member.
+        { // load type from stack
+            auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+            instr_load_offset->opcode = LOAD_OFFSET;
+            instr_load_offset->Accept<uint8_t>(obj_reg);
+            instr_load_offset->Accept<uint16_t>(diff);
+            chunk->Append(std::move(instr_load_offset));
+        }
 
-            // if there has not been an assignment provided,
-            // use the default value of the members's type.
-            if (std::get<2>(dm) != nullptr) {
-                std::get<2>(dm)->Build(visitor, mod);
-            } else {
-                // load the data member's default value.
-                std::get<1>(dm)->GetDefaultValue()->Build(visitor, mod);
-            }
-
-            // claim register for the data member
-            visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage();
-            // get register position
-            rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-            // set obj_reg for future data members
-            obj_reg = rp;
-
-            int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-            int diff = stack_size - obj_stack_loc;
-            ASSERT(diff == 1);
-
-            // load type from stack
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint16_t>(LOAD_OFFSET, obj_reg, (uint16_t)diff);
-
-            // store data member
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(MOV_MEM, obj_reg, (uint8_t)i, rp - 1);
-       // }
+        { // store data member
+            auto instr_mov_mem = BytecodeUtil::Make<RawOperation<>>();
+            instr_mov_mem->opcode = MOV_MEM;
+            instr_mov_mem->Accept<uint8_t>(obj_reg);
+            instr_mov_mem->Accept<uint8_t>(i);
+            instr_mov_mem->Accept<uint8_t>(rp - 1);
+            chunk->Append(std::move(instr_mov_mem));
+        }
 
         // unclaim register
         visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
@@ -133,25 +130,38 @@ void AstObject::Build(AstVisitor *visitor, Module *mod)
 
         // swap registers to move the object back to original register
         if (obj_reg != rp) {
-            visitor->GetCompilationUnit()->GetInstructionStream() <<
-                Instruction<uint8_t, uint8_t, uint8_t>(MOV_REG, rp, obj_reg);
+            auto instr_mov_reg = BytecodeUtil::Make<RawOperation<>>();
+            instr_mov_reg->opcode = MOV_REG;
+            instr_mov_reg->Accept<uint8_t>(rp);
+            instr_mov_reg->Accept<uint8_t>(obj_reg);
+            chunk->Append(std::move(instr_mov_reg));
+            
             obj_reg = rp;
         }
 
         i++;
     }
 
-    // pop the type from stack
-    visitor->GetCompilationUnit()->GetInstructionStream() << Instruction<uint8_t>(POP);
+    { // pop the type from stack
+        auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
+        instr_pop->opcode = POP;
+        chunk->Append(std::move(instr_pop));
+    }
+
     // decrement stack size for type
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
 
     // check if we have to move the register value back to the original location
     if (obj_reg != original_obj_reg) {
         // move the value in obj_reg into the original location
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint8_t>(MOV_REG, original_obj_reg, obj_reg);
+        auto instr_mov_reg = BytecodeUtil::Make<RawOperation<>>();
+        instr_mov_reg->opcode = MOV_REG;
+        instr_mov_reg->Accept<uint8_t>(original_obj_reg);
+        instr_mov_reg->Accept<uint8_t>(obj_reg);
+        chunk->Append(std::move(instr_mov_reg));
     }
+
+    return std::move(chunk);
 }
 
 void AstObject::Optimize(AstVisitor *visitor, Module *mod)

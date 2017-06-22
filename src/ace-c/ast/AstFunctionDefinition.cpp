@@ -30,8 +30,10 @@ void AstFunctionDefinition::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
     if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
         // get current stack size
         int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
@@ -42,14 +44,19 @@ void AstFunctionDefinition::Build(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();
 
         // build function expression
-        m_expr->Build(visitor, mod);
+        chunk->Append(m_expr->Build(visitor, mod));
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        
         // store on stack
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(PUSH, rp);
+        auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+        instr_push->opcode = PUSH;
+        instr_push->Accept<uint8_t>(rp);
+        chunk->Append(std::move(instr_push));
     }
+
+    return std::move(chunk);
 }
 
 void AstFunctionDefinition::Optimize(AstVisitor *visitor, Module *mod)

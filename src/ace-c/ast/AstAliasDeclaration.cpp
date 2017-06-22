@@ -48,9 +48,9 @@ void AstAliasDeclaration::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstAliasDeclaration::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstAliasDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
-    
+    return nullptr;
 }
 
 void AstAliasDeclaration::Optimize(AstVisitor *visitor, Module *mod)

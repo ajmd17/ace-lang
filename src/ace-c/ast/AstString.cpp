@@ -15,12 +15,18 @@ AstString::AstString(const std::string &value, const SourceLocation &location)
 {
 }
 
-void AstString::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstString::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    StaticObject so(m_value.c_str());
+    auto instr_string = BytecodeUtil::Make<BuildableString>();
+    instr_string->reg = rp;
+    instr_string->value = m_value;
+
+    return std::move(instr_string);
+
+    /*StaticObject so(m_value.c_str());
 
     int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
     if (found_id == -1) {
@@ -38,7 +44,7 @@ void AstString::Build(AstVisitor *visitor, Module *mod)
     if (!ace::compiler::Config::use_static_objects) {
         // fill with padding for LOAD_STRING instruction
         visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2 + std::strlen(so.m_value.str);
-    }
+    }*/
 }
 
 void AstString::Recreate(std::ostringstream &ss)

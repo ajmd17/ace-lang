@@ -42,9 +42,11 @@ void AstHasExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstHasExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_target != nullptr);
+
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 
     if (m_has_member != -1) {
 
@@ -53,106 +55,92 @@ void AstHasExpression::Build(AstVisitor *visitor, Module *mod)
 
       if (m_has_member == 1) {
           // load value into register
-          visitor->GetCompilationUnit()->GetInstructionStream() <<
-              Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
+          auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
+          instr_load_true->opcode = LOAD_TRUE;
+          instr_load_true->Accept<uint8_t>(rp);
+          chunk->Append(std::move(instr_load_true));
       } else if (m_has_member == 0) {
           // load value into register
-          visitor->GetCompilationUnit()->GetInstructionStream() <<
-              Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
+          auto instr_load_false = BytecodeUtil::Make<RawOperation<>>();
+          instr_load_false->opcode = LOAD_FALSE;
+          instr_load_false->Accept<uint8_t>(rp);
+          chunk->Append(std::move(instr_load_false));
       }
 
       // build in only if it has side effects
       if (m_target->MayHaveSideEffects()) {
-          m_target->Build(visitor, mod);
+          chunk->Append(m_target->Build(visitor, mod));
       }
 
     } else {
         // indeterminate at compile time.
         // check at runtime.
-        uint32_t hash = hash_fnv_1(m_field_name.c_str());
+        const uint32_t hash = hash_fnv_1(m_field_name.c_str());
 
         int found_member_reg = -1;
 
         // the label to jump to the very end
-        StaticObject end_label;
-        end_label.m_type = StaticObject::TYPE_LABEL;
-        end_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
+        LabelId end_label = chunk->NewLabel();
         // the label to jump to the else-part
-        StaticObject else_label;
-        else_label.m_type = StaticObject::TYPE_LABEL;
-        else_label.m_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-
-        m_target->Build(visitor, mod);
+        LabelId else_label = chunk->NewLabel();
+        
+        chunk->Append(m_target->Build(visitor, mod));
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        // compile in the instruction to check if it has the member
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint8_t, uint32_t>(HAS_MEM_HASH, rp, rp, hash);
+        { // compile in the instruction to check if it has the member
+            auto instr_has_mem_hash = BytecodeUtil::Make<RawOperation<>>();
+            instr_has_mem_hash->opcode = HAS_MEM_HASH;
+            instr_has_mem_hash->Accept<uint8_t>(rp);
+            instr_has_mem_hash->Accept<uint8_t>(rp);
+            instr_has_mem_hash->Accept<uint32_t>(hash);
+            chunk->Append(std::move(instr_has_mem_hash));
+        }
 
         found_member_reg = rp;
 
-        // compare the found member to zero
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(CMPZ, found_member_reg);
-
-        // load the label address from static memory into register 0
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, (uint16_t)else_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        { // compare the found member to zero
+            auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
+            instr_cmpz->opcode = CMPZ;
+            instr_cmpz->Accept<uint8_t>(found_member_reg);
+            chunk->Append(std::move(instr_cmpz));
         }
 
-        // jump if condition is false or zero.
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JE, rp);
-
-        // enter the block
-        // the member was found here, so load true
-
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(LOAD_TRUE, rp);
-
-        // this is the `else` part
-        // jump to the very end now that we've accepted the if-block
-        visitor->GetCompilationUnit()->GetInstructionStream().IncRegisterUsage(); // 1
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        // load the label address from static memory into register 1
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, end_label.m_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding, for LOAD_ADDR instruction.
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2;
+        { // jump if condition is false or zero.
+            auto instr_je = BytecodeUtil::Make<Jump>();
+            instr_je->opcode = JE;
+            instr_je->label_id = else_label;
+            chunk->Append(std::move(instr_je));
         }
         
-        // jump if they are equal: i.e the value is false
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(JMP, rp);
+        { // the member was found here, so load true
+            auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
+            instr_load_true->opcode = LOAD_TRUE;
+            instr_load_true->Accept<uint8_t>(rp);
+            chunk->Append(std::move(instr_load_true));
+        }
 
-        visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage(); // 0
-        // get current register index
-        rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+        { // jump to end after loading true
+            auto instr_jmp = BytecodeUtil::Make<Jump>();
+            instr_jmp->opcode = JMP;
+            instr_jmp->label_id = end_label;
+            chunk->Append(std::move(instr_jmp));
+        }
 
-        // set the label's position to where the else-block would be
-        else_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(else_label);
+        chunk->MarkLabel(else_label);
 
-        // member was not found, so load false
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t>(LOAD_FALSE, rp);
+        { // member was not found, so load false
+            auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
+            instr_load_true->opcode = LOAD_FALSE;
+            instr_load_true->Accept<uint8_t>(rp);
+            chunk->Append(std::move(instr_load_true));
+        }
 
-        // set the label's position to after the block,
-        // so we can skip it if the condition is false
-        end_label.m_value.lbl = visitor->GetCompilationUnit()->GetInstructionStream().GetPosition();
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(end_label);
+        chunk->MarkLabel(end_label);
     }
+
+    return std::move(chunk);
 }
 
 void AstHasExpression::Optimize(AstVisitor *visitor, Module *mod)

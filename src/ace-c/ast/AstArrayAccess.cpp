@@ -38,10 +38,12 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)
+std::unique_ptr<Buildable> AstArrayAccess::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_target != nullptr);
     ASSERT(m_index != nullptr);
+
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 
     bool target_side_effects = m_target->MayHaveSideEffects();
     bool index_side_effects = m_index->MayHaveSideEffects();
@@ -54,21 +56,21 @@ void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)
     };
 
     if (!index_side_effects) {
-        Compiler::LoadLeftThenRight(visitor, mod, info);
+        chunk->Append(Compiler::LoadLeftThenRight(visitor, mod, info));
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         r0 = rp - 1;
         r1 = rp;
     } else if (index_side_effects && !target_side_effects) {
         // load the index and store it
-        Compiler::LoadRightThenLeft(visitor, mod, info);
+        chunk->Append(Compiler::LoadRightThenLeft(visitor, mod, info));
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         r0 = rp;
         r1 = rp - 1;
     } else {
         // load target, store it, then load the index
-        Compiler::LoadLeftAndStore(visitor, mod, info);
+        chunk->Append(Compiler::LoadLeftAndStore(visitor, mod, info));
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         r0 = rp - 1;
@@ -77,12 +79,19 @@ void AstArrayAccess::Build(AstVisitor *visitor, Module *mod)
 
     // do the operation
     if (m_access_mode == ACCESS_MODE_LOAD) {
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint8_t, uint8_t>(LOAD_ARRAYIDX, r0, r0, r1);
+        auto instr = BytecodeUtil::Make<RawOperation<>>();
+        instr->opcode = LOAD_ARRAYIDX;
+        instr->Accept<uint8_t>(r0); // destination
+        instr->Accept<uint8_t>(r0); // source
+        instr->Accept<uint8_t>(r1); // index
+
+        chunk->Append(std::move(instr));
     }
 
     // unclaim register
     visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
+
+    return std::move(chunk);
 }
 
 void AstArrayAccess::Optimize(AstVisitor *visitor, Module *mod)

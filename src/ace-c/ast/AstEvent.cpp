@@ -54,7 +54,7 @@ std::unique_ptr<Buildable> AstConstantEvent::Build(AstVisitor *visitor, Module *
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
-    AstEvent::Build(visitor, mod);
+    return AstEvent::Build(visitor, mod);
 }
 
 void AstConstantEvent::Optimize(AstVisitor *visitor, Module *mod)

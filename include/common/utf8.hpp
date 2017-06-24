@@ -283,7 +283,7 @@ inline u32char *utf32_strcat(u32char *dst, const u32char *src)
 
 inline u32char char8to32(const char *str)
 {
-    int num_bytes = std::strlen(str);
+    size_t num_bytes = std::strlen(str);
     if (num_bytes > sizeof(u32char)) {
         // not wide enough to store the character
         return -1;
@@ -292,7 +292,7 @@ inline u32char char8to32(const char *str)
     u32char result = 0;
 
     char *result_bytes = reinterpret_cast<char*>(&result);
-    for (int i = 0; i < num_bytes; i++) {
+    for (size_t i = 0; i < num_bytes; i++) {
         result_bytes[i] = str[i];
     }
 
@@ -303,7 +303,7 @@ inline void char32to8(u32char src, char *dst)
 {
     char *src_bytes = reinterpret_cast<char*>(&src);
 
-    for (int i = 0; i < sizeof(u32char); i++) {
+    for (size_t i = 0; i < sizeof(u32char); i++) {
         if (src_bytes[i] == 0) {
             // stop reading
             break;
@@ -469,7 +469,7 @@ public:
     Utf8String &operator=(const char *str)
     {
         // check if there is enough space to not have to delete the data
-        int len = std::strlen(str) + 1;
+        size_t len = std::strlen(str) + 1;
         if (m_data != nullptr && m_size >= len) {
             std::strcpy(m_data, str);
             m_length = utf8_strlen(m_data);

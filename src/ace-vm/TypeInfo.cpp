@@ -5,7 +5,7 @@ namespace ace {
 namespace vm {
 
 TypeInfo::TypeInfo(const char *name,
-    int size,
+    size_t size,
     char **names)
     : m_size(size),
       m_names(new char*[size])
@@ -96,7 +96,7 @@ bool TypeInfo::operator==(const TypeInfo &other) const
     }
 
     // compare names
-    for (int i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < m_size; i++) {
         if (std::strcmp(m_names[i], other.m_names[i])) {
             return false;
         }

@@ -70,7 +70,7 @@ public:
     }
 
     // pop top n value(s) from the stack
-    inline void Pop(int n)
+    inline void Pop(size_t n)
     {
         ASSERT_MSG(m_sp >= n, "stack underflow");
         m_sp -= n;

@@ -22,7 +22,7 @@
     do { \
         if (!(params.nargs cmp amt)) { \
             params.handler->state->ThrowException(params.handler->thread, \
-                ace::vm::Exception::InvalidArgsException((#cmp != "==") ? (#cmp " " #amt) : (#amt), params.nargs)); \
+                ace::vm::Exception::InvalidArgsException(#cmp " " #amt, params.nargs)); \
             return; \
         } \
     } while (false)

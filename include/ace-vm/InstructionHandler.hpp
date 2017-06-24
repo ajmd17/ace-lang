@@ -292,7 +292,7 @@ struct InstructionHandler {
             return;
         }
         
-        if (key.index >= array->GetSize()) {
+        if ((size_t)key.index >= array->GetSize()) {
             state->ThrowException(
                 thread,
                 Exception::OutOfBoundsException()
@@ -302,8 +302,8 @@ struct InstructionHandler {
         
         if (key.index < 0) {
             // wrap around (python style)
-            key.index = array->GetSize() + key.index;
-            if (key.index < 0 || key.index >= array->GetSize()) {
+            key.index = (aint64)(array->GetSize() + key.index);
+            if (key.index < 0 || (size_t)key.index >= array->GetSize()) {
                 state->ThrowException(
                     thread,
                     Exception::OutOfBoundsException()

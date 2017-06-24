@@ -27,6 +27,7 @@
 #include <ace-c/dis/DecompilationUnit.hpp>
 #include <ace-c/emit/cppgen/CppGenerator.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/emit/AIRCode.hpp>
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
@@ -2001,6 +2002,31 @@ int main(int argc, char *argv[])
             exec_path = exec_path.substr(0, index) + "/";
         }
     }
+
+    // begin testing
+    { // save
+        std::ofstream os("testfile.air.json");
+
+        std::unique_ptr<AIRCodeChunk> chunk(new AIRCodeChunk());
+
+        chunk->Append(std::unique_ptr<AIRJump>(new AIRJump(AIRJumpClass::JG, 4)));
+
+        AIR::Store(os, chunk);
+
+        os.close();
+    }
+
+    {// load
+        std::ifstream is("testfile.air.json");
+        std::unique_ptr<AIRCodeChunk> chunk = AIR::Load(is);
+        is.close();
+
+        ASSERT(chunk != nullptr);
+
+        std::cout << "size = " << chunk->GetSize() << "\n";
+    }
+
+    // end testing
 
     vm::VM vm;
     CompilationUnit compilation_unit;

@@ -1,6 +1,8 @@
 #include <ace-c/ast/AstArgument.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/emit/Instruction.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>

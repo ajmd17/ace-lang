@@ -5,7 +5,8 @@
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/emit/Instruction.hpp>
+
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 
@@ -22,14 +23,7 @@ std::unique_ptr<Buildable> AstFloat::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    
-    // load integer value into register
-    auto instr_load_f32 = BytecodeUtil::Make<RawOperation<>>();
-    instr_load_f32->opcode = LOAD_F32;
-    instr_load_f32->Accept<uint8_t>(rp);
-    instr_load_f32->Accept<float>(m_value);
-
-    return std::move(instr_load_f32);
+    return BytecodeUtil::Make<ConstF32>(rp, m_value);
 }
 
 void AstFloat::Recreate(std::ostringstream &ss)

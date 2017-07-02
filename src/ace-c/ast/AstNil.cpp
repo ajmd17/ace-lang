@@ -4,7 +4,9 @@
 #include <ace-c/ast/AstTrue.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
-#include <ace-c/emit/Instruction.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 
@@ -17,13 +19,8 @@ std::unique_ptr<Buildable> AstNil::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    
-    // load integer value into register
-    auto instr_load_null = BytecodeUtil::Make<RawOperation<>>();
-    instr_load_null->opcode = LOAD_NULL;
-    instr_load_null->Accept<uint8_t>(rp);
 
-    return std::move(instr_load_null);
+    return BytecodeUtil::Make<ConstNull>(rp);
 }
 
 void AstNil::Recreate(std::ostringstream &ss)

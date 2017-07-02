@@ -3,7 +3,8 @@
 #include <ace-c/ast/AstInteger.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
-#include <ace-c/emit/Instruction.hpp>
+
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 
@@ -16,13 +17,7 @@ std::unique_ptr<Buildable> AstTrue::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-    // load value into register
-    auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
-    instr_load_true->opcode = LOAD_TRUE;
-    instr_load_true->Accept<uint8_t>(rp);
-
-    return std::move(instr_load_true);
+    return BytecodeUtil::Make<ConstBool>(rp, true);
 }
 
 void AstTrue::Recreate(std::ostringstream &ss)

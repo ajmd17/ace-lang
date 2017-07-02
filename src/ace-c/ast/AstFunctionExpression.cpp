@@ -1,6 +1,4 @@
 #include <ace-c/ast/AstFunctionExpression.hpp>
-#include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/AstVisitor.hpp>
@@ -8,6 +6,9 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Scope.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -65,18 +66,14 @@ std::unique_ptr<Buildable> AstFunctionExpression::BuildFunctionBody(AstVisitor *
         chunk->Append(m_generator_closure->Build(visitor, mod));
 
         // return the generator closure object
-        auto instr_ret = BytecodeUtil::Make<RawOperation<>>();
-        instr_ret->opcode = RET;
-        chunk->Append(std::move(instr_ret));
+        chunk->Append(BytecodeUtil::Make<Return>());
     } else {
         // build the function body
         chunk->Append(m_block->Build(visitor, mod));
 
         if (!m_block->IsLastStatementReturn()) {
             // add RET instruction
-            auto instr_ret = BytecodeUtil::Make<RawOperation<>>();
-            instr_ret->opcode = RET;
-            chunk->Append(std::move(instr_ret));
+            chunk->Append(BytecodeUtil::Make<Return>());
         }
     }
 
@@ -368,13 +365,7 @@ std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Mod
     LabelId func_addr = chunk->NewLabel();
 
     // jump to end as to not execute the function body
-    // get current register index
-    rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-    {
-        auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label);
-        chunk->Append(std::move(instr_jmp));
-    }
+    chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
     // store the function address before the function body
     chunk->MarkLabel(func_addr);

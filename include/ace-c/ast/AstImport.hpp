@@ -6,9 +6,6 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/CompilationUnit.hpp>
 
-#include <utility>
-#include <memory>
-
 class AstImport : public AstStatement {
 public:
     AstImport(const SourceLocation &location);

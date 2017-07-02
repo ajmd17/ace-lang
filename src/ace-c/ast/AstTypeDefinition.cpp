@@ -5,9 +5,10 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Module.hpp>
-#include <ace-c/emit/StaticObject.hpp>
-#include <ace-c/emit/NamesPair.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/hasher.hpp>
 #include <common/my_assert.hpp>

@@ -1,6 +1,4 @@
 #include <ace-c/ast/AstModuleProperty.hpp>
-#include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstString.hpp>

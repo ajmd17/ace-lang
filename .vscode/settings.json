@@ -58,6 +58,13 @@
     "istream": "cpp",
     "iosfwd": "cpp",
     "streambuf": "cpp",
-    "ostream": "cpp"
+    "ostream": "cpp",
+    "regex": "cpp",
+    "typeindex": "cpp",
+    "forward_list": "cpp",
+    "list": "cpp",
+    "unordered_map": "cpp",
+    "valarray": "cpp",
+    "queue": "cpp"
   }
 }

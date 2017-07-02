@@ -1,9 +1,9 @@
 #ifndef AST_STATEMENT_HPP
 #define AST_STATEMENT_HPP
 
-#include <ace-c/emit/BytecodeChunk.hpp>
-#include <ace-c/emit/BytecodeUtil.hpp>
 #include <ace-c/SourceLocation.hpp>
+
+#include <ace-c/emit/Buildable.hpp>
 
 #include <memory>
 #include <vector>

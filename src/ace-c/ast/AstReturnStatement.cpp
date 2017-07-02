@@ -5,6 +5,9 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Keywords.hpp>
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 

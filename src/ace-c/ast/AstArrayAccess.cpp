@@ -1,8 +1,10 @@
 #include <ace-c/ast/AstArrayAccess.hpp>
-#include <ace-c/emit/Instruction.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/Module.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>

@@ -1,7 +1,10 @@
 #include <ace-c/ast/AstNewExpression.hpp>
+#include <ace-c/ast/AstMember.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
-#include <ace-c/ast/AstMember.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>

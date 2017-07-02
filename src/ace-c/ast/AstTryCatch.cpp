@@ -1,10 +1,11 @@
 #include <ace-c/ast/AstTryCatch.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
-#include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -29,8 +30,6 @@ void AstTryCatch::Visit(AstVisitor *visitor, Module *mod)
 std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
 {
     std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
-
-    uint8_t rp;
 
     // the label to jump to the very end
     LabelId end_label = chunk->NewLabel();
@@ -59,10 +58,8 @@ std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     // decrease stack size for the try block
     visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();
 
-    { // jump to the end, as to not execute the catch-block
-        auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label);
-        chunk->Append(std::move(instr_jmp));
-    }
+    // jump to the end, as to not execute the catch-block
+    chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
     // set the label's position to where the catch-block would be
     chunk->MarkLabel(catch_label);

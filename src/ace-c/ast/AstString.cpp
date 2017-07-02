@@ -2,9 +2,9 @@
 #include <ace-c/ast/AstTrue.hpp>
 #include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 
@@ -25,26 +25,6 @@ std::unique_ptr<Buildable> AstString::Build(AstVisitor *visitor, Module *mod)
     instr_string->value = m_value;
 
     return std::move(instr_string);
-
-    /*StaticObject so(m_value.c_str());
-
-    int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
-    if (found_id == -1) {
-        m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-        so.m_id = m_static_id;
-        visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
-    } else {
-        m_static_id = found_id;
-    }
-
-    // load static object into register
-    visitor->GetCompilationUnit()->GetInstructionStream() <<
-        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);
-
-    if (!ace::compiler::Config::use_static_objects) {
-        // fill with padding for LOAD_STRING instruction
-        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2 + std::strlen(so.m_value.str);
-    }*/
 }
 
 void AstString::Recreate(std::ostringstream &ss)

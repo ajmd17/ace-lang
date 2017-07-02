@@ -2,12 +2,13 @@
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstConstant.hpp>
 #include <ace-c/Operator.hpp>
-#include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Optimizer.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -143,32 +144,19 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
             if (m_op->GetOperatorType() == Operators::OP_logical_not) {
                 // the label to jump to the very end, and set the result to false
                 LabelId false_label = chunk->NewLabel();
-
                 LabelId true_label = chunk->NewLabel();;
 
-                { // compare lhs to 0 (false)
-                    auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
-                    instr_cmpz->opcode = CMPZ;
-                    instr_cmpz->Accept<uint8_t>(rp);
-                    chunk->Append(std::move(instr_cmpz));
-                }
+                // compare lhs to 0 (false)
+                chunk->Append(BytecodeUtil::Make<Comparison>(Comparison::CMPZ, rp));
 
-                { // jump if they are not equal: i.e the value is true
-                    auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, true_label);
-                    chunk->Append(std::move(instr_je));
-                }
+                // jump if they are not equal: i.e the value is true
+                chunk->Append(BytecodeUtil::Make<Jump>(Jump::JE, true_label));
 
-                { // didn't skip past: load the false value
-                    auto instr_load_false = BytecodeUtil::Make<RawOperation<>>();
-                    instr_load_false->opcode = LOAD_FALSE;
-                    instr_load_false->Accept<uint8_t>(rp);
-                    chunk->Append(std::move(instr_load_false));
-                }
+                // didn't skip past: load the false value
+                chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-                { // now, jump to the very end so we don't load the true value.
-                    auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, false_label);
-                    chunk->Append(std::move(instr_jmp));
-                }
+                // now, jump to the very end so we don't load the true value.
+                chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
 
                 // skip to here to load true
                 chunk->MarkLabel(true_label);
@@ -176,12 +164,8 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
                 
-                { // here is where the value is true
-                    auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
-                    instr_load_true->opcode = LOAD_TRUE;
-                    instr_load_true->Accept<uint8_t>(rp);
-                    chunk->Append(std::move(instr_load_true));
-                }
+                // here is where the value is true
+                chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
 
                 // skip to here to avoid loading 'true' into the register
                 chunk->MarkLabel(false_label);

@@ -2,6 +2,9 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+
 #include <common/my_assert.hpp>
 #include <common/str_util.hpp>
 

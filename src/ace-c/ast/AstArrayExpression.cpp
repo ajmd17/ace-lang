@@ -1,8 +1,11 @@
 #include <ace-c/ast/AstArrayExpression.hpp>
-#include <ace-c/emit/Instruction.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/emit/StorageOperation.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -157,18 +160,19 @@ std::unique_ptr<Buildable> AstArrayExpression::Build(AstVisitor *visitor, Module
         ASSERT(diff == 1);
         
         { // load array from stack back into register
-            auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+            /*auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
             instr_load_offset->opcode = LOAD_OFFSET;
             instr_load_offset->Accept<uint8_t>(rp);
             instr_load_offset->Accept<uint16_t>(diff);
+            chunk->Append(std::move(instr_load_offset));*/
+
+            auto instr_load_offset = BytecodeUtil::Make<StorageOperation>();
+            instr_load_offset->GetBuilder().Load(rp).Local().ByOffset(diff);
             chunk->Append(std::move(instr_load_offset));
         }
 
-        { // pop the array from the stack
-            auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
-            instr_pop->opcode = POP;
-            chunk->Append(std::move(instr_pop));
-        }
+        // pop the array from the stack
+        chunk->Append(BytecodeUtil::Make<PopLocal>(1));
 
         // decrement stack size
         visitor->GetCompilationUnit()->GetInstructionStream().DecStackSize();

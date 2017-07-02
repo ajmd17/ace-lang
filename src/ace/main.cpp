@@ -27,13 +27,14 @@
 #include <ace-c/dis/DecompilationUnit.hpp>
 #include <ace-c/emit/cppgen/CppGenerator.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
-#include <ace-c/emit/AIRCode.hpp>
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
 #include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
+
+//#include <ace-air/AIRCode.hpp>
 
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
@@ -1266,19 +1267,6 @@ void Global_spawn_thread(ace::sdk::Params params)
     }
 }
 
-static void LexLine(const utf::Utf8String &line, TokenStream &token_stream)
-{
-    CompilationUnit tmp_compilation_unit;
-
-    // send code to be compiled
-    SourceFile source_file("<stdin>", line.GetBufferSize());
-    std::memcpy(source_file.GetBuffer(), line.GetData(), line.GetBufferSize());
-    SourceStream source_stream(&source_file);
-
-    Lexer lex(source_stream, &token_stream, &tmp_compilation_unit);
-    lex.Analyze();
-}
-
 static int RunBytecodeFile(
     vm::VM *vm,
     const utf::Utf8String &filename,
@@ -1496,9 +1484,18 @@ static int REPL(
                 // compile into bytecode instructions
                 ast_iterator.SetPosition(old_pos);
                 Compiler compiler(&ast_iterator, &compilation_unit);
-                std::unique_ptr<BytecodeChunk> bc = compiler.Compile();
 
+                std::unique_ptr<BytecodeChunk> bc = compiler.Compile();
                 ASSERT(bc != nullptr);
+
+                /* TESTING SERIALIZATION! */
+                std::ofstream os("serialized.ir.json");
+                BytecodeUtil::StoreSerialized(os, bc);
+                os.close();
+                // load
+                std::ifstream is("serialized.ir.json");
+                std::unique_ptr<BytecodeChunk> bc2 = BytecodeUtil::LoadSerialized(is);
+                is.close();
                 
                 // get active register
                 int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();
@@ -2004,27 +2001,29 @@ int main(int argc, char *argv[])
     }
 
     // begin testing
-    { // save
-        std::ofstream os("testfile.air.json");
 
-        std::unique_ptr<AIRCodeChunk> chunk(new AIRCodeChunk());
 
-        chunk->Append(std::unique_ptr<AIRJump>(new AIRJump(AIRJumpClass::JG, 4)));
+    // { // save
+    //     std::ofstream os("testfile.air.json");
 
-        AIR::Store(os, chunk);
+    //     std::unique_ptr<ir::CodeChunk> chunk(new ir::CodeChunk());
 
-        os.close();
-    }
+    //     chunk->Append(std::unique_ptr<ir::Jump>(new ir::Jump(ir::Jump::JG, 4)));
+    //     chunk->Append(std::unique_ptr<ir::ConstString>(new ir::ConstString("Hello world!")));
+    //     chunk->Append(std::unique_ptr<ir::ConstBool>(new ir::ConstBool(true)));
 
-    {// load
-        std::ifstream is("testfile.air.json");
-        std::unique_ptr<AIRCodeChunk> chunk = AIR::Load(is);
-        is.close();
+    //     ir::CodeChunk::Store(os, chunk);
 
-        ASSERT(chunk != nullptr);
+    //     os.close();
+    // }
 
-        std::cout << "size = " << chunk->GetSize() << "\n";
-    }
+    // {// load
+    //     std::ifstream is("testfile.air.json");
+    //     std::unique_ptr<ir::CodeChunk> chunk = ir::CodeChunk::Load(is);
+    //     is.close();
+
+    //     ASSERT(chunk != nullptr);
+    // }
 
     // end testing
 

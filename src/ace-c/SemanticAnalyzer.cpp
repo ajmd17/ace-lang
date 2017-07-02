@@ -8,7 +8,8 @@
 #include <set>
 #include <iostream>
 
-IdentifierLookupResult SemanticAnalyzer::LookupIdentifier(
+SemanticAnalyzer::Helpers::IdentifierLookupResult
+SemanticAnalyzer::Helpers::LookupIdentifier(
     AstVisitor *visitor,
     Module *mod,
     const std::string &name)
@@ -70,10 +71,9 @@ static int FindFreeSlot(
     bool is_variadic = false,
     int num_supplied_args = -1)
 {
-    size_t num_params = generic_args.size() - 1; // - 1 for return type
-    size_t counter = 0;
+    const size_t num_params = generic_args.size() - 1; // - 1 for return type
     
-    while (counter < num_params) {
+    for (size_t counter = 0; counter < num_params; counter++) {
         // variadic keeps counting
         if (!is_variadic && current_index == num_params) {
             current_index = 0;
@@ -86,7 +86,6 @@ static int FindFreeSlot(
         }
 
         current_index++;
-        counter++;
     }
 
     // no slot available
@@ -104,12 +103,11 @@ static int ArgIndex(
     if (arg_info.is_named) {
         for (int j = 1; j < generic_args.size(); j++) {
             const std::string &generic_arg_name = generic_args[j].m_name;
-            if (generic_arg_name == arg_info.name) {
-                if (used_indices.find(j - 1) == used_indices.end()) {
-                    return j - 1; // subtract 1 because first param will be return type
-                }
+            if (generic_arg_name == arg_info.name && used_indices.find(j - 1) == used_indices.end()) {
+                return j - 1; // subtract 1 because first param will be return type
             }
         }
+
         return -1;
     }
 
@@ -122,7 +120,8 @@ static int ArgIndex(
     );
 }
 
-std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAnalyzer::SubstituteFunctionArgs(
+std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>>
+SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
     AstVisitor *visitor,
     Module *mod, 
     const SymbolTypePtr_t &identifier_type, 
@@ -136,9 +135,6 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
         const SymbolTypePtr_t base = identifier_type->GetBaseType();
 
         if (base == SymbolType::Builtin::FUNCTION) {
-            // the indices of the arguments (will be returned)
-            std::vector<int> substituted_param_ids;
-
             const auto &generic_args = identifier_type->GetGenericInstanceInfo().m_generic_args;
 
             // check for varargs (at end)
@@ -323,12 +319,9 @@ std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>> SemanticAn
             return {
                 generic_args[0].m_type,
                 res_args
-                //substituted_param_ids
             };
         }
-    } else if (identifier_type == SymbolType::Builtin::FUNCTION ||
-               identifier_type == SymbolType::Builtin::ANY)
-    {
+    } else if (identifier_type == SymbolType::Builtin::FUNCTION || identifier_type == SymbolType::Builtin::ANY) {
         // abstract function, allow any params
         return {
             SymbolType::Builtin::ANY,
@@ -355,21 +348,6 @@ SemanticAnalyzer::SemanticAnalyzer(const SemanticAnalyzer &other)
 }
 
 void SemanticAnalyzer::Analyze(bool expect_module_decl)
-{
-    /*if (expect_module_decl) {
-        if (m_ast_iterator->HasNext()) {
-            if (auto first_stmt = m_ast_iterator->Next()) {
-                first_stmt->Visit(this, nullptr);
-            }
-            AnalyzerInner();
-        }
-    } else {
-        AnalyzerInner();
-    }*/
-    AnalyzerInner();
-}
-
-void SemanticAnalyzer::AnalyzerInner()
 {
     Module *mod = m_compilation_unit->GetCurrentModule();
     ASSERT(mod != nullptr);

@@ -1,14 +1,15 @@
 #ifndef BYTECODE_UTIL_HPP
 #define BYTECODE_UTIL_HPP
 
-#include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/BytecodeChunk.hpp>
-
-#include <common/my_assert.hpp>
-
-#include <vector>
+#include <memory>
 #include <sstream>
+#include <vector>
 #include <cstdint>
+
+// fwd declarations
+struct BytecodeChunk;
+struct BuildParams;
+struct Buildable;
 
 class BytecodeUtil {
 public:
@@ -19,29 +20,11 @@ public:
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
 
-    static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk)
-    {
-        BuildParams build_params;
-        return GenerateBytes(chunk, build_params);
-    }
+    static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk);
+    static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk, BuildParams &build_params);
 
-    static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk, BuildParams &build_params)
-    {
-        ASSERT(chunk != nullptr);
-
-        std::basic_stringbuf<std::uint8_t> buf;
-        chunk->Build(buf, build_params);
-
-        std::vector<std::uint8_t> vec;
-        vec.reserve(chunk->GetSize());
-        vec.insert(
-            vec.end(),
-            std::istreambuf_iterator<std::uint8_t>(&buf),
-            std::istreambuf_iterator<std::uint8_t>()
-        );
-        
-        return vec;
-    }
+    static std::unique_ptr<BytecodeChunk> LoadSerialized(std::istream &is);
+    static void StoreSerialized(std::ostream &os, const std::unique_ptr<BytecodeChunk> &chunk);
 };
 
 #endif

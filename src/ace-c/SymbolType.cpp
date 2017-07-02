@@ -306,8 +306,10 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
 {
     if (TypeEqual(right)) {
         return true;
-    } else if (right.GetTypeClass() == TYPE_GENERIC_PARAMETER && 
-               right.GetGenericParameterInfo().m_substitution.lock() == nullptr) {
+    }
+    
+    if (right.GetTypeClass() == TYPE_GENERIC_PARAMETER &&
+        right.GetGenericParameterInfo().m_substitution.lock() == nullptr) {
         // right is a generic paramter that has not yet been substituted
         return true;
     }

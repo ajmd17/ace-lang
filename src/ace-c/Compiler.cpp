@@ -2,8 +2,10 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
 #include <ace-c/ast/AstBinaryExpression.hpp>
-#include <ace-c/emit/BytecodeUtil.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/emit/StorageOperation.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -87,12 +89,8 @@ std::unique_ptr<Buildable> Compiler::LoadMemberFromHash(AstVisitor *visitor, Mod
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    auto instr_load_mem_hash = BytecodeUtil::Make<RawOperation<>>();
-    instr_load_mem_hash->opcode = LOAD_MEM_HASH;
-    instr_load_mem_hash->Accept<uint8_t>(rp); // dst
-    instr_load_mem_hash->Accept<uint8_t>(rp); // src
-    instr_load_mem_hash->Accept<uint32_t>(hash); // hash
-    
+    auto instr_load_mem_hash = BytecodeUtil::Make<StorageOperation>();
+    instr_load_mem_hash->GetBuilder().Load(rp).Member(rp).ByHash(hash);
     return std::move(instr_load_mem_hash);
 }
 
@@ -100,12 +98,8 @@ std::unique_ptr<Buildable> Compiler::StoreMemberFromHash(AstVisitor *visitor, Mo
 {
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-    auto instr_mov_mem_hash = BytecodeUtil::Make<RawOperation<>>();
-    instr_mov_mem_hash->opcode = MOV_MEM_HASH;
-    instr_mov_mem_hash->Accept<uint8_t>(rp); // dst
-    instr_mov_mem_hash->Accept<uint32_t>(hash); // hash
-    instr_mov_mem_hash->Accept<uint8_t>(rp); // src
-    
+    auto instr_mov_mem_hash = BytecodeUtil::Make<StorageOperation>();
+    instr_mov_mem_hash->GetBuilder().Store(rp).Member(rp).ByHash(hash);
     return std::move(instr_mov_mem_hash);
 }
 
@@ -157,12 +151,8 @@ std::unique_ptr<Buildable> Compiler::CreateConditional(
     // build the conditional
     chunk->Append(cond->Build(visitor, mod));
 
-    { // compare the conditional to 0
-        auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
-        instr_cmpz->opcode = CMPZ;
-        instr_cmpz->Accept<uint8_t>(rp);
-        chunk->Append(std::move(instr_cmpz));
-    }
+    // compare the conditional to 0
+    chunk->Append(BytecodeUtil::Make<Comparison>(Comparison::CMPZ, rp));
 
     // get current register index
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -176,7 +166,7 @@ std::unique_ptr<Buildable> Compiler::CreateConditional(
             label_id = end_label;
         }
 
-        chunk->Append(BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, label_id));
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, label_id));
     }
 
     // enter the block
@@ -184,7 +174,7 @@ std::unique_ptr<Buildable> Compiler::CreateConditional(
 
     if (else_part != nullptr) {
         // jump to the very end now that we've accepted the if-block
-        chunk->Append(BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label));
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
         // set the label's position to where the else-block would be
         chunk->MarkLabel(else_label);

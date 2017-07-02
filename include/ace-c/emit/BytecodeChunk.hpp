@@ -9,10 +9,11 @@
 #include <memory>
 
 struct BytecodeChunk final : public Buildable {
-    std::vector<Label> labels;
+    std::vector<LabelInfo> labels;
 
     BytecodeChunk();
     BytecodeChunk(const BytecodeChunk &other) = delete;
+    virtual ~BytecodeChunk() = default;
 
     inline void Append(std::unique_ptr<Buildable> buildable)
     {
@@ -38,9 +39,19 @@ struct BytecodeChunk final : public Buildable {
     virtual size_t GetSize() const override { return chunk_size; }
     virtual void Build(Buffer &buf, BuildParams &build_params) const override;
 
-private:
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(labels), CEREAL_NVP(buildables), CEREAL_NVP(chunk_size));
+    }
+    
     std::vector<std::unique_ptr<Buildable>> buildables;
+
+private:
     size_t chunk_size;
 };
+
+CEREAL_REGISTER_TYPE(BytecodeChunk)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, BytecodeChunk)
 
 #endif

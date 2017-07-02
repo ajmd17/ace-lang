@@ -3,6 +3,9 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
@@ -53,12 +56,16 @@ std::unique_ptr<Buildable> AstObject::Build(AstVisitor *visitor, Module *mod)
         }
     }*/
 
-    auto instr_type = BytecodeUtil::Make<BuildableType>();
-    instr_type->reg = obj_reg;
-    instr_type->name = sp->GetName();
+    {
+        auto instr_type = BytecodeUtil::Make<BuildableType>();
+        instr_type->reg = obj_reg;
+        instr_type->name = sp->GetName();
 
-    for (const SymbolMember_t &mem : sp->GetMembers()) {
-        instr_type->members.push_back(std::get<0>(mem));
+        for (const SymbolMember_t &mem : sp->GetMembers()) {
+            instr_type->members.push_back(std::get<0>(mem));
+        }
+
+        chunk->Append(std::move(instr_type));
     }
 
     { // store newly allocated object in same register

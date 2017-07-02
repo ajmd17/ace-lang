@@ -4,7 +4,6 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/ast/AstMember.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
-#include <ace-c/emit/Instruction.hpp>
 #include <ace-c/Configuration.hpp>
 
 #include <common/hasher.hpp>

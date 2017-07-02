@@ -2,7 +2,6 @@
 
 #include <ace-c/Parser.hpp>
 #include <ace-c/Configuration.hpp>
-#include <ace-c/ast/AstObject.hpp>
 
 #include <common/my_assert.hpp>
 #include <common/hasher.hpp>

@@ -1,8 +1,10 @@
 #include <ace-c/ast/AstFunctionDefinition.hpp>
-#include <ace-c/emit/Instruction.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>

@@ -4,8 +4,6 @@
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 
-#include <memory>
-
 class AstReturnStatement : public AstStatement {
 public:
     AstReturnStatement(const std::shared_ptr<AstExpression> &expr,

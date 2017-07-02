@@ -8,7 +8,6 @@
 #include <ace-c/SymbolType.hpp>
 
 #include <string>
-#include <memory>
 
 class AstNewExpression: public AstExpression {
 public:

@@ -6,6 +6,9 @@
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
@@ -63,17 +66,11 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
         // build the conditional
         chunk->Append(m_conditional->Build(visitor, mod));
 
-        { // compare the conditional to 0
-            auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
-            instr_cmpz->opcode = CMPZ;
-            instr_cmpz->Accept<uint8_t>(rp);
-            chunk->Append(std::move(instr_cmpz));
-        }
+        // compare the conditional to 0
+        chunk->Append(BytecodeUtil::Make<Comparison>(Comparison::CMPZ, rp));
 
-        { // break away if the condition is false (equal to zero)
-            auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, break_label);
-            chunk->Append(std::move(instr_je));
-        }
+        // break away if the condition is false (equal to zero)
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JE, break_label));
 
         // enter the block
         chunk->Append(m_block->Build(visitor, mod));
@@ -85,10 +82,8 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
 
         chunk->Append(Compiler::PopStack(visitor, m_num_locals));
 
-        { // jump back to top here
-            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, top_label);
-            chunk->Append(std::move(instr_jmp));
-        }
+        // jump back to top here
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, top_label));
 
         // set the label's position to after the block,
         // so we can skip it if the condition is false
@@ -114,10 +109,8 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
 
         chunk->Append(Compiler::PopStack(visitor, m_num_locals));
 
-        { // jump back to top here
-            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, top_label);
-            chunk->Append(std::move(instr_jmp));
-        }
+        // jump back to top here
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, top_label));
     } else {
         // the condition has been determined to be false
         if (m_conditional->MayHaveSideEffects()) {

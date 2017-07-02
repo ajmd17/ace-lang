@@ -3,7 +3,10 @@
 #include <ace-c/ast/AstConstant.hpp>
 #include <ace-c/ast/AstInteger.hpp>
 #include <ace-c/Scope.hpp>
-#include <ace-c/emit/Instruction.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/emit/StorageOperation.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -154,38 +157,54 @@ std::unique_ptr<Buildable> AstVariable::Build(AstVisitor *visitor, Module *mod)
                 // load globally, rather than from offset.
                 if (m_access_mode == ACCESS_MODE_LOAD) {
                     // load stack value at index into register
-                    auto instr_load_index = BytecodeUtil::Make<RawOperation<>>();
+                    auto instr_load_index = BytecodeUtil::Make<StorageOperation>();
+                    instr_load_index->GetBuilder().Load(rp).Local().ByIndex(stack_location);
+                    chunk->Append(std::move(instr_load_index));
+
+                    /*auto instr_load_index = BytecodeUtil::Make<RawOperation<>>();
                     instr_load_index->opcode = LOAD_INDEX;
                     instr_load_index->Accept<uint8_t>(rp);
                     instr_load_index->Accept<uint16_t>(stack_location);
                     
-                    chunk->Append(std::move(instr_load_index));
+                    chunk->Append(std::move(instr_load_index));*/
                 } else if (m_access_mode == ACCESS_MODE_STORE) {
                     // store the value at the index into this local variable
-                    auto instr_mov_index = BytecodeUtil::Make<RawOperation<>>();
+                    auto instr_mov_index = BytecodeUtil::Make<StorageOperation>();
+                    instr_mov_index->GetBuilder().Store(rp - 1).Local().ByIndex(stack_location);
+                    chunk->Append(std::move(instr_mov_index));
+
+                    /*auto instr_mov_index = BytecodeUtil::Make<RawOperation<>>();
                     instr_mov_index->opcode = MOV_INDEX;
                     instr_mov_index->Accept<uint16_t>(stack_location);
                     instr_mov_index->Accept<uint8_t>(rp - 1);
 
-                    chunk->Append(std::move(instr_mov_index));
+                    chunk->Append(std::move(instr_mov_index));*/
                 }
             } else {
                 if (m_access_mode == ACCESS_MODE_LOAD) {
                     // load stack value at offset value into register
-                    auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
+                    auto instr_load_offset = BytecodeUtil::Make<StorageOperation>();
+                    instr_load_offset->GetBuilder().Load(rp).Local().ByOffset(offset);
+                    chunk->Append(std::move(instr_load_offset));
+
+                    /*auto instr_load_offset = BytecodeUtil::Make<RawOperation<>>();
                     instr_load_offset->opcode = LOAD_OFFSET;
                     instr_load_offset->Accept<uint8_t>(rp);
                     instr_load_offset->Accept<uint16_t>(offset);
                     
-                    chunk->Append(std::move(instr_load_offset));
+                    chunk->Append(std::move(instr_load_offset));*/
                 } else if (m_access_mode == ACCESS_MODE_STORE) {
                     // store the value at (rp - 1) into this local variable
-                    auto instr_mov_offset = BytecodeUtil::Make<RawOperation<>>();
+                    auto instr_mov_index = BytecodeUtil::Make<StorageOperation>();
+                    instr_mov_index->GetBuilder().Store(rp - 1).Local().ByOffset(offset);
+                    chunk->Append(std::move(instr_mov_index));
+
+                    /*auto instr_mov_offset = BytecodeUtil::Make<RawOperation<>>();
                     instr_mov_offset->opcode = MOV_OFFSET;
                     instr_mov_offset->Accept<uint16_t>(offset);
                     instr_mov_offset->Accept<uint8_t>(rp - 1);
 
-                    chunk->Append(std::move(instr_mov_offset));
+                    chunk->Append(std::move(instr_mov_offset));*/
                 }
             }
         }

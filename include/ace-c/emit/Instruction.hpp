@@ -2,55 +2,65 @@
 #define INSTRUCTION_HPP
 
 #include <ace-c/emit/NamesPair.hpp>
+
 #include <common/instructions.hpp>
+#include <common/my_assert.hpp>
+
+#define CEREAL_SERIALIZE_FUNCTION_NAME Serialize
+#include <cereal/cereal.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/string.hpp>
+
+#include <ace-c/emit/Buildable.hpp>
 
 #include <vector>
 #include <ostream>
 #include <cstring>
 #include <cstdint>
 #include <iostream>
-#include <streambuf>
 
 using Opcode = uint8_t;
+using RegIndex = uint8_t;
 using LabelId = size_t;
-using LabelPosition = uint32_t;
-using byte = uint8_t;
-using Buffer = std::basic_streambuf<byte>;
-
-struct Label {
-    LabelPosition position;
-};
-
-struct BuildParams {
-    size_t block_offset;
-    size_t local_offset;
-    std::vector<Label> labels;
-
-    BuildParams() : block_offset(0), local_offset(0) {}
-};
-
-struct Buildable {
-    virtual size_t GetSize() const = 0;
-    virtual void Build(Buffer &buf, BuildParams &build_params) const = 0;
-};
 
 struct Instruction : public Buildable {
     Opcode opcode;
+
+    virtual ~Instruction() = default;
 
     virtual size_t GetSize() const override = 0;
     virtual void Build(Buffer &buf, BuildParams &build_params) const override = 0;
 };
 
-enum JumpClass {
-    JUMP_CLASS_JMP,
-    JUMP_CLASS_JE,
-    JUMP_CLASS_JNE,
-    JUMP_CLASS_JG,
-    JUMP_CLASS_JGE,
+struct LabelMarker final : public Buildable {
+    LabelMarker(LabelId id)
+        : id(id)
+    {
+    }
+
+    virtual ~LabelMarker() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return 0;
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+    }
+
+    LabelId id;
 };
 
 struct Jump final : public Buildable {
-    JumpClass jump_class;
+    enum JumpClass {
+        JMP,
+        JE,
+        JNE,
+        JG,
+        JGE,
+    } jump_class;
     LabelId label_id;
 
     Jump() = default;
@@ -60,6 +70,8 @@ struct Jump final : public Buildable {
     {
     }
 
+    virtual ~Jump() = default;
+
     virtual size_t GetSize() const override
     {
         return sizeof(Opcode) + sizeof(LabelPosition);
@@ -68,20 +80,20 @@ struct Jump final : public Buildable {
     virtual void Build(Buffer &buf, BuildParams &build_params) const override
     {
         switch (jump_class) {
-            case JUMP_CLASS_JMP:
-                buf.sputc(JMP);
+            case JumpClass::JMP:
+                buf.sputc(Instructions::JMP);
                 break;
-            case JUMP_CLASS_JE:
-                buf.sputc(JE);
+            case JumpClass::JE:
+                buf.sputc(Instructions::JE);
                 break;
-            case JUMP_CLASS_JNE:
-                buf.sputc(JNE);
+            case JumpClass::JNE:
+                buf.sputc(Instructions::JNE);
                 break;
-            case JUMP_CLASS_JG:
-                buf.sputc(JG);
+            case JumpClass::JG:
+                buf.sputc(Instructions::JG);
                 break;
-            case JUMP_CLASS_JGE:
-                buf.sputc(JGE);
+            case JumpClass::JGE:
+                buf.sputc(Instructions::JGE);
                 break;
         }
 
@@ -89,6 +101,397 @@ struct Jump final : public Buildable {
             + build_params.labels[label_id].position;
 
         buf.sputn((byte*)&pos, sizeof(pos));
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(jump_class), CEREAL_NVP(label_id));
+    }
+};
+
+struct Comparison final : public Buildable {
+    enum ComparisonClass {
+        CMP,
+        CMPZ
+    } comparison_class;
+
+    RegIndex reg_lhs;
+    RegIndex reg_rhs;
+
+    Comparison() = default;
+
+    Comparison(ComparisonClass comparison_class, RegIndex reg)
+        : comparison_class(comparison_class),
+          reg_lhs(reg)
+    {
+    }
+
+    Comparison(ComparisonClass comparison_class, RegIndex reg_lhs, RegIndex reg_rhs)
+        : comparison_class(comparison_class),
+          reg_lhs(reg_lhs),
+          reg_rhs(reg_rhs)
+    {
+    }
+
+    virtual ~Comparison() = default;
+
+    virtual size_t GetSize() const override
+    {
+        size_t sz = sizeof(Opcode)
+            + sizeof(reg_lhs);
+
+        if (comparison_class == ComparisonClass::CMP) {
+            sz += sizeof(reg_rhs);
+        }
+
+        return sz;
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        switch (comparison_class) {
+            case ComparisonClass::CMP:
+                buf.sputc(Instructions::CMP);
+                break;
+            case ComparisonClass::CMPZ:
+                buf.sputc(Instructions::CMPZ);
+                break;
+        }
+
+        buf.sputc(reg_lhs);
+
+        if (comparison_class == ComparisonClass::CMP) {
+            buf.sputc(reg_rhs);
+        }
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(comparison_class), CEREAL_NVP(reg_lhs), CEREAL_NVP(reg_rhs));
+    }
+};
+
+struct FunctionCall : public Buildable {
+    RegIndex reg;
+    uint8_t nargs;
+
+    FunctionCall() = default;
+    FunctionCall(RegIndex reg, uint8_t nargs)
+        : reg(reg),
+          nargs(nargs)
+    {
+    }
+
+    virtual ~FunctionCall() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(nargs);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::CALL);
+        buf.sputc(reg);
+        buf.sputc(nargs);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(nargs));
+    }
+};
+
+struct Return : public Buildable {
+    Return() = default;
+    virtual ~Return() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::RET);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive();
+    }
+};
+
+struct StoreLocal : public Buildable {
+    StoreLocal() = default;
+    StoreLocal(RegIndex reg)
+        : reg(reg)
+    {
+    }
+    virtual ~StoreLocal() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::PUSH);
+        buf.sputc(reg);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg));
+    }
+
+    RegIndex reg;
+};
+
+struct PopLocal : public Buildable {
+    PopLocal() = default;
+    PopLocal(size_t amt)
+        : amt(amt)
+    {
+    }
+    virtual ~PopLocal() = default;
+
+    virtual size_t GetSize() const override
+    {
+        size_t sz = sizeof(Opcode);
+
+        if (amt > 1) {
+            sz++;
+        }
+
+        return sz;
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        if (amt > 1) {
+            buf.sputc(Instructions::POP_N);
+
+            byte as_byte = (byte)amt;
+            buf.sputc(as_byte);
+        } else {
+            buf.sputc(Instructions::POP);
+        }
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(amt));
+    }
+
+    size_t amt;
+};
+
+struct ConstI32 : public Buildable {
+    RegIndex reg;
+    int32_t value;
+
+    ConstI32() = default;
+    ConstI32(RegIndex reg, int32_t value)
+        : reg(reg),
+          value(value)
+    {
+    }
+
+    virtual ~ConstI32() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_I32);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(value));
+    }
+};
+
+struct ConstI64 : public Buildable {
+    RegIndex reg;
+    int64_t value;
+
+    ConstI64() = default;
+    ConstI64(RegIndex reg, int64_t value)
+        : reg(reg),
+          value(value)
+    {
+    }
+
+    virtual ~ConstI64() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_I64);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(value));
+    }
+};
+
+struct ConstF32 : public Buildable {
+    RegIndex reg;
+    float value;
+
+    ConstF32() = default;
+    ConstF32(RegIndex reg, float value)
+        : reg(reg),
+          value(value)
+    {
+    }
+
+    virtual ~ConstF32() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_F32);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(value));
+    }
+};
+
+struct ConstF64 : public Buildable {
+    RegIndex reg;
+    double value;
+
+    ConstF64() = default;
+    ConstF64(RegIndex reg, double value)
+        : reg(reg),
+          value(value)
+    {
+    }
+
+    virtual ~ConstF64() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_F64);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(value));
+    }
+};
+
+struct ConstBool : public Buildable {
+    RegIndex reg;
+    bool value;
+
+    ConstBool() = default;
+    ConstBool(RegIndex reg, bool value)
+        : reg(reg),
+          value(value)
+    {
+    }
+
+    virtual ~ConstBool() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(value ? Instructions::LOAD_TRUE : Instructions::LOAD_FALSE);
+        buf.sputc(reg);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(value));
+    }
+};
+
+struct ConstNull : public Buildable {
+    RegIndex reg;
+
+    ConstNull() = default;
+    ConstNull(RegIndex reg)
+        : reg(reg)
+    {
+    }
+
+    virtual ~ConstNull() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_NULL);
+        buf.sputc(reg);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg));
     }
 };
 
@@ -102,17 +505,23 @@ struct BuildableTryCatch final : public Buildable {
 
     virtual void Build(Buffer &buf, BuildParams &build_params) const override
     {
-        buf.sputc(BEGIN_TRY);
+        buf.sputc(Instructions::BEGIN_TRY);
 
         LabelPosition pos = build_params.block_offset
             + build_params.labels[catch_label_id].position;
 
         buf.sputn((byte*)&pos, sizeof(pos));
     }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(catch_label_id));
+    }
 };
 
 struct BuildableFunction final : public Buildable {
-    uint8_t reg;
+    RegIndex reg;
     LabelId label_id;
     uint8_t nargs;
     uint8_t flags;
@@ -132,18 +541,26 @@ struct BuildableFunction final : public Buildable {
             + build_params.labels[label_id].position;
 
         // TODO: make it store and load statically
-        buf.sputc(LOAD_FUNC);
+        buf.sputc(Instructions::LOAD_FUNC);
         buf.sputc(reg);
         buf.sputn((byte*)&pos, sizeof(pos));
         buf.sputc(nargs);
         buf.sputc(flags);
     }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(label_id), CEREAL_NVP(nargs), CEREAL_NVP(flags));
+    }
 };
 
 struct BuildableType final : public Buildable {
-    uint8_t reg;
+    RegIndex reg;
     std::string name;
     std::vector<std::string> members;
+
+    virtual ~BuildableType() = default;
 
     virtual size_t GetSize() const override
     {
@@ -163,7 +580,7 @@ struct BuildableType final : public Buildable {
     virtual void Build(Buffer &buf, BuildParams &build_params) const override
     {
         // TODO: make it store and load statically
-        buf.sputc(LOAD_TYPE);
+        buf.sputc(Instructions::LOAD_TYPE);
         buf.sputc(reg);
 
         uint16_t name_len = (uint16_t)name.length();
@@ -176,11 +593,19 @@ struct BuildableType final : public Buildable {
             buf.sputn((byte*)&member_name[0], member_name.length());
         }
     }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(name), CEREAL_NVP(members));
+    }
 };
 
 struct BuildableString final : public Buildable {
-    uint8_t reg;
+    RegIndex reg;
     std::string value;
+
+    virtual ~BuildableString() = default;
 
     virtual size_t GetSize() const override
     {
@@ -195,17 +620,23 @@ struct BuildableString final : public Buildable {
         uint32_t len = value.length();
 
         // TODO: make it store and load statically
-        buf.sputc(LOAD_STRING);
+        buf.sputc(Instructions::LOAD_STRING);
         buf.sputc(reg);
         buf.sputn((byte*)&len, sizeof(len));
         buf.sputn((byte*)&value[0], value.length());
     }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(reg), CEREAL_NVP(value));
+    }
 };
 
 struct BinOp final : public Instruction {
-    uint8_t reg_lhs;
-    uint8_t reg_rhs;
-    uint8_t reg_dst;
+    RegIndex reg_lhs;
+    RegIndex reg_rhs;
+    RegIndex reg_dst;
 
     virtual size_t GetSize() const override
     {
@@ -221,6 +652,12 @@ struct BinOp final : public Instruction {
         buf.sputc(reg_lhs);
         buf.sputc(reg_rhs);
         buf.sputc(reg_dst);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(opcode), CEREAL_NVP(reg_lhs), CEREAL_NVP(reg_rhs), CEREAL_NVP(reg_dst));
     }
 };
 
@@ -267,6 +704,12 @@ struct RawOperation final : public Instruction {
         std::memcpy(&bytes[0], &t, sizeof(t));
         data.insert(data.end(), &bytes[0], &bytes[0] + sizeof(t));
     }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(opcode), CEREAL_NVP(data));
+    }
 };
 
 template <class T, class... Ts>
@@ -274,6 +717,50 @@ struct RawOperation<T, Ts...> : RawOperation<Ts...> {
     RawOperation(T t, Ts...ts) : RawOperation<Ts...>(ts...)
         { this->Accept(t); }
 };
+
+CEREAL_REGISTER_TYPE(Jump)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, Jump)
+
+CEREAL_REGISTER_TYPE(StoreLocal)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, StoreLocal)
+
+CEREAL_REGISTER_TYPE(PopLocal)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, PopLocal)
+
+CEREAL_REGISTER_TYPE(ConstI32)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, ConstI32)
+
+CEREAL_REGISTER_TYPE(ConstI64)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, ConstI64)
+
+CEREAL_REGISTER_TYPE(ConstF32)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, ConstF32)
+
+CEREAL_REGISTER_TYPE(ConstF64)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, ConstF64)
+
+CEREAL_REGISTER_TYPE(ConstBool)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, ConstBool)
+
+CEREAL_REGISTER_TYPE(ConstNull)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, ConstNull)
+
+CEREAL_REGISTER_TYPE(BuildableTryCatch)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, BuildableTryCatch)
+
+CEREAL_REGISTER_TYPE(BuildableFunction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, BuildableFunction)
+
+CEREAL_REGISTER_TYPE(BuildableType)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, BuildableType)
+
+CEREAL_REGISTER_TYPE(BuildableString)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, BuildableString)
+
+CEREAL_REGISTER_TYPE(RawOperation<>)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, RawOperation<>)
+
+
 
 /*template <class...Ts>
 struct Instruction {

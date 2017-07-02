@@ -1,9 +1,10 @@
 #include <ace-c/ast/AstHasExpression.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
-#include <ace-c/emit/Instruction.hpp>
-#include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -55,16 +56,10 @@ std::unique_ptr<Buildable> AstHasExpression::Build(AstVisitor *visitor, Module *
 
       if (m_has_member == 1) {
           // load value into register
-          auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
-          instr_load_true->opcode = LOAD_TRUE;
-          instr_load_true->Accept<uint8_t>(rp);
-          chunk->Append(std::move(instr_load_true));
+          chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
       } else if (m_has_member == 0) {
           // load value into register
-          auto instr_load_false = BytecodeUtil::Make<RawOperation<>>();
-          instr_load_false->opcode = LOAD_FALSE;
-          instr_load_false->Accept<uint8_t>(rp);
-          chunk->Append(std::move(instr_load_false));
+          chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
       }
 
       // build in only if it has side effects
@@ -100,38 +95,22 @@ std::unique_ptr<Buildable> AstHasExpression::Build(AstVisitor *visitor, Module *
 
         found_member_reg = rp;
 
-        { // compare the found member to zero
-            auto instr_cmpz = BytecodeUtil::Make<RawOperation<>>();
-            instr_cmpz->opcode = CMPZ;
-            instr_cmpz->Accept<uint8_t>(found_member_reg);
-            chunk->Append(std::move(instr_cmpz));
-        }
+        // compare the found member to zero
+        chunk->Append(BytecodeUtil::Make<Comparison>(Comparison::CMPZ, found_member_reg));
 
-        { // jump if condition is false or zero.
-            auto instr_je = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JE, else_label);
-            chunk->Append(std::move(instr_je));
-        }
+        // jump if condition is false or zero.
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JE, else_label));
         
-        { // the member was found here, so load true
-            auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
-            instr_load_true->opcode = LOAD_TRUE;
-            instr_load_true->Accept<uint8_t>(rp);
-            chunk->Append(std::move(instr_load_true));
-        }
+        // the member was found here, so load true
+        chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
 
-        { // jump to end after loading true
-            auto instr_jmp = BytecodeUtil::Make<Jump>(JumpClass::JUMP_CLASS_JMP, end_label);
-            chunk->Append(std::move(instr_jmp));
-        }
+        // jump to end after loading true
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
         chunk->MarkLabel(else_label);
 
-        { // member was not found, so load false
-            auto instr_load_true = BytecodeUtil::Make<RawOperation<>>();
-            instr_load_true->opcode = LOAD_FALSE;
-            instr_load_true->Accept<uint8_t>(rp);
-            chunk->Append(std::move(instr_load_true));
-        }
+        // member was not found, so load false
+        chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
         chunk->MarkLabel(end_label);
     }

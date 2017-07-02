@@ -4,6 +4,9 @@
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>

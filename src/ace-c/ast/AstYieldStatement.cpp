@@ -6,6 +6,9 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Keywords.hpp>
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
@@ -76,9 +79,6 @@ std::unique_ptr<Buildable> AstYieldStatement::Build(AstVisitor *visitor, Module 
 
 void AstYieldStatement::Optimize(AstVisitor *visitor, Module *mod)
 {
-    // ASSERT(m_expr != nullptr);
-    // m_expr->Optimize(visitor, mod);
-
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 

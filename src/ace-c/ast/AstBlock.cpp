@@ -3,6 +3,9 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/ast/AstReturnStatement.hpp>
 
+#include <ace-c/emit/BytecodeChunk.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
+
 #include <common/instructions.hpp>
 
 #include <limits>

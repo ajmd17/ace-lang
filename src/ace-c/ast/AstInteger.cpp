@@ -5,9 +5,8 @@
 #include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/emit/Instruction.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <iostream>
 #include <limits>
@@ -23,14 +22,7 @@ std::unique_ptr<Buildable> AstInteger::Build(AstVisitor *visitor, Module *mod)
 {
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-    
-    // load integer value into register
-    auto instr_load_i32 = BytecodeUtil::Make<RawOperation<>>();
-    instr_load_i32->opcode = LOAD_I32;
-    instr_load_i32->Accept<uint8_t>(rp);
-    instr_load_i32->Accept<int32_t>(m_value);
-
-    return std::move(instr_load_i32);
+    return BytecodeUtil::Make<ConstI32>(rp, m_value);
 }
 
 void AstInteger::Recreate(std::ostringstream &ss)

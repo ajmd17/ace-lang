@@ -159,7 +159,7 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
 
                 // skip to here to load true
-                chunk->MarkLabel(true_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
 
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -168,7 +168,7 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
 
                 // skip to here to avoid loading 'true' into the register
-                chunk->MarkLabel(false_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
             }
         }
     }

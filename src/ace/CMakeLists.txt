@@ -17,4 +17,4 @@ endforeach()
 find_package(Threads)
 
 add_executable(ace ${ace_SOURCES} ${ace_HEADERS})
-target_link_libraries(ace ace-c ace-vm ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ace aex-builder ace-c ace-vm ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT})

@@ -1,4 +1,6 @@
-#include <ace-c/emit/aex/AEXGenerator.hpp>
+#include <aex-builder/AEXGenerator.hpp>
+
+#include <iostream>
 
 class LabelVisitor : public BuildableVisitor {
 public:
@@ -11,14 +13,19 @@ public:
 
     virtual void Visit(BytecodeChunk *chunk)
     {
+        LabelVisitor chunk_visitor;
+        chunk_visitor.chunk_offset = chunk_offset + chunk_size;
+
         for (auto &buildable : chunk->buildables) {
-            BuildableVisitor::Visit(buildable.get());
+            chunk_visitor.BuildableVisitor::Visit(buildable.get());
         }
+
+        chunk_size += chunk_visitor.chunk_size;
     }
 
     virtual void Visit(LabelMarker *node)
     {
-        labels[node->id] = chunk_size;
+        labels[node->id] = LabelInfo { (LabelPosition)(chunk_offset + chunk_size) };
     }
 
     virtual void Visit(Jump *node)
@@ -124,12 +131,13 @@ public:
     {
         size_t sz = sizeof(Opcode)
             + sizeof(node->reg)
-            + sizeof(uint16_t)
-            + node->name.length();
+            + sizeof(uint16_t) // len. of name
+            + node->name.length() // name string
+            + sizeof(uint16_t); // num. members
 
         for (const std::string &member_name : node->members) {
-            sz += sizeof(uint16_t);
-            sz += member_name.length();
+            sz += sizeof(uint16_t); // len. of member name
+            sz += member_name.length(); // member name string
         }
 
         chunk_size += sz;
@@ -199,40 +207,78 @@ public:
         chunk_size += sizeof(Opcode) + node->data.size();
     }
 
-    std::map<LabelId, LabelPosition> labels;
+    std::map<LabelId, LabelInfo> labels;
     size_t chunk_size;
+    size_t chunk_offset = 0;
+};
+
+class ChunkBuilder {
+public:
+    static void Build(Buffer &buf, BuildParams &params, BytecodeChunk *chunk)
+    {
+        std::cout << "/// begin chunk\n";
+        // first, calculate labels
+        LabelVisitor label_visitor;
+        for (auto &buildable : chunk->buildables) {
+            label_visitor.BuildableVisitor::Visit(buildable.get());
+        }
+
+        BuildParams new_params;
+        new_params.block_offset = params.block_offset + params.local_offset;
+        new_params.local_offset = 0;
+        new_params.labels = label_visitor.labels;
+
+        AEXGenerator chunk_generator(buf, new_params);
+
+        for (auto &buildable : chunk->buildables) {
+            chunk_generator.BuildableVisitor::Visit(buildable.get());
+        }
+
+        params.local_offset += label_visitor.chunk_size;
+        std::cout << "/// end chunk\n";
+    }
 };
 
 AEXGenerator::AEXGenerator(Buffer &buf, BuildParams &build_params)
     : buf(buf),
-      build_params(build_params)
+      build_params(build_params),
+      m_label_visitor(new LabelVisitor)
 {
+}
+
+AEXGenerator::~AEXGenerator()
+{
+    delete m_label_visitor;
 }
 
 void AEXGenerator::Visit(BytecodeChunk *chunk)
 {
-    LabelVisitor label_visitor;
-    label_visitor.Visit(chunk);
-
+    std::cout << "/// begin chunk " << (void*)chunk << "\n";
+    //ChunkBuilder::Build(buf, build_params, chunk);
     BuildParams new_params;
     new_params.block_offset = build_params.block_offset + build_params.local_offset;
     new_params.local_offset = 0;
 
-    // get values from map for labels
-    new_params.labels.reserve(label_visitor.labels.size());
-    for (const auto &it : label_visitor.labels) {
-        new_params.labels.push_back(LabelInfo { it.second });
+    LabelVisitor label_visitor;
+    for (auto &buildable : chunk->buildables) {
+        label_visitor.BuildableVisitor::Visit(buildable.get());
+    }
+
+    new_params.labels = label_visitor.labels;
+
+    for (auto &it : new_params.labels) {
+      std::cout << "label [" << it.first << "] = " << it.second.position << "\n";
     }
 
     // create a new generator specifically for the chunk
     // use same output buffer
     AEXGenerator chunk_generator(buf, new_params);
-
     for (auto &buildable : chunk->buildables) {
         chunk_generator.BuildableVisitor::Visit(buildable.get());
     }
 
     build_params.local_offset += label_visitor.chunk_size;
+    std::cout << "/// end chunk " << (void*)chunk << "\n";
 }
 
 void AEXGenerator::Visit(LabelMarker *node)
@@ -244,158 +290,169 @@ void AEXGenerator::Visit(Jump *node)
 {
     switch (node->jump_class) {
         case Jump::JumpClass::JMP:
-            buf.sputc(Instructions::JMP);
+            buf.put(Instructions::JMP);
             break;
         case Jump::JumpClass::JE:
-            buf.sputc(Instructions::JE);
+            buf.put(Instructions::JE);
             break;
         case Jump::JumpClass::JNE:
-            buf.sputc(Instructions::JNE);
+            buf.put(Instructions::JNE);
             break;
         case Jump::JumpClass::JG:
-            buf.sputc(Instructions::JG);
+            buf.put(Instructions::JG);
             break;
         case Jump::JumpClass::JGE:
-            buf.sputc(Instructions::JGE);
+            buf.put(Instructions::JGE);
             break;
     }
 
-    LabelPosition pos = build_params.block_offset
-        + build_params.labels.at(node->label_id).position;
+    auto it = build_params.labels.find(node->label_id);
+    ASSERT(it != build_params.labels.end());
 
-    buf.sputn((byte*)&pos, sizeof(pos));
+    std::cout << "BLOCK OFFSET = " << build_params.block_offset << "\n";
+
+    LabelPosition pos = build_params.block_offset
+        + it->second.position;
+
+    buf.write((byte*)&pos, sizeof(pos));
 }
 
 void AEXGenerator::Visit(Comparison *node)
 {
     switch (node->comparison_class) {
         case Comparison::ComparisonClass::CMP:
-            buf.sputc(Instructions::CMP);
+            buf.put(Instructions::CMP);
             break;
         case Comparison::ComparisonClass::CMPZ:
-            buf.sputc(Instructions::CMPZ);
+            buf.put(Instructions::CMPZ);
             break;
     }
 
-    buf.sputc(node->reg_lhs);
+    buf.put(node->reg_lhs);
 
     if (node->comparison_class == Comparison::ComparisonClass::CMP) {
-        buf.sputc(node->reg_rhs);
+        buf.put(node->reg_rhs);
     }
 }
 
 void AEXGenerator::Visit(FunctionCall *node)
 {
-    buf.sputc(Instructions::CALL);
-    buf.sputc(node->reg);
-    buf.sputc(node->nargs);
+    buf.put(Instructions::CALL);
+    buf.put(node->reg);
+    buf.put(node->nargs);
 }
 
 void AEXGenerator::Visit(Return *node)
 {
-    buf.sputc(Instructions::RET);
+    buf.put(Instructions::RET);
 }
 
 void AEXGenerator::Visit(StoreLocal *node)
 {
-    buf.sputc(Instructions::PUSH);
-    buf.sputc(node->reg);
+    buf.put(Instructions::PUSH);
+    buf.put(node->reg);
 }
 
 void AEXGenerator::Visit(PopLocal *node)
 {
     if (node->amt > 1) {
-        buf.sputc(Instructions::POP_N);
+        buf.put(Instructions::POP_N);
 
         byte as_byte = (byte)node->amt;
-        buf.sputc(as_byte);
+        buf.put(as_byte);
     } else {
-        buf.sputc(Instructions::POP);
+        buf.put(Instructions::POP);
     }
 }
 
 void AEXGenerator::Visit(ConstI32 *node)
 {
-    buf.sputc(Instructions::LOAD_I32);
-    buf.sputc(node->reg);
-    buf.sputn((byte*)&node->value, sizeof(node->value));
+    buf.put(Instructions::LOAD_I32);
+    buf.put(node->reg);
+    buf.write((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstI64 *node)
 {
-    buf.sputc(Instructions::LOAD_I64);
-    buf.sputc(node->reg);
-    buf.sputn((byte*)&node->value, sizeof(node->value));
+    buf.put(Instructions::LOAD_I64);
+    buf.put(node->reg);
+    buf.write((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstF32 *node)
 {
-    buf.sputc(Instructions::LOAD_F32);
-    buf.sputc(node->reg);
-    buf.sputn((byte*)&node->value, sizeof(node->value));
+    buf.put(Instructions::LOAD_F32);
+    buf.put(node->reg);
+    buf.write((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstF64 *node)
 {
-    buf.sputc(Instructions::LOAD_F64);
-    buf.sputc(node->reg);
-    buf.sputn((byte*)&node->value, sizeof(node->value));
+    buf.put(Instructions::LOAD_F64);
+    buf.put(node->reg);
+    buf.write((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstBool *node)
 {
-    buf.sputc(node->value
+    buf.put(node->value
         ? Instructions::LOAD_TRUE
         : Instructions::LOAD_FALSE);
-    buf.sputc(node->reg);
+    buf.put(node->reg);
 }
 
 void AEXGenerator::Visit(ConstNull *node)
 {
-    buf.sputc(Instructions::LOAD_NULL);
-    buf.sputc(node->reg);
+    buf.put(Instructions::LOAD_NULL);
+    buf.put(node->reg);
 }
 
 void AEXGenerator::Visit(BuildableTryCatch *node)
 {
-    buf.sputc(Instructions::BEGIN_TRY);
+    buf.put(Instructions::BEGIN_TRY);
+
+    auto it = build_params.labels.find(node->catch_label_id);
+    ASSERT(it != build_params.labels.end());
 
     LabelPosition pos = build_params.block_offset
-        + build_params.labels[node->catch_label_id].position;
+        + it->second.position;
 
-    buf.sputn((byte*)&pos, sizeof(pos));
+    buf.write((byte*)&pos, sizeof(pos));
 }
 
 void AEXGenerator::Visit(BuildableFunction *node)
 {
+    auto it = build_params.labels.find(node->label_id);
+    ASSERT(it != build_params.labels.end());
+
     LabelPosition pos = build_params.block_offset
-        + build_params.labels[node->label_id].position;
+        + it->second.position;
 
     // TODO: make it store and load statically
-    buf.sputc(Instructions::LOAD_FUNC);
-    buf.sputc(node->reg);
-    buf.sputn((byte*)&pos, sizeof(pos));
-    buf.sputc(node->nargs);
-    buf.sputc(node->flags);
+    buf.put(Instructions::LOAD_FUNC);
+    buf.put(node->reg);
+    buf.write((byte*)&pos, sizeof(pos));
+    buf.put(node->nargs);
+    buf.put(node->flags);
 }
 
 void AEXGenerator::Visit(BuildableType *node)
 {
     // TODO: make it store and load statically
-    buf.sputc(Instructions::LOAD_TYPE);
-    buf.sputc(node->reg);
+    buf.put(Instructions::LOAD_TYPE);
+    buf.put(node->reg);
 
     uint16_t name_len = (uint16_t)node->name.length();
-    buf.sputn((byte*)&name_len, sizeof(name_len));
-    buf.sputn((byte*)&node->name[0], node->name.length());
+    buf.write((byte*)&name_len, sizeof(name_len));
+    buf.write((byte*)&node->name[0], node->name.length());
 
     uint16_t size = (uint16_t)node->members.size();
-    buf.sputn((byte*)&size, sizeof(size));
+    buf.write((byte*)&size, sizeof(size));
 
     for (const std::string &member_name : node->members) {
         uint16_t member_name_len = (uint16_t)member_name.length();
-        buf.sputn((byte*)&member_name_len, sizeof(member_name_len));
-        buf.sputn((byte*)&member_name[0], member_name.length());
+        buf.write((byte*)&member_name_len, sizeof(member_name_len));
+        buf.write((byte*)&member_name[0], member_name.length());
     }
 }
 
@@ -404,10 +461,10 @@ void AEXGenerator::Visit(BuildableString *node)
     uint32_t len = node->value.length();
 
     // TODO: make it store and load statically
-    buf.sputc(Instructions::LOAD_STRING);
-    buf.sputc(node->reg);
-    buf.sputn((byte*)&len, sizeof(len));
-    buf.sputn((byte*)&node->value[0], node->value.length());
+    buf.put(Instructions::LOAD_STRING);
+    buf.put(node->reg);
+    buf.write((byte*)&len, sizeof(len));
+    buf.write((byte*)&node->value[0], node->value.length());
 }
 
 void AEXGenerator::Visit(StorageOperation *node)
@@ -418,15 +475,15 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_OFFSET:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.sputc(Instructions::LOAD_OFFSET);
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.sputn((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
+                            buf.put(Instructions::LOAD_OFFSET);
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.write((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
 
                             break;
                         case Operations::STORE:
-                            buf.sputc(Instructions::MOV_OFFSET);
-                            buf.sputn((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.put(Instructions::MOV_OFFSET);
+                            buf.write((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -436,15 +493,15 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.sputc(Instructions::LOAD_INDEX);
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.sputn((byte*)&node->op.b.index, sizeof(node->op.b.index));
+                            buf.put(Instructions::LOAD_INDEX);
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.write((byte*)&node->op.b.index, sizeof(node->op.b.index));
 
                             break;
                         case Operations::STORE:
-                            buf.sputc(Instructions::MOV_INDEX);
-                            buf.sputn((byte*)&node->op.b.index, sizeof(node->op.b.index));
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.put(Instructions::MOV_INDEX);
+                            buf.write((byte*)&node->op.b.index, sizeof(node->op.b.index));
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -469,9 +526,9 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.sputc(Instructions::LOAD_STATIC);
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.sputn((byte*)&node->op.b.index, sizeof(node->op.b.index));
+                            buf.put(Instructions::LOAD_STATIC);
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.write((byte*)&node->op.b.index, sizeof(node->op.b.index));
 
                             break;
                         case Operations::STORE:
@@ -500,17 +557,17 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.sputc(Instructions::LOAD_ARRAYIDX);
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            buf.put(Instructions::LOAD_ARRAYIDX);
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
 
                             break;
                         case Operations::STORE:
-                            buf.sputc(Instructions::MOV_ARRAYIDX);
-                            buf.sputn((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.put(Instructions::MOV_ARRAYIDX);
+                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -535,17 +592,17 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.sputc(Instructions::LOAD_MEM);
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            buf.put(Instructions::LOAD_MEM);
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
 
                             break;
                         case Operations::STORE:
-                            buf.sputc(Instructions::MOV_MEM);
-                            buf.sputn((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.put(Instructions::MOV_MEM);
+                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -555,17 +612,17 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_HASH:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.sputc(Instructions::LOAD_MEM_HASH);
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
+                            buf.put(Instructions::LOAD_MEM_HASH);
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            buf.write((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
 
                             break;
                         case Operations::STORE:
-                            buf.sputc(Instructions::MOV_MEM_HASH);
-                            buf.sputn((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.sputn((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
-                            buf.sputn((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            buf.put(Instructions::MOV_MEM_HASH);
+                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            buf.write((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
+                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -579,6 +636,6 @@ void AEXGenerator::Visit(StorageOperation *node)
 
 void AEXGenerator::Visit(RawOperation<> *node)
 {
-    buf.sputc(node->opcode);
-    buf.sputn((byte*)&node->data[0], node->data.size());
+    buf.put(node->opcode);
+    buf.write((byte*)&node->data[0], node->data.size());
 }

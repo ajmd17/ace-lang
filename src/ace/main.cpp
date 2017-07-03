@@ -34,7 +34,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 
-//#include <ace-air/AIRCode.hpp>
+#include <aex-builder/AEXGenerator.hpp>
 
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
@@ -461,26 +461,21 @@ void Runtime_gc(ace::sdk::Params params)
     ACE_CHECK_ARGS(==, 0);
 
     const size_t heap_size_before = params.handler->state->GetHeap().Size();
-
     // run the gc
     params.handler->state->GC();
-
     const size_t heap_size_after = params.handler->state->GetHeap().Size();
-    
     utf::cout << (heap_size_before - heap_size_after) << " object(s) collected.\n";
 }
 
 void Runtime_dump_heap(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 0);
-
     utf::cout << params.handler->state->GetHeap() << "\n";
 }
 
 void Runtime_dump_stack(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 0);
-
     utf::cout << params.handler->thread->GetStack() << "\n";
 }
 
@@ -488,9 +483,15 @@ void Runtime_typeof(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
 
+    // create heap value for string
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(vm::ImmutableString(params.args[0]->GetTypeString()));
+
     vm::Value res;
-    res.m_type = vm::Value::CONST_STRING;
-    res.m_value.c_str = params.args[0]->GetTypeString();
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
 
     ACE_RETURN(res);
 }
@@ -1022,7 +1023,6 @@ void Global_fmt(ace::sdk::Params params)
             int buffer_idx = 0;
             
             for (size_t i = 0; i < original_length; i++) {
-
                 if (original_data[i] == '%' && num_fmts < params.nargs - 1) {
                     // set end of buffer to be NUL
                     buffer[buffer_idx + 1] = '\0';
@@ -1267,6 +1267,25 @@ void Global_spawn_thread(ace::sdk::Params params)
     }
 }
 
+static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk, BuildParams &build_params)
+{
+    ASSERT(chunk != nullptr);
+
+    std::basic_stringbuf<std::uint8_t> buf;
+
+    AEXGenerator aex_gen(buf, build_params);
+    aex_gen.Visit(chunk);
+
+    std::vector<std::uint8_t> vec;
+    vec.insert(
+        vec.end(),
+        std::istreambuf_iterator<std::uint8_t>(&buf),
+        std::istreambuf_iterator<std::uint8_t>()
+    );
+    
+    return vec;
+}
+
 static int RunBytecodeFile(
     vm::VM *vm,
     const utf::Utf8String &filename,
@@ -1423,9 +1442,9 @@ static int REPL(
 
             cont_token = !tmp_ts.m_tokens.empty() && tmp_ts.m_tokens.back().IsContinuationToken();
             wait_for_next = indent > 0 ||
-                    parentheses_counter > 0 ||
-                    bracket_counter > 0 ||
-                    cont_token;
+                parentheses_counter > 0 ||
+                bracket_counter > 0 ||
+                cont_token;
         }
 
         lines.push_back(current_line);
@@ -1488,14 +1507,14 @@ static int REPL(
                 std::unique_ptr<BytecodeChunk> bc = compiler.Compile();
                 ASSERT(bc != nullptr);
 
-                /* TESTING SERIALIZATION! */
+                /*// TESTING SERIALIZATION! 
                 std::ofstream os("serialized.ir.json");
                 BytecodeUtil::StoreSerialized(os, bc);
                 os.close();
                 // load
                 std::ifstream is("serialized.ir.json");
                 std::unique_ptr<BytecodeChunk> bc2 = BytecodeUtil::LoadSerialized(is);
-                is.close();
+                is.close();*/
                 
                 // get active register
                 int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();
@@ -1518,11 +1537,10 @@ static int REPL(
                     int64_t bytecode_file_size;
 
                     BuildParams build_params;
-                    // set offset
                     build_params.block_offset = offset;
                     build_params.local_offset = 0;
 
-                    std::vector<std::uint8_t> bytes = BytecodeUtil::GenerateBytes(bc.get(), build_params);
+                    const std::vector<std::uint8_t> bytes = GenerateBytes(bc.get(), build_params);
 
                     temp_bytecode_file.write((char*)&bytes[0], bytes.size());
                     offset += bytes.size();
@@ -1754,9 +1772,9 @@ void HandleArgs(
                         utf::cout << "Could not open file for writing: " << out_filename << "\n";
                     } else {
                         // write bytes to file
-                        std::vector<std::uint8_t> bytes = BytecodeUtil::GenerateBytes(bc.get());
+                        BuildParams tmp_params;
+                        const std::vector<std::uint8_t> bytes = GenerateBytes(bc.get(), tmp_params);
                         out_file.write((char*)&bytes[0], bytes.size());
-                        //out_file << compilation_unit.GetInstructionStream();
                     }
 
                     out_file.close();

@@ -36,6 +36,7 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif(MSVC)
 
+add_subdirectory(aex-builder)
 add_subdirectory(ace-c)
 add_subdirectory(ace-vm)
 add_subdirectory(ace-runtime)

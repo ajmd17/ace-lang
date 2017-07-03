@@ -36,10 +36,7 @@ struct StorageOperation : public Buildable {
     virtual ~StorageOperation() = default;
 
     OperationBuilder GetBuilder();
-
-    virtual size_t GetSize() const override;
-    virtual void Build(Buffer &buf, BuildParams &build_params) const override;
-
+    
     template <class Archive>
     void Serialize(Archive &archive)
     {

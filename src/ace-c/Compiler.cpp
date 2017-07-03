@@ -177,14 +177,14 @@ std::unique_ptr<Buildable> Compiler::CreateConditional(
         chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
         // set the label's position to where the else-block would be
-        chunk->MarkLabel(else_label);
+        chunk->Append(BytecodeUtil::Make<LabelMarker>(else_label));
         // build the else-block
         chunk->Append(else_part->Build(visitor, mod));
     }
 
     // set the label's position to after the block,
     // so we can skip it if the condition is false
-    chunk->MarkLabel(end_label);
+    chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
 
     return std::move(chunk);
 }

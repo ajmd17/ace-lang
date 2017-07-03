@@ -78,8 +78,6 @@ struct Value {
 
         BOOLEAN,
 
-        CONST_STRING,
-
         HEAP_POINTER,
         FUNCTION,
         NATIVE_FUNCTION,

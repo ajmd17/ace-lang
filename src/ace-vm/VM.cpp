@@ -62,9 +62,6 @@ void VM::Print(const Value &value)
         case Value::BOOLEAN:
             utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
             break;
-        case Value::CONST_STRING:
-            utf::fputs(value.m_value.c_str, stdout);
-            break;
         case Value::HEAP_POINTER: {
             if (value.m_value.ptr == nullptr) {
                 // special case for null pointers

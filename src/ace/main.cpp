@@ -488,9 +488,15 @@ void Runtime_typeof(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
 
+    // create heap value for string
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+    ptr->Assign(vm::ImmutableString(params.args[0]->GetTypeString()));
+
     vm::Value res;
-    res.m_type = vm::Value::CONST_STRING;
-    res.m_value.c_str = params.args[0]->GetTypeString();
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
 
     ACE_RETURN(res);
 }

@@ -68,6 +68,7 @@ const char *Value::GetTypeString() const
         case F32: // fallthrough
         case F64: return "Float";
         case BOOLEAN: return "Boolean";
+        case CONST_STRING: return "CString";
         case HEAP_POINTER: 
             if (!m_value.ptr) {
                 return "Null";

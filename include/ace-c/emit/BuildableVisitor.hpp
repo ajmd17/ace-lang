@@ -12,8 +12,6 @@ public:
     void Visit(Buildable *);
 
     virtual void Visit(BytecodeChunk *) = 0;
-
-protected:
     virtual void Visit(LabelMarker *) = 0;
     virtual void Visit(Jump *) = 0;
     virtual void Visit(Comparison *) = 0;

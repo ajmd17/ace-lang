@@ -368,14 +368,14 @@ std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Mod
     chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
     // store the function address before the function body
-    chunk->Append(BytecodeUtil::Make<LabelMarker>(func_addr));
+    chunk->MarkLabel(func_addr);
     
     // TODO add optimization to avoid duplicating the function body
     // Build the function 
     chunk->Append(BuildFunctionBody(visitor, mod));
 
     // set the label's position to after the block
-    chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
+    chunk->MarkLabel(end_label);
 
     // store local variable
     // get register index

@@ -42,6 +42,20 @@ std::unique_ptr<Buildable> AstObject::Build(AstVisitor *visitor, Module *mod)
     // store the original register location of the object
     const uint8_t original_obj_reg = obj_reg;
 
+    /*// load the type into a register
+    visitor->GetCompilationUnit()->GetInstructionStream() <<
+        Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, obj_reg, static_id);
+
+    if (!ace::compiler::Config::use_static_objects) {
+        // fill with padding for LOAD_TYPE instruction
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sp->GetName().length();
+        visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
+        for (size_t i = 0; i < sp->GetMembers().size(); i++) {
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += sizeof(uint16_t);
+            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += std::get<0>(sp->GetMembers()[i]).length();
+        }
+    }*/
+
     {
         auto instr_type = BytecodeUtil::Make<BuildableType>();
         instr_type->reg = obj_reg;

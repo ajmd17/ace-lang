@@ -1,15 +1,7 @@
 #include <ace-c/emit/BuildableVisitor.hpp>
-#include <common/my_assert.hpp>
-
-#include <iostream>
-#include <typeinfo>
 
 void BuildableVisitor::Visit(Buildable *buildable)
 {
-    ASSERT(buildable != nullptr);
-
-    //std::cout << "in " << typeid(*this).name() << ", type  = " << typeid(*buildable).name() << "\n";
-
     if (auto *node = dynamic_cast<BytecodeChunk*>(buildable)) {
         Visit(node);
     } else if (auto *node = dynamic_cast<LabelMarker*>(buildable)) {

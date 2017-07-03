@@ -107,12 +107,12 @@ std::unique_ptr<Buildable> AstHasExpression::Build(AstVisitor *visitor, Module *
         // jump to end after loading true
         chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
-        chunk->Append(BytecodeUtil::Make<LabelMarker>(else_label));
+        chunk->MarkLabel(else_label);
 
         // member was not found, so load false
         chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-        chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
+        chunk->MarkLabel(end_label);
     }
 
     return std::move(chunk);

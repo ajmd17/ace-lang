@@ -6,16 +6,12 @@
 #include <vector>
 #include <map>
 
-class LabelVisitor;
-
 class AEXGenerator : public BuildableVisitor {
 public:
     AEXGenerator(Buffer &buf, BuildParams &build_params);
-    virtual ~AEXGenerator();
+    virtual ~AEXGenerator() = default;
 
     virtual void Visit(BytecodeChunk *);
-
-private:
     virtual void Visit(LabelMarker *);
     virtual void Visit(Jump *);
     virtual void Visit(Comparison *);
@@ -39,10 +35,6 @@ private:
 private:
     Buffer &buf;
     BuildParams &build_params;
-
-    LabelVisitor *m_label_visitor;
-
-    std::vector<std::unique_ptr<AEXGenerator>> children;
 };
 
 #endif

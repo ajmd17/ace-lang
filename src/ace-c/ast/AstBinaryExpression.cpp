@@ -245,12 +245,12 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 // jump to the VERY end (so we don't load 'false' value)
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
+                chunk->MarkLabel(false_label);
                 
                 // here is where the value is false
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
+                chunk->MarkLabel(true_label);
             } else if (m_op->GetOperatorType() == Operators::OP_logical_or) {
                 uint8_t rp;
 
@@ -326,11 +326,11 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
 
                 // jump to the VERY end (so we don't load 'true' value)
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
+                chunk->MarkLabel(true_label);
 
                 // here is where the value is true
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
+                chunk->MarkLabel(false_label);
             }
         } else if (m_op->GetType() == COMPARISON) {
             uint8_t rp;
@@ -428,12 +428,12 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 // jump to the false label, the value is false at this point
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
                 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
+                chunk->MarkLabel(true_label);
 
                 // values are equal
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
+                chunk->MarkLabel(false_label);
             } else {
                 // load left-hand side into register
                 // right-hand side has been optimized away

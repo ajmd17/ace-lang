@@ -85,18 +85,6 @@ void AstTupleExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstTupleExpression::Recreate(std::ostringstream &ss)
-{
-    ss << "(";
-    for (auto &member : m_members) {
-        ASSERT(member != nullptr);
-        
-        member->Recreate(ss);
-        ss << ",";
-    }
-    ss << ")";
-}
-
 std::shared_ptr<AstStatement> AstTupleExpression::Clone() const
 {
     return CloneImpl();

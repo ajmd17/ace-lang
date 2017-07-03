@@ -52,14 +52,6 @@ void AstArgumentList::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstArgumentList::Recreate(std::ostringstream &ss)
-{
-    for (const std::shared_ptr<AstArgument> &arg : m_args) {
-        ASSERT(arg != nullptr);
-        arg->Recreate(ss);
-    }
-}
-
 Pointer<AstStatement> AstArgumentList::Clone() const
 {
     return CloneImpl();

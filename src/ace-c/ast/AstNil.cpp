@@ -23,11 +23,6 @@ std::unique_ptr<Buildable> AstNil::Build(AstVisitor *visitor, Module *mod)
     return BytecodeUtil::Make<ConstNull>(rp);
 }
 
-void AstNil::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_null);
-}
-
 Pointer<AstStatement> AstNil::Clone() const
 {
     return CloneImpl();

@@ -140,29 +140,6 @@ void AstActionExpression::Optimize(AstVisitor *visitor, Module *mod)
     }*/
 }
 
-void AstActionExpression::Recreate(std::ostringstream &ss)
-{
-    /*ASSERT(m_action != nullptr);
-    m_action->Recreate(ss);
-
-    ss << "(";
-    for (size_t i = 0; i < m_args.size(); i++) {
-        auto &arg = m_args[i];
-        if (arg != nullptr) {
-            arg->Recreate(ss);
-            if (i != m_args.size() - 1) {
-                ss << ",";
-            }
-        }
-    }
-    ss << ")";
-
-    ss << " => ";
-
-    ASSERT(m_target != nullptr);
-    m_target->Recreate(ss);*/
-}
-
 Pointer<AstStatement> AstActionExpression::Clone() const
 {
     return CloneImpl();

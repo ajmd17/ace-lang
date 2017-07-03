@@ -25,11 +25,6 @@ std::unique_ptr<Buildable> AstInteger::Build(AstVisitor *visitor, Module *mod)
     return BytecodeUtil::Make<ConstI32>(rp, m_value);
 }
 
-void AstInteger::Recreate(std::ostringstream &ss)
-{
-    ss << m_value;
-}
-
 Pointer<AstStatement> AstInteger::Clone() const
 {
     return CloneImpl();

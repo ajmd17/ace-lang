@@ -27,24 +27,6 @@ std::unique_ptr<Buildable> AstString::Build(AstVisitor *visitor, Module *mod)
     return std::move(instr_string);
 }
 
-void AstString::Recreate(std::ostringstream &ss)
-{
-    ss << "\"";
-    for (char ch : m_value) {
-        switch (ch) {
-            case '\\': ss << "\\\\"; break;
-            case '"':  ss << "\\\""; break;
-            case '\b': ss << "\\b"; break;
-            case '\f': ss << "\\f"; break;
-            case '\n': ss << "\\n"; break;
-            case '\r': ss << "\\r"; break;
-            case '\t': ss << "\\t"; break;
-            default: ss << ch; break;
-        }
-    }
-    ss << "\"";
-}
-
 Pointer<AstStatement> AstString::Clone() const
 {
     return CloneImpl();

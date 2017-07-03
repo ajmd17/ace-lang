@@ -85,20 +85,6 @@ void AstIfStatement::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstIfStatement::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_conditional != nullptr && m_block != nullptr);
-
-    ss << Keyword::ToString(Keyword_if) << " ";
-    m_conditional->Recreate(ss);
-    m_block->Recreate(ss);
-
-    if (m_else_block) {
-        ss << Keyword::ToString(Keyword_else);
-        m_else_block->Recreate(ss);
-    }
-}
-
 Pointer<AstStatement> AstIfStatement::Clone() const
 {
     return CloneImpl();

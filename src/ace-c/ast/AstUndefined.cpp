@@ -10,11 +10,6 @@ std::unique_ptr<Buildable> AstUndefined::Build(AstVisitor *visitor, Module *mod)
     return nullptr;
 }
 
-void AstUndefined::Recreate(std::ostringstream &ss)
-{
-    ss << "??";
-}
-
 Pointer<AstStatement> AstUndefined::Clone() const
 {
     return CloneImpl();

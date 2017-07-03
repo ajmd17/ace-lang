@@ -183,20 +183,6 @@ void AstVariableDeclaration::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstVariableDeclaration::Recreate(std::ostringstream &ss)
-{
-    if (m_real_assignment != nullptr) {
-        ss << Keyword::ToString(Keyword_let) << " ";
-        ss << m_name << "=";
-        m_real_assignment->Recreate(ss);
-    } else if (m_type_specification != nullptr) {
-        ss << m_name << ":";
-        m_type_specification->Recreate(ss);
-    } else {
-        ss << m_name << "=??";
-    }
-}
-
 Pointer<AstStatement> AstVariableDeclaration::Clone() const
 {
     return CloneImpl();

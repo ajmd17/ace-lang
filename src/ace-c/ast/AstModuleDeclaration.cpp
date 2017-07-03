@@ -53,7 +53,7 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
         // add this module to list of imported modules,
         // but only if mod == nullptr, that way we don't add nested modules
-        if (!mod) {
+        if (mod == nullptr) {
             // parse filename
             std::vector<std::string> path = str_util::split_path(m_location.GetFileName());
             path = str_util::canonicalize_path(path);
@@ -73,18 +73,12 @@ void AstModuleDeclaration::Visit(AstVisitor *visitor, Module *mod)
         mod = m_module.get();
         ASSERT(mod == visitor->GetCompilationUnit()->GetCurrentModule());
 
-        // open scope for module
-        //mod->m_scopes.Open(Scope());
-
         // visit all children
         for (auto &child : m_children) {
-            if (child) {
+            if (child != nullptr) {
                 child->Visit(visitor, mod);
             }
         }
-
-        // close scope for module
-        //mod->m_scopes.Close();
 
         // close this module
         visitor->GetCompilationUnit()->m_module_tree.Close();
@@ -117,25 +111,6 @@ void AstModuleDeclaration::Optimize(AstVisitor *visitor, Module *mod)
             child->Optimize(visitor, m_module.get());
         }
     }
-}
-
-void AstModuleDeclaration::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_module) << " ";
-    ss << m_name;
-    ss << "{";
-
-    for (size_t i = 0; i < m_children.size(); i++) {
-        auto &child = m_children[i];
-        if (child) {
-            child->Recreate(ss);
-            if (i != m_children.size() - 1) {
-                ss << ";";
-            }
-        }
-    }
-
-    ss << "}";
 }
 
 Pointer<AstStatement> AstModuleDeclaration::Clone() const

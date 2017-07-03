@@ -192,15 +192,6 @@ void AstUnaryExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstUnaryExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-    if (!m_folded) {
-        //ss << m_op->ToString();
-    }
-    m_target->Recreate(ss);
-}
-
 Pointer<AstStatement> AstUnaryExpression::Clone() const
 {
     return CloneImpl();

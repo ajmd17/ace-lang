@@ -125,14 +125,6 @@ void AstHasExpression::Optimize(AstVisitor *visitor, Module *mod)
     m_target->Optimize(visitor, mod);
 }
 
-void AstHasExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-
-    m_target->Recreate(ss);
-    ss << " has \"" << m_field_name << "\"";
-}
-
 Pointer<AstStatement> AstHasExpression::Clone() const
 {
     return CloneImpl();

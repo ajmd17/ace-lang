@@ -217,11 +217,6 @@ void AstVariable::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstVariable::Recreate(std::ostringstream &ss)
-{
-    ss << m_name;
-}
-
 Pointer<AstStatement> AstVariable::Clone() const
 {
     return CloneImpl();

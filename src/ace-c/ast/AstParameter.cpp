@@ -107,14 +107,6 @@ void AstParameter::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstParameter::Recreate(std::ostringstream &ss)
-{
-    ss << m_name;
-    if (m_is_variadic) {
-        ss << "...";
-    }
-}
-
 Pointer<AstStatement> AstParameter::Clone() const
 {
     return CloneImpl();

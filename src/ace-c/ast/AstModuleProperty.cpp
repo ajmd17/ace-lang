@@ -71,11 +71,6 @@ void AstModuleProperty::Optimize(AstVisitor *visitor, Module *mod)
     m_expr_value->Optimize(visitor, mod);
 }
 
-void AstModuleProperty::Recreate(std::ostringstream &ss)
-{
-    ss << "module." << m_field_name;
-}
-
 Pointer<AstStatement> AstModuleProperty::Clone() const
 {
     return CloneImpl();

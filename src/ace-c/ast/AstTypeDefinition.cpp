@@ -215,21 +215,6 @@ void AstTypeDefinition::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstTypeDefinition::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_type) << " ";
-    ss << m_name;
-    ss << "{";
-
-    for (const auto &mem : m_members) {
-        if (mem) {
-            mem->Recreate(ss);
-        }
-    }
-
-    ss << "}";
-}
-
 Pointer<AstStatement> AstTypeDefinition::Clone() const
 {
     return CloneImpl();

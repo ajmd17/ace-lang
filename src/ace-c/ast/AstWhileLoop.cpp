@@ -138,14 +138,6 @@ void AstWhileLoop::Optimize(AstVisitor *visitor, Module *mod)
     m_block->Optimize(visitor, mod);
 }
 
-void AstWhileLoop::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_conditional != nullptr && m_block != nullptr);
-    ss << Keyword::ToString(Keyword_while) << " ";
-    m_conditional->Recreate(ss);
-    m_block->Recreate(ss);
-}
-
 Pointer<AstStatement> AstWhileLoop::Clone() const
 {
     return CloneImpl();

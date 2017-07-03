@@ -20,11 +20,6 @@ std::unique_ptr<Buildable> AstFalse::Build(AstVisitor *visitor, Module *mod)
     return BytecodeUtil::Make<ConstBool>(rp, false);
 }
 
-void AstFalse::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_false);
-}
-
 Pointer<AstStatement> AstFalse::Clone() const
 {
     return CloneImpl();
@@ -112,7 +107,7 @@ std::shared_ptr<AstConstant> AstFalse::operator&&(AstConstant *right) const
 
 std::shared_ptr<AstConstant> AstFalse::operator||(AstConstant *right) const
 {
-    bool right_true = right->IsTrue();
+    int right_true = right->IsTrue();
     if (right_true == 1) {
         return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     } else if (right_true == 0) {

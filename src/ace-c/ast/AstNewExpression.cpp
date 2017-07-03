@@ -108,19 +108,6 @@ void AstNewExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstNewExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_type_expr != nullptr);
-
-    ss << "new ";
-    m_type_expr->Recreate(ss);
-    ss << "(";
-    if (m_arg_list != nullptr) {
-        m_arg_list->Recreate(ss);
-    }
-    ss << ")";
-}
-
 Pointer<AstStatement> AstNewExpression::Clone() const
 {
     return CloneImpl();

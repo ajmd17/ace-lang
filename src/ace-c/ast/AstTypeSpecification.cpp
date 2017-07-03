@@ -244,15 +244,6 @@ void AstTypeSpecification::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstTypeSpecification::Recreate(std::ostringstream &ss)
-{
-    ss << m_left;
-    if (m_right) {
-        ss << "::";
-        m_right->Recreate(ss);
-    }
-}
-
 Pointer<AstStatement> AstTypeSpecification::Clone() const
 {
     return CloneImpl();

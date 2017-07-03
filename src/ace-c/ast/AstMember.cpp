@@ -142,15 +142,6 @@ void AstMember::Optimize(AstVisitor *visitor, Module *mod)
     // be optimized
 }
 
-void AstMember::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-
-    m_target->Recreate(ss);
-    ss << ".";
-    ss << m_field_name;
-}
-
 Pointer<AstStatement> AstMember::Clone() const
 {
     return CloneImpl();

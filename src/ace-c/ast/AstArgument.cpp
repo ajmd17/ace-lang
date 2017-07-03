@@ -37,12 +37,6 @@ void AstArgument::Optimize(AstVisitor *visitor, Module *mod)
     m_expr->Optimize(visitor, mod);
 }
 
-void AstArgument::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_expr != nullptr);
-    m_expr->Recreate(ss);
-}
-
 Pointer<AstStatement> AstArgument::Clone() const
 {
     return CloneImpl();

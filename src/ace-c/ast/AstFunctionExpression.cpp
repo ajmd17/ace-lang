@@ -437,25 +437,6 @@ void AstFunctionExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstFunctionExpression::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_func);
-    ss << "(";
-
-    for (auto &param : m_parameters) {
-        if (param) {
-            param->Recreate(ss);
-            ss << ",";
-        }
-    }
-
-    ss << ")";
-
-    if (m_block) {
-        m_block->Recreate(ss);
-    }
-}
-
 Pointer<AstStatement> AstFunctionExpression::Clone() const
 {
     return CloneImpl();

@@ -97,13 +97,6 @@ void AstTypeOfExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstTypeOfExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_expr != nullptr);
-    
-    m_expr->Recreate(ss);
-}
-
 Pointer<AstStatement> AstTypeOfExpression::Clone() const
 {
     return CloneImpl();

@@ -68,10 +68,6 @@ void AstConstantEvent::Optimize(AstVisitor *visitor, Module *mod)
     AstEvent::Optimize(visitor, mod);
 }
 
-void AstConstantEvent::Recreate(std::ostringstream &ss)
-{
-}
-
 Pointer<AstStatement> AstConstantEvent::Clone() const
 {
     return CloneImpl();
@@ -110,10 +106,6 @@ void AstEvent::Optimize(AstVisitor *visitor, Module *mod)
 
     ASSERT(m_trigger != nullptr);
     m_trigger->Optimize(visitor, mod);
-}
-
-void AstEvent::Recreate(std::ostringstream &ss)
-{
 }
 
 int AstEvent::IsTrue() const

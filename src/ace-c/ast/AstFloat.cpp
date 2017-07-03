@@ -26,11 +26,6 @@ std::unique_ptr<Buildable> AstFloat::Build(AstVisitor *visitor, Module *mod)
     return BytecodeUtil::Make<ConstF32>(rp, m_value);
 }
 
-void AstFloat::Recreate(std::ostringstream &ss)
-{
-    ss << m_value;
-}
-
 Pointer<AstStatement> AstFloat::Clone() const
 {
     return CloneImpl();

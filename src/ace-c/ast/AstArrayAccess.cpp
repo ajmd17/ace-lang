@@ -105,17 +105,6 @@ void AstArrayAccess::Optimize(AstVisitor *visitor, Module *mod)
     m_index->Optimize(visitor, mod);
 }
 
-void AstArrayAccess::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-    ASSERT(m_index != nullptr);
-
-    m_target->Recreate(ss);
-    ss << "[";
-    m_index->Recreate(ss);
-    ss << "]";
-}
-
 Pointer<AstStatement> AstArrayAccess::Clone() const
 {
     return CloneImpl();

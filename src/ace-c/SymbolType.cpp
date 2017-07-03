@@ -287,7 +287,7 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
         for (const SymbolMember_t &j : other.m_members) {
             ASSERT(std::get<1>(j) != nullptr);
 
-            if ((std::get<1>(i)->TypeEqual(*std::get<1>(j)))) {
+            if (std::get<1>(i)->TypeEqual(*std::get<1>(j))) {
                 right_member_found = true;
                 continue;
             }

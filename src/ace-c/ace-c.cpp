@@ -9,7 +9,6 @@
 #include <ace-c/Lexer.hpp>
 #include <ace-c/Parser.hpp>
 #include <ace-c/Compiler.hpp>
-#include <ace-c/Minifier.hpp>
 #include <ace-c/dis/DecompilationUnit.hpp>
 
 #include <common/str_util.hpp>

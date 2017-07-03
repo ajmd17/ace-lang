@@ -4,7 +4,6 @@
 #include <ace-c/Parser.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Optimizer.hpp>
-#include <ace-c/Minifier.hpp>
 
 #include <common/str_util.hpp>
 
@@ -54,10 +53,6 @@ std::unique_ptr<Buildable> AstModuleImportPart::Build(AstVisitor *visitor, Modul
 }
 
 void AstModuleImportPart::Optimize(AstVisitor *visitor, Module *mod)
-{
-}
-
-void AstModuleImportPart::Recreate(std::ostringstream &ss)
 {
 }
 
@@ -178,13 +173,6 @@ void AstModuleImport::Visit(AstVisitor *visitor, Module *mod)
             first->GetLeft()
         ));
     }
-}
-
-void AstModuleImport::Recreate(std::ostringstream &ss)
-{
-    m_ast_iterator.ResetPosition();
-    Minifier minifier(&m_ast_iterator);
-    minifier.Minify(ss);
 }
 
 Pointer<AstStatement> AstModuleImport::Clone() const

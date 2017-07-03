@@ -30,7 +30,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) = 0;
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) = 0;
-    virtual void Recreate(std::ostringstream &ss) = 0;
+    
     virtual Pointer<AstStatement> Clone() const = 0;
 
 protected:

@@ -510,17 +510,6 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstBinaryExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_left != nullptr);
-    m_left->Recreate(ss);
-
-    if (m_right != nullptr) {
-        //ss << m_op->ToString();
-        m_right->Recreate(ss);
-    }
-}
-
 Pointer<AstStatement> AstBinaryExpression::Clone() const
 {
     return CloneImpl();

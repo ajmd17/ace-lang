@@ -83,16 +83,6 @@ void AstTryCatch::Optimize(AstVisitor *visitor, Module *mod)
     m_catch_block->Optimize(visitor, mod);
 }
 
-void AstTryCatch::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_try_block != nullptr && m_catch_block != nullptr);
-    
-    ss << Keyword::ToString(Keyword_try);
-    m_try_block->Recreate(ss);
-    ss << Keyword::ToString(Keyword_catch);
-    m_catch_block->Recreate(ss);
-}
-
 Pointer<AstStatement> AstTryCatch::Clone() const
 {
     return CloneImpl();

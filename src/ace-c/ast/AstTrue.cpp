@@ -20,11 +20,6 @@ std::unique_ptr<Buildable> AstTrue::Build(AstVisitor *visitor, Module *mod)
     return BytecodeUtil::Make<ConstBool>(rp, true);
 }
 
-void AstTrue::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_true);
-}
-
 Pointer<AstStatement> AstTrue::Clone() const
 {
     return CloneImpl();

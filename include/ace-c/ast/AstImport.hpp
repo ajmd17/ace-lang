@@ -23,7 +23,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
-    virtual void Recreate(std::ostringstream &ss) override = 0;
+    
     virtual Pointer<AstStatement> Clone() const override = 0;
 
 protected:

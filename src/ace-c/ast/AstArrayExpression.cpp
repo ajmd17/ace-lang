@@ -190,18 +190,6 @@ void AstArrayExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstArrayExpression::Recreate(std::ostringstream &ss)
-{
-    ss << "[";
-    for (auto &member : m_members) {
-        if (member != nullptr) {
-            member->Recreate(ss);
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-
 std::shared_ptr<AstStatement> AstArrayExpression::Clone() const
 {
     return CloneImpl();

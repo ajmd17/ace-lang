@@ -55,11 +55,6 @@ void AstTypeAlias::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstTypeAlias::Recreate(std::ostringstream &ss)
-{
-    m_aliasee->Recreate(ss);
-}
-
 Pointer<AstStatement> AstTypeAlias::Clone() const
 {
     return CloneImpl();

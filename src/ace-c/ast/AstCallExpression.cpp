@@ -158,25 +158,6 @@ void AstCallExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstCallExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-
-    m_target->Recreate(ss);
-
-    ss << "(";
-    for (size_t i = 0; i < m_args.size(); i++) {
-        auto &arg = m_args[i];
-        if (arg) {
-            arg->Recreate(ss);
-            if (i != m_args.size() - 1) {
-                ss << ",";
-            }
-        }
-    }
-    ss << ")";
-}
-
 Pointer<AstStatement> AstCallExpression::Clone() const
 {
     return CloneImpl();

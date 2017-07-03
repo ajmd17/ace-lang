@@ -224,7 +224,6 @@ struct Return : public Buildable {
     template <class Archive>
     void Serialize(Archive &archive)
     {
-        archive();
     }
 };
 
@@ -720,6 +719,15 @@ struct RawOperation<T, Ts...> : RawOperation<Ts...> {
 
 CEREAL_REGISTER_TYPE(Jump)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, Jump)
+
+CEREAL_REGISTER_TYPE(Comparison)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, Comparison)
+
+CEREAL_REGISTER_TYPE(FunctionCall)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, FunctionCall)
+
+CEREAL_REGISTER_TYPE(Return)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, Return)
 
 CEREAL_REGISTER_TYPE(StoreLocal)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, StoreLocal)

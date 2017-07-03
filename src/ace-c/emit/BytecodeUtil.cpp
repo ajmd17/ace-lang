@@ -20,11 +20,8 @@ std::vector<std::uint8_t> BytecodeUtil::GenerateBytes(BytecodeChunk *chunk, Buil
     ASSERT(chunk != nullptr);
 
     std::basic_stringbuf<std::uint8_t> buf;
-
-    AEXGenerator aex_gen(buf, build_params);
-    aex_gen.Visit(chunk);
-
-    //chunk->Build(buf, build_params);
+    
+    chunk->Build(buf, build_params);
 
     std::vector<std::uint8_t> vec;
     vec.reserve(chunk->GetSize());

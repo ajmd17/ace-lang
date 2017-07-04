@@ -4,6 +4,8 @@
 #include <ace-c/ast/AstMember.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -23,7 +25,7 @@ AstCallExpression::AstCallExpression(
       m_target(target),
       m_args(args),
       m_insert_self(insert_self),
-      m_return_type(SymbolType::Builtin::UNDEFINED),
+      m_return_type(BuiltinTypes::UNDEFINED),
       m_is_method_call(false)
 {
 }

@@ -3,13 +3,12 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
-#include <common/instructions.hpp>
 #include <common/my_assert.hpp>
-
-#include <unordered_set>
 
 AstTupleExpression::AstTupleExpression(const std::vector<std::shared_ptr<AstArgument>> &members,
     const SourceLocation &location)
@@ -55,7 +54,7 @@ void AstTupleExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     m_symbol_type = SymbolType::Extend(SymbolType::GenericInstance(
-        SymbolType::Builtin::TUPLE, 
+        BuiltinTypes::TUPLE, 
         GenericInstanceTypeInfo {
             generic_param_types
         }

@@ -6,9 +6,9 @@
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/AstVisitor.hpp>
 
-#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <limits>
 #include <cmath>
@@ -54,7 +54,7 @@ ace::afloat32 AstFloat::FloatValue() const
 
 SymbolTypePtr_t AstFloat::GetSymbolType() const
 {
-    return SymbolType::Builtin::FLOAT;
+    return BuiltinTypes::FLOAT;
 }
 
 std::shared_ptr<AstConstant> AstFloat::operator+(AstConstant *right) const

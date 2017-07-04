@@ -4,7 +4,7 @@
 #include <ace-c/Scope.hpp>
 #include <ace-c/SourceLocation.hpp>
 #include <ace-c/Tree.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 #include <vector>
 #include <string>

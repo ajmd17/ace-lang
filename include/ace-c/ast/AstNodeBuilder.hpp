@@ -4,7 +4,7 @@
 #include <ace-c/ast/AstFunctionDefinition.hpp>
 #include <ace-c/ast/AstArgument.hpp>
 #include <ace-c/ast/AstModuleAccess.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 #include <common/non_owning_ptr.hpp>
 

@@ -16,6 +16,7 @@ void BytecodeChunk::Build(Buffer &buf, BuildParams &build_params) const
 
     for (auto &buildable : buildables) {
         buildable->Build(buf, new_params);
+        new_params.local_offset += buildable->GetSize();
     }
 
     build_params.local_offset += chunk_size;

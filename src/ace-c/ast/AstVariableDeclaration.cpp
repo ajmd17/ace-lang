@@ -4,6 +4,8 @@
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -63,70 +65,70 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 is_type_strict = false;
             }
         }
-        
-        ASSERT(m_real_assignment != nullptr);
 
-        if (!m_assignment_already_visited) {
-            // visit assignment
-            m_real_assignment->Visit(visitor, mod);
-        }
+        if (m_real_assignment != nullptr) {
+            if (!m_assignment_already_visited) {
+                // visit assignment
+                m_real_assignment->Visit(visitor, mod);
+            }
 
-        if (m_assignment != nullptr) { // has received an explicit assignment
-            // make sure type is compatible with assignment
-            SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
-            ASSERT(assignment_type != nullptr);
+            if (m_assignment != nullptr) { // has received an explicit assignment
+                // make sure type is compatible with assignment
+                SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
+                ASSERT(assignment_type != nullptr);
 
-            if (m_type_specification != nullptr) {
-                // symbol_type should be the user-specified type
-                ASSERT(symbol_type != nullptr);
+                if (m_type_specification != nullptr) {
+                    // symbol_type should be the user-specified type
+                    ASSERT(symbol_type != nullptr);
 
-                if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
-                    // perform type promotion on incomplete generics.
-                    // i.e: let x: Array = [1,2,3]
-                    // will actually be of the type `Array(Int)`
+                    if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
+                        // perform type promotion on incomplete generics.
+                        // i.e: let x: Array = [1,2,3]
+                        // will actually be of the type `Array(Int)`
 
-                    // NOTE: removed because if somebody writes a: Array = [1,2,3]
-                    // and later wants to assign it to ["hi"] they shouldn't receive an error,
-                    // as they did not explicitly specify that it is Array<Int> in this case.
+                        // NOTE: removed because if somebody writes a: Array = [1,2,3]
+                        // and later wants to assign it to ["hi"] they shouldn't receive an error,
+                        // as they did not explicitly specify that it is Array<Int> in this case.
 
-                    // Added back in
+                        // Added back in
 
-                    if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                        if (auto base = assignment_type->GetBaseType()) {
-                            if (symbol_type->TypeEqual(*base)) {
-                                // here is where type promotion is performed
-                                
-                                symbol_type = assignment_type;
+                        if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                            if (auto base = assignment_type->GetBaseType()) {
+                                if (symbol_type->TypeEqual(*base)) {
+                                    // here is where type promotion is performed
+                                    
+                                    symbol_type = assignment_type;
+                                }
                             }
                         }
                     }
-                }
 
-                if (is_type_strict) {
-                    if (!symbol_type->TypeCompatible(*assignment_type, true)) {
-                        CompilerError error(
-                            LEVEL_ERROR,
-                            Msg_mismatched_types,
-                            m_real_assignment->GetLocation(),
-                            symbol_type->GetName(),
-                            assignment_type->GetName()
-                        );
-
-                        if (assignment_type == SymbolType::Builtin::ANY) {
-                            error = CompilerError(
+                    if (is_type_strict) {
+                        if (!symbol_type->TypeCompatible(*assignment_type, true)) {
+                            CompilerError error(
                                 LEVEL_ERROR,
-                                Msg_implicit_any_mismatch,
+                                Msg_mismatched_types,
                                 m_real_assignment->GetLocation(),
-                                symbol_type->GetName()
+                                symbol_type->GetName(),
+                                assignment_type->GetName()
                             );
-                        }
 
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(error);
+                            if (assignment_type == BuiltinTypes::ANY) {
+                                error = CompilerError(
+                                    LEVEL_ERROR,
+                                    Msg_implicit_any_mismatch,
+                                    m_real_assignment->GetLocation(),
+                                    symbol_type->GetName()
+                                );
+                            }
+
+                            visitor->GetCompilationUnit()->GetErrorList().AddError(error);
+                        }
                     }
+                } else {
+                    // Set the type to be the deduced type from the expression.
+                    symbol_type = assignment_type;
                 }
-            } else {
-                // Set the type to be the deduced type from the expression.
-                symbol_type = assignment_type;
             }
         }
     }

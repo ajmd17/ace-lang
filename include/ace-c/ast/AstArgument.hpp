@@ -4,7 +4,7 @@
 #include <string>
 
 #include <ace-c/ast/AstExpression.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 class AstArgument : public AstExpression {
 public:

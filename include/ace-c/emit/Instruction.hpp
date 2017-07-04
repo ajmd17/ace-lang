@@ -566,7 +566,8 @@ struct BuildableType final : public Buildable {
         size_t sz = sizeof(Opcode)
             + sizeof(reg)
             + sizeof(uint16_t)
-            + name.length();
+            + name.length()
+            + sizeof(uint16_t);
 
         for (const std::string &member_name : members) {
             sz += sizeof(uint16_t);
@@ -585,6 +586,9 @@ struct BuildableType final : public Buildable {
         uint16_t name_len = (uint16_t)name.length();
         buf.sputn((byte*)&name_len, sizeof(name_len));
         buf.sputn((byte*)&name[0], name.length());
+
+        uint16_t type_size = (uint16_t)members.size();
+        buf.sputn((byte*)&type_size, sizeof(type_size));
 
         for (const std::string &member_name : members) {
             uint16_t member_name_len = (uint16_t)member_name.length();

@@ -3,6 +3,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -32,7 +34,7 @@ void AstHasExpression::Visit(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t target_type = m_target->GetSymbolType();
     ASSERT(target_type != nullptr);
 
-    if (target_type != SymbolType::Builtin::ANY) {
+    if (target_type != BuiltinTypes::ANY) {
         if (SymbolTypePtr_t member_type = target_type->FindMember(m_field_name)) {
             m_has_member = 1;
         } else {
@@ -132,7 +134,7 @@ Pointer<AstStatement> AstHasExpression::Clone() const
 
 SymbolTypePtr_t AstHasExpression::GetSymbolType() const
 {
-    return SymbolType::Builtin::BOOLEAN;
+    return BuiltinTypes::BOOLEAN;
 }
 
 int AstHasExpression::IsTrue() const

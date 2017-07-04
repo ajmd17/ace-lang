@@ -7,6 +7,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -51,9 +53,9 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
         // do not allow right-hand side to be 'Any', because it might change the data type.
-        visitor->Assert((type == SymbolType::Builtin::INT || 
-            type == SymbolType::Builtin::NUMBER ||
-            type == SymbolType::Builtin::ANY),
+        visitor->Assert((type == BuiltinTypes::INT || 
+            type == BuiltinTypes::NUMBER ||
+            type == BuiltinTypes::ANY),
             CompilerError(
                 LEVEL_ERROR,
                 Msg_bitwise_operand_must_be_int,
@@ -62,10 +64,10 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
             )
         );
     } else if (m_op->GetType() & ARITHMETIC) {
-        if (type != SymbolType::Builtin::ANY &&
-            type != SymbolType::Builtin::INT &&
-            type != SymbolType::Builtin::FLOAT &&
-            type != SymbolType::Builtin::NUMBER) {
+        if (type != BuiltinTypes::ANY &&
+            type != BuiltinTypes::INT &&
+            type != BuiltinTypes::FLOAT &&
+            type != BuiltinTypes::NUMBER) {
         
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                 LEVEL_ERROR,
@@ -76,10 +78,10 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
             )); 
         }
 
-        visitor->Assert(type == SymbolType::Builtin::INT ||
-            type == SymbolType::Builtin::FLOAT ||
-            type == SymbolType::Builtin::NUMBER ||
-            type == SymbolType::Builtin::ANY,
+        visitor->Assert(type == BuiltinTypes::INT ||
+            type == BuiltinTypes::FLOAT ||
+            type == BuiltinTypes::NUMBER ||
+            type == BuiltinTypes::ANY,
             CompilerError(
                 LEVEL_ERROR,
                 Msg_invalid_operator_for_type,

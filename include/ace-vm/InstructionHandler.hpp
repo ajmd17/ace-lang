@@ -474,7 +474,7 @@ struct InstructionHandler {
             return;
         }
 
-        if (index < 0) {
+        /*if (index < 0) {
             // wrap around (python style)
             index = array->GetSize() + index;
             if (index < 0 || index >= array->GetSize()) {
@@ -484,7 +484,7 @@ struct InstructionHandler {
                 );
                 return;
             }
-        }
+        }*/
         
         array->AtIndex(index) = thread->m_regs[src_reg];
     }

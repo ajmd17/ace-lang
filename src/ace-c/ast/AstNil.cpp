@@ -5,6 +5,8 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -50,7 +52,7 @@ ace::afloat32 AstNil::FloatValue() const
 
 SymbolTypePtr_t AstNil::GetSymbolType() const
 {
-    return SymbolType::Builtin::NULL_TYPE;
+    return BuiltinTypes::NULL_TYPE;
 }
 
 std::shared_ptr<AstConstant> AstNil::operator+(AstConstant *right) const

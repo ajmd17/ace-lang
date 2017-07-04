@@ -8,6 +8,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -44,10 +46,16 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
-        visitor->Assert((left_type == SymbolType::Builtin::INT || left_type == SymbolType::Builtin::ANY) &&
-            (right_type == SymbolType::Builtin::INT || right_type == SymbolType::Builtin::ANY),
-            CompilerError(LEVEL_ERROR, Msg_bitwise_operands_must_be_int, m_location,
-                left_type->GetName(), right_type->GetName()));
+        visitor->Assert(
+            (left_type == BuiltinTypes::INT || left_type == BuiltinTypes::ANY) &&
+            (right_type == BuiltinTypes::INT || right_type == BuiltinTypes::ANY),
+            CompilerError(
+                LEVEL_ERROR,
+                Msg_bitwise_operands_must_be_int, m_location,
+                left_type->GetName(),
+                right_type->GetName()
+            )
+        );
     }
 
     if (m_op->ModifiesValue()) {
@@ -62,7 +70,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                 right_type->GetName()
             );
 
-            if (right_type == SymbolType::Builtin::ANY) {
+            if (right_type == BuiltinTypes::ANY) {
                 error = CompilerError(
                     LEVEL_ERROR,
                     Msg_implicit_any_mismatch,

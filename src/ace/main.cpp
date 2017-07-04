@@ -27,6 +27,7 @@
 #include <ace-c/dis/DecompilationUnit.hpp>
 #include <ace-c/emit/cppgen/CppGenerator.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
@@ -1788,41 +1789,41 @@ void BuildLibraries(
     APIInstance &api)
 {
     api.Module("events")
-        .Function("get_action_handler", SymbolType::Builtin::FUNCTION, {
-            { "event_array", SymbolType::Builtin::ANY },
-            { "match", SymbolType::Builtin::ANY }
+        .Function("get_action_handler", BuiltinTypes::FUNCTION, {
+            { "event_array", BuiltinTypes::ANY },
+            { "match", BuiltinTypes::ANY }
         }, Events_get_action_handler)
-        .Function("call_action", SymbolType::Builtin::ANY, {
-            { "obj", SymbolType::Builtin::ANY },
-            { "key", SymbolType::Builtin::ANY },
+        .Function("call_action", BuiltinTypes::ANY, {
+            { "obj", BuiltinTypes::ANY },
+            { "key", BuiltinTypes::ANY },
             { "args", SymbolType::GenericInstance(
-                SymbolType::Builtin::VAR_ARGS,
+                BuiltinTypes::VAR_ARGS,
                 GenericInstanceTypeInfo {
-                    { { "arg", SymbolType::Builtin::ANY } }
+                    { { "arg", BuiltinTypes::ANY } }
                 }
             ) }
         }, Events_call_action);
 
     api.Module("time")
-        .Function("now", SymbolType::Builtin::INT, {}, Time_now);
+        .Function("now", BuiltinTypes::INT, {}, Time_now);
 
     api.Module("runtime")
-        .Function("gc", SymbolType::Builtin::NULL_TYPE, {}, Runtime_gc)
-        .Function("dump_heap", SymbolType::Builtin::NULL_TYPE, {}, Runtime_dump_heap)
-        .Function("dump_stack", SymbolType::Builtin::NULL_TYPE, {}, Runtime_dump_stack)
-        .Function("typeof", SymbolType::Builtin::STRING, {
-            { "object", SymbolType::Builtin::ANY }
+        .Function("gc", BuiltinTypes::NULL_TYPE, {}, Runtime_gc)
+        .Function("dump_heap", BuiltinTypes::NULL_TYPE, {}, Runtime_dump_heap)
+        .Function("dump_stack", BuiltinTypes::NULL_TYPE, {}, Runtime_dump_stack)
+        .Function("typeof", BuiltinTypes::STRING, {
+            { "object", BuiltinTypes::ANY }
         }, Runtime_typeof)
-        .Function("load_library", SymbolType::Builtin::ANY, {
-            { "path", SymbolType::Builtin::STRING }
+        .Function("load_library", BuiltinTypes::ANY, {
+            { "path", BuiltinTypes::STRING }
         }, Runtime_load_library)
-        .Function("load_function", SymbolType::Builtin::FUNCTION, {
-            { "lib", SymbolType::Builtin::ANY },
-            { "function_name", SymbolType::Builtin::STRING }
+        .Function("load_function", BuiltinTypes::FUNCTION, {
+            { "lib", BuiltinTypes::ANY },
+            { "function_name", BuiltinTypes::STRING }
         }, Runtime_load_function)
         .Variable(
             "version",
-            SymbolType::Builtin::ARRAY,
+            BuiltinTypes::ARRAY,
             [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
                 ASSERT(state != nullptr);
                 ASSERT(out != nullptr);
@@ -1860,7 +1861,7 @@ void BuildLibraries(
         )
         .Variable(
             "os_name",
-            SymbolType::Builtin::STRING,
+            BuiltinTypes::STRING,
             [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
                 ASSERT(state != nullptr);
                 ASSERT(out != nullptr);
@@ -1882,109 +1883,109 @@ void BuildLibraries(
         /*.Type(SymbolType::Object("Range", {
             {
                 "step",
-                SymbolType::Builtin::NUMBER,
+                BuiltinTypes::NUMBER,
                 std::shared_ptr<AstInteger>(new AstInteger(
                     1, SourceLocation::eof
                 ))
             },
             {
                 "first",
-                SymbolType::Builtin::NUMBER,
+                BuiltinTypes::NUMBER,
                 std::shared_ptr<AstInteger>(new AstInteger(
                     0, SourceLocation::eof
                 ))
             },
             {
                 "last",
-                SymbolType::Builtin::NUMBER,
+                BuiltinTypes::NUMBER,
                 std::shared_ptr<AstInteger>(new AstInteger(
                     10, SourceLocation::eof
                 ))
             }
         }))*/
-        .Function("prompt", SymbolType::Builtin::STRING, {
-            { "message", SymbolType::Builtin::STRING }
+        .Function("prompt", BuiltinTypes::STRING, {
+            { "message", BuiltinTypes::STRING }
         }, Global_prompt)
-        .Function("to_string", SymbolType::Builtin::STRING, {
-            { "object", SymbolType::Builtin::ANY },
+        .Function("to_string", BuiltinTypes::STRING, {
+            { "object", BuiltinTypes::ANY },
         }, Global_to_string)
-        .Function("decompile", SymbolType::Builtin::STRING, {
-            { "f", SymbolType::Builtin::FUNCTION },
+        .Function("decompile", BuiltinTypes::STRING, {
+            { "f", BuiltinTypes::FUNCTION },
         }, Global_decompile)
-        .Function("fmt", SymbolType::Builtin::STRING, {
-            { "format", SymbolType::Builtin::STRING },
+        .Function("fmt", BuiltinTypes::STRING, {
+            { "format", BuiltinTypes::STRING },
             { "args", SymbolType::GenericInstance(
-                SymbolType::Builtin::VAR_ARGS,
+                BuiltinTypes::VAR_ARGS,
                 GenericInstanceTypeInfo {
                     {
-                        { "arg", SymbolType::Builtin::ANY }
+                        { "arg", BuiltinTypes::ANY }
                     }
                 }
             ) }
         }, Global_fmt)
-        .Function("get_keys", SymbolType::Builtin::ARRAY, {
-            { "object", SymbolType::Builtin::ANY }
+        .Function("get_keys", BuiltinTypes::ARRAY, {
+            { "object", BuiltinTypes::ANY }
         }, Global_get_keys)
-        .Function("to_multi_array", SymbolType::Builtin::ARRAY, {
-            { "object", SymbolType::Builtin::ANY }
+        .Function("to_multi_array", BuiltinTypes::ARRAY, {
+            { "object", BuiltinTypes::ANY }
         }, Global_to_multi_array)
-        .Function("to_array", SymbolType::Builtin::ARRAY, {
+        .Function("to_array", BuiltinTypes::ARRAY, {
             { "args", SymbolType::GenericInstance(
-                SymbolType::Builtin::VAR_ARGS,
+                BuiltinTypes::VAR_ARGS,
                 GenericInstanceTypeInfo {
                     {
-                        { "arg", SymbolType::Builtin::ANY }
+                        { "arg", BuiltinTypes::ANY }
                     }
                 }
             ) }
         }, Global_to_array)
-        .Function("to_json", SymbolType::Builtin::STRING, {
-            { "object", SymbolType::Builtin::ANY }
+        .Function("to_json", BuiltinTypes::STRING, {
+            { "object", BuiltinTypes::ANY }
         }, Global_to_json)
-        .Function("merge", SymbolType::Builtin::ANY, {
-            { "a", SymbolType::Builtin::ANY },
-            { "b", SymbolType::Builtin::ANY },
+        .Function("merge", BuiltinTypes::ANY, {
+            { "a", BuiltinTypes::ANY },
+            { "b", BuiltinTypes::ANY },
             { "more", SymbolType::GenericInstance(
-                SymbolType::Builtin::VAR_ARGS,
+                BuiltinTypes::VAR_ARGS,
                 GenericInstanceTypeInfo {
                     {
-                        { "arg", SymbolType::Builtin::ANY }
+                        { "arg", BuiltinTypes::ANY }
                     }
                 }
             ) }
         }, Global_merge)
-        .Function("array_push", SymbolType::Builtin::ARRAY, {
-            { "arr", SymbolType::Builtin::ARRAY },
+        .Function("array_push", BuiltinTypes::ARRAY, {
+            { "arr", BuiltinTypes::ARRAY },
             { "args", SymbolType::GenericInstance(
-                SymbolType::Builtin::VAR_ARGS,
+                BuiltinTypes::VAR_ARGS,
                 GenericInstanceTypeInfo {
                     {
-                        { "arg", SymbolType::Builtin::ANY }
+                        { "arg", BuiltinTypes::ANY }
                     }
                 }
             ) }
         }, Global_array_push)
-        .Function("length", SymbolType::Builtin::INT, {
-            { "object", SymbolType::Builtin::ANY }
+        .Function("length", BuiltinTypes::INT, {
+            { "object", BuiltinTypes::ANY }
         }, Global_length)
-        .Function("call", SymbolType::Builtin::ANY, {
-            { "f", SymbolType::Builtin::FUNCTION },
+        .Function("call", BuiltinTypes::ANY, {
+            { "f", BuiltinTypes::FUNCTION },
             { "args", SymbolType::GenericInstance(
-                SymbolType::Builtin::VAR_ARGS,
+                BuiltinTypes::VAR_ARGS,
                 GenericInstanceTypeInfo {
                     {
-                        { "arg", SymbolType::Builtin::ANY }
+                        { "arg", BuiltinTypes::ANY }
                     }
                 }
             ) }
         }, Global_call)
-        .Function("spawn_thread", SymbolType::Builtin::ANY, {
-            { "f", SymbolType::Builtin::FUNCTION },
+        .Function("spawn_thread", BuiltinTypes::ANY, {
+            { "f", BuiltinTypes::FUNCTION },
             { "args", SymbolType::GenericInstance(
-                SymbolType::Builtin::VAR_ARGS,
+                BuiltinTypes::VAR_ARGS,
                 GenericInstanceTypeInfo {
                     {
-                        { "arg", SymbolType::Builtin::ANY }
+                        { "arg", BuiltinTypes::ANY }
                     }
                 }
             ) }

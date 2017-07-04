@@ -1,14 +1,13 @@
 #include <ace-c/ast/AstTypeOfExpression.hpp>
 #include <ace-c/ast/AstString.hpp>
-#include <ace-c/ast/AstTrue.hpp>
-#include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
-#include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
 AstTypeOfExpression::AstTypeOfExpression(
@@ -28,7 +27,7 @@ void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
      SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
      ASSERT(expr_type != nullptr);
 
-     //if (expr_type == SymbolType::Builtin::ANY) {
+     //if (expr_type == BuiltinTypes::ANY) {
         // add runtime::typeof call
         m_runtime_typeof_call = visitor->GetCompilationUnit()->GetAstNodeBuilder()
             .Module("runtime")
@@ -118,5 +117,5 @@ SymbolTypePtr_t AstTypeOfExpression::GetSymbolType() const
 {
     ASSERT(m_expr != nullptr);
     
-    return SymbolType::Builtin::STRING;
+    return BuiltinTypes::STRING;
 }

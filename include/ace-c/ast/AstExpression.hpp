@@ -2,7 +2,7 @@
 #define AST_EXPRESSION_HPP
 
 #include <ace-c/ast/AstStatement.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 #include <ace-c/enums.hpp>
 
 class AstExpression : public AstStatement {

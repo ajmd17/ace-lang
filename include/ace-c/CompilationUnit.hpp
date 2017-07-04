@@ -5,7 +5,7 @@
 #include <ace-c/ErrorList.hpp>
 #include <ace-c/emit/InstructionStream.hpp>
 #include <ace-c/ast/AstNodeBuilder.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 #include <ace-c/Tree.hpp>
 
 #include <map>

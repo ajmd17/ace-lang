@@ -6,7 +6,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
 
@@ -120,5 +121,5 @@ bool AstEvent::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstEvent::GetSymbolType() const
 {
-    return SymbolType::Builtin::EVENT;
+    return BuiltinTypes::EVENT;
 }

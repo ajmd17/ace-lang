@@ -6,6 +6,8 @@
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/AstVisitor.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <iostream>
@@ -53,7 +55,7 @@ ace::afloat32 AstInteger::FloatValue() const
 
 SymbolTypePtr_t AstInteger::GetSymbolType() const
 {
-    return SymbolType::Builtin::INT;
+    return BuiltinTypes::INT;
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator+(AstConstant *right) const
@@ -167,7 +169,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -178,7 +180,7 @@ std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -189,7 +191,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -200,7 +202,7 @@ std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -211,7 +213,7 @@ std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator>>(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 

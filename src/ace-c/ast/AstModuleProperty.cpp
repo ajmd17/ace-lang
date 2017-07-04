@@ -8,6 +8,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/hasher.hpp>
@@ -19,7 +21,7 @@ AstModuleProperty::AstModuleProperty(
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_field_name(field_name),
-      m_expr_type(SymbolType::Builtin::UNDEFINED)
+      m_expr_type(BuiltinTypes::UNDEFINED)
 {
 }
 
@@ -51,7 +53,7 @@ void AstModuleProperty::Visit(AstVisitor *visitor, Module *mod)
           Msg_not_a_data_member,
           m_location,
           m_field_name,
-          SymbolType::Builtin::MODULE_INFO->GetName()
+          BuiltinTypes::MODULE_INFO->GetName()
       ));
     }
 }

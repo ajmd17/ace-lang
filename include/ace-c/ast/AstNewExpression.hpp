@@ -5,7 +5,7 @@
 #include <ace-c/ast/AstArgumentList.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/ast/AstCallExpression.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 #include <string>
 

@@ -2,6 +2,8 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
 
@@ -14,8 +16,8 @@ AstTypeSpecification::AstTypeSpecification(
       m_left(left),
       m_generic_params(generic_params),
       m_right(right),
-      m_symbol_type(SymbolType::Builtin::UNDEFINED),
-      m_original_type(SymbolType::Builtin::UNDEFINED),
+      m_symbol_type(BuiltinTypes::UNDEFINED),
+      m_original_type(BuiltinTypes::UNDEFINED),
       m_is_chained(false)
 {
 }
@@ -35,14 +37,14 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 });
             } else {
                 generic_types.push_back({
-                    "of", SymbolType::Builtin::UNDEFINED
+                    "of", BuiltinTypes::UNDEFINED
                 });
             }
         }
     }
 
     // check user-defined types
-    if (!m_right) {
+    if (m_right == nullptr) {
         if (SymbolTypePtr_t symbol_type = mod->LookupSymbolType(m_left)) {
             m_original_type = symbol_type;
 

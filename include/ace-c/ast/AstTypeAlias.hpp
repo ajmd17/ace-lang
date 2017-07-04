@@ -3,7 +3,7 @@
 
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 #include <string>
 #include <memory>

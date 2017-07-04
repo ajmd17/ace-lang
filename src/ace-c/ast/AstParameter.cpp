@@ -1,10 +1,11 @@
 #include <ace-c/ast/AstParameter.hpp>
 #include <ace-c/AstVisitor.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
-#include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 
 AstParameter::AstParameter(const std::string &name, 
@@ -24,7 +25,7 @@ void AstParameter::Visit(AstVisitor *visitor, Module *mod)
     AstDeclaration::Visit(visitor, mod);
 
     // params are `Any` by default
-    SymbolTypePtr_t symbol_type = SymbolType::Builtin::ANY;
+    SymbolTypePtr_t symbol_type = BuiltinTypes::ANY;
 
     if (m_type_spec != nullptr) {
         m_type_spec->Visit(visitor, mod);
@@ -56,7 +57,7 @@ void AstParameter::Visit(AstVisitor *visitor, Module *mod)
     // if variadic, then make it array of whatever type it is
     if (m_is_variadic) {
         symbol_type = SymbolType::GenericInstance(
-            SymbolType::Builtin::VAR_ARGS,
+            BuiltinTypes::VAR_ARGS,
             GenericInstanceTypeInfo {
                 {
                     { m_name, symbol_type }

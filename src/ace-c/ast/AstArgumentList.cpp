@@ -1,6 +1,8 @@
 #include <ace-c/ast/AstArgumentList.hpp>
 #include <ace-c/AstVisitor.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -69,5 +71,5 @@ bool AstArgumentList::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstArgumentList::GetSymbolType() const
 {
-    return SymbolType::Builtin::ANY;
+    return BuiltinTypes::ANY;
 }

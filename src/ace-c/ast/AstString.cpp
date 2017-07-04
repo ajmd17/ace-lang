@@ -4,9 +4,9 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Configuration.hpp>
 
-#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 AstString::AstString(const std::string &value, const SourceLocation &location)
     : AstConstant(location),
@@ -57,7 +57,7 @@ ace::afloat32 AstString::FloatValue() const
 
 SymbolTypePtr_t AstString::GetSymbolType() const
 {
-    return SymbolType::Builtin::STRING;
+    return BuiltinTypes::STRING;
 }
 
 std::shared_ptr<AstConstant> AstString::operator+(

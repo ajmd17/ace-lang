@@ -4,9 +4,9 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 
-#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 AstTrue::AstTrue(const SourceLocation &location)
     : AstConstant(location)
@@ -47,7 +47,7 @@ ace::afloat32 AstTrue::FloatValue() const
 
 SymbolTypePtr_t AstTrue::GetSymbolType() const
 {
-    return SymbolType::Builtin::BOOLEAN;
+    return BuiltinTypes::BOOLEAN;
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator+(AstConstant *right) const

@@ -1,5 +1,7 @@
 #include <ace-c/ast/AstUndefined.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 AstUndefined::AstUndefined(const SourceLocation &location)
     : AstConstant(location)
 {
@@ -37,7 +39,7 @@ ace::afloat32 AstUndefined::FloatValue() const
 
 SymbolTypePtr_t AstUndefined::GetSymbolType() const
 {
-    return SymbolType::Builtin::UNDEFINED;
+    return BuiltinTypes::UNDEFINED;
 }
 
 std::shared_ptr<AstConstant> AstUndefined::operator+(AstConstant *right) const

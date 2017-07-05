@@ -19,19 +19,14 @@ public:
 
     virtual void Visit(BytecodeChunk *chunk)
     {
-        LabelVisitor chunk_visitor;
-        chunk_visitor.chunk_offset = chunk_offset + chunk_size;
-
         for (auto &buildable : chunk->buildables) {
-            chunk_visitor.BuildableVisitor::Visit(buildable.get());
+            BuildableVisitor::Visit(buildable.get());
         }
-
-        chunk_size += chunk_visitor.chunk_size;
     }
 
     virtual void Visit(LabelMarker *node)
     {
-        labels[node->id] = LabelInfo { (LabelPosition)(chunk_offset + chunk_size) };
+        labels[node->id] = chunk_size;
     }
 
     virtual void Visit(Jump *node)
@@ -137,13 +132,12 @@ public:
     {
         size_t sz = sizeof(Opcode)
             + sizeof(node->reg)
-            + sizeof(uint16_t) // len. of name
-            + node->name.length() // name string
-            + sizeof(uint16_t); // num. members
+            + sizeof(uint16_t)
+            + node->name.length();
 
         for (const std::string &member_name : node->members) {
-            sz += sizeof(uint16_t); // len. of member name
-            sz += member_name.length(); // member name string
+            sz += sizeof(uint16_t);
+            sz += member_name.length();
         }
 
         chunk_size += sz;
@@ -213,7 +207,7 @@ public:
         chunk_size += sizeof(Opcode) + node->data.size();
     }
 
-    std::map<LabelId, LabelInfo> labels;
+    std::map<LabelId, LabelPosition> labels;
     size_t chunk_size;
     size_t chunk_offset = 0;
 };
@@ -251,20 +245,16 @@ void AEXGenerator::Visit(BytecodeChunk *chunk)
     new_params.block_offset = build_params.block_offset + build_params.local_offset;
     new_params.local_offset = 0;
 
-    LabelVisitor label_visitor;
-    for (auto &buildable : chunk->buildables) {
-        label_visitor.BuildableVisitor::Visit(buildable.get());
-    }
-
-    new_params.labels = label_visitor.labels;
-
-    for (auto &it : new_params.labels) {
-      std::cout << "label [" << it.first << "] = " << it.second.position << "\n";
+    // get values from map for labels
+    new_params.labels.reserve(label_visitor.labels.size());
+    for (const auto &it : label_visitor.labels) {
+        new_params.labels.push_back(LabelInfo { it.second });
     }
 
     // create a new generator specifically for the chunk
     // use same output buffer
     AEXGenerator chunk_generator(buf, new_params);
+
     for (auto &buildable : chunk->buildables) {
         LabelVisitor tmp;
         tmp.BuildableVisitor::Visit(buildable.get());
@@ -309,7 +299,7 @@ void AEXGenerator::Visit(Jump *node)
     ASSERT(it != build_params.labels.end());
 
     LabelPosition pos = build_params.block_offset
-        + it->second.position;
+        + build_params.labels.at(node->label_id).position;
 
     m_ibs.Put((byte*)&pos, sizeof(pos));*/
 }
@@ -413,7 +403,7 @@ void AEXGenerator::Visit(BuildableTryCatch *node)
     ASSERT(it != build_params.labels.end());
 
     LabelPosition pos = build_params.block_offset
-        + it->second.position;
+        + build_params.labels[node->catch_label_id].position;
 
     m_ibs.Put((byte*)&pos, sizeof(pos));*/
 }

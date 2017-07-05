@@ -1271,19 +1271,10 @@ static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk, BuildParams
 {
     ASSERT(chunk != nullptr);
 
-    std::basic_stringbuf<std::uint8_t> buf;
-
-    AEXGenerator aex_gen(buf, build_params);
-    aex_gen.Visit(chunk);
-
-    std::vector<std::uint8_t> vec;
-    vec.insert(
-        vec.end(),
-        std::istreambuf_iterator<std::uint8_t>(&buf),
-        std::istreambuf_iterator<std::uint8_t>()
-    );
+    AEXGenerator gen(build_params);
+    gen.Visit(chunk);
     
-    return vec;
+    return gen.GetInternalByteStream().Bake();
 }
 
 static int RunBytecodeFile(

@@ -121,7 +121,7 @@ std::unique_ptr<Buildable> Compiler::StoreMemberAtIndex(AstVisitor *visitor, Mod
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     
     auto instr_mov_mem = BytecodeUtil::Make<RawOperation<>>();
-    instr_mov_mem->opcode = LOAD_MEM;
+    instr_mov_mem->opcode = MOV_MEM;
     instr_mov_mem->Accept<uint8_t>(rp); // dst
     instr_mov_mem->Accept<uint8_t>(dm_index); // index
     instr_mov_mem->Accept<uint8_t>(rp - 1); // src

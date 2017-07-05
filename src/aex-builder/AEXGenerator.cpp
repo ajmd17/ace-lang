@@ -1,6 +1,12 @@
 #include <aex-builder/AEXGenerator.hpp>
+#include <ace-c/Tree.hpp>
 
 #include <iostream>
+
+struct ChunkInfoNode {
+    std::map<LabelId, LabelInfo> labels;
+    size_t chunk_size;
+};
 
 class LabelVisitor : public BuildableVisitor {
 public:
@@ -212,48 +218,34 @@ public:
     size_t chunk_offset = 0;
 };
 
-class ChunkBuilder {
-public:
-    static void Build(Buffer &buf, BuildParams &params, BytecodeChunk *chunk)
-    {
-        std::cout << "/// begin chunk\n";
-        // first, calculate labels
-        LabelVisitor label_visitor;
-        for (auto &buildable : chunk->buildables) {
-            label_visitor.BuildableVisitor::Visit(buildable.get());
-        }
-
-        BuildParams new_params;
-        new_params.block_offset = params.block_offset + params.local_offset;
-        new_params.local_offset = 0;
-        new_params.labels = label_visitor.labels;
-
-        AEXGenerator chunk_generator(buf, new_params);
-
-        for (auto &buildable : chunk->buildables) {
-            chunk_generator.BuildableVisitor::Visit(buildable.get());
-        }
-
-        params.local_offset += label_visitor.chunk_size;
-        std::cout << "/// end chunk\n";
-    }
-};
-
-AEXGenerator::AEXGenerator(Buffer &buf, BuildParams &build_params)
-    : buf(buf),
-      build_params(build_params),
-      m_label_visitor(new LabelVisitor)
+AEXGenerator::AEXGenerator(BuildParams &build_params)
+    : build_params(build_params)
 {
 }
 
 AEXGenerator::~AEXGenerator()
 {
-    delete m_label_visitor;
 }
 
 void AEXGenerator::Visit(BytecodeChunk *chunk)
 {
-    std::cout << "/// begin chunk " << (void*)chunk << "\n";
+    BuildParams new_params;
+    new_params.block_offset = build_params.block_offset + build_params.local_offset + m_ibs.GetSize();
+    new_params.local_offset = 0;
+
+    AEXGenerator chunk_generator(new_params);
+    for (auto &buildable : chunk->buildables) {
+        chunk_generator.BuildableVisitor::Visit(buildable.get());
+    }
+
+    // bake the chunk's byte stream
+    const std::vector<std::uint8_t> &chunk_bytes = chunk_generator.GetInternalByteStream().Bake();
+
+    // append bytes to this chunk's InternalByteStream
+    m_ibs.Put(chunk_bytes.data(), chunk_bytes.size());
+    build_params.local_offset += chunk_bytes.size();
+
+    /*std::cout << "/// begin chunk " << (void*)chunk << "\n";
     //ChunkBuilder::Build(buf, build_params, chunk);
     BuildParams new_params;
     new_params.block_offset = build_params.block_offset + build_params.local_offset;
@@ -274,185 +266,192 @@ void AEXGenerator::Visit(BytecodeChunk *chunk)
     // use same output buffer
     AEXGenerator chunk_generator(buf, new_params);
     for (auto &buildable : chunk->buildables) {
+        LabelVisitor tmp;
+        tmp.BuildableVisitor::Visit(buildable.get());
         chunk_generator.BuildableVisitor::Visit(buildable.get());
+        new_params.local_offset += tmp.chunk_size;
     }
 
     build_params.local_offset += label_visitor.chunk_size;
-    std::cout << "/// end chunk " << (void*)chunk << "\n";
+    std::cout << "/// end chunk " << (void*)chunk << "\n";*/
 }
 
 void AEXGenerator::Visit(LabelMarker *node)
 {
-    // do nothing
+    m_ibs.MarkLabel(node->id);
 }
 
 void AEXGenerator::Visit(Jump *node)
 {
     switch (node->jump_class) {
         case Jump::JumpClass::JMP:
-            buf.put(Instructions::JMP);
+            m_ibs.Put(Instructions::JMP);
             break;
         case Jump::JumpClass::JE:
-            buf.put(Instructions::JE);
+            m_ibs.Put(Instructions::JE);
             break;
         case Jump::JumpClass::JNE:
-            buf.put(Instructions::JNE);
+            m_ibs.Put(Instructions::JNE);
             break;
         case Jump::JumpClass::JG:
-            buf.put(Instructions::JG);
+            m_ibs.Put(Instructions::JG);
             break;
         case Jump::JumpClass::JGE:
-            buf.put(Instructions::JGE);
+            m_ibs.Put(Instructions::JGE);
             break;
     }
 
-    auto it = build_params.labels.find(node->label_id);
-    ASSERT(it != build_params.labels.end());
+    // tell the InternalByteStream to set this to the label position
+    // when it is available
+    m_ibs.AddFixup(node->label_id, build_params.block_offset);
 
-    std::cout << "BLOCK OFFSET = " << build_params.block_offset << "\n";
+    /*auto it = build_params.labels.find(node->label_id);
+    ASSERT(it != build_params.labels.end());
 
     LabelPosition pos = build_params.block_offset
         + it->second.position;
 
-    buf.write((byte*)&pos, sizeof(pos));
+    m_ibs.Put((byte*)&pos, sizeof(pos));*/
 }
 
 void AEXGenerator::Visit(Comparison *node)
 {
     switch (node->comparison_class) {
         case Comparison::ComparisonClass::CMP:
-            buf.put(Instructions::CMP);
+            m_ibs.Put(Instructions::CMP);
             break;
         case Comparison::ComparisonClass::CMPZ:
-            buf.put(Instructions::CMPZ);
+            m_ibs.Put(Instructions::CMPZ);
             break;
     }
 
-    buf.put(node->reg_lhs);
+    m_ibs.Put(node->reg_lhs);
 
     if (node->comparison_class == Comparison::ComparisonClass::CMP) {
-        buf.put(node->reg_rhs);
+        m_ibs.Put(node->reg_rhs);
     }
 }
 
 void AEXGenerator::Visit(FunctionCall *node)
 {
-    buf.put(Instructions::CALL);
-    buf.put(node->reg);
-    buf.put(node->nargs);
+    m_ibs.Put(Instructions::CALL);
+    m_ibs.Put(node->reg);
+    m_ibs.Put(node->nargs);
 }
 
 void AEXGenerator::Visit(Return *node)
 {
-    buf.put(Instructions::RET);
+    m_ibs.Put(Instructions::RET);
 }
 
 void AEXGenerator::Visit(StoreLocal *node)
 {
-    buf.put(Instructions::PUSH);
-    buf.put(node->reg);
+    m_ibs.Put(Instructions::PUSH);
+    m_ibs.Put(node->reg);
 }
 
 void AEXGenerator::Visit(PopLocal *node)
 {
     if (node->amt > 1) {
-        buf.put(Instructions::POP_N);
+        m_ibs.Put(Instructions::POP_N);
 
         byte as_byte = (byte)node->amt;
-        buf.put(as_byte);
+        m_ibs.Put(as_byte);
     } else {
-        buf.put(Instructions::POP);
+        m_ibs.Put(Instructions::POP);
     }
 }
 
 void AEXGenerator::Visit(ConstI32 *node)
 {
-    buf.put(Instructions::LOAD_I32);
-    buf.put(node->reg);
-    buf.write((byte*)&node->value, sizeof(node->value));
+    m_ibs.Put(Instructions::LOAD_I32);
+    m_ibs.Put(node->reg);
+    m_ibs.Put((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstI64 *node)
 {
-    buf.put(Instructions::LOAD_I64);
-    buf.put(node->reg);
-    buf.write((byte*)&node->value, sizeof(node->value));
+    m_ibs.Put(Instructions::LOAD_I64);
+    m_ibs.Put(node->reg);
+    m_ibs.Put((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstF32 *node)
 {
-    buf.put(Instructions::LOAD_F32);
-    buf.put(node->reg);
-    buf.write((byte*)&node->value, sizeof(node->value));
+    m_ibs.Put(Instructions::LOAD_F32);
+    m_ibs.Put(node->reg);
+    m_ibs.Put((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstF64 *node)
 {
-    buf.put(Instructions::LOAD_F64);
-    buf.put(node->reg);
-    buf.write((byte*)&node->value, sizeof(node->value));
+    m_ibs.Put(Instructions::LOAD_F64);
+    m_ibs.Put(node->reg);
+    m_ibs.Put((byte*)&node->value, sizeof(node->value));
 }
 
 void AEXGenerator::Visit(ConstBool *node)
 {
-    buf.put(node->value
+    m_ibs.Put(node->value
         ? Instructions::LOAD_TRUE
         : Instructions::LOAD_FALSE);
-    buf.put(node->reg);
+    m_ibs.Put(node->reg);
 }
 
 void AEXGenerator::Visit(ConstNull *node)
 {
-    buf.put(Instructions::LOAD_NULL);
-    buf.put(node->reg);
+    m_ibs.Put(Instructions::LOAD_NULL);
+    m_ibs.Put(node->reg);
 }
 
 void AEXGenerator::Visit(BuildableTryCatch *node)
 {
-    buf.put(Instructions::BEGIN_TRY);
+    m_ibs.Put(Instructions::BEGIN_TRY);
+    m_ibs.AddFixup(node->catch_label_id, build_params.block_offset);
 
-    auto it = build_params.labels.find(node->catch_label_id);
+    /*auto it = build_params.labels.find(node->catch_label_id);
     ASSERT(it != build_params.labels.end());
 
     LabelPosition pos = build_params.block_offset
         + it->second.position;
 
-    buf.write((byte*)&pos, sizeof(pos));
+    m_ibs.Put((byte*)&pos, sizeof(pos));*/
 }
 
 void AEXGenerator::Visit(BuildableFunction *node)
 {
-    auto it = build_params.labels.find(node->label_id);
+    /*auto it = build_params.labels.find(node->label_id);
     ASSERT(it != build_params.labels.end());
 
     LabelPosition pos = build_params.block_offset
-        + it->second.position;
+        + it->second.position;*/
 
     // TODO: make it store and load statically
-    buf.put(Instructions::LOAD_FUNC);
-    buf.put(node->reg);
-    buf.write((byte*)&pos, sizeof(pos));
-    buf.put(node->nargs);
-    buf.put(node->flags);
+    m_ibs.Put(Instructions::LOAD_FUNC);
+    m_ibs.Put(node->reg);
+    m_ibs.AddFixup(node->label_id, build_params.block_offset);
+    //m_ibs.Put((byte*)&pos, sizeof(pos));
+    m_ibs.Put(node->nargs);
+    m_ibs.Put(node->flags);
 }
 
 void AEXGenerator::Visit(BuildableType *node)
 {
     // TODO: make it store and load statically
-    buf.put(Instructions::LOAD_TYPE);
-    buf.put(node->reg);
+    m_ibs.Put(Instructions::LOAD_TYPE);
+    m_ibs.Put(node->reg);
 
     uint16_t name_len = (uint16_t)node->name.length();
-    buf.write((byte*)&name_len, sizeof(name_len));
-    buf.write((byte*)&node->name[0], node->name.length());
+    m_ibs.Put((byte*)&name_len, sizeof(name_len));
+    m_ibs.Put((byte*)&node->name[0], node->name.length());
 
     uint16_t size = (uint16_t)node->members.size();
-    buf.write((byte*)&size, sizeof(size));
+    m_ibs.Put((byte*)&size, sizeof(size));
 
     for (const std::string &member_name : node->members) {
         uint16_t member_name_len = (uint16_t)member_name.length();
-        buf.write((byte*)&member_name_len, sizeof(member_name_len));
-        buf.write((byte*)&member_name[0], member_name.length());
+        m_ibs.Put((byte*)&member_name_len, sizeof(member_name_len));
+        m_ibs.Put((byte*)&member_name[0], member_name.length());
     }
 }
 
@@ -461,10 +460,10 @@ void AEXGenerator::Visit(BuildableString *node)
     uint32_t len = node->value.length();
 
     // TODO: make it store and load statically
-    buf.put(Instructions::LOAD_STRING);
-    buf.put(node->reg);
-    buf.write((byte*)&len, sizeof(len));
-    buf.write((byte*)&node->value[0], node->value.length());
+    m_ibs.Put(Instructions::LOAD_STRING);
+    m_ibs.Put(node->reg);
+    m_ibs.Put((byte*)&len, sizeof(len));
+    m_ibs.Put((byte*)&node->value[0], node->value.length());
 }
 
 void AEXGenerator::Visit(StorageOperation *node)
@@ -475,15 +474,15 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_OFFSET:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.put(Instructions::LOAD_OFFSET);
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.write((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
+                            m_ibs.Put(Instructions::LOAD_OFFSET);
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
 
                             break;
                         case Operations::STORE:
-                            buf.put(Instructions::MOV_OFFSET);
-                            buf.write((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put(Instructions::MOV_OFFSET);
+                            m_ibs.Put((byte*)&node->op.b.offset, sizeof(node->op.b.offset));
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -493,15 +492,15 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.put(Instructions::LOAD_INDEX);
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.write((byte*)&node->op.b.index, sizeof(node->op.b.index));
+                            m_ibs.Put(Instructions::LOAD_INDEX);
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put((byte*)&node->op.b.index, sizeof(node->op.b.index));
 
                             break;
                         case Operations::STORE:
-                            buf.put(Instructions::MOV_INDEX);
-                            buf.write((byte*)&node->op.b.index, sizeof(node->op.b.index));
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put(Instructions::MOV_INDEX);
+                            m_ibs.Put((byte*)&node->op.b.index, sizeof(node->op.b.index));
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -526,9 +525,9 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.put(Instructions::LOAD_STATIC);
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.write((byte*)&node->op.b.index, sizeof(node->op.b.index));
+                            m_ibs.Put(Instructions::LOAD_STATIC);
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put((byte*)&node->op.b.index, sizeof(node->op.b.index));
 
                             break;
                         case Operations::STORE:
@@ -557,17 +556,17 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.put(Instructions::LOAD_ARRAYIDX);
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            m_ibs.Put(Instructions::LOAD_ARRAYIDX);
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
 
                             break;
                         case Operations::STORE:
-                            buf.put(Instructions::MOV_ARRAYIDX);
-                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put(Instructions::MOV_ARRAYIDX);
+                            m_ibs.Put((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -592,17 +591,17 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_INDEX:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.put(Instructions::LOAD_MEM);
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            m_ibs.Put(Instructions::LOAD_MEM);
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
 
                             break;
                         case Operations::STORE:
-                            buf.put(Instructions::MOV_MEM);
-                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.write((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put(Instructions::MOV_MEM);
+                            m_ibs.Put((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.member.index, sizeof(node->op.b.object_data.member.index));
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -612,17 +611,17 @@ void AEXGenerator::Visit(StorageOperation *node)
                 case Strategies::BY_HASH:
                     switch (node->operation) {
                         case Operations::LOAD:
-                            buf.put(Instructions::LOAD_MEM_HASH);
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
-                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.write((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
+                            m_ibs.Put(Instructions::LOAD_MEM_HASH);
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
 
                             break;
                         case Operations::STORE:
-                            buf.put(Instructions::MOV_MEM_HASH);
-                            buf.write((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
-                            buf.write((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
-                            buf.write((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
+                            m_ibs.Put(Instructions::MOV_MEM_HASH);
+                            m_ibs.Put((byte*)&node->op.b.object_data.reg, sizeof(node->op.b.object_data.reg));
+                            m_ibs.Put((byte*)&node->op.b.object_data.member.hash, sizeof(node->op.b.object_data.member.hash));
+                            m_ibs.Put((byte*)&node->op.a.reg, sizeof(node->op.a.reg));
 
                             break;
                     }
@@ -636,6 +635,6 @@ void AEXGenerator::Visit(StorageOperation *node)
 
 void AEXGenerator::Visit(RawOperation<> *node)
 {
-    buf.put(node->opcode);
-    buf.write((byte*)&node->data[0], node->data.size());
+    m_ibs.Put(node->opcode);
+    m_ibs.Put((byte*)&node->data[0], node->data.size());
 }

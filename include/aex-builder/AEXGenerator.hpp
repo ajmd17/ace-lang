@@ -1,17 +1,25 @@
 #ifndef AEX_GENERATOR_HPP
 #define AEX_GENERATOR_HPP
 
+#include <aex-builder/InternalByteStream.hpp>
 #include <ace-c/emit/BuildableVisitor.hpp>
 
-#include <vector>
+#include <common/my_assert.hpp>
+
 #include <map>
+#include <sstream>
+#include <vector>
+#include <cstdint>
 
 class LabelVisitor;
 
 class AEXGenerator : public BuildableVisitor {
 public:
-    AEXGenerator(Buffer &buf, BuildParams &build_params);
+    AEXGenerator(BuildParams &build_params);
     virtual ~AEXGenerator();
+
+    inline InternalByteStream &GetInternalByteStream() { return m_ibs; }
+    inline const InternalByteStream &GetInternalByteStream() const { return m_ibs; }
 
     virtual void Visit(BytecodeChunk *);
 
@@ -37,12 +45,8 @@ private:
     virtual void Visit(RawOperation<> *);
 
 private:
-    Buffer &buf;
     BuildParams &build_params;
-
-    LabelVisitor *m_label_visitor;
-
-    std::vector<std::unique_ptr<AEXGenerator>> children;
+    InternalByteStream m_ibs;
 };
 
 #endif

@@ -4,6 +4,8 @@
 #include <ace-c/emit/NamesPair.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/my_assert.hpp>
 
 #include <iostream>
@@ -15,37 +17,28 @@ CompilationUnit::CompilationUnit()
           SourceLocation::eof
       ))
 {
-    //m_module_tree.Open(m_global_module.get());
     m_global_module->SetImportTreeLink(m_module_tree.TopNode());
 
-    // open global module scope
-    //m_global_module->m_scopes.Open(Scope());
-
     Scope &top = m_global_module->m_scopes.Top();
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::ANY);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::INT);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::FLOAT);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::NUMBER);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::BOOLEAN);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::STRING);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::FUNCTION);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::ARRAY);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::TUPLE);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::MAYBE);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::NULL_TYPE);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::EVENT);
-    top.GetIdentifierTable().AddSymbolType(SymbolType::Builtin::EVENT_ARRAY);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::ANY);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::INT);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::FLOAT);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::NUMBER);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::BOOLEAN);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::STRING);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::FUNCTION);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::ARRAY);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::TUPLE);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::MAYBE);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::NULL_TYPE);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT_ARRAY);
 
     m_module_tree.TopNode()->m_value = m_global_module.get();
 }
 
 CompilationUnit::~CompilationUnit()
 {
-    // close global module scopes
-    //m_global_module->m_scopes.Close();
-
-    // close global module
-    //m_module_tree.Close();
 }
 
 void CompilationUnit::RegisterType(SymbolTypePtr_t &type_ptr)

@@ -64,14 +64,6 @@ void AstPrintStatement::Optimize(AstVisitor *visitor, Module *mod)
     m_arg_list->Optimize(visitor, mod);
 }
 
-void AstPrintStatement::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_print) << " ";
-
-    ASSERT(m_arg_list != nullptr);
-    m_arg_list->Recreate(ss);
-}
-
 Pointer<AstStatement> AstPrintStatement::Clone() const
 {
     return CloneImpl();

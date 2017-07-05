@@ -117,38 +117,6 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                     )),
                     m_location
                 )));
-
-
-                /*std::vector<SymbolMember_t> events_members;
-                
-                for (size_t i = 0; i < m_events.size(); i++) {
-                    const auto &event = m_events[i];
-                    if (event != nullptr) {
-                        event->Visit(visitor, mod);
-                        events_members.push_back({
-                            event->GetKeyName(),
-                            SymbolType::Builtin::FUNCTION,
-                            event->GetTrigger()
-                        });
-                    }
-                }
-
-                // create a new type for the 'events' field containing all listeners as fields
-                m_event_field_type = SymbolType::Object(
-                    m_name + ".Events",
-                    events_members
-                );
-                
-                // register the type for 'events' field
-                visitor->GetCompilationUnit()->RegisterType(m_event_field_type);
-
-                // builtin members:
-                m_members.push_back(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
-                    "events",
-                    nullptr,
-                    m_event_field_type->GetDefaultValue(),
-                    m_location
-                )));*/
             }
 
             std::vector<SymbolMember_t> member_types;
@@ -213,21 +181,6 @@ std::unique_ptr<Buildable> AstTypeDefinition::Build(AstVisitor *visitor, Module 
 
 void AstTypeDefinition::Optimize(AstVisitor *visitor, Module *mod)
 {
-}
-
-void AstTypeDefinition::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_type) << " ";
-    ss << m_name;
-    ss << "{";
-
-    for (const auto &mem : m_members) {
-        if (mem) {
-            mem->Recreate(ss);
-        }
-    }
-
-    ss << "}";
 }
 
 Pointer<AstStatement> AstTypeDefinition::Clone() const

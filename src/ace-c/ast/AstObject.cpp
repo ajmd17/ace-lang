@@ -161,11 +161,6 @@ void AstObject::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstObject::Recreate(std::ostringstream &ss)
-{
-    ss << "??";
-}
-
 /*void AstObject::SubstituteGenerics(AstVisitor *visitor, Module *mod, 
     const SymbolTypePtr_t &instance)
 {

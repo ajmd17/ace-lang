@@ -69,13 +69,6 @@ void AstModuleAccess::Optimize(AstVisitor *visitor, Module *mod)
     m_expr->Optimize(visitor, m_mod_access);
 }
 
-void AstModuleAccess::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_expr != nullptr);
-    ss << m_target << "::";
-    m_expr->Recreate(ss);
-}
-
 Pointer<AstStatement> AstModuleAccess::Clone() const
 {
     return CloneImpl();

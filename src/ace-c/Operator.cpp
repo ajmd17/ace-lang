@@ -50,7 +50,6 @@ const std::map<std::string, Operator> Operator::unary_operators = {
     { "--", Operator(OP_decrement, 0, ASSIGNMENT | ARITHMETIC, true) }
 };
 
-
 Operator::Operator(Operators op_type,
     int precedence,
     int type,

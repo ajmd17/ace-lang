@@ -3,6 +3,8 @@
 #include <ace-c/Compiler.hpp>
 #include <ace-c/Module.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -27,7 +29,7 @@ void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
 
 
     // check if target is an array
-    if (target_type != SymbolType::Builtin::ANY) {
+    if (target_type != BuiltinTypes::ANY) {
         if (!target_type->IsArrayType()) {
             // not an array type
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
@@ -105,17 +107,6 @@ void AstArrayAccess::Optimize(AstVisitor *visitor, Module *mod)
     m_index->Optimize(visitor, mod);
 }
 
-void AstArrayAccess::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-    ASSERT(m_index != nullptr);
-
-    m_target->Recreate(ss);
-    ss << "[";
-    m_index->Recreate(ss);
-    ss << "]";
-}
-
 Pointer<AstStatement> AstArrayAccess::Clone() const
 {
     return CloneImpl();
@@ -140,7 +131,7 @@ SymbolTypePtr_t AstArrayAccess::GetSymbolType() const
     ASSERT(target_type != nullptr);
 
     if (target_type->GetTypeClass() == TYPE_ARRAY) {
-        SymbolTypePtr_t held_type = SymbolType::Builtin::UNDEFINED;
+        SymbolTypePtr_t held_type = BuiltinTypes::UNDEFINED;
 
         if (target_type->GetGenericInstanceInfo().m_generic_args.size() == 1) {
             held_type = target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
@@ -152,5 +143,5 @@ SymbolTypePtr_t AstArrayAccess::GetSymbolType() const
         return held_type;
     }
 
-    return SymbolType::Builtin::ANY;
+    return BuiltinTypes::ANY;
 }

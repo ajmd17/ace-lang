@@ -3,7 +3,7 @@
 
 #include <ace-c/Configuration.hpp>
 #include <ace-c/CompilationUnit.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 #include <ace-vm/Value.hpp>
 #include <ace-vm/VM.hpp>

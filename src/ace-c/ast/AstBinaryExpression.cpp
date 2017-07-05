@@ -8,6 +8,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -44,10 +46,16 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
-        visitor->Assert((left_type == SymbolType::Builtin::INT || left_type == SymbolType::Builtin::ANY) &&
-            (right_type == SymbolType::Builtin::INT || right_type == SymbolType::Builtin::ANY),
-            CompilerError(LEVEL_ERROR, Msg_bitwise_operands_must_be_int, m_location,
-                left_type->GetName(), right_type->GetName()));
+        visitor->Assert(
+            (left_type == BuiltinTypes::INT || left_type == BuiltinTypes::ANY) &&
+            (right_type == BuiltinTypes::INT || right_type == BuiltinTypes::ANY),
+            CompilerError(
+                LEVEL_ERROR,
+                Msg_bitwise_operands_must_be_int, m_location,
+                left_type->GetName(),
+                right_type->GetName()
+            )
+        );
     }
 
     if (m_op->ModifiesValue()) {
@@ -62,7 +70,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                 right_type->GetName()
             );
 
-            if (right_type == SymbolType::Builtin::ANY) {
+            if (right_type == BuiltinTypes::ANY) {
                 error = CompilerError(
                     LEVEL_ERROR,
                     Msg_implicit_any_mismatch,
@@ -245,12 +253,12 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 // jump to the VERY end (so we don't load 'false' value)
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
+                chunk->MarkLabel(false_label);
                 
                 // here is where the value is false
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
+                chunk->MarkLabel(true_label);
             } else if (m_op->GetOperatorType() == Operators::OP_logical_or) {
                 uint8_t rp;
 
@@ -326,11 +334,11 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
 
                 // jump to the VERY end (so we don't load 'true' value)
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
+                chunk->MarkLabel(true_label);
 
                 // here is where the value is true
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
+                chunk->MarkLabel(false_label);
             }
         } else if (m_op->GetType() == COMPARISON) {
             uint8_t rp;
@@ -428,12 +436,12 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 // jump to the false label, the value is false at this point
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
                 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
+                chunk->MarkLabel(true_label);
 
                 // values are equal
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
+                chunk->MarkLabel(false_label);
             } else {
                 // load left-hand side into register
                 // right-hand side has been optimized away
@@ -507,17 +515,6 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
             m_left = constant_value;
             m_right = nullptr;
         }
-    }
-}
-
-void AstBinaryExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_left != nullptr);
-    m_left->Recreate(ss);
-
-    if (m_right != nullptr) {
-        //ss << m_op->ToString();
-        m_right->Recreate(ss);
     }
 }
 

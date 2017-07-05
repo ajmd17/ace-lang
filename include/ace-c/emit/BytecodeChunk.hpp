@@ -11,13 +11,14 @@
 struct BytecodeChunk final : public Buildable {
     std::vector<LabelInfo> labels;
 
-    BytecodeChunk() = default;
+    BytecodeChunk();
     BytecodeChunk(const BytecodeChunk &other) = delete;
     virtual ~BytecodeChunk() = default;
 
     inline void Append(std::unique_ptr<Buildable> buildable)
     {
         if (buildable != nullptr) {
+            chunk_size += buildable->GetSize();
             buildables.push_back(std::move(buildable));
         }
     }
@@ -29,17 +30,25 @@ struct BytecodeChunk final : public Buildable {
         return index;
     }
 
+    inline void MarkLabel(LabelId label_id)
+    {
+        ASSERT(label_id < labels.size());
+        labels[label_id].position = chunk_size;
+    }
+
+    virtual size_t GetSize() const override { return chunk_size; }
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override;
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
-        archive(CEREAL_NVP(labels), CEREAL_NVP(buildables));
+        archive(CEREAL_NVP(labels), CEREAL_NVP(buildables), CEREAL_NVP(chunk_size));
     }
-
+    
     std::vector<std::unique_ptr<Buildable>> buildables;
 
 private:
-    friend class BuildableVisitor;
-    size_t chunk_size = 0;
+    size_t chunk_size;
 };
 
 CEREAL_REGISTER_TYPE(BytecodeChunk)

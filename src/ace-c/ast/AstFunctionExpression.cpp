@@ -7,10 +7,11 @@
 #include <ace-c/Scope.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
-#include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
 #include <common/hasher.hpp>
@@ -35,7 +36,7 @@ AstFunctionExpression::AstFunctionExpression(
       m_is_generator(is_generator),
       m_is_closure(false),
       m_is_generator_closure(false),
-      m_return_type(SymbolType::Builtin::ANY),
+      m_return_type(BuiltinTypes::ANY),
       m_static_id(0)
 {
 }
@@ -193,7 +194,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 /* // check if this should be a generator
                 if (it.first->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
                     if (it.first->GetBaseType() != nullptr &&
-                        it.first->GetBaseType()->TypeEqual(*SymbolType::Builtin::GENERATOR))
+                        it.first->GetBaseType()->TypeEqual(*BuiltinTypes::GENERATOR))
                     {
                         m_is_generator = true;
                     }
@@ -213,7 +214,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                     }
                 } else {
                     // deduce return type
-                    if (m_return_type == SymbolType::Builtin::ANY) {
+                    if (m_return_type == BuiltinTypes::ANY) {
                         m_return_type = it.first;
                     } else if (m_return_type->TypeCompatible(*it.first, false)) {
                         m_return_type = SymbolType::TypePromotion(m_return_type, it.first, true);
@@ -231,7 +232,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             }
         } else {
             // return null
-            m_return_type = SymbolType::Builtin::ANY;
+            m_return_type = BuiltinTypes::ANY;
         }
     }
     
@@ -278,7 +279,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         if (!closure_obj_members.empty() || m_closure_self_param->GetIdentifier()->GetUseCount() > 0) {
             generic_param_types.push_back(GenericInstanceTypeInfo::Arg {
                 m_closure_self_param->GetName(),
-                SymbolType::Builtin::ANY,
+                BuiltinTypes::ANY,
                 nullptr
             });
         } else {
@@ -292,7 +293,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     m_symbol_type = SymbolType::GenericInstance(
-        SymbolType::Builtin::FUNCTION, 
+        BuiltinTypes::FUNCTION, 
         GenericInstanceTypeInfo {
             generic_param_types
         }
@@ -368,14 +369,14 @@ std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Mod
     chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
     // store the function address before the function body
-    chunk->Append(BytecodeUtil::Make<LabelMarker>(func_addr));
+    chunk->MarkLabel(func_addr);
     
     // TODO add optimization to avoid duplicating the function body
     // Build the function 
     chunk->Append(BuildFunctionBody(visitor, mod));
 
     // set the label's position to after the block
-    chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
+    chunk->MarkLabel(end_label);
 
     // store local variable
     // get register index
@@ -434,25 +435,6 @@ void AstFunctionExpression::Optimize(AstVisitor *visitor, Module *mod)
 
     if (m_block != nullptr) {
         m_block->Optimize(visitor, mod);
-    }
-}
-
-void AstFunctionExpression::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_func);
-    ss << "(";
-
-    for (auto &param : m_parameters) {
-        if (param) {
-            param->Recreate(ss);
-            ss << ",";
-        }
-    }
-
-    ss << ")";
-
-    if (m_block) {
-        m_block->Recreate(ss);
     }
 }
 

@@ -6,6 +6,8 @@
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/AstVisitor.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeUtil.hpp>
 
 #include <iostream>
@@ -23,11 +25,6 @@ std::unique_ptr<Buildable> AstInteger::Build(AstVisitor *visitor, Module *mod)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     return BytecodeUtil::Make<ConstI32>(rp, m_value);
-}
-
-void AstInteger::Recreate(std::ostringstream &ss)
-{
-    ss << m_value;
 }
 
 Pointer<AstStatement> AstInteger::Clone() const
@@ -58,7 +55,7 @@ ace::afloat32 AstInteger::FloatValue() const
 
 SymbolTypePtr_t AstInteger::GetSymbolType() const
 {
-    return SymbolType::Builtin::INT;
+    return BuiltinTypes::INT;
 }
 
 std::shared_ptr<AstConstant> AstInteger::operator+(AstConstant *right) const
@@ -172,7 +169,7 @@ std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -183,7 +180,7 @@ std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -194,7 +191,7 @@ std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -205,7 +202,7 @@ std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 
@@ -216,7 +213,7 @@ std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
 std::shared_ptr<AstConstant> AstInteger::operator>>(AstConstant *right) const
 {
     // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != SymbolType::Builtin::INT) {
+    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
         return nullptr;
     }
 

@@ -95,3 +95,221 @@ StorageOperation::OperationBuilder StorageOperation::GetBuilder()
 {
     return OperationBuilder(this);
 }
+
+size_t StorageOperation::GetSize() const
+{
+    size_t sz = sizeof(Opcode);
+
+    sz += sizeof(op.a.reg);
+
+    switch (method) {
+        case Methods::LOCAL:
+        case Methods::STATIC:
+            switch (strategy) {
+                case Strategies::BY_OFFSET:
+                    sz += sizeof(op.b.offset);
+                    break;
+
+                case Strategies::BY_INDEX:
+                    sz += sizeof(op.b.index);
+                    break;
+                
+                case Strategies::BY_HASH:
+                    ASSERT_MSG(false, "Not implemented");
+
+                    break;
+            }
+
+            break;
+
+        case Methods::ARRAY:
+        case Methods::MEMBER:
+            sz += sizeof(op.b.object_data.reg);
+
+            switch (strategy) {
+                case Strategies::BY_OFFSET:
+                    ASSERT_MSG(false, "Not implemented");
+
+                    break;
+
+                case Strategies::BY_INDEX:
+                    sz += sizeof(op.b.object_data.member.index);
+                    break;
+                
+                case Strategies::BY_HASH:
+                    sz += sizeof(op.b.object_data.member.hash);
+                    break;
+            }
+
+            break;
+    }
+
+    return sz;
+}
+
+void StorageOperation::Build(Buffer &buf, BuildParams &build_params) const
+{
+    switch (method) {
+        case Methods::LOCAL:
+            switch (strategy) {
+                case Strategies::BY_OFFSET:
+                    switch (operation) {
+                        case Operations::LOAD:
+                            buf.sputc(Instructions::LOAD_OFFSET);
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+                            buf.sputn((byte*)&op.b.offset, sizeof(op.b.offset));
+
+                            break;
+                        case Operations::STORE:
+                            buf.sputc(Instructions::MOV_OFFSET);
+                            buf.sputn((byte*)&op.b.offset, sizeof(op.b.offset));
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+
+                            break;
+                    }
+                    
+                    break;
+
+                case Strategies::BY_INDEX:
+                    switch (operation) {
+                        case Operations::LOAD:
+                            buf.sputc(Instructions::LOAD_INDEX);
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+                            buf.sputn((byte*)&op.b.index, sizeof(op.b.index));
+
+                            break;
+                        case Operations::STORE:
+                            buf.sputc(Instructions::MOV_INDEX);
+                            buf.sputn((byte*)&op.b.index, sizeof(op.b.index));
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+
+                            break;
+                    }
+
+                    break;
+                
+                case Strategies::BY_HASH:
+                    ASSERT_MSG(false, "Not implemented");
+
+                    break;
+            }
+
+            break;
+
+        case Methods::STATIC:
+            switch (strategy) {
+                case Strategies::BY_OFFSET:
+                    ASSERT_MSG(false, "Not implemented");
+                    
+                    break;
+
+                case Strategies::BY_INDEX:
+                    switch (operation) {
+                        case Operations::LOAD:
+                            buf.sputc(Instructions::LOAD_STATIC);
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+                            buf.sputn((byte*)&op.b.index, sizeof(op.b.index));
+
+                            break;
+                        case Operations::STORE:
+                            ASSERT_MSG(false, "Not implemented");
+
+                            break;
+                    }
+
+                    break;
+                
+                case Strategies::BY_HASH:
+                    ASSERT_MSG(false, "Not implemented");
+
+                    break;
+            }
+
+            break;
+
+        case Methods::ARRAY:
+            switch (strategy) {
+                case Strategies::BY_OFFSET:
+                    ASSERT_MSG(false, "Not implemented");
+                    
+                    break;
+
+                case Strategies::BY_INDEX:
+                    switch (operation) {
+                        case Operations::LOAD:
+                            buf.sputc(Instructions::LOAD_ARRAYIDX);
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+                            buf.sputn((byte*)&op.b.object_data.reg, sizeof(op.b.object_data.reg));
+                            buf.sputn((byte*)&op.b.object_data.member.index, sizeof(op.b.object_data.member.index));
+
+                            break;
+                        case Operations::STORE:
+                            buf.sputc(Instructions::MOV_ARRAYIDX);
+                            buf.sputn((byte*)&op.b.object_data.reg, sizeof(op.b.object_data.reg));
+                            buf.sputn((byte*)&op.b.object_data.member.index, sizeof(op.b.object_data.member.index));
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+
+                            break;
+                    }
+
+                    break;
+                
+                case Strategies::BY_HASH:
+                    ASSERT_MSG(false, "Not implemented");
+
+                    break;
+            }
+
+            break;
+
+        case Methods::MEMBER:
+            switch (strategy) {
+                case Strategies::BY_OFFSET:
+                    ASSERT_MSG(false, "Not implemented");
+                    
+                    break;
+
+                case Strategies::BY_INDEX:
+                    switch (operation) {
+                        case Operations::LOAD:
+                            buf.sputc(Instructions::LOAD_MEM);
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+                            buf.sputn((byte*)&op.b.object_data.reg, sizeof(op.b.object_data.reg));
+                            buf.sputn((byte*)&op.b.object_data.member.index, sizeof(op.b.object_data.member.index));
+
+                            break;
+                        case Operations::STORE:
+                            buf.sputc(Instructions::MOV_MEM);
+                            buf.sputn((byte*)&op.b.object_data.reg, sizeof(op.b.object_data.reg));
+                            buf.sputn((byte*)&op.b.object_data.member.index, sizeof(op.b.object_data.member.index));
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+
+                            break;
+                    }
+
+                    break;
+                
+                case Strategies::BY_HASH:
+                    switch (operation) {
+                        case Operations::LOAD:
+                            buf.sputc(Instructions::LOAD_MEM_HASH);
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+                            buf.sputn((byte*)&op.b.object_data.reg, sizeof(op.b.object_data.reg));
+                            buf.sputn((byte*)&op.b.object_data.member.hash, sizeof(op.b.object_data.member.hash));
+
+                            break;
+                        case Operations::STORE:
+                            buf.sputc(Instructions::MOV_MEM_HASH);
+                            buf.sputn((byte*)&op.b.object_data.reg, sizeof(op.b.object_data.reg));
+                            buf.sputn((byte*)&op.b.object_data.member.hash, sizeof(op.b.object_data.member.hash));
+                            buf.sputn((byte*)&op.a.reg, sizeof(op.a.reg));
+
+                            break;
+                    }
+
+                    break;
+            }
+
+            break;
+    }
+}

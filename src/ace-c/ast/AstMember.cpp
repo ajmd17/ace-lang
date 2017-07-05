@@ -7,6 +7,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -23,7 +25,7 @@ AstMember::AstMember(
     : AstExpression(location, ACCESS_MODE_LOAD | ACCESS_MODE_STORE),
       m_field_name(field_name),
       m_target(target),
-      m_symbol_type(SymbolType::Builtin::UNDEFINED)
+      m_symbol_type(BuiltinTypes::UNDEFINED)
 {
 }
 
@@ -35,7 +37,7 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
     m_target_type = m_target->GetSymbolType();
     ASSERT(m_target_type != nullptr);
 
-    if (m_target_type != SymbolType::Builtin::ANY) {
+    if (m_target_type != BuiltinTypes::ANY) {
         // start looking at the target type,
         // iterate through base type
         SymbolTypePtr_t field_type = nullptr;
@@ -43,7 +45,7 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
         while (field_type == nullptr && m_target_type != nullptr) {
             // allow boxing/unboxing for 'Maybe(T)' type
             if (m_target_type->GetBaseType() != nullptr &&
-                m_target_type->GetBaseType()->TypeEqual(*SymbolType::Builtin::MAYBE))
+                m_target_type->GetBaseType()->TypeEqual(*BuiltinTypes::MAYBE))
             {
                 m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
             }
@@ -71,7 +73,7 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
             ));
         }
     } else {
-        m_symbol_type = SymbolType::Builtin::ANY;
+        m_symbol_type = BuiltinTypes::ANY;
     }
 }
 
@@ -84,7 +86,7 @@ std::unique_ptr<Buildable> AstMember::Build(AstVisitor *visitor, Module *mod)
 
     ASSERT(m_target_type != nullptr);
 
-    if (m_target_type == SymbolType::Builtin::ANY) {
+    if (m_target_type == BuiltinTypes::ANY) {
         // for Any type we will have to load from hash
         const uint32_t hash = hash_fnv_1(m_field_name.c_str());
 
@@ -140,15 +142,6 @@ void AstMember::Optimize(AstVisitor *visitor, Module *mod)
 
     // TODO: check if the member being accessed is constant and can
     // be optimized
-}
-
-void AstMember::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-
-    m_target->Recreate(ss);
-    ss << ".";
-    ss << m_field_name;
 }
 
 Pointer<AstStatement> AstMember::Clone() const

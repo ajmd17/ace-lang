@@ -6,7 +6,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/my_assert.hpp>
 #include <common/utf8.hpp>
 
@@ -68,10 +69,6 @@ void AstConstantEvent::Optimize(AstVisitor *visitor, Module *mod)
     AstEvent::Optimize(visitor, mod);
 }
 
-void AstConstantEvent::Recreate(std::ostringstream &ss)
-{
-}
-
 Pointer<AstStatement> AstConstantEvent::Clone() const
 {
     return CloneImpl();
@@ -112,10 +109,6 @@ void AstEvent::Optimize(AstVisitor *visitor, Module *mod)
     m_trigger->Optimize(visitor, mod);
 }
 
-void AstEvent::Recreate(std::ostringstream &ss)
-{
-}
-
 int AstEvent::IsTrue() const
 {
     return 1;
@@ -128,5 +121,5 @@ bool AstEvent::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstEvent::GetSymbolType() const
 {
-    return SymbolType::Builtin::EVENT;
+    return BuiltinTypes::EVENT;
 }

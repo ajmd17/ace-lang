@@ -11,8 +11,6 @@
 #include <vector>
 #include <cstdint>
 
-class LabelVisitor;
-
 class AEXGenerator : public BuildableVisitor {
 public:
     AEXGenerator(BuildParams &build_params);
@@ -22,8 +20,6 @@ public:
     inline const InternalByteStream &GetInternalByteStream() const { return m_ibs; }
 
     virtual void Visit(BytecodeChunk *);
-
-private:
     virtual void Visit(LabelMarker *);
     virtual void Visit(Jump *);
     virtual void Visit(Comparison *);

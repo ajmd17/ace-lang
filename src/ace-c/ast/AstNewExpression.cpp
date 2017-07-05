@@ -3,6 +3,8 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -42,7 +44,7 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     bool should_call_constructor = true;
-    if (object_type == SymbolType::Builtin::ANY) {
+    if (object_type == BuiltinTypes::ANY) {
         should_call_constructor = false;
     } else {
         bool has_written_constructor = object_type->FindMember("new") != nullptr;
@@ -106,19 +108,6 @@ void AstNewExpression::Optimize(AstVisitor *visitor, Module *mod)
         ASSERT(m_object_value != nullptr);
         m_object_value->Optimize(visitor, mod);
     }
-}
-
-void AstNewExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_type_expr != nullptr);
-
-    ss << "new ";
-    m_type_expr->Recreate(ss);
-    ss << "(";
-    if (m_arg_list != nullptr) {
-        m_arg_list->Recreate(ss);
-    }
-    ss << ")";
 }
 
 Pointer<AstStatement> AstNewExpression::Clone() const

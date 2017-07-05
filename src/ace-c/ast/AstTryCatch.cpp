@@ -62,7 +62,7 @@ std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
     // set the label's position to where the catch-block would be
-    chunk->Append(BytecodeUtil::Make<LabelMarker>(catch_label));
+    chunk->MarkLabel(catch_label);
 
     // exception was thrown, pop all local variables from the try-block
     chunk->Append(Compiler::PopStack(visitor, m_try_block->NumLocals()));
@@ -70,7 +70,7 @@ std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     // build the catch-block
     chunk->Append(m_catch_block->Build(visitor, mod));
 
-    chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
+    chunk->MarkLabel(end_label);
 
     return std::move(chunk);
 }
@@ -81,16 +81,6 @@ void AstTryCatch::Optimize(AstVisitor *visitor, Module *mod)
     m_try_block->Optimize(visitor, mod);
     // optimize the catch block
     m_catch_block->Optimize(visitor, mod);
-}
-
-void AstTryCatch::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_try_block != nullptr && m_catch_block != nullptr);
-    
-    ss << Keyword::ToString(Keyword_try);
-    m_try_block->Recreate(ss);
-    ss << Keyword::ToString(Keyword_catch);
-    m_catch_block->Recreate(ss);
 }
 
 Pointer<AstStatement> AstTryCatch::Clone() const

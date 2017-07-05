@@ -4,7 +4,6 @@
 #include <ace-c/Parser.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Optimizer.hpp>
-#include <ace-c/Minifier.hpp>
 
 #include <common/str_util.hpp>
 
@@ -37,13 +36,6 @@ void AstFileImport::Visit(AstVisitor *visitor, Module *mod)
         mod,
         filepath
     );
-}
-
-void AstFileImport::Recreate(std::ostringstream &ss)
-{
-    m_ast_iterator.ResetPosition();
-    Minifier minifier(&m_ast_iterator);
-    minifier.Minify(ss);
 }
 
 Pointer<AstStatement> AstFileImport::Clone() const

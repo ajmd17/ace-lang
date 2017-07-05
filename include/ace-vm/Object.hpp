@@ -5,7 +5,6 @@
 #include <ace-vm/TypeInfo.hpp>
 
 #include <sstream>
-
 #include <cstdint>
 #include <cmath>
 

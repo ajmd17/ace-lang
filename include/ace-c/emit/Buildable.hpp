@@ -4,15 +4,13 @@
 #define CEREAL_SERIALIZE_FUNCTION_NAME Serialize
 #include <cereal/cereal.hpp>
 
-#include <map>
-#include <ostream>
+#include <streambuf>
 #include <vector>
 #include <cstdint>
 
 using byte = uint8_t;
-using Buffer = std::basic_ostream<byte>;
+using Buffer = std::basic_streambuf<byte>;
 using LabelPosition = uint32_t;
-using LabelId = size_t;
 
 struct LabelInfo {
     LabelPosition position;
@@ -27,11 +25,14 @@ struct LabelInfo {
 struct BuildParams {
     size_t block_offset = 0;
     size_t local_offset = 0;
-    std::map<LabelId, LabelInfo> labels;
+    std::vector<LabelInfo> labels;
 };
 
 struct Buildable {
-    virtual ~Buildable() = 0;
+    virtual ~Buildable() = default;
+
+    virtual size_t GetSize() const = 0;
+    virtual void Build(Buffer &buf, BuildParams &build_params) const = 0;
 };
 
 #endif

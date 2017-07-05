@@ -2,7 +2,7 @@
 #define SCOPE_HPP
 
 #include <ace-c/IdentifierTable.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 #include <ace-c/SourceLocation.hpp>
 
 #include <vector>

@@ -3,6 +3,8 @@
 #include <ace-c/Parser.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/my_assert.hpp>
 #include <common/hasher.hpp>
 
@@ -219,7 +221,7 @@ void API::ModuleDefine::BindNativeFunction(
     // set identifier info
     ident->SetFlags(FLAG_CONST);
     ident->SetSymbolType(SymbolType::GenericInstance(
-        SymbolType::Builtin::FUNCTION, 
+        BuiltinTypes::FUNCTION, 
         GenericInstanceTypeInfo { generic_param_types }
     ));
     ident->SetCurrentValue(value);

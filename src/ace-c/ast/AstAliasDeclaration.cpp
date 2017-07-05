@@ -56,10 +56,6 @@ void AstAliasDeclaration::Optimize(AstVisitor *visitor, Module *mod)
 {
 }
 
-void AstAliasDeclaration::Recreate(std::ostringstream &ss)
-{
-}
-
 Pointer<AstStatement> AstAliasDeclaration::Clone() const
 {
     return CloneImpl();

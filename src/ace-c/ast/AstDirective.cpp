@@ -63,11 +63,6 @@ void AstDirective::Optimize(AstVisitor *visitor, Module *mod)
 
 }
 
-void AstDirective::Recreate(std::ostringstream &ss)
-{
-
-}
-
 Pointer<AstStatement> AstDirective::Clone() const
 {
     return CloneImpl();

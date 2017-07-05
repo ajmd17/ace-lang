@@ -8,7 +8,7 @@ public:
     AstFalse(const SourceLocation &location);
 
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override;
-    virtual void Recreate(std::ostringstream &ss) override;
+    
     virtual Pointer<AstStatement> Clone() const override;
 
     virtual int IsTrue() const override;

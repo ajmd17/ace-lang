@@ -1,6 +1,8 @@
 #include <ace-c/Parser.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/utf8.hpp>
 #include <common/str_util.hpp>
 
@@ -1410,7 +1412,7 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
                     left.GetLocation()
                 ));
 
-                left_name = SymbolType::Builtin::MAYBE->GetName();
+                left_name = BuiltinTypes::MAYBE->GetName();
                 generic_params = { inner };
                 right = nullptr;
             } else if (Match(TK_OPEN_BRACKET, true)) {
@@ -1422,7 +1424,7 @@ std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
                     left.GetLocation()
                 ));
 
-                left_name = SymbolType::Builtin::ARRAY->GetName();
+                left_name = BuiltinTypes::ARRAY->GetName();
                 generic_params = { inner };
                 right = nullptr;
 

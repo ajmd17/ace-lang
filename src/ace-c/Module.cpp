@@ -141,7 +141,7 @@ Identifier *Module::LookUpIdentifierDepth(const std::string &name, int depth_lev
     for (int i = 0; top != nullptr && i < depth_level; i++) {
         Identifier *result = top->m_value.GetIdentifierTable().LookUpIdentifier(name);
 
-        if (result) {
+        if (result != nullptr) {
             return result;
         }
 

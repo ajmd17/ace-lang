@@ -84,13 +84,6 @@ void AstReturnStatement::Optimize(AstVisitor *visitor, Module *mod)
     m_expr->Optimize(visitor, mod);
 }
 
-void AstReturnStatement::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_expr != nullptr);
-    ss << Keyword::ToString(Keyword_return) << " ";
-    m_expr->Recreate(ss);
-}
-
 Pointer<AstStatement> AstReturnStatement::Clone() const
 {
     return CloneImpl();

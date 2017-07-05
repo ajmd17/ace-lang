@@ -84,21 +84,6 @@ void AstBlock::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstBlock::Recreate(std::ostringstream &ss)
-{
-    ss << "{";
-    for (size_t i = 0; i < m_children.size(); i++) {
-        auto &child = m_children[i];
-        if (child) {
-            child->Recreate(ss);
-            if (i != m_children.size() - 1) {
-                ss << ";";
-            }
-        }
-    }
-    ss << "}";
-}
-
 Pointer<AstStatement> AstBlock::Clone() const
 {
     return CloneImpl();

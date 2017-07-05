@@ -4,9 +4,9 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 
-#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 AstTrue::AstTrue(const SourceLocation &location)
     : AstConstant(location)
@@ -18,11 +18,6 @@ std::unique_ptr<Buildable> AstTrue::Build(AstVisitor *visitor, Module *mod)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     return BytecodeUtil::Make<ConstBool>(rp, true);
-}
-
-void AstTrue::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_true);
 }
 
 Pointer<AstStatement> AstTrue::Clone() const
@@ -52,7 +47,7 @@ ace::afloat32 AstTrue::FloatValue() const
 
 SymbolTypePtr_t AstTrue::GetSymbolType() const
 {
-    return SymbolType::Builtin::BOOLEAN;
+    return BuiltinTypes::BOOLEAN;
 }
 
 std::shared_ptr<AstConstant> AstTrue::operator+(AstConstant *right) const

@@ -2,7 +2,7 @@
 #define IDENTIFIER_TABLE_HPP
 
 #include <ace-c/Identifier.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 #include <string>
 #include <memory>

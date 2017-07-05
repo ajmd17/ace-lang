@@ -1,10 +1,12 @@
 #include <ace-c/ast/AstActionExpression.hpp>
 #include <ace-c/ast/AstCallExpression.hpp>
+#include <ace-c/ast/AstMember.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/ast/AstMember.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Configuration.hpp>
+
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <common/hasher.hpp>
 #include <common/instructions.hpp>
@@ -21,7 +23,7 @@ AstActionExpression::AstActionExpression(
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_actions(actions),
       m_target(target),
-      m_return_type(SymbolType::Builtin::ANY),
+      m_return_type(BuiltinTypes::ANY),
       m_is_method_call(false),
       m_member_found(-1)
 {
@@ -86,7 +88,7 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t target_type = m_target->GetSymbolType();
     ASSERT(target_type != nullptr);
 
-    if (target_type != SymbolType::Builtin::ANY) {
+    if (target_type != BuiltinTypes::ANY) {
         if (SymbolTypePtr_t member_type = target_type->FindMember("$events")) {
             m_member_found = 1;
 
@@ -102,7 +104,7 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
                 const SymbolTypePtr_t base = member_type->GetBaseType();
                 ASSERT(base != nullptr);
 
-                if (base == SymbolType::Builtin::ARRAY) {
+                if (base == BuiltinTypes::ARRAY) {
                     // iterate through array items
                     // each array item should be a 2d array itself
                     const auto &generic_args = member_type->GetGenericInstanceInfo().m_generic_args;
@@ -138,29 +140,6 @@ void AstActionExpression::Optimize(AstVisitor *visitor, Module *mod)
             arg->Optimize(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
         }
     }*/
-}
-
-void AstActionExpression::Recreate(std::ostringstream &ss)
-{
-    /*ASSERT(m_action != nullptr);
-    m_action->Recreate(ss);
-
-    ss << "(";
-    for (size_t i = 0; i < m_args.size(); i++) {
-        auto &arg = m_args[i];
-        if (arg != nullptr) {
-            arg->Recreate(ss);
-            if (i != m_args.size() - 1) {
-                ss << ",";
-            }
-        }
-    }
-    ss << ")";
-
-    ss << " => ";
-
-    ASSERT(m_target != nullptr);
-    m_target->Recreate(ss);*/
 }
 
 Pointer<AstStatement> AstActionExpression::Clone() const

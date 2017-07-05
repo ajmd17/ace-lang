@@ -3,6 +3,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 #include <ace-c/emit/StorageOperation.hpp>
@@ -16,7 +18,7 @@ AstArrayExpression::AstArrayExpression(const std::vector<std::shared_ptr<AstExpr
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_members(members),
-      m_held_type(SymbolType::Builtin::ANY)
+      m_held_type(BuiltinTypes::ANY)
 {
 }
 
@@ -31,26 +33,26 @@ void AstArrayExpression::Visit(AstVisitor *visitor, Module *mod)
         if (member->GetSymbolType() != nullptr) {
             held_types.insert(member->GetSymbolType());
         } else {
-            held_types.insert(SymbolType::Builtin::ANY);
+            held_types.insert(BuiltinTypes::ANY);
         }
     }
 
     for (const auto &it : held_types) {
         ASSERT(it != nullptr);
 
-        if (m_held_type == SymbolType::Builtin::UNDEFINED) {
+        if (m_held_type == BuiltinTypes::UNDEFINED) {
             // `Undefined` invalidates the array type
             break;
         }
         
-        if (m_held_type == SymbolType::Builtin::ANY) {
+        if (m_held_type == BuiltinTypes::ANY) {
             // take first item found that is not `Any`
             m_held_type = it;
         } else if (m_held_type->TypeCompatible(*it, false)) {
             m_held_type = SymbolType::TypePromotion(m_held_type, it, true);
         } else {
             // more than one differing type, use Any.
-            m_held_type = SymbolType::Builtin::ANY;
+            m_held_type = BuiltinTypes::ANY;
             break;
         }
     }
@@ -190,18 +192,6 @@ void AstArrayExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 }
 
-void AstArrayExpression::Recreate(std::ostringstream &ss)
-{
-    ss << "[";
-    for (auto &member : m_members) {
-        if (member != nullptr) {
-            member->Recreate(ss);
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-
 std::shared_ptr<AstStatement> AstArrayExpression::Clone() const
 {
     return CloneImpl();
@@ -231,7 +221,7 @@ bool AstArrayExpression::MayHaveSideEffects() const
 SymbolTypePtr_t AstArrayExpression::GetSymbolType() const
 {
     return SymbolType::GenericInstance(
-        SymbolType::Builtin::ARRAY,
+        BuiltinTypes::ARRAY,
         GenericInstanceTypeInfo {
             {
                 { "@array_of", m_held_type }

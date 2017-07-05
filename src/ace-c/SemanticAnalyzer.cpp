@@ -1,7 +1,9 @@
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
 #include <ace-c/Module.hpp>
-#include <ace-c/SymbolType.hpp>
+
+#include <ace-c/type-system/SymbolType.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <common/my_assert.hpp>
 
@@ -134,7 +136,7 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
     if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
         const SymbolTypePtr_t base = identifier_type->GetBaseType();
 
-        if (base == SymbolType::Builtin::FUNCTION) {
+        if (base == BuiltinTypes::FUNCTION) {
             const auto &generic_args = identifier_type->GetGenericInstanceInfo().m_generic_args;
 
             // check for varargs (at end)
@@ -150,7 +152,7 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
                     ASSERT(arg_base != nullptr);
 
                     // check if it is an instance of varargs type
-                    if (arg_base == SymbolType::Builtin::VAR_ARGS) {
+                    if (arg_base == BuiltinTypes::VAR_ARGS) {
                         is_varargs = true;
 
                         ASSERT(!last_generic_arg_type->GetGenericInstanceInfo().m_generic_args.empty());
@@ -321,10 +323,10 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
                 res_args
             };
         }
-    } else if (identifier_type == SymbolType::Builtin::FUNCTION || identifier_type == SymbolType::Builtin::ANY) {
+    } else if (identifier_type == BuiltinTypes::FUNCTION || identifier_type == BuiltinTypes::ANY) {
         // abstract function, allow any params
         return {
-            SymbolType::Builtin::ANY,
+            BuiltinTypes::ANY,
             args
         };
     }

@@ -22,22 +22,35 @@
 
 using Opcode = uint8_t;
 using RegIndex = uint8_t;
+using LabelId = size_t;
 
 struct Instruction : public Buildable {
     Opcode opcode;
 
     virtual ~Instruction() = default;
+
+    virtual size_t GetSize() const override = 0;
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override = 0;
 };
 
 struct LabelMarker final : public Buildable {
-    LabelId id;
-
     LabelMarker(LabelId id)
         : id(id)
     {
     }
 
     virtual ~LabelMarker() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return 0;
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+    }
+
+    LabelId id;
 };
 
 struct Jump final : public Buildable {
@@ -56,7 +69,39 @@ struct Jump final : public Buildable {
           label_id(label_id)
     {
     }
-    virtual ~Jump() {};
+
+    virtual ~Jump() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode) + sizeof(LabelPosition);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        switch (jump_class) {
+            case JumpClass::JMP:
+                buf.sputc(Instructions::JMP);
+                break;
+            case JumpClass::JE:
+                buf.sputc(Instructions::JE);
+                break;
+            case JumpClass::JNE:
+                buf.sputc(Instructions::JNE);
+                break;
+            case JumpClass::JG:
+                buf.sputc(Instructions::JG);
+                break;
+            case JumpClass::JGE:
+                buf.sputc(Instructions::JGE);
+                break;
+        }
+
+        LabelPosition pos = build_params.block_offset
+            + build_params.labels[label_id].position;
+
+        buf.sputn((byte*)&pos, sizeof(pos));
+    }
 
     template <class Archive>
     void Serialize(Archive &archive)
@@ -91,6 +136,36 @@ struct Comparison final : public Buildable {
 
     virtual ~Comparison() = default;
 
+    virtual size_t GetSize() const override
+    {
+        size_t sz = sizeof(Opcode)
+            + sizeof(reg_lhs);
+
+        if (comparison_class == ComparisonClass::CMP) {
+            sz += sizeof(reg_rhs);
+        }
+
+        return sz;
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        switch (comparison_class) {
+            case ComparisonClass::CMP:
+                buf.sputc(Instructions::CMP);
+                break;
+            case ComparisonClass::CMPZ:
+                buf.sputc(Instructions::CMPZ);
+                break;
+        }
+
+        buf.sputc(reg_lhs);
+
+        if (comparison_class == ComparisonClass::CMP) {
+            buf.sputc(reg_rhs);
+        }
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -111,6 +186,20 @@ struct FunctionCall : public Buildable {
 
     virtual ~FunctionCall() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(nargs);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::CALL);
+        buf.sputc(reg);
+        buf.sputc(nargs);
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -122,16 +211,23 @@ struct Return : public Buildable {
     Return() = default;
     virtual ~Return() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::RET);
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
-        archive();
     }
 };
 
 struct StoreLocal : public Buildable {
-    RegIndex reg;
-
     StoreLocal() = default;
     StoreLocal(RegIndex reg)
         : reg(reg)
@@ -139,16 +235,28 @@ struct StoreLocal : public Buildable {
     }
     virtual ~StoreLocal() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::PUSH);
+        buf.sputc(reg);
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
         archive(CEREAL_NVP(reg));
     }
+
+    RegIndex reg;
 };
 
 struct PopLocal : public Buildable {
-    size_t amt;
-
     PopLocal() = default;
     PopLocal(size_t amt)
         : amt(amt)
@@ -156,11 +264,36 @@ struct PopLocal : public Buildable {
     }
     virtual ~PopLocal() = default;
 
+    virtual size_t GetSize() const override
+    {
+        size_t sz = sizeof(Opcode);
+
+        if (amt > 1) {
+            sz++;
+        }
+
+        return sz;
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        if (amt > 1) {
+            buf.sputc(Instructions::POP_N);
+
+            byte as_byte = (byte)amt;
+            buf.sputc(as_byte);
+        } else {
+            buf.sputc(Instructions::POP);
+        }
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
         archive(CEREAL_NVP(amt));
     }
+
+    size_t amt;
 };
 
 struct ConstI32 : public Buildable {
@@ -175,6 +308,20 @@ struct ConstI32 : public Buildable {
     }
 
     virtual ~ConstI32() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_I32);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
 
     template <class Archive>
     void Serialize(Archive &archive)
@@ -196,6 +343,20 @@ struct ConstI64 : public Buildable {
 
     virtual ~ConstI64() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_I64);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -215,6 +376,20 @@ struct ConstF32 : public Buildable {
     }
 
     virtual ~ConstF32() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_F32);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
 
     template <class Archive>
     void Serialize(Archive &archive)
@@ -236,6 +411,20 @@ struct ConstF64 : public Buildable {
 
     virtual ~ConstF64() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(value);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_F64);
+        buf.sputc(reg);
+        buf.sputn((byte*)&value, sizeof(value));
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -256,6 +445,18 @@ struct ConstBool : public Buildable {
 
     virtual ~ConstBool() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(value ? Instructions::LOAD_TRUE : Instructions::LOAD_FALSE);
+        buf.sputc(reg);
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -274,6 +475,18 @@ struct ConstNull : public Buildable {
 
     virtual ~ConstNull() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_NULL);
+        buf.sputc(reg);
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -284,7 +497,20 @@ struct ConstNull : public Buildable {
 struct BuildableTryCatch final : public Buildable {
     LabelId catch_label_id;
 
-    virtual ~BuildableTryCatch() = default;
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode) + sizeof(LabelPosition);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::BEGIN_TRY);
+
+        LabelPosition pos = build_params.block_offset
+            + build_params.labels[catch_label_id].position;
+
+        buf.sputn((byte*)&pos, sizeof(pos));
+    }
 
     template <class Archive>
     void Serialize(Archive &archive)
@@ -299,7 +525,27 @@ struct BuildableFunction final : public Buildable {
     uint8_t nargs;
     uint8_t flags;
 
-    virtual ~BuildableFunction() = default;
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(LabelPosition)
+            + sizeof(nargs)
+            + sizeof(flags);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        LabelPosition pos = build_params.block_offset
+            + build_params.labels[label_id].position;
+
+        // TODO: make it store and load statically
+        buf.sputc(Instructions::LOAD_FUNC);
+        buf.sputc(reg);
+        buf.sputn((byte*)&pos, sizeof(pos));
+        buf.sputc(nargs);
+        buf.sputc(flags);
+    }
 
     template <class Archive>
     void Serialize(Archive &archive)
@@ -315,6 +561,42 @@ struct BuildableType final : public Buildable {
 
     virtual ~BuildableType() = default;
 
+    virtual size_t GetSize() const override
+    {
+        size_t sz = sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(uint16_t)
+            + name.length()
+            + sizeof(uint16_t);
+
+        for (const std::string &member_name : members) {
+            sz += sizeof(uint16_t);
+            sz += member_name.length();
+        }
+
+        return sz;
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        // TODO: make it store and load statically
+        buf.sputc(Instructions::LOAD_TYPE);
+        buf.sputc(reg);
+
+        uint16_t name_len = (uint16_t)name.length();
+        buf.sputn((byte*)&name_len, sizeof(name_len));
+        buf.sputn((byte*)&name[0], name.length());
+
+        uint16_t type_size = (uint16_t)members.size();
+        buf.sputn((byte*)&type_size, sizeof(type_size));
+
+        for (const std::string &member_name : members) {
+            uint16_t member_name_len = (uint16_t)member_name.length();
+            buf.sputn((byte*)&member_name_len, sizeof(member_name_len));
+            buf.sputn((byte*)&member_name[0], member_name.length());
+        }
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -328,6 +610,25 @@ struct BuildableString final : public Buildable {
 
     virtual ~BuildableString() = default;
 
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(reg)
+            + sizeof(uint32_t)
+            + value.length();
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        uint32_t len = value.length();
+
+        // TODO: make it store and load statically
+        buf.sputc(Instructions::LOAD_STRING);
+        buf.sputc(reg);
+        buf.sputn((byte*)&len, sizeof(len));
+        buf.sputn((byte*)&value[0], value.length());
+    }
+
     template <class Archive>
     void Serialize(Archive &archive)
     {
@@ -340,7 +641,21 @@ struct BinOp final : public Instruction {
     RegIndex reg_rhs;
     RegIndex reg_dst;
 
-    virtual ~BinOp() = default;
+    virtual size_t GetSize() const override
+    {
+        return sizeof(opcode)
+            + sizeof(reg_lhs)
+            + sizeof(reg_rhs)
+            + sizeof(reg_dst);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(opcode);
+        buf.sputc(reg_lhs);
+        buf.sputc(reg_rhs);
+        buf.sputc(reg_dst);
+    }
 
     template <class Archive>
     void Serialize(Archive &archive)
@@ -357,6 +672,17 @@ struct RawOperation final : public Instruction {
     RawOperation(const RawOperation &other)
         : data(other.data)
     {
+    }
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(opcode) + data.size();
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(opcode);
+        buf.sputn((byte*)&data[0], data.size());
     }
 
     void Accept(const char *str)
@@ -397,6 +723,15 @@ struct RawOperation<T, Ts...> : RawOperation<Ts...> {
 
 CEREAL_REGISTER_TYPE(Jump)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, Jump)
+
+CEREAL_REGISTER_TYPE(Comparison)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, Comparison)
+
+CEREAL_REGISTER_TYPE(FunctionCall)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, FunctionCall)
+
+CEREAL_REGISTER_TYPE(Return)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, Return)
 
 CEREAL_REGISTER_TYPE(StoreLocal)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, StoreLocal)

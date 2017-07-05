@@ -2,7 +2,7 @@
 #define AST_EXPRESSION_HPP
 
 #include <ace-c/ast/AstStatement.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 #include <ace-c/enums.hpp>
 
 class AstExpression : public AstStatement {
@@ -22,7 +22,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override = 0;
-    virtual void Recreate(std::ostringstream &ss) override = 0;
+    
     virtual Pointer<AstStatement> Clone() const override = 0;
 
     /** Determine whether the expression would evaluate to true.

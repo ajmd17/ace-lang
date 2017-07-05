@@ -13,7 +13,7 @@ public:
     inline const std::string &GetPath() const { return m_path; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
-    virtual void Recreate(std::ostringstream &ss) override;
+    
     virtual Pointer<AstStatement> Clone() const override;
 
 protected:

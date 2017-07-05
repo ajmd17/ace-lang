@@ -1,12 +1,14 @@
 #include <ace-c/Identifier.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 Identifier::Identifier(const std::string &name, int index, int flags)
     : m_name(name),
       m_index(index),
       m_stack_location(0),
       m_usecount(0),
       m_flags(flags),
-      m_symbol_type(SymbolType::Builtin::UNDEFINED)
+      m_symbol_type(BuiltinTypes::UNDEFINED)
 {
 }
 

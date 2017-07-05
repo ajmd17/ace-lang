@@ -3,6 +3,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -32,7 +34,7 @@ void AstHasExpression::Visit(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t target_type = m_target->GetSymbolType();
     ASSERT(target_type != nullptr);
 
-    if (target_type != SymbolType::Builtin::ANY) {
+    if (target_type != BuiltinTypes::ANY) {
         if (SymbolTypePtr_t member_type = target_type->FindMember(m_field_name)) {
             m_has_member = 1;
         } else {
@@ -107,12 +109,12 @@ std::unique_ptr<Buildable> AstHasExpression::Build(AstVisitor *visitor, Module *
         // jump to end after loading true
         chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
-        chunk->Append(BytecodeUtil::Make<LabelMarker>(else_label));
+        chunk->MarkLabel(else_label);
 
         // member was not found, so load false
         chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-        chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
+        chunk->MarkLabel(end_label);
     }
 
     return std::move(chunk);
@@ -125,14 +127,6 @@ void AstHasExpression::Optimize(AstVisitor *visitor, Module *mod)
     m_target->Optimize(visitor, mod);
 }
 
-void AstHasExpression::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_target != nullptr);
-
-    m_target->Recreate(ss);
-    ss << " has \"" << m_field_name << "\"";
-}
-
 Pointer<AstStatement> AstHasExpression::Clone() const
 {
     return CloneImpl();
@@ -140,7 +134,7 @@ Pointer<AstStatement> AstHasExpression::Clone() const
 
 SymbolTypePtr_t AstHasExpression::GetSymbolType() const
 {
-    return SymbolType::Builtin::BOOLEAN;
+    return BuiltinTypes::BOOLEAN;
 }
 
 int AstHasExpression::IsTrue() const

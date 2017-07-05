@@ -61,7 +61,7 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         // where to jump up to
-        chunk->Append(BytecodeUtil::Make<LabelMarker>(top_label));
+        chunk->MarkLabel(top_label);
 
         // build the conditional
         chunk->Append(m_conditional->Build(visitor, mod));
@@ -87,10 +87,10 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
 
         // set the label's position to after the block,
         // so we can skip it if the condition is false
-        chunk->Append(BytecodeUtil::Make<LabelMarker>(break_label));
+        chunk->MarkLabel(break_label);
     } else if (condition_is_true) {
         LabelId top_label = chunk->NewLabel();
-        chunk->Append(BytecodeUtil::Make<LabelMarker>(top_label));
+        chunk->MarkLabel(top_label);
 
         // the condition has been determined to be true
         if (m_conditional->MayHaveSideEffects()) {
@@ -136,14 +136,6 @@ void AstWhileLoop::Optimize(AstVisitor *visitor, Module *mod)
     m_conditional->Optimize(visitor, mod);
     // optimize the body
     m_block->Optimize(visitor, mod);
-}
-
-void AstWhileLoop::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_conditional != nullptr && m_block != nullptr);
-    ss << Keyword::ToString(Keyword_while) << " ";
-    m_conditional->Recreate(ss);
-    m_block->Recreate(ss);
 }
 
 Pointer<AstStatement> AstWhileLoop::Clone() const

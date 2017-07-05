@@ -4,9 +4,9 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 
-#include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
-#include <common/instructions.hpp>
+#include <ace-c/emit/BytecodeUtil.hpp>
 
 AstFalse::AstFalse(const SourceLocation &location)
     : AstConstant(location)
@@ -18,11 +18,6 @@ std::unique_ptr<Buildable> AstFalse::Build(AstVisitor *visitor, Module *mod)
     // get active register
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
     return BytecodeUtil::Make<ConstBool>(rp, false);
-}
-
-void AstFalse::Recreate(std::ostringstream &ss)
-{
-    ss << Keyword::ToString(Keyword_false);
 }
 
 Pointer<AstStatement> AstFalse::Clone() const
@@ -52,7 +47,7 @@ ace::afloat32 AstFalse::FloatValue() const
 
 SymbolTypePtr_t AstFalse::GetSymbolType() const
 {
-    return SymbolType::Builtin::BOOLEAN;
+    return BuiltinTypes::BOOLEAN;
 }
 
 std::shared_ptr<AstConstant> AstFalse::operator+(AstConstant *right) const
@@ -112,7 +107,7 @@ std::shared_ptr<AstConstant> AstFalse::operator&&(AstConstant *right) const
 
 std::shared_ptr<AstConstant> AstFalse::operator||(AstConstant *right) const
 {
-    bool right_true = right->IsTrue();
+    int right_true = right->IsTrue();
     if (right_true == 1) {
         return std::shared_ptr<AstTrue>(new AstTrue(m_location));
     } else if (right_true == 0) {

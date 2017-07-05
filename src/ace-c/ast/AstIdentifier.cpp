@@ -3,6 +3,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Scope.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <common/my_assert.hpp>
 
 #include <iostream>
@@ -70,7 +72,7 @@ SymbolTypePtr_t AstIdentifier::GetSymbolType() const
         return m_properties.GetIdentifier()->GetSymbolType();
     }
 
-    return SymbolType::Builtin::UNDEFINED;
+    return BuiltinTypes::UNDEFINED;
 }
 
 int AstIdentifier::GetStackOffset(int stack_size) const

@@ -87,14 +87,6 @@ void AstYieldStatement::Optimize(AstVisitor *visitor, Module *mod)
     m_yield_callback_call->Optimize(visitor, mod);
 }
 
-void AstYieldStatement::Recreate(std::ostringstream &ss)
-{
-    ASSERT(m_expr != nullptr);
-
-    ss << Keyword::ToString(Keyword_yield) << " ";
-    m_expr->Recreate(ss);
-}
-
 Pointer<AstStatement> AstYieldStatement::Clone() const
 {
     return CloneImpl();

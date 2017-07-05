@@ -2,7 +2,7 @@
 #define AST_TYPE_SPECIFICATION_HPP
 
 #include <ace-c/ast/AstStatement.hpp>
-#include <ace-c/SymbolType.hpp>
+#include <ace-c/type-system/SymbolType.hpp>
 
 #include <string>
 #include <memory>
@@ -19,7 +19,7 @@ public:
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
-    virtual void Recreate(std::ostringstream &ss) override;
+    
     virtual Pointer<AstStatement> Clone() const override;
 
     inline const SymbolTypePtr_t &GetSymbolType() const { return m_symbol_type; }

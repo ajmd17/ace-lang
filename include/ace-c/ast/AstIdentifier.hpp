@@ -53,7 +53,7 @@ public:
     
     virtual Pointer<AstStatement> Clone() const override = 0;
 
-    virtual int IsTrue() const override = 0;
+    virtual Tribool IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override = 0;
     virtual SymbolTypePtr_t GetSymbolType() const override;
 

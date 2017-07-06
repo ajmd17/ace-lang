@@ -30,9 +30,9 @@ Pointer<AstStatement> AstNil::Clone() const
     return CloneImpl();
 }
 
-int AstNil::IsTrue() const
+Tribool AstNil::IsTrue() const
 {
-    return false;
+    return Tribool::False();
 }
 
 bool AstNil::IsNumber() const
@@ -55,120 +55,40 @@ SymbolTypePtr_t AstNil::GetSymbolType() const
     return BuiltinTypes::NULL_TYPE;
 }
 
-std::shared_ptr<AstConstant> AstNil::operator+(AstConstant *right) const
+std::shared_ptr<AstConstant> AstNil::HandleOperator(Operators op_type, AstConstant *right) const
 {
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator-(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator*(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator/(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator%(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator^(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator&(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator|(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator<<(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator>>(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator&&(AstConstant *right) const
-{
-    // logical operations still work, so that we can do
-    // things like testing for null in an if statement.
-    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-}
-
-std::shared_ptr<AstConstant> AstNil::operator||(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        // this operator is valid to compare against null
-        if (dynamic_cast<AstNil*>(right) != nullptr) {
+    switch (op_type) {
+        case OP_logical_and:
+            // logical operations still work, so that we can do
+            // things like testing for null in an if statement.
             return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-        }
-        return nullptr;
+
+        case OP_logical_or:
+            if (!right->IsNumber()) {
+                // this operator is valid to compare against null
+                if (dynamic_cast<AstNil*>(right) != nullptr) {
+                    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+                }
+                return nullptr;
+            }
+
+            return std::shared_ptr<AstInteger>(new AstInteger(
+                right->IntValue(),
+                m_location
+            ));
+
+        case OP_equals:
+            if (dynamic_cast<AstNil*>(right) != nullptr) {
+                // only another null value should be equal
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            }
+            // other values never equal to null
+            return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+
+        case OP_logical_not:
+            return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+
+        default:
+            return nullptr;
     }
-
-    return std::shared_ptr<AstInteger>(new AstInteger(
-        right->IntValue(),
-        m_location
-    ));
-}
-
-std::shared_ptr<AstConstant> AstNil::operator<(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator>(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator<=(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator>=(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::Equals(AstConstant *right) const
-{
-    if (dynamic_cast<AstNil*>(right) != nullptr) {
-        // only another null value should be equal
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    }
-    // other values never equal to null
-    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-}
-
-std::shared_ptr<AstConstant> AstNil::operator-() const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator~() const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstNil::operator!() const
-{
-    return std::shared_ptr<AstTrue>(new AstTrue(m_location));
 }

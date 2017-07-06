@@ -197,9 +197,9 @@ std::shared_ptr<AstStatement> AstArrayExpression::Clone() const
     return CloneImpl();
 }
 
-int AstArrayExpression::IsTrue() const
+Tribool AstArrayExpression::IsTrue() const
 {
-    return 1;
+    return Tribool::True();
 }
 
 bool AstArrayExpression::MayHaveSideEffects() const

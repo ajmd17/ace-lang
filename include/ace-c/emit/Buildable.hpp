@@ -12,6 +12,10 @@ using byte = uint8_t;
 using Buffer = std::basic_streambuf<byte>;
 using LabelPosition = uint32_t;
 
+using Opcode = uint8_t;
+using RegIndex = uint8_t;
+using LabelId = size_t;
+
 struct LabelInfo {
     LabelPosition position;
 

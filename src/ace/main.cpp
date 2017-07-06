@@ -35,7 +35,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 
-//#include <ace-air/AIRCode.hpp>
+#include <aex-builder/AEXGenerator.hpp>
 
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>
@@ -1539,7 +1539,7 @@ static int REPL(
                     build_params.block_offset = offset;
                     build_params.local_offset = 0;
 
-                    std::vector<std::uint8_t> bytes = BytecodeUtil::GenerateBytes(bc.get(), build_params);
+                    std::vector<std::uint8_t> bytes = GenerateBytes(bc.get(), build_params);
 
                     temp_bytecode_file.write((char*)&bytes[0], bytes.size());
                     offset += bytes.size();
@@ -1771,7 +1771,12 @@ void HandleArgs(
                         utf::cout << "Could not open file for writing: " << out_filename << "\n";
                     } else {
                         // write bytes to file
-                        std::vector<std::uint8_t> bytes = BytecodeUtil::GenerateBytes(bc.get());
+                        BuildParams build_params;
+                        build_params.block_offset = 0;
+                        build_params.local_offset = 0;
+
+                        std::vector<std::uint8_t> bytes = GenerateBytes(bc.get(), build_params);
+                        
                         out_file.write((char*)&bytes[0], bytes.size());
                         //out_file << compilation_unit.GetInstructionStream();
                     }

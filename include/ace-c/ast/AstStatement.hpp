@@ -2,7 +2,6 @@
 #define AST_STATEMENT_HPP
 
 #include <ace-c/SourceLocation.hpp>
-
 #include <ace-c/emit/Buildable.hpp>
 
 #include <memory>

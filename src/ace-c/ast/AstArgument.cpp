@@ -42,7 +42,7 @@ Pointer<AstStatement> AstArgument::Clone() const
     return CloneImpl();
 }
 
-int AstArgument::IsTrue() const
+Tribool AstArgument::IsTrue() const
 {
     ASSERT(m_expr != nullptr);
     return m_expr->IsTrue();

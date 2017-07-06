@@ -25,9 +25,9 @@ Pointer<AstStatement> AstTrue::Clone() const
     return CloneImpl();
 }
 
-int AstTrue::IsTrue() const
+Tribool AstTrue::IsTrue() const
 {
-    return true;
+    return Tribool::True();
 }
 
 bool AstTrue::IsNumber() const
@@ -50,112 +50,32 @@ SymbolTypePtr_t AstTrue::GetSymbolType() const
     return BuiltinTypes::BOOLEAN;
 }
 
-std::shared_ptr<AstConstant> AstTrue::operator+(AstConstant *right) const
+std::shared_ptr<AstConstant> AstTrue::HandleOperator(Operators op_type, AstConstant *right) const
 {
-    return nullptr;
-}
+    switch (op_type) {
+        case OP_logical_and:
+            switch (right->IsTrue()) {
+                case Tribool::TriboolValue::TRI_TRUE:
+                    return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+                case Tribool::TriboolValue::TRI_FALSE:
+                    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+                case Tribool::TriboolValue::TRI_INDETERMINATE:
+                    return nullptr;
+            }
 
-std::shared_ptr<AstConstant> AstTrue::operator-(AstConstant *right) const
-{
-    return nullptr;
-}
+        case OP_logical_or:
+            return std::shared_ptr<AstTrue>(new AstTrue(m_location));
 
-std::shared_ptr<AstConstant> AstTrue::operator*(AstConstant *right) const
-{
-    return nullptr;
-}
+        case OP_equals:
+            if (dynamic_cast<AstTrue*>(right) != nullptr) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            }
+            return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 
-std::shared_ptr<AstConstant> AstTrue::operator/(AstConstant *right) const
-{
-    return nullptr;
-}
+        case OP_logical_not:
+            return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 
-std::shared_ptr<AstConstant> AstTrue::operator%(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator^(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator&(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator|(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator<<(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator>>(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator&&(AstConstant *right) const
-{
-    int right_true = right->IsTrue();
-    if (right_true == 1) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else if (right_true == 0) {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    } else {
-        return nullptr;
+        default:
+            return nullptr;
     }
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator||(AstConstant *right) const
-{
-    return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator<(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator>(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator<=(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator>=(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::Equals(AstConstant *right) const
-{
-    if (dynamic_cast<AstTrue*>(right) != nullptr) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    }
-    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator-() const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator~() const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstTrue::operator!() const
-{
-    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }

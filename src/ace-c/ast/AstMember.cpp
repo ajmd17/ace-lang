@@ -149,9 +149,9 @@ Pointer<AstStatement> AstMember::Clone() const
     return CloneImpl();
 }
 
-int AstMember::IsTrue() const
+Tribool AstMember::IsTrue() const
 {
-    return -1;
+    return Tribool::Indeterminate();
 }
 
 bool AstMember::MayHaveSideEffects() const

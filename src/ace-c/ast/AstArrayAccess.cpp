@@ -112,9 +112,9 @@ Pointer<AstStatement> AstArrayAccess::Clone() const
     return CloneImpl();
 }
 
-int AstArrayAccess::IsTrue() const
+Tribool AstArrayAccess::IsTrue() const
 {
-    return -1;
+    return Tribool::Indeterminate();
 }
 
 bool AstArrayAccess::MayHaveSideEffects() const

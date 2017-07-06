@@ -147,10 +147,9 @@ Pointer<AstStatement> AstActionExpression::Clone() const
     return CloneImpl();
 }
 
-int AstActionExpression::IsTrue() const
+Tribool AstActionExpression::IsTrue() const
 {
-    // cannot deduce if return value is true
-    return -1;
+    return Tribool::Indeterminate();
 }
 
 bool AstActionExpression::MayHaveSideEffects() const

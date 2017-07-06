@@ -59,9 +59,9 @@ Pointer<AstStatement> AstArgumentList::Clone() const
     return CloneImpl();
 }
 
-int AstArgumentList::IsTrue() const
+Tribool AstArgumentList::IsTrue() const
 {
-    return 1;
+    return Tribool::True();
 }
 
 bool AstArgumentList::MayHaveSideEffects() const

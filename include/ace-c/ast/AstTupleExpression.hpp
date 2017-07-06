@@ -22,7 +22,7 @@ public:
     
     virtual std::shared_ptr<AstStatement> Clone() const override;
 
-    virtual int IsTrue() const override;
+    virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
     virtual SymbolTypePtr_t GetSymbolType() const override;
 

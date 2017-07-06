@@ -24,13 +24,9 @@ static std::shared_ptr<AstConstant> ConstantFold(
     std::shared_ptr<AstConstant> result;
 
     if (AstConstant *target_as_constant = dynamic_cast<AstConstant*>(target.get())) {
-        // perform operations on these constants
-        if (op_type == Operators::OP_negative) {
-            result = -(*target_as_constant);
-        }
+        result = target_as_constant->HandleOperator(op_type, nullptr);
     }
 
-    // one or both of the sides are not a constant
     return result;
 }
 
@@ -93,29 +89,25 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     if (m_op->ModifiesValue()) {
-        AstVariable *target_as_var = nullptr;
-        /*// check member access first
-        if (AstMemberAccess *target_as_mem = dynamic_cast<AstMemberAccess*>(m_target.get())) {
-            AstIdentifier *last = target_as_mem->GetLast().get();
-            target_as_var = dynamic_cast<AstVariable*>(last);
-        } else {*/
-            target_as_var = dynamic_cast<AstVariable*>(m_target.get());
-        //}
-
-        if (target_as_var) {
+        if (AstVariable *target_as_var = dynamic_cast<AstVariable*>(m_target.get())) {
             if (target_as_var->GetProperties().GetIdentifier()) {
                 // make sure we are not modifying a const
                 if (target_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(
-                        CompilerError(LEVEL_ERROR, Msg_const_modified,
-                            m_target->GetLocation(), target_as_var->GetName()));
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_const_modified,
+                        m_target->GetLocation(),
+                        target_as_var->GetName()
+                    ));
                 }
             }
         } else {
             // cannot modify an rvalue
-            visitor->GetCompilationUnit()->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_cannot_modify_rvalue,
-                    m_target->GetLocation()));
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_cannot_modify_rvalue,
+                m_target->GetLocation()
+            ));
         }
     }
 }
@@ -161,7 +153,7 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
 
                 // skip to here to load true
-                chunk->MarkLabel(true_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
 
                 // get current register index
                 rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
@@ -170,7 +162,7 @@ std::unique_ptr<Buildable> AstUnaryExpression::Build(AstVisitor *visitor, Module
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
 
                 // skip to here to avoid loading 'true' into the register
-                chunk->MarkLabel(false_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
             }
         }
     }
@@ -199,12 +191,13 @@ Pointer<AstStatement> AstUnaryExpression::Clone() const
     return CloneImpl();
 }
 
-int AstUnaryExpression::IsTrue() const
+Tribool AstUnaryExpression::IsTrue() const
 {
     if (m_folded) {
         return m_target->IsTrue();
     }
-    return -1;
+
+    return Tribool::Indeterminate();
 }
 
 bool AstUnaryExpression::MayHaveSideEffects() const

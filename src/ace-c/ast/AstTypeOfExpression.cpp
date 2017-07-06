@@ -101,9 +101,9 @@ Pointer<AstStatement> AstTypeOfExpression::Clone() const
     return CloneImpl();
 }
 
-int AstTypeOfExpression::IsTrue() const
+Tribool AstTypeOfExpression::IsTrue() const
 {
-    return 1;
+    return Tribool::True();
 }
 
 bool AstTypeOfExpression::MayHaveSideEffects() const

@@ -78,7 +78,7 @@ Pointer<AstStatement> AstModuleProperty::Clone() const
     return CloneImpl();
 }
 
-int AstModuleProperty::IsTrue() const
+Tribool AstModuleProperty::IsTrue() const
 {
     ASSERT(m_expr_value != nullptr);
     return m_expr_value->IsTrue();

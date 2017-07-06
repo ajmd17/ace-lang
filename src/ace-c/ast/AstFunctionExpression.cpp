@@ -369,14 +369,14 @@ std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Mod
     chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
     // store the function address before the function body
-    chunk->MarkLabel(func_addr);
+    chunk->Append(BytecodeUtil::Make<LabelMarker>(func_addr));
     
     // TODO add optimization to avoid duplicating the function body
     // Build the function 
     chunk->Append(BuildFunctionBody(visitor, mod));
 
     // set the label's position to after the block
-    chunk->MarkLabel(end_label);
+    chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
 
     // store local variable
     // get register index
@@ -443,9 +443,9 @@ Pointer<AstStatement> AstFunctionExpression::Clone() const
     return CloneImpl();
 }
 
-int AstFunctionExpression::IsTrue() const
+Tribool AstFunctionExpression::IsTrue() const
 {
-    return 1;
+    return Tribool::True();
 }
 
 bool AstFunctionExpression::MayHaveSideEffects() const

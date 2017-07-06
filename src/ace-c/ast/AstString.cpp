@@ -32,10 +32,10 @@ Pointer<AstStatement> AstString::Clone() const
     return CloneImpl();
 }
 
-int AstString::IsTrue() const
+Tribool AstString::IsTrue() const
 {
     // strings evaluate to true
-    return 1;
+    return Tribool::True();
 }
 
 bool AstString::IsNumber() const
@@ -60,125 +60,35 @@ SymbolTypePtr_t AstString::GetSymbolType() const
     return BuiltinTypes::STRING;
 }
 
-std::shared_ptr<AstConstant> AstString::operator+(
-        AstConstant *right) const
+std::shared_ptr<AstConstant> AstString::HandleOperator(Operators op_type, AstConstant *right) const
 {
-    // TODO: string concatenation
-    return nullptr;
-}
+    switch (op_type) {
+        case OP_logical_and:
+            // literal strings evaluate to true.
+            switch (right->IsTrue()) {
+                case Tribool::TriboolValue::TRI_TRUE:
+                    return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+                case Tribool::TriboolValue::TRI_FALSE:
+                    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+                case Tribool::TriboolValue::TRI_INDETERMINATE:
+                    return nullptr;
+            }
 
-std::shared_ptr<AstConstant> AstString::operator-(
-        AstConstant *right) const
-{
-    return nullptr;
-}
+        case OP_logical_or:
+            return std::shared_ptr<AstTrue>(new AstTrue(m_location));
 
-std::shared_ptr<AstConstant> AstString::operator*(
-        AstConstant *right) const
-{
-    return nullptr;
-}
+        case OP_equals:
+            if (AstString *right_string = dynamic_cast<AstString*>(right)) {
+                if (m_value == right_string->GetValue()) {
+                    return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+                } else {
+                    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+                }
+            }
 
-std::shared_ptr<AstConstant> AstString::operator/(
-        AstConstant *right) const
-{
-    return nullptr;
-}
+            return nullptr;
 
-std::shared_ptr<AstConstant> AstString::operator%(
-        AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator^(
-        AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator&(
-        AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator|(
-        AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator<<(
-        AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator>>(
-        AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator&&(
-        AstConstant *right) const
-{
-    // string literals evaluate to true
-    bool right_true = right->IsTrue();
-    if (right_true == 1) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else if (right_true == 0) {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    } else {
-        return nullptr;
+        default:
+            return nullptr;
     }
-}
-
-std::shared_ptr<AstConstant> AstString::operator||(
-        AstConstant *right) const
-{
-    return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-}
-
-
-std::shared_ptr<AstConstant> AstString::operator<(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator>(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator<=(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator>=(AstConstant *right) const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::Equals(AstConstant *right) const
-{
-    // TODO
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator-() const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator~() const
-{
-    return nullptr;
-}
-
-std::shared_ptr<AstConstant> AstString::operator!() const
-{
-    return std::shared_ptr<AstFalse>(new AstFalse(m_location));
 }

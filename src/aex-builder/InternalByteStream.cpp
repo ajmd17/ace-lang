@@ -1,6 +1,7 @@
 #include <aex-builder/InternalByteStream.hpp>
 
 #include <common/my_assert.hpp>
+#include <iostream>
 
 void InternalByteStream::MarkLabel(LabelId label_id)
 {
@@ -34,8 +35,10 @@ std::vector<std::uint8_t> &InternalByteStream::Bake()
         label_position += fixup.offset;
 
         size_t fixup_position = fixup.position;
+        
         // first, make sure there is enough space in the stream at that position
         ASSERT_MSG(m_stream.size() >= fixup_position + sizeof(LabelPosition), "Not enough space allotted for the LabelPosition");
+        
         // now, make sure that each item in the buffer has been set to ((uint8_t)-1)
         // if this is not the case, it is likely the wrong position
         for (size_t i = 0; i < sizeof(LabelPosition); i++) {

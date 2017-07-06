@@ -20,10 +20,6 @@
 #include <cstdint>
 #include <iostream>
 
-using Opcode = uint8_t;
-using RegIndex = uint8_t;
-using LabelId = size_t;
-
 struct Instruction : public Buildable {
     Opcode opcode;
 

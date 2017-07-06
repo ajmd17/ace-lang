@@ -61,7 +61,7 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         // where to jump up to
-        chunk->MarkLabel(top_label);
+        chunk->Append(BytecodeUtil::Make<LabelMarker>(top_label));
 
         // build the conditional
         chunk->Append(m_conditional->Build(visitor, mod));
@@ -87,10 +87,10 @@ std::unique_ptr<Buildable> AstWhileLoop::Build(AstVisitor *visitor, Module *mod)
 
         // set the label's position to after the block,
         // so we can skip it if the condition is false
-        chunk->MarkLabel(break_label);
+        chunk->Append(BytecodeUtil::Make<LabelMarker>(break_label));
     } else if (condition_is_true) {
         LabelId top_label = chunk->NewLabel();
-        chunk->MarkLabel(top_label);
+        chunk->Append(BytecodeUtil::Make<LabelMarker>(top_label));
 
         // the condition has been determined to be true
         if (m_conditional->MayHaveSideEffects()) {

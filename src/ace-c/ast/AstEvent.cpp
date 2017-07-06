@@ -109,9 +109,9 @@ void AstEvent::Optimize(AstVisitor *visitor, Module *mod)
     m_trigger->Optimize(visitor, mod);
 }
 
-int AstEvent::IsTrue() const
+Tribool AstEvent::IsTrue() const
 {
-    return 1;
+    return Tribool::True();
 }
 
 bool AstEvent::MayHaveSideEffects() const

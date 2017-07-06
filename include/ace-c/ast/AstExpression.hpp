@@ -5,6 +5,8 @@
 #include <ace-c/type-system/SymbolType.hpp>
 #include <ace-c/enums.hpp>
 
+#include <common/Tribool.hpp>
+
 class AstExpression : public AstStatement {
 public:
     AstExpression(const SourceLocation &location,
@@ -28,7 +30,7 @@ public:
     /** Determine whether the expression would evaluate to true.
         Returns -1 if it cannot be evaluated at compile time.
     */
-    virtual int IsTrue() const = 0;
+    virtual Tribool IsTrue() const = 0;
     inline int IsFalse() const { int t = IsTrue(); return (t == -1) ? t : !t; }
     /** Determine whether or not there is a possibility of side effects. */
     virtual bool MayHaveSideEffects() const = 0;

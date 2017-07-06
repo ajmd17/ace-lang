@@ -74,7 +74,7 @@ Pointer<AstStatement> AstModuleAccess::Clone() const
     return CloneImpl();
 }
 
-int AstModuleAccess::IsTrue() const
+Tribool AstModuleAccess::IsTrue() const
 {
     return m_expr->IsTrue();
 }

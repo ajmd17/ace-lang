@@ -30,11 +30,11 @@ struct BytecodeChunk final : public Buildable {
         return index;
     }
 
-    inline void MarkLabel(LabelId label_id)
+    /*inline void MarkLabel(LabelId label_id)
     {
         ASSERT(label_id < labels.size());
         labels[label_id].position = chunk_size;
-    }
+    }*/
 
     virtual size_t GetSize() const override { return chunk_size; }
     virtual void Build(Buffer &buf, BuildParams &build_params) const override;

@@ -18,7 +18,9 @@ std::shared_ptr<AstConstant> Optimizer::ConstantFold(
     std::shared_ptr<AstConstant> result;
 
     if (left_as_constant != nullptr && right_as_constant != nullptr) {
-        // perform operations on these constants
+        result = left_as_constant->HandleOperator(op_type, right_as_constant);
+
+        /*// perform operations on these constants
         switch (op_type) {
             case Operators::OP_add:
                 result = (*left_as_constant) + right_as_constant;
@@ -68,7 +70,7 @@ std::shared_ptr<AstConstant> Optimizer::ConstantFold(
             case Operators::OP_equals:
                 result = left_as_constant->Equals(right_as_constant);
                 break;
-        }
+        }*/
 
         // don't have to worry about assignment operations,
         // because at this point both sides are const and literal.
@@ -100,7 +102,7 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
             }
         }
     } else if (AstBinaryExpression *expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) {
-        if (!expr_as_binop->GetRight()) {
+        if (expr_as_binop->GetRight() == nullptr) {
             // right side has been optimized away, to just left side
             expr = expr_as_binop->GetLeft();
         }

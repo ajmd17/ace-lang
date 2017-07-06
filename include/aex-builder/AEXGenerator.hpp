@@ -14,7 +14,7 @@
 class AEXGenerator : public BuildableVisitor {
 public:
     AEXGenerator(BuildParams &build_params);
-    virtual ~AEXGenerator();
+    virtual ~AEXGenerator() = default;
 
     inline InternalByteStream &GetInternalByteStream() { return m_ibs; }
     inline const InternalByteStream &GetInternalByteStream() const { return m_ibs; }

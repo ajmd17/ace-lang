@@ -62,7 +62,7 @@ std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
 
     // set the label's position to where the catch-block would be
-    chunk->MarkLabel(catch_label);
+    chunk->Append(BytecodeUtil::Make<LabelMarker>(catch_label));
 
     // exception was thrown, pop all local variables from the try-block
     chunk->Append(Compiler::PopStack(visitor, m_try_block->NumLocals()));
@@ -70,7 +70,7 @@ std::unique_ptr<Buildable> AstTryCatch::Build(AstVisitor *visitor, Module *mod)
     // build the catch-block
     chunk->Append(m_catch_block->Build(visitor, mod));
 
-    chunk->MarkLabel(end_label);
+    chunk->Append(BytecodeUtil::Make<LabelMarker>(end_label));
 
     return std::move(chunk);
 }

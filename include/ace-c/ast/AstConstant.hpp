@@ -17,41 +17,13 @@ public:
     
     virtual Pointer<AstStatement> Clone() const override = 0;
 
-    virtual int IsTrue() const override = 0;
+    virtual Tribool IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override;
     virtual bool IsNumber() const = 0;
     virtual ace::aint32 IntValue() const = 0;
     virtual ace::afloat32 FloatValue() const = 0;
 
-    // Arithmetic operators
-    virtual std::shared_ptr<AstConstant> operator+(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator-(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator*(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator/(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator%(AstConstant *right) const = 0;
-
-    // Bitwise operators
-    virtual std::shared_ptr<AstConstant> operator^(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator&(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator|(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator<<(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator>>(AstConstant *right) const = 0;
-
-    // Logical operators
-    virtual std::shared_ptr<AstConstant> operator&&(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator||(AstConstant *right) const = 0;
-
-    // Comparison operators
-    virtual std::shared_ptr<AstConstant> operator<(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator>(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator<=(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> operator>=(AstConstant *right) const = 0;
-    virtual std::shared_ptr<AstConstant> Equals(AstConstant *right) const = 0;
-
-    // Unary operators
-    virtual std::shared_ptr<AstConstant> operator-() const = 0;
-    virtual std::shared_ptr<AstConstant> operator~() const = 0;
-    virtual std::shared_ptr<AstConstant> operator!() const = 0;
+    virtual std::shared_ptr<AstConstant> HandleOperator(Operators op_type, AstConstant *right) const = 0;
 };
 
 #endif

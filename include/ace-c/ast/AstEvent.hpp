@@ -19,7 +19,7 @@ public:
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     
 
-    virtual int IsTrue() const override;
+    virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
     virtual SymbolTypePtr_t GetSymbolType() const override;
     virtual std::shared_ptr<AstExpression> GetKey() const = 0;

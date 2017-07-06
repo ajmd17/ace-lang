@@ -17,9 +17,9 @@ Pointer<AstStatement> AstUndefined::Clone() const
     return CloneImpl();
 }
 
-int AstUndefined::IsTrue() const
+Tribool AstUndefined::IsTrue() const
 {
-    return false;
+    return Tribool::False();
 }
 
 bool AstUndefined::IsNumber() const
@@ -42,102 +42,7 @@ SymbolTypePtr_t AstUndefined::GetSymbolType() const
     return BuiltinTypes::UNDEFINED;
 }
 
-std::shared_ptr<AstConstant> AstUndefined::operator+(AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::HandleOperator(Operators op_type, AstConstant *right) const
 {
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator-(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator*(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator/(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator%(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator^(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator&(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator|(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator<<(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator>>(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator&&(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator||(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator<(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator>(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator<=(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator>=(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::Equals(AstConstant *right) const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator-() const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator~() const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
-}
-
-std::shared_ptr<AstConstant> AstUndefined::operator!() const
-{
-    return std::shared_ptr<AstUndefined>(new AstUndefined(m_location));
+    return nullptr;
 }

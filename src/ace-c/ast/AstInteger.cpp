@@ -32,10 +32,10 @@ Pointer<AstStatement> AstInteger::Clone() const
     return CloneImpl();
 }
 
-int AstInteger::IsTrue() const
+Tribool AstInteger::IsTrue() const
 {
     // any non-zero value is considered true
-    return m_value != 0;
+    return Tribool(m_value != 0);
 }
 
 bool AstInteger::IsNumber() const
@@ -58,296 +58,266 @@ SymbolTypePtr_t AstInteger::GetSymbolType() const
     return BuiltinTypes::INT;
 }
 
-std::shared_ptr<AstConstant> AstInteger::operator+(AstConstant *right) const
+std::shared_ptr<AstConstant> AstInteger::HandleOperator(Operators op_type, AstConstant *right) const
 {
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
+    switch (op_type) {
+        case OP_add:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
 
-    // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right)) {
-        return std::shared_ptr<AstFloat>(
-            new AstFloat(FloatValue() + right->FloatValue(), m_location));
-    } else {
-        return std::shared_ptr<AstInteger>(
-            new AstInteger(IntValue() + right->IntValue(), m_location));
-    }
-}
+            // we have to determine weather or not to promote this to a float
+            if (dynamic_cast<const AstFloat*>(right)) {
+                return std::shared_ptr<AstFloat>(
+                    new AstFloat(FloatValue() + right->FloatValue(), m_location));
+            } else {
+                return std::shared_ptr<AstInteger>(
+                    new AstInteger(IntValue() + right->IntValue(), m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator-(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
+        case OP_subtract:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
 
-    // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right)) {
-        return std::shared_ptr<AstFloat>(
-            new AstFloat(FloatValue() - right->FloatValue(), m_location));
-    } else {
-        return std::shared_ptr<AstInteger>(
-            new AstInteger(IntValue() - right->IntValue(), m_location));
-    }
-}
+            // we have to determine weather or not to promote this to a float
+            if (dynamic_cast<const AstFloat*>(right)) {
+                return std::shared_ptr<AstFloat>(
+                    new AstFloat(FloatValue() - right->FloatValue(), m_location));
+            } else {
+                return std::shared_ptr<AstInteger>(
+                    new AstInteger(IntValue() - right->IntValue(), m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator*(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
+        case OP_multiply:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
 
-    // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right)) {
-        return std::shared_ptr<AstFloat>(
-            new AstFloat(FloatValue() * right->FloatValue(), m_location));
-    } else {
-        return std::shared_ptr<AstInteger>(
-            new AstInteger(IntValue() * right->IntValue(), m_location));
-    }
-}
+            // we have to determine weather or not to promote this to a float
+            if (dynamic_cast<const AstFloat*>(right)) {
+                return std::shared_ptr<AstFloat>(
+                    new AstFloat(FloatValue() * right->FloatValue(), m_location));
+            } else {
+                return std::shared_ptr<AstInteger>(
+                    new AstInteger(IntValue() * right->IntValue(), m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator/(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
+        case OP_divide:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
 
-    // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right)) {
-        ace::afloat32 result;
-        auto right_float = right->FloatValue();
-        if (right_float == 0.0) {
-            // division by zero, return Undefined
-            return nullptr;
-        } else {
-            result = FloatValue() / right_float;
-        }
-        return std::shared_ptr<AstFloat>(
-            new AstFloat(result, m_location));
-    } else {
-        auto right_int = right->IntValue();
-        if (right_int == 0) {
-            // division by zero, return Undefined
-            return nullptr;
-        } else {
+            // we have to determine weather or not to promote this to a float
+            if (dynamic_cast<const AstFloat*>(right)) {
+                ace::afloat32 result;
+                auto right_float = right->FloatValue();
+                if (right_float == 0.0) {
+                    // division by zero, return Undefined
+                    return nullptr;
+                } else {
+                    result = FloatValue() / right_float;
+                }
+                return std::shared_ptr<AstFloat>(
+                    new AstFloat(result, m_location));
+            } else {
+                auto right_int = right->IntValue();
+                if (right_int == 0) {
+                    // division by zero, return Undefined
+                    return nullptr;
+                } else {
+                    return std::shared_ptr<AstInteger>(
+                        new AstInteger(IntValue() / right_int, m_location));
+                }
+            }
+
+        case OP_modulus:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
+
+            // we have to determine weather or not to promote this to a float
+            if (dynamic_cast<const AstFloat*>(right)) {
+                ace::afloat32 result;
+                auto right_float = right->FloatValue();
+                if (right_float == 0.0) {
+                    // division by zero, return Undefined
+                    return nullptr;
+                } else {
+                    result = std::fmod(FloatValue(), right_float);
+                }
+                return std::shared_ptr<AstFloat>(
+                    new AstFloat(result, m_location));
+            } else {
+                auto right_int = right->IntValue();
+                if (right_int == 0) {
+                    // division by zero, return Undefined
+                    return nullptr;
+                } else {
+                    return std::shared_ptr<AstInteger>(
+                        new AstInteger(IntValue() % right_int, m_location));
+                }
+            }
+
+        case OP_bitwise_xor:
+            // right must be integer
+            if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
+                return nullptr;
+            }
+
             return std::shared_ptr<AstInteger>(
-                new AstInteger(IntValue() / right_int, m_location));
-        }
-    }
-}
+                new AstInteger(IntValue() ^ right->IntValue(), m_location));
 
-std::shared_ptr<AstConstant> AstInteger::operator%(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
+        case OP_bitwise_and:
+            // right must be integer
+            if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
+                return nullptr;
+            }
 
-    // we have to determine weather or not to promote this to a float
-    if (dynamic_cast<const AstFloat*>(right)) {
-        ace::afloat32 result;
-        auto right_float = right->FloatValue();
-        if (right_float == 0.0) {
-            // division by zero, return Undefined
-            return nullptr;
-        } else {
-            result = std::fmod(FloatValue(), right_float);
-        }
-        return std::shared_ptr<AstFloat>(
-            new AstFloat(result, m_location));
-    } else {
-        auto right_int = right->IntValue();
-        if (right_int == 0) {
-            // division by zero, return Undefined
-            return nullptr;
-        } else {
             return std::shared_ptr<AstInteger>(
-                new AstInteger(IntValue() % right_int, m_location));
-        }
-    }
-}
+                new AstInteger(IntValue() & right->IntValue(), m_location));
 
-std::shared_ptr<AstConstant> AstInteger::operator^(AstConstant *right) const
-{
-    // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
-        return nullptr;
-    }
+        case OP_bitwise_or:
+            // right must be integer
+            if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
+                return nullptr;
+            }
 
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() ^ right->IntValue(), m_location));
-}
+            return std::shared_ptr<AstInteger>(
+                new AstInteger(IntValue() | right->IntValue(), m_location));
 
-std::shared_ptr<AstConstant> AstInteger::operator&(AstConstant *right) const
-{
-    // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
-        return nullptr;
-    }
+        case OP_bitshift_left:
+            // right must be integer
+            if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
+                return nullptr;
+            }
 
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() & right->IntValue(), m_location));
-}
+            return std::shared_ptr<AstInteger>(
+                new AstInteger(IntValue() << right->IntValue(), m_location));
 
-std::shared_ptr<AstConstant> AstInteger::operator|(AstConstant *right) const
-{
-    // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
-        return nullptr;
-    }
+        case OP_bitshift_right:
+            // right must be integer
+            if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
+                return nullptr;
+            }
 
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() | right->IntValue(), m_location));
-}
+            return std::shared_ptr<AstInteger>(
+                new AstInteger(IntValue() >> right->IntValue(), m_location));
 
-std::shared_ptr<AstConstant> AstInteger::operator<<(AstConstant *right) const
-{
-    // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
-        return nullptr;
-    }
+        case OP_logical_and: {
+            int this_true = IsTrue();
+            int right_true = right->IsTrue();
 
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() << right->IntValue(), m_location));
-}
+            if (!right->IsNumber()) {
+                // this operator is valid to compare against null
+                if (dynamic_cast<AstNil*>(right)) {
+                    // rhs is null, return false
+                    return std::shared_ptr<AstFalse>(
+                        new AstFalse(m_location));
+                }
+                return nullptr;
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator>>(AstConstant *right) const
-{
-    // right must be integer
-    if (!right->IsNumber() || right->GetSymbolType() != BuiltinTypes::INT) {
-        return nullptr;
-    }
-
-    return std::shared_ptr<AstInteger>(
-        new AstInteger(IntValue() >> right->IntValue(), m_location));
-}
-
-std::shared_ptr<AstConstant> AstInteger::operator&&(AstConstant *right) const
-{
-    int this_true = IsTrue();
-    int right_true = right->IsTrue();
-
-    if (!right->IsNumber()) {
-        // this operator is valid to compare against null
-        if (dynamic_cast<AstNil*>(right)) {
-            // rhs is null, return false
-            return std::shared_ptr<AstFalse>(
-                new AstFalse(m_location));
-        }
-        return nullptr;
-    }
-
-    if (this_true == 1 && right_true == 1) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else if (this_true == 0 && right_true == 0) {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    } else {
-        // indeterminate
-        return nullptr;
-    }
-}
-
-std::shared_ptr<AstConstant> AstInteger::operator||(AstConstant *right) const
-{
-    int this_true = IsTrue();
-    int right_true = right->IsTrue();
-
-    if (!right->IsNumber()) {
-        // this operator is valid to compare against null
-        if (dynamic_cast<AstNil*>(right)) {
-            if (this_true == 1) {
+            if (this_true == 1 && right_true == 1) {
                 return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-            } else if (this_true == 0) {
+            } else if (this_true == 0 && right_true == 0) {
                 return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            } else {
+                // indeterminate
+                return nullptr;
             }
         }
-        return nullptr;
-    }
 
-    if (this_true == 1 || right_true == 1) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else if (this_true == 0 || right_true == 0) {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    } else {
-        // indeterminate
-        return nullptr;
-    }
-}
+        case OP_logical_or: {
+            int this_true = IsTrue();
+            int right_true = right->IsTrue();
 
-std::shared_ptr<AstConstant> AstInteger::operator<(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    if (IntValue() < right->IntValue()) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    }
-}
+            if (!right->IsNumber()) {
+                // this operator is valid to compare against null
+                if (dynamic_cast<AstNil*>(right)) {
+                    if (this_true == 1) {
+                        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+                    } else if (this_true == 0) {
+                        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+                    }
+                }
+                return nullptr;
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator>(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    if (IntValue() > right->IntValue()) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    }
-}
+            if (this_true == 1 || right_true == 1) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else if (this_true == 0 || right_true == 0) {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            } else {
+                // indeterminate
+                return nullptr;
+            }
+        }
 
-std::shared_ptr<AstConstant> AstInteger::operator<=(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    if (IntValue() <= right->IntValue()) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    }
-}
+        case OP_less:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
+            if (IntValue() < right->IntValue()) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator>=(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    if (IntValue() >= right->IntValue()) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    }
-}
+        case OP_greater:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
+            if (IntValue() > right->IntValue()) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::Equals(AstConstant *right) const
-{
-    if (!right->IsNumber()) {
-        return nullptr;
-    }
-    if (IntValue() == right->IntValue()) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
-    }
-}
+        case OP_less_eql:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
+            if (IntValue() <= right->IntValue()) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator-() const
-{
-    return std::shared_ptr<AstInteger>(new AstInteger(-IntValue(), m_location));
-}
+        case OP_greater_eql:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
+            if (IntValue() >= right->IntValue()) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator~() const
-{
-    return std::shared_ptr<AstInteger>(new AstInteger(~IntValue(), m_location));
-}
+        case OP_equals:
+            if (!right->IsNumber()) {
+                return nullptr;
+            }
+            if (IntValue() == right->IntValue()) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            }
 
-std::shared_ptr<AstConstant> AstInteger::operator!() const
-{
-    if (IntValue() == 0) {
-        return std::shared_ptr<AstTrue>(new AstTrue(m_location));
-    } else {
-        return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+        case OP_negative:
+            return std::shared_ptr<AstInteger>(new AstInteger(-IntValue(), m_location));
+
+        case OP_bitwise_complement:
+            return std::shared_ptr<AstInteger>(new AstInteger(~IntValue(), m_location));
+
+        case OP_logical_not:
+            if (IntValue() == 0) {
+                return std::shared_ptr<AstTrue>(new AstTrue(m_location));
+            } else {
+                return std::shared_ptr<AstFalse>(new AstFalse(m_location));
+            }
+
+        default:
+            return nullptr;
     }
 }

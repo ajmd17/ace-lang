@@ -89,9 +89,9 @@ std::shared_ptr<AstStatement> AstTupleExpression::Clone() const
     return CloneImpl();
 }
 
-int AstTupleExpression::IsTrue() const
+Tribool AstTupleExpression::IsTrue() const
 {
-    return 1;
+    return Tribool::True();
 }
 
 bool AstTupleExpression::MayHaveSideEffects() const

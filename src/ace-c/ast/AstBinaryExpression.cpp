@@ -227,8 +227,6 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                             // value is equal to 0, therefore it is false.
                             // load the label address from static memory into register 0
                             chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
-                        } else if (folded_value == 0) {
-                            // do not jump at all, only accept the code that it is true
                         }
                     }
 
@@ -253,12 +251,12 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 // jump to the VERY end (so we don't load 'false' value)
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
 
-                chunk->MarkLabel(false_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
                 
                 // here is where the value is false
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-                chunk->MarkLabel(true_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
             } else if (m_op->GetOperatorType() == Operators::OP_logical_or) {
                 uint8_t rp;
 
@@ -303,12 +301,13 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                         std::shared_ptr<AstExpression> tmp(new AstFalse(SourceLocation::eof));
                         
                         if (auto constant_folded = Optimizer::ConstantFold(second, tmp, Operators::OP_equals, visitor)) {
-                            int folded_value = constant_folded->IsTrue();
-                            folded = folded_value == 1 || folded_value == 0;
+                            Tribool folded_value = constant_folded->IsTrue();
 
-                            if (folded_value == 1) {
+                            if (folded_value == Tribool::True()) {
                                 // value is equal to 0
-                            } else if (folded_value == 0) {
+                                folded = true;
+                            } else if (folded_value == Tribool::False()) {
+                                folded = true;
                                 // value is equal to 1 so jump to end
                                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, true_label));
                             }
@@ -334,11 +333,11 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
 
                 // jump to the VERY end (so we don't load 'true' value)
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
-                chunk->MarkLabel(true_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
 
                 // here is where the value is true
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, true));
-                chunk->MarkLabel(false_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
             }
         } else if (m_op->GetType() == COMPARISON) {
             uint8_t rp;
@@ -436,12 +435,12 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
                 // jump to the false label, the value is false at this point
                 chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, false_label));
                 
-                chunk->MarkLabel(true_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(true_label));
 
                 // values are equal
                 chunk->Append(BytecodeUtil::Make<ConstBool>(rp, false));
 
-                chunk->MarkLabel(false_label);
+                chunk->Append(BytecodeUtil::Make<LabelMarker>(false_label));
             } else {
                 // load left-hand side into register
                 // right-hand side has been optimized away
@@ -523,7 +522,7 @@ Pointer<AstStatement> AstBinaryExpression::Clone() const
     return CloneImpl();
 }
 
-int AstBinaryExpression::IsTrue() const
+Tribool AstBinaryExpression::IsTrue() const
 {
     // if (m_member_access) {
     //     return m_member_access->IsTrue();
@@ -532,7 +531,7 @@ int AstBinaryExpression::IsTrue() const
             // the right was not optimized away,
             // therefore we cannot determine whether or
             // not this expression would be true or false.
-            return -1;
+            return Tribool::Indeterminate();
         }
 
         return m_left->IsTrue();

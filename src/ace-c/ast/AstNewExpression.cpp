@@ -115,7 +115,7 @@ Pointer<AstStatement> AstNewExpression::Clone() const
     return CloneImpl();
 }
 
-int AstNewExpression::IsTrue() const
+Tribool AstNewExpression::IsTrue() const
 {
     ASSERT(m_object_value != nullptr);
     return m_object_value->IsTrue();

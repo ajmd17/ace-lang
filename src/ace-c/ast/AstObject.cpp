@@ -199,9 +199,9 @@ Pointer<AstStatement> AstObject::Clone() const
     return CloneImpl();
 }
 
-int AstObject::IsTrue() const
+Tribool AstObject::IsTrue() const
 {
-    return 1;
+    return Tribool::True();
 }
 
 bool AstObject::MayHaveSideEffects() const

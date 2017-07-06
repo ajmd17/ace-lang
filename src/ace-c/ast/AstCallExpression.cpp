@@ -154,7 +154,7 @@ void AstCallExpression::Optimize(AstVisitor *visitor, Module *mod)
 
     // optimize each argument
     for (auto &arg : m_args) {
-        if (arg) {
+        if (arg != nullptr) {
             arg->Optimize(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
         }
     }
@@ -165,10 +165,10 @@ Pointer<AstStatement> AstCallExpression::Clone() const
     return CloneImpl();
 }
 
-int AstCallExpression::IsTrue() const
+Tribool AstCallExpression::IsTrue() const
 {
     // cannot deduce if return value is true
-    return -1;
+    return Tribool::Indeterminate();
 }
 
 bool AstCallExpression::MayHaveSideEffects() const

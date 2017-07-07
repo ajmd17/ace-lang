@@ -413,6 +413,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseImport();
         } else if (MatchKeyword(Keyword_let, false)) {
             res = ParseVariableDeclaration(true);
+        } else if (MatchKeyword(Keyword_const, false)) {
+            res = ParseVariableDeclaration(true);
         } else if (MatchKeyword(Keyword_func, false)) {
             if (MatchAhead(TK_IDENT, 1)) {
                 res = ParseFunctionDefinition();
@@ -662,7 +664,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
 
     Expect(TK_OPEN_PARENTH, true);
 
-    if (!Match(TK_CLOSE_PARENTH) && !Match(TK_IDENT) && !MatchKeyword(Keyword_self)) {
+    if (!Match(TK_CLOSE_PARENTH) && !Match(TK_IDENT) && !MatchKeyword(Keyword_self) && !MatchKeyword(Keyword_const)) {
         expr = ParseExpression(true);
         Expect(TK_CLOSE_PARENTH, true);
     } else {
@@ -672,9 +674,13 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
             m_token_stream->SetPosition(before_pos);
             expr = ParseFunctionExpression(false, ParseFunctionParameters());
         } else {
-            expr = ParseExpression(true);
-
             bool found_function_token = false;
+
+            if (MatchKeyword(Keyword_const) || MatchKeyword(Keyword_let)) {
+                found_function_token = true;
+            } else {
+                expr = ParseExpression(true);
+            }
 
             if (Match(TK_COMMA) ||
                 Match(TK_COLON) ||
@@ -1550,13 +1556,19 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
 {
     const SourceLocation location = CurrentLocation();
 
-    if (require_keyword) {
-        if (!ExpectKeyword(Keyword_let, true)) {
-            return nullptr;
-        }
+    bool is_const = false; // TODO make this do something
+
+    if (MatchKeyword(Keyword_const, true)) {
+        is_const = true;
     } else {
-        // match and read in the case that it is found
-        MatchKeyword(Keyword_let, true);
+        if (require_keyword) {
+            if (!ExpectKeyword(Keyword_let, true)) {
+                return nullptr;
+            }
+        } else {
+            // match and read in the case that it is found
+            MatchKeyword(Keyword_let, true);
+        }
     }
 
     Token identifier = Token::EMPTY;
@@ -1597,6 +1609,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
             identifier.GetValue(),
             type_spec,
             assignment,
+            is_const,
             location
         ));
     }
@@ -1854,8 +1867,16 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
 
             if (Match(TK_CLOSE_PARENTH, false)) {
                 keep_reading = false;
-            } else if ((token = MatchKeyword(Keyword_self, true)) ||
-                       (token = Expect(TK_IDENT, true)))
+                break;
+            }
+
+            bool is_const = false;
+
+            if (MatchKeyword(Keyword_const, true)) {
+                is_const = true;
+            }
+            
+            if ((token = MatchKeyword(Keyword_self, true)) || (token = Expect(TK_IDENT, true)))
             {
                 std::shared_ptr<AstTypeSpecification> type_spec;
                 std::shared_ptr<AstExpression> default_param;
@@ -1892,6 +1913,7 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
                     type_spec,
                     default_param,
                     is_variadic,
+                    is_const,
                     token.GetLocation()
                 )));
 
@@ -2001,6 +2023,8 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                                     identifier.GetValue(),
                                     nullptr,
                                     expr,
+                                    true, // (free functions are also implicitly const,
+                                          // so set the member to be const as well for consistency)
                                     identifier.GetLocation()
                                 ));
 

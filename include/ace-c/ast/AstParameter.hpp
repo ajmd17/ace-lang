@@ -11,6 +11,7 @@ public:
         const std::shared_ptr<AstTypeSpecification> &type_spec,
         const std::shared_ptr<AstExpression> &default_param,
         bool is_variadic,
+        bool is_const,
         const SourceLocation &location);
     virtual ~AstParameter() = default;
 
@@ -23,12 +24,14 @@ public:
     
     virtual Pointer<AstStatement> Clone() const override;
 
-    bool IsVariadic() const { return m_is_variadic; }
+    inline bool IsVariadic() const { return m_is_variadic; }
+    inline bool IsConst() const { return m_is_const; }
 
 private:
     std::shared_ptr<AstTypeSpecification> m_type_spec;
     std::shared_ptr<AstExpression> m_default_param;
     bool m_is_variadic;
+    bool m_is_const;
 
     inline Pointer<AstParameter> CloneImpl() const
     {
@@ -37,6 +40,7 @@ private:
             CloneAstNode(m_type_spec),
             CloneAstNode(m_default_param),
             m_is_variadic,
+            m_is_const,
             m_location
         ));
     }

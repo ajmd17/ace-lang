@@ -1,4 +1,5 @@
 #include <ace-vm/Object.hpp>
+#include <ace-vm/HeapValue.hpp>
 
 #include <common/my_assert.hpp>
 #include <common/hasher.hpp>
@@ -223,7 +224,13 @@ void Object::GetRepresentation(std::stringstream &ss, bool add_type_name) const
         ss << m_type_ptr->GetMemberName(i);
         ss << "\":";
 
-        mem.value.ToRepresentation(ss, add_type_name);
+        if (mem.value.m_type == Value::HEAP_POINTER &&
+            mem.value.m_value.ptr != nullptr &&
+            mem.value.m_value.ptr->GetRawPointer<void>() == (void*)this) {
+            ss << "<circular reference>";
+        } else {
+            mem.value.ToRepresentation(ss, add_type_name);
+        }
 
         if (i != size - 1) {
             ss << ',';

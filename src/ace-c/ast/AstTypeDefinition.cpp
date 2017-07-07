@@ -115,6 +115,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                         event_items,
                         m_location
                     )),
+                    false,
                     m_location
                 )));
             }

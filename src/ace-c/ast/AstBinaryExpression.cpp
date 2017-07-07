@@ -81,9 +81,23 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 
             visitor->GetCompilationUnit()->GetErrorList().AddError(error);
         }
-
+        
+        // make sure we are not modifying a const
+        if (AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get())) {
+            if (left_as_var->GetProperties().GetIdentifier() != nullptr) {
+                if (left_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_const_modified,
+                        m_left->GetLocation(),
+                        left_as_var->GetName()
+                    ));
+                }
+            }
+        }
+        
+        // make sure left hand side is suitable for assignment
         if (!(m_left->GetAccessOptions() & AccessMode::ACCESS_MODE_STORE)) {
-            // cannot modify an rvalue
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                 LEVEL_ERROR,
                 Msg_cannot_modify_rvalue,
@@ -607,6 +621,7 @@ std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaratio
                 var_name,
                 nullptr,
                 m_right,
+                false,
                 m_left->GetLocation()
             ));
         }

@@ -88,7 +88,7 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
     if (AstVariable *expr_as_var = dynamic_cast<AstVariable*>(expr.get())) {
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
-        if (expr_as_var->GetProperties().GetIdentifier()) {
+        if (expr_as_var->GetProperties().GetIdentifier() != nullptr) {
             if (expr_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                 // the variable is a const, now we make sure that the current
                 // value is a literal value

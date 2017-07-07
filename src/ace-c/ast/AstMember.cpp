@@ -33,6 +33,8 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_target != nullptr);
     m_target->Visit(visitor, mod);
+
+    m_access_options = m_target->GetAccessOptions();
     
     m_target_type = m_target->GetSymbolType();
     ASSERT(m_target_type != nullptr);

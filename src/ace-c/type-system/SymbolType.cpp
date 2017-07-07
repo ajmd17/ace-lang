@@ -236,6 +236,10 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
 
             return false;
         }
+        
+        case TYPE_USER_DEFINED:
+            return false;
+
         case TYPE_GENERIC_PARAMETER: {
             if (auto sp = m_generic_param_info.m_substitution.lock()) {
                 return sp->TypeCompatible(right, strict_numbers);
@@ -339,7 +343,7 @@ SymbolTypePtr_t SymbolType::Object(const std::string &name,
 {
     SymbolTypePtr_t symbol_type(new SymbolType(
         name,
-        TYPE_BUILTIN,
+        TYPE_USER_DEFINED,
         BuiltinTypes::OBJECT,
         nullptr,
         members

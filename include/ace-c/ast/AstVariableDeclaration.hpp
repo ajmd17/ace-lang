@@ -13,11 +13,13 @@ public:
     AstVariableDeclaration(const std::string &name,
         const std::shared_ptr<AstTypeSpecification> &type_specification,
         const std::shared_ptr<AstExpression> &assignment,
+        bool is_const,
         const SourceLocation &location);
     virtual ~AstVariableDeclaration() = default;
 
     inline const std::shared_ptr<AstExpression> &GetAssignment() const
         { return m_assignment; }
+    inline bool IsConst() const { return m_is_const; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override;
@@ -28,6 +30,7 @@ public:
 protected:
     std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstExpression> m_assignment;
+    bool m_is_const;
 
     // set while analyzing
     bool m_assignment_already_visited;
@@ -41,6 +44,7 @@ protected:
             m_name,
             CloneAstNode(m_type_specification),
             CloneAstNode(m_assignment),
+            m_is_const,
             m_location
         ));
     }

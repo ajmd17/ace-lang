@@ -38,6 +38,11 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 // if alias, accept the current value instead
                 current_value->Visit(visitor, mod);
             } else {
+                if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST) {
+                    // for const, set access options to only load
+                    AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
+                }
+
                 m_properties.GetIdentifier()->IncUseCount();
 
                 if (m_properties.IsInFunction()) {
@@ -132,13 +137,34 @@ std::unique_ptr<Buildable> AstVariable::Build(AstVisitor *visitor, Module *mod)
     } else {
         ASSERT(m_properties.GetIdentifier() != nullptr);
 
-        // if alias
-        if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS) {
-            const std::shared_ptr<AstExpression> &current_value =
-                m_properties.GetIdentifier()->GetCurrentValue();
+        // if alias or const, load direct value.
+        // if it's an alias then it will just refer to whatever other variable
+        // is being referenced. if it is const, load the direct value held in the variable
+        const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
 
+        const bool is_alias = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS;
+        const bool is_const = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST;
+
+        // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
+        // normal way.
+        bool should_load_inline = false;
+
+        if (is_alias) {
             ASSERT(current_value != nullptr);
+            should_load_inline = true;
+        } else if (is_const) {
+            if (current_value != nullptr) {
+                const SymbolTypePtr_t current_value_type = current_value->GetSymbolType();
+                if (current_value_type != nullptr) {
+                    // only load basic types inline.
+                    if (current_value_type->GetTypeClass() == SymbolTypeClass::TYPE_BUILTIN) {
+                        should_load_inline = true;
+                    }
+                }
+            }
+        }
 
+        if (should_load_inline) {
             // if alias, accept the current value instead
             const AccessMode current_access_mode = current_value->GetAccessMode();
             current_value->SetAccessMode(m_access_mode);
@@ -196,7 +222,7 @@ Pointer<AstStatement> AstVariable::Clone() const
 
 Tribool AstVariable::IsTrue() const
 {
-    if (m_properties.GetIdentifier()) {
+    if (m_properties.GetIdentifier() != nullptr) {
         // we can only check if this is true during
         // compile time if it is const literal
         if (m_properties.GetIdentifier()->GetFlags() & FLAG_CONST) {

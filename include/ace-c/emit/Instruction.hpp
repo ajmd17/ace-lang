@@ -660,7 +660,7 @@ struct BinOp final : public Instruction {
     }
 };
 
-template<class...Args>
+template <class...Args>
 struct RawOperation final : public Instruction {
     std::vector<char> data;
 

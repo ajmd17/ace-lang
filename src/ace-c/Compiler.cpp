@@ -99,7 +99,7 @@ std::unique_ptr<Buildable> Compiler::StoreMemberFromHash(AstVisitor *visitor, Mo
     uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
     auto instr_mov_mem_hash = BytecodeUtil::Make<StorageOperation>();
-    instr_mov_mem_hash->GetBuilder().Store(rp).Member(rp).ByHash(hash);
+    instr_mov_mem_hash->GetBuilder().Store(rp - 1).Member(rp).ByHash(hash);
     return std::move(instr_mov_mem_hash);
 }
 

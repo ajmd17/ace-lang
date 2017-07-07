@@ -111,6 +111,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             nullptr,
             nullptr,
             false,
+            false,
             m_location
         ));
     }
@@ -122,6 +123,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 "__generator_callback",
                 nullptr,
                 nullptr,
+                false,
                 false,
                 m_location
             )) },

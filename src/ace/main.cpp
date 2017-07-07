@@ -1505,14 +1505,14 @@ static int REPL(
                 std::unique_ptr<BytecodeChunk> bc = compiler.Compile();
                 ASSERT(bc != nullptr);
 
-                /* TESTING SERIALIZATION! */
+                /*// TESTING SERIALIZATION!
                 std::ofstream os("serialized.ir.json");
                 BytecodeUtil::StoreSerialized(os, bc);
                 os.close();
                 // load
                 std::ifstream is("serialized.ir.json");
                 std::unique_ptr<BytecodeChunk> bc2 = BytecodeUtil::LoadSerialized(is);
-                is.close();
+                is.close();*/
                 
                 // get active register
                 int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();

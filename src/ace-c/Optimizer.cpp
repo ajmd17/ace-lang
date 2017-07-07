@@ -89,17 +89,32 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
         if (expr_as_var->GetProperties().GetIdentifier() != nullptr) {
-            if (expr_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
+            const auto &current_value = expr_as_var->GetProperties().GetIdentifier()->GetCurrentValue();
+            
+            if (current_value != nullptr) {
+                SymbolTypePtr_t current_value_type = current_value->GetSymbolType();
+                ASSERT(current_value_type != nullptr);
+
+                if (current_value_type->IsConstType()) {
+                    if (auto *constant = dynamic_cast<AstConstant*>(current_value.get())) {
+                        // yay! we were able to retrieve the value that
+                        // the variable is set to, so now we can use that
+                        // at compile-time rather than using a variable.
+                        expr.reset(constant);
+                    }
+                }
+            }
+
+            /*if (expr_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                 // the variable is a const, now we make sure that the current
                 // value is a literal value
-                if (auto *constant = dynamic_cast<AstConstant*>(
-                    expr_as_var->GetProperties().GetIdentifier()->GetCurrentValue().get())) {
+                if (auto *constant = dynamic_cast<AstConstant*>(current_value.get())) {
                     // yay! we were able to retrieve the value that
                     // the variable is set to, so now we can use that
                     // at compile-time rather than using a variable.
                     expr.reset(constant);
                 }
-            }
+            }*/
         }
     } else if (AstBinaryExpression *expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) {
         if (expr_as_binop->GetRight() == nullptr) {

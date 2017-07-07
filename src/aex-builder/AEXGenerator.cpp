@@ -101,6 +101,20 @@ void AEXGenerator::Visit(PopLocal *node)
     }
 }
 
+void AEXGenerator::Visit(LoadRef *node)
+{
+    m_ibs.Put(Instructions::LOAD_REF);
+    m_ibs.Put(node->dst);
+    m_ibs.Put(node->src);
+}
+
+void AEXGenerator::Visit(LoadDeref *node)
+{
+    m_ibs.Put(Instructions::LOAD_DEREF);
+    m_ibs.Put(node->dst);
+    m_ibs.Put(node->src);
+}
+
 void AEXGenerator::Visit(ConstI32 *node)
 {
     m_ibs.Put(Instructions::LOAD_I32);

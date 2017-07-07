@@ -38,7 +38,13 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 // if alias, accept the current value instead
                 current_value->Visit(visitor, mod);
             } else {
-                if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST) {
+                /*if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST) {
+                    // for const, set access options to only load
+                    AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
+                }*/
+                
+                ASSERT(m_properties.GetIdentifier()->GetSymbolType() != nullptr);
+                if (m_properties.GetIdentifier()->GetSymbolType()->IsConstType()) {
                     // for const, set access options to only load
                     AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
                 }

@@ -78,6 +78,8 @@ struct Value {
 
         BOOLEAN,
 
+        VALUE_REF,
+
         HEAP_POINTER,
         FUNCTION,
         NATIVE_FUNCTION,
@@ -94,7 +96,7 @@ struct Value {
 
         bool b;
 
-        const char *c_str;
+        Value *value_ref;
 
         HeapValue *ptr;
 

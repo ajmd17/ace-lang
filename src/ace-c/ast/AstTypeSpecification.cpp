@@ -138,7 +138,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                         }
                     }
                 } else {
-                    if (symbol_type->GetDefaultValue()) {
+                    if (symbol_type->GetDefaultValue() != nullptr) {
                         // if generics have a default value,
                         // allow user to omit parameters
                         m_symbol_type = symbol_type;

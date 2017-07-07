@@ -50,18 +50,31 @@ void VM::Print(const Value &value)
         case Value::I32:
             utf::printf(UTF8_CSTR("%d"), value.m_value.i32);
             break;
+
         case Value::I64:
             utf::printf(UTF8_CSTR("%" PRId64), value.m_value.i64);
             break;
+
         case Value::F32:
             utf::printf(UTF8_CSTR("%g"), value.m_value.f);
             break;
+
         case Value::F64:
             utf::printf(UTF8_CSTR("%g"), value.m_value.d);
             break;
+
         case Value::BOOLEAN:
             utf::fputs(value.m_value.b ? UTF8_CSTR("true") : UTF8_CSTR("false"), stdout);
             break;
+
+        case Value::VALUE_REF:
+            if (value.m_value.value_ref == nullptr) {
+                utf::fputs(UTF8_CSTR("null"), stdout);
+            } else {
+                VM::Print(*value.m_value.value_ref);
+            }
+            break;
+
         case Value::HEAP_POINTER: {
             if (value.m_value.ptr == nullptr) {
                 // special case for null pointers
@@ -115,6 +128,7 @@ void VM::Print(const Value &value)
 
             break;
         }
+
         default: utf::cout << value.GetTypeString(); break;
     }
 }
@@ -606,6 +620,30 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
             );
 
             break;
+        }
+        case LOAD_REF: {
+            bc_reg_t dst_reg;
+            bc_reg_t src_reg;
+
+            bs->Read(&dst_reg);
+            bs->Read(&src_reg);
+
+            handler->LoadRef(
+                dst_reg,
+                src_reg
+            );
+        }
+        case LOAD_DEREF: {
+            bc_reg_t dst_reg;
+            bc_reg_t src_reg;
+
+            bs->Read(&dst_reg);
+            bs->Read(&src_reg);
+
+            handler->LoadDeref(
+                dst_reg,
+                src_reg
+            );
         }
         case LOAD_NULL: {
             bc_reg_t reg; bs->Read(&reg);

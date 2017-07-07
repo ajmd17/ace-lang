@@ -104,6 +104,13 @@ const SymbolTypePtr_t BuiltinTypes::MAYBE = SymbolType::Generic(
     GenericTypeInfo { 1 }
 );
 
+const SymbolTypePtr_t BuiltinTypes::CONST_TYPE = SymbolType::Generic(
+    "Const",
+    nullptr,
+    {},
+    GenericTypeInfo { 1 }
+);
+
 const SymbolTypePtr_t BuiltinTypes::NULL_TYPE = SymbolType::Primitive(
     "Null",
     sp<AstNil>(new AstNil(SourceLocation::eof))

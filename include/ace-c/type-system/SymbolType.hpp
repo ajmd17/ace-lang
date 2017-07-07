@@ -172,7 +172,9 @@ public:
     inline void SetId(int id) { m_id = id; }
 
     bool TypeEqual(const SymbolType &other) const;
-    bool TypeCompatible(const SymbolType &other, bool strict_numbers) const;
+    bool TypeCompatible(const SymbolType &other,
+        bool strict_numbers,
+        bool strict_const = false) const;
 
     inline bool operator==(const SymbolType &other) const { return TypeEqual(other); }
     inline bool operator!=(const SymbolType &other) const { return !operator==(other); }
@@ -180,6 +182,7 @@ public:
     bool FindMember(const std::string &name, SymbolMember_t &out) const;
     
     bool IsArrayType() const;
+    bool IsConstType() const;
 
 private:
     std::string m_name;

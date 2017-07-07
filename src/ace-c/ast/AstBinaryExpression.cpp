@@ -83,7 +83,15 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         }
         
         // make sure we are not modifying a const
-        if (AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get())) {
+        if (left_type->IsConstType()) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_const_modified,
+                m_left->GetLocation()
+            ));
+        }
+
+        /*if (AstVariable *left_as_var = dynamic_cast<AstVariable*>(m_left.get())) {
             if (left_as_var->GetProperties().GetIdentifier() != nullptr) {
                 if (left_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
                     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
@@ -94,7 +102,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
                     ));
                 }
             }
-        }
+        }*/
         
         // make sure left hand side is suitable for assignment
         if (!(m_left->GetAccessOptions() & AccessMode::ACCESS_MODE_STORE)) {

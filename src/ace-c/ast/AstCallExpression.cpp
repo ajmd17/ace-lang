@@ -101,9 +101,6 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         m_location
     );
 
-    // change args to be newly ordered vector
-    m_args = substituted.second;
-
     if (substituted.first == nullptr) {
         // not a function type
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
@@ -114,6 +111,8 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         ));
     } else {
         m_return_type = substituted.first;
+        // change args to be newly ordered vector
+        m_args = substituted.second;
     }
 }
 

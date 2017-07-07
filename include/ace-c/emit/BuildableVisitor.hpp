@@ -19,6 +19,8 @@ public:
     virtual void Visit(Return *) = 0;
     virtual void Visit(StoreLocal *) = 0;
     virtual void Visit(PopLocal *) = 0;
+    virtual void Visit(LoadRef *) = 0;
+    virtual void Visit(LoadDeref *) = 0;
     virtual void Visit(ConstI32 *) = 0;
     virtual void Visit(ConstI64 *) = 0;
     virtual void Visit(ConstF32 *) = 0;

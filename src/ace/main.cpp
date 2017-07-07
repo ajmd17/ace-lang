@@ -25,7 +25,6 @@
 #include <ace-c/Parser.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/dis/DecompilationUnit.hpp>
-#include <ace-c/emit/cppgen/CppGenerator.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
@@ -1754,9 +1753,9 @@ void HandleArgs(
             if (bc != nullptr) {
                 if (native_mode) {
                     // generate cpp code file
-                    CppGenerator cppgen;
+                    /*CppGenerator cppgen;
 
-                    /*cppgen << compilation_unit.GetInstructionStream();
+                    cppgen << compilation_unit.GetInstructionStream();
                     utf::cout << "Gen cpp: \n" << cppgen << "\n";*/
                     ASSERT_MSG(false, "Removed");
 

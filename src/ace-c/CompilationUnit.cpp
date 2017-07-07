@@ -30,6 +30,7 @@ CompilationUnit::CompilationUnit()
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::ARRAY);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::TUPLE);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::MAYBE);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::CONST_TYPE);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::NULL_TYPE);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT_ARRAY);

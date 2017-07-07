@@ -68,7 +68,7 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
 
 SymbolTypePtr_t AstIdentifier::GetSymbolType() const
 {
-    if (m_properties.GetIdentifier()) {
+    if (m_properties.GetIdentifier() != nullptr) {
         return m_properties.GetIdentifier()->GetSymbolType();
     }
 

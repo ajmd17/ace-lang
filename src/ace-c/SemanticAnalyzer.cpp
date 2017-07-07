@@ -172,7 +172,7 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
                 std::vector<ArgDataPair> unnamed_args;
 
                 // sort into two separate buckets
-                for (int i = 0; i < args.size(); i++) {
+                for (size_t i = 0; i < args.size(); i++) {
                     ASSERT(args[i] != nullptr);
 
                     ArgInfo arg_info;
@@ -250,7 +250,6 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
                         );
                         
                         if (found_index == -1 || found_index >= res_args.size()) {
-
                             used_indices.insert(res_args.size());
                             // at end, push
                             res_args.push_back(std::get<1>(arg));

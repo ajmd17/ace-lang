@@ -130,6 +130,8 @@ enum Instructions : char {
     LOAD_MEM,      // load_mem      [% reg, % src, u8 idx]
     LOAD_MEM_HASH, // load_mem_hash [% reg, % src, u32 hash]
     LOAD_ARRAYIDX, // load_arrayidx [% reg, % src, % idx]
+    LOAD_REF,      // load_ref      [% reg, % src]
+    LOAD_DEREF,    // load_deref    [% reg, % src]
     LOAD_NULL,     // load_null     [% reg]
     LOAD_TRUE,     // load_true     [% reg]
     LOAD_FALSE,    // load_false    [% reg]

@@ -14,18 +14,10 @@ namespace ace {
 namespace vm {
 
 static const ImmutableString NULL_STRING = ImmutableString("null");
-
 static const ImmutableString BOOLEAN_STRINGS[2] = {
     ImmutableString("false"),
     ImmutableString("true")
 };
-
-/*Value::Value()
-    : m_type(HEAP_POINTER)
-{
-    // initialize to null reference
-    m_value.ptr = nullptr;
-}*/
 
 Value::Value(const Value &other)
     : m_type(other.m_type),
@@ -35,28 +27,38 @@ Value::Value(const Value &other)
 
 void Value::Mark()
 {
-    HeapValue *ptr = m_value.ptr;
-    
-    if (m_type == Value::HEAP_POINTER && ptr != nullptr && !(ptr->GetFlags() & GC_MARKED)) {
-        if (Object *object = ptr->GetPointer<Object>()) {
-            const vm::TypeInfo *type_ptr = object->GetTypePtr();
-            ASSERT(type_ptr != nullptr);
+    switch (m_type) {
+        case Value::VALUE_REF:
+            ASSERT(m_value.value_ref != nullptr);
+            m_value.value_ref->Mark();
+            break;
+        
+        case Value::HEAP_POINTER: {
+            HeapValue *ptr = m_value.ptr;
+            if (ptr != nullptr && !(ptr->GetFlags() & GC_MARKED)) {
+                if (Object *object = ptr->GetPointer<Object>()) {
+                    const vm::TypeInfo *type_ptr = object->GetTypePtr();
+                    ASSERT(type_ptr != nullptr);
 
-            const size_t size = type_ptr->GetSize();
-            for (size_t i = 0; i < size; i++) {
-                object->GetMember(i).value.Mark();
-            }
+                    const size_t size = type_ptr->GetSize();
+                    for (size_t i = 0; i < size; i++) {
+                        object->GetMember(i).value.Mark();
+                    }
 
-            // mark the type
-            object->GetTypePtrValue().Mark();
-        } else if (Array *array = ptr->GetPointer<Array>()) {
-            const size_t size = array->GetSize();
-            for (int i = 0; i < size; i++) {
-                array->AtIndex(i).Mark();
+                    // mark the type
+                    object->GetTypePtrValue().Mark();
+                } else if (Array *array = ptr->GetPointer<Array>()) {
+                    const size_t size = array->GetSize();
+                    for (int i = 0; i < size; i++) {
+                        array->AtIndex(i).Mark();
+                    }
+                }
+
+                ptr->GetFlags() |= GC_MARKED;
             }
         }
 
-        ptr->GetFlags() |= GC_MARKED;
+        default: break;
     }
 }
 
@@ -68,8 +70,12 @@ const char *Value::GetTypeString() const
         case F32: // fallthrough
         case F64: return "Float";
         case BOOLEAN: return "Boolean";
+        case VALUE_REF:
+            ASSERT(m_value.value_ref != nullptr);
+            return m_value.value_ref->GetTypeString();
+
         case HEAP_POINTER: 
-            if (!m_value.ptr) {
+            if (m_value.ptr == nullptr) {
                 return "Null";
             } else if (m_value.ptr->GetPointer<ImmutableString>()) {
                 return "String";
@@ -80,14 +86,13 @@ const char *Value::GetTypeString() const
                 return object->GetTypePtr()->GetName();
             }
             return "Object";
+            
         case FUNCTION: return "Function";
         case NATIVE_FUNCTION: return "NativeFunction";
         case ADDRESS: return "Address";
         case FUNCTION_CALL: return "FunctionCallInfo";
         case TRY_CATCH_INFO: return "TryCatchInfo";
-        default: {
-            return "??";
-        }
+        default: return "??";
     }
 }
 
@@ -101,6 +106,7 @@ ImmutableString Value::ToString() const
             int n = snprintf(buf, buf_size, "%d", m_value.i32);
             return ImmutableString(buf, n);
         }
+
         case Value::I64: {
             int n = snprintf(
                 buf,
@@ -110,6 +116,7 @@ ImmutableString Value::ToString() const
             );
             return ImmutableString(buf, n);
         }
+
         case Value::F32: {
             int n = snprintf(
                 buf,
@@ -119,6 +126,7 @@ ImmutableString Value::ToString() const
             );
             return ImmutableString(buf, n);
         }
+
         case Value::F64: {
             int n = snprintf(
                 buf,
@@ -128,10 +136,16 @@ ImmutableString Value::ToString() const
             );
             return ImmutableString(buf, n);
         }
+
         case Value::BOOLEAN:
             return BOOLEAN_STRINGS[m_value.b];
+
+        case Value::VALUE_REF:
+            ASSERT(m_value.value_ref != nullptr);
+            return m_value.value_ref->ToString();
+
         case Value::HEAP_POINTER: {
-            if (!m_value.ptr) {
+            if (m_value.ptr == nullptr) {
                 return NULL_STRING;
             } else if (ImmutableString *string = m_value.ptr->GetPointer<ImmutableString>()) {
                 return *string;
@@ -153,16 +167,21 @@ ImmutableString Value::ToString() const
 
             break;
         }
-        default:
-            return ImmutableString(GetTypeString());
+
+        default: return ImmutableString(GetTypeString());
     }
 }
 
 void Value::ToRepresentation(std::stringstream &ss, bool add_type_name) const
 {
     switch (m_type) {
+        case Value::VALUE_REF:
+            ASSERT(m_value.value_ref != nullptr);
+            m_value.value_ref->ToRepresentation(ss, add_type_name);
+            return;
+
         case Value::HEAP_POINTER:
-            if (!m_value.ptr) {
+            if (m_value.ptr == nullptr) {
                 ss << "null";
             } else if (ImmutableString *string = m_value.ptr->GetPointer<ImmutableString>()) {
                 ss << '\"';

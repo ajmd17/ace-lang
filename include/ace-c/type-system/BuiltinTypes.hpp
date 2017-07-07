@@ -20,6 +20,7 @@ struct BuiltinTypes {
     static const SymbolTypePtr_t TUPLE;
     static const SymbolTypePtr_t VAR_ARGS;
     static const SymbolTypePtr_t MAYBE;
+    static const SymbolTypePtr_t CONST_TYPE;
     static const SymbolTypePtr_t NULL_TYPE;
     static const SymbolTypePtr_t EVENT;
     static const SymbolTypePtr_t EVENT_IMPL;

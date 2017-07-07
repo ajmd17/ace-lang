@@ -89,7 +89,15 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     if (m_op->ModifiesValue()) {
-        if (AstVariable *target_as_var = dynamic_cast<AstVariable*>(m_target.get())) {
+        if (type->IsConstType()) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_const_modified,
+                m_target->GetLocation()
+            ));
+        }
+
+        /*if (AstVariable *target_as_var = dynamic_cast<AstVariable*>(m_target.get())) {
             if (target_as_var->GetProperties().GetIdentifier() != nullptr) {
                 // make sure we are not modifying a const
                 if (target_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
@@ -101,7 +109,7 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
                     ));
                 }
             }
-        } else {
+        } else*/ if (!(m_target->GetAccessOptions() & AccessMode::ACCESS_MODE_STORE)) {
             // cannot modify an rvalue
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                 LEVEL_ERROR,

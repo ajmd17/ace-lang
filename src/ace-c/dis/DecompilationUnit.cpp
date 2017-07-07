@@ -444,6 +444,44 @@ void DecompilationUnit::DecodeNext(
 
         break;
     }
+    case LOAD_REF:
+    {
+        uint8_t src_reg;
+        uint8_t dst_reg;
+
+        bs.Read(&src_reg);
+        bs.Read(&dst_reg);
+
+        if (os != nullptr) {
+            (*os)
+                << "load_ref ["
+                    << "%" << (int)dst_reg << ", "
+                    << "%" << (int)src_reg
+                << "]"
+                << std::endl;
+        }
+
+        break;
+    }
+    case LOAD_DEREF:
+    {
+        uint8_t src_reg;
+        uint8_t dst_reg;
+
+        bs.Read(&src_reg);
+        bs.Read(&dst_reg);
+
+        if (os != nullptr) {
+            (*os)
+                << "load_deref ["
+                    << "%" << (int)dst_reg << ", "
+                    << "%" << (int)src_reg
+                << "]"
+                << std::endl;
+        }
+
+        break;
+    }
     case LOAD_NULL:
     {
         uint8_t reg;

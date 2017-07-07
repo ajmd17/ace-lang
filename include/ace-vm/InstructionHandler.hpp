@@ -315,6 +315,22 @@ struct InstructionHandler {
         thread->m_regs[dst_reg] = array->AtIndex(key.index);
     }
 
+    inline void LoadRef(bc_reg_t dst_reg, bc_reg_t src_reg)
+    {
+        Value &src = thread->m_regs[dst_reg];
+        src.m_type = Value::VALUE_REF;
+        src.m_value.value_ref = &thread->m_regs[src_reg];
+    }
+
+    inline void LoadDeref(bc_reg_t dst_reg, bc_reg_t src_reg)
+    {
+        Value &src = thread->m_regs[src_reg];
+        ASSERT_MSG(src.m_type == Value::VALUE_REF, "Value type must be VALUE_REF in order to deref");
+        ASSERT(src.m_value.value_ref != nullptr);
+
+        thread->m_regs[dst_reg] = *src.m_value.value_ref;
+    }
+
     inline void LoadNull(bc_reg_t reg)
     {
         Value &sv = thread->m_regs[reg];

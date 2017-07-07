@@ -292,6 +292,74 @@ struct PopLocal : public Buildable {
     size_t amt;
 };
 
+struct LoadRef : public Buildable {
+    RegIndex dst;
+    RegIndex src;
+
+    LoadRef() = default;
+    LoadRef(RegIndex dst, RegIndex src)
+        : dst(dst),
+          src(src)
+    {
+    }
+
+    virtual ~LoadRef() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(dst)
+            + sizeof(src);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_REF);
+        buf.sputc(dst);
+        buf.sputc(src);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(dst), CEREAL_NVP(src));
+    }
+};
+
+struct LoadDeref : public Buildable {
+    RegIndex dst;
+    RegIndex src;
+
+    LoadDeref() = default;
+    LoadDeref(RegIndex dst, RegIndex src)
+        : dst(dst),
+          src(src)
+    {
+    }
+
+    virtual ~LoadDeref() = default;
+
+    virtual size_t GetSize() const override
+    {
+        return sizeof(Opcode)
+            + sizeof(dst)
+            + sizeof(src);
+    }
+
+    virtual void Build(Buffer &buf, BuildParams &build_params) const override
+    {
+        buf.sputc(Instructions::LOAD_DEREF);
+        buf.sputc(dst);
+        buf.sputc(src);
+    }
+
+    template <class Archive>
+    void Serialize(Archive &archive)
+    {
+        archive(CEREAL_NVP(dst), CEREAL_NVP(src));
+    }
+};
+
 struct ConstI32 : public Buildable {
     RegIndex reg;
     int32_t value;

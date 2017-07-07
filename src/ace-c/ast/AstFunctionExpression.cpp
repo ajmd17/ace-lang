@@ -319,10 +319,10 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             "Closure",
             closure_obj_members
         );
-
-        ASSERT(m_closure_type->GetDefaultValue() != nullptr);
         
         visitor->GetCompilationUnit()->RegisterType(m_closure_type);
+
+        ASSERT(m_closure_type->GetDefaultValue() != nullptr);
 
         // builtin members:
         m_closure_object = m_closure_type->GetDefaultValue();

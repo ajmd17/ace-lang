@@ -132,7 +132,8 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
     return true;
 }
 
-bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) const
+bool SymbolType::TypeCompatible(const SymbolType &right,
+    bool strict_numbers, bool strict_const) const
 {
     if (TypeEqual(right)) {
         return true;
@@ -212,6 +213,20 @@ bool SymbolType::TypeCompatible(const SymbolType &right, bool strict_numbers) co
                         );
                     }
                 }
+                // allow boxing/unboxing for 'Const(T)' type
+                else if (base->TypeEqual(*BuiltinTypes::CONST_TYPE)) {
+                    // strict_const means you can't assign a const (left) to non-const (right)
+                    if (strict_const) {
+                        return false;
+                    }
+
+                    const SymbolTypePtr_t &held_type = m_generic_instance_info.m_generic_args[0].m_type;
+                    ASSERT(held_type != nullptr);
+                    return held_type->TypeCompatible(
+                        right,
+                        strict_numbers
+                    );
+                }
 
                 return false;
             }
@@ -287,6 +302,19 @@ bool SymbolType::IsArrayType() const
                 base == BuiltinTypes::VAR_ARGS) {
                 return true;
             }
+        }
+    }
+
+    return false;
+}
+
+bool SymbolType::IsConstType() const
+{
+    if (this == BuiltinTypes::CONST_TYPE.get()) {
+        return true;
+    } else if (m_type_class == TYPE_GENERIC_INSTANCE) {
+        if (const SymbolTypePtr_t base = m_base.lock()) {
+            return base == BuiltinTypes::CONST_TYPE;
         }
     }
 
@@ -413,8 +441,8 @@ SymbolTypePtr_t SymbolType::GenericInstance(
                     has_return_type = true;
                     return_type_name = generic_arg_type->GetName();
                 } else {
-                    name += generic_arg_name;
-                    name += ": ";
+                    //name += generic_arg_name;
+                    //name += ": ";
                     name += generic_arg_type->GetName();
                     if (i != info.m_generic_args.size() - 1) {
                         name += ", ";
@@ -495,9 +523,9 @@ SymbolTypePtr_t SymbolType::GenericInstance(
     ));
 
     auto default_value = base->GetDefaultValue();
-    if (!default_value) {
-        default_value.reset(new AstObject(res, SourceLocation::eof));
-    }
+    // if (default_value == nullptr) {
+    //     default_value.reset(new AstObject(res, SourceLocation::eof));
+    // }
 
     res->SetId(base->GetId());
     res->SetDefaultValue(default_value);
@@ -566,36 +594,36 @@ SymbolTypePtr_t SymbolType::TypePromotion(
         // T + Any = Any
         return BuiltinTypes::ANY;//lptr;
     } else if (lptr->TypeEqual(*BuiltinTypes::NUMBER)) {
-        return rptr->TypeEqual(*BuiltinTypes::INT) ||
-               rptr->TypeEqual(*BuiltinTypes::FLOAT)
+        return rptr->TypeCompatible(*BuiltinTypes::INT, true) ||
+               rptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
                ? BuiltinTypes::NUMBER
                : BuiltinTypes::UNDEFINED;
     } else if (lptr->TypeEqual(*BuiltinTypes::INT)) {
-        return rptr->TypeEqual(*BuiltinTypes::NUMBER) ||
-               rptr->TypeEqual(*BuiltinTypes::FLOAT)
+        return rptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
+               rptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
                ? (use_number ? BuiltinTypes::NUMBER : rptr)
                : BuiltinTypes::UNDEFINED;
     } else if (lptr->TypeEqual(*BuiltinTypes::FLOAT)) {
-        return rptr->TypeEqual(*BuiltinTypes::NUMBER) ||
-               rptr->TypeEqual(*BuiltinTypes::INT)
+        return rptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
+               rptr->TypeCompatible(*BuiltinTypes::INT, true)
                ? (use_number ? BuiltinTypes::NUMBER : lptr)
                : BuiltinTypes::UNDEFINED;
     } else if (rptr->TypeEqual(*BuiltinTypes::NUMBER)) {
-        return lptr->TypeEqual(*BuiltinTypes::INT) ||
-               lptr->TypeEqual(*BuiltinTypes::FLOAT)
+        return lptr->TypeCompatible(*BuiltinTypes::INT, true) ||
+               lptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
                ? BuiltinTypes::NUMBER
                : BuiltinTypes::UNDEFINED;
     } else if (rptr->TypeEqual(*BuiltinTypes::INT)) {
-        return lptr->TypeEqual(*BuiltinTypes::NUMBER) ||
-               lptr->TypeEqual(*BuiltinTypes::FLOAT)
+        return lptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
+               lptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
                ? (use_number ? BuiltinTypes::NUMBER : lptr)
                : BuiltinTypes::UNDEFINED;
     } else if (rptr->TypeEqual(*BuiltinTypes::FLOAT)) {
-        return lptr->TypeEqual(*BuiltinTypes::NUMBER) ||
-               lptr->TypeEqual(*BuiltinTypes::INT)
+        return lptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
+               lptr->TypeCompatible(*BuiltinTypes::INT, true)
                ? (use_number ? BuiltinTypes::NUMBER : rptr)
                : BuiltinTypes::UNDEFINED;
     }
 
-    return BuiltinTypes::UNDEFINED;
+    return lptr;//BuiltinTypes::UNDEFINED;
 }

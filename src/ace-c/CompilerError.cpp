@@ -34,6 +34,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_invalid_constructor, "invalid constructor" },
     { Msg_expected_type_got_identifier, "'%' is an identifier, expected a type" },
     { Msg_missing_type_and_assignment, "no type or assignment has been provided for '%'" },
+    { Msg_type_no_default_assignment, "type '%' has no default assignment" },
     { Msg_multiple_return_types, "function has more than one possible return type" },
     { Msg_mismatched_return_type, "function is marked to return '%', cannot return '%'" },
     { Msg_must_be_explicitly_marked_any, "function must be explicitly marked to return 'Any'" },

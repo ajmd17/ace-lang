@@ -163,6 +163,10 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                         generic_param_types
                     }
                 );
+
+                symbol_type->SetDefaultValue(std::shared_ptr<AstObject>(
+                    new AstObject(symbol_type, SourceLocation::eof)
+                ));
             }
 
             // register the main type

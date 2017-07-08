@@ -45,11 +45,13 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
         SymbolTypePtr_t field_type = nullptr;
 
         while (field_type == nullptr && m_target_type != nullptr) {
-            // allow boxing/unboxing for 'Maybe(T)' type
-            if (m_target_type->GetBaseType() != nullptr &&
-                m_target_type->GetBaseType()->TypeEqual(*BuiltinTypes::MAYBE))
-            {
-                m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+            // allow boxing/unboxing for Maybe(T), Const(T) types
+            if (m_target_type->GetBaseType() != nullptr) {
+                if (m_target_type->GetBaseType()->TypeEqual(*BuiltinTypes::MAYBE) ||
+                    m_target_type->GetBaseType()->TypeEqual(*BuiltinTypes::CONST_TYPE))
+                {
+                    m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                }
             }
 
             ASSERT(m_target_type != nullptr);

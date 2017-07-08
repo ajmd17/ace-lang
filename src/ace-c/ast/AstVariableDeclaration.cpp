@@ -61,10 +61,40 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
             // if no assignment provided, set the assignment to be the default value of the provided type
             if (m_real_assignment == nullptr) {
-                // Assign variable to the default value for the specified type.
-                m_real_assignment = symbol_type->GetDefaultValue();
-                // built-in assignment, turn off strict mode
-                is_type_strict = false;
+                if (symbol_type->GetDefaultValue() != nullptr) {
+                    // Assign variable to the default value for the specified type.
+                    m_real_assignment = symbol_type->GetDefaultValue();
+                    // built-in assignment, turn off strict mode
+                    is_type_strict = false;
+                } else {
+                    // no default assignment for this type
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_type_no_default_assignment,
+                        m_location,
+                        symbol_type->GetName()
+                    ));
+                }
+            }
+
+            // Unbox specific builtin generic types
+            // note that this is below the default assignment check,
+            // because these "box" types may have a default assignment of their own
+            // (or they may intentionally not have one)
+            // e.g Maybe(T) defaults to null, and Const(T) has no assignment.
+            
+            // TODO: make an Unbox() method or something like that,
+            // because this is used in multiple places
+            if (SymbolTypePtr_t base = symbol_type->GetBaseType()) {
+                // allow boxing/unboxing for Maybe(T) and Const(T) types
+                if (base->TypeEqual(*BuiltinTypes::MAYBE) ||
+                    base->TypeEqual(*BuiltinTypes::CONST_TYPE))
+                {
+                    const SymbolTypePtr_t &held_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                    ASSERT(held_type != nullptr);
+                    
+                    symbol_type = held_type;
+                }
             }
         }
 
@@ -83,7 +113,16 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     // symbol_type should be the user-specified type
                     ASSERT(symbol_type != nullptr);
 
-                    if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
+                    bool is_left_incomplete = false;
+
+                    switch (symbol_type->GetTypeClass()) {
+                        case TYPE_GENERIC:
+                            is_left_incomplete = true;
+                            break;
+                    }
+
+
+                    if (is_left_incomplete) {
                         // perform type promotion on incomplete generics.
                         // i.e: let x: Array = [1,2,3]
                         // will actually be of the type `Array(Int)`

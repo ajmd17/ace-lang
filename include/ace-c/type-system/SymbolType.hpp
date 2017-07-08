@@ -180,6 +180,10 @@ public:
     inline bool operator!=(const SymbolType &other) const { return !operator==(other); }
     const SymbolTypePtr_t FindMember(const std::string &name) const;
     bool FindMember(const std::string &name, SymbolMember_t &out) const;
+
+    /** Search the inheritance chain to see if the given type
+        is a base of this type. */
+    bool LookupBase(const SymbolType &base_type) const;
     
     bool IsArrayType() const;
     bool IsConstType() const;

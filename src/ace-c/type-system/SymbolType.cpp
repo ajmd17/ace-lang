@@ -159,7 +159,7 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
                 }
             } // equality would have already been checked
 
-            return false;
+            return right.TypeEqual(*BuiltinTypes::ANY);
         }
         case TYPE_GENERIC_INSTANCE: {
             SymbolTypePtr_t base = m_base.lock();
@@ -253,7 +253,8 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
         }
         
         case TYPE_USER_DEFINED:
-            return false;
+            // only allow incompatible assignment for the Any type
+            return right.TypeEqual(*BuiltinTypes::ANY);
 
         case TYPE_GENERIC_PARAMETER: {
             if (auto sp = m_generic_param_info.m_substitution.lock()) {
@@ -275,6 +276,17 @@ const SymbolTypePtr_t SymbolType::FindMember(const std::string &name) const
     }
 
     return nullptr;
+}
+
+bool SymbolType::LookupBase(const SymbolType &base_type) const
+{
+    while (SymbolTypePtr_t this_base = GetBaseType()) {
+        if (this_base->TypeEqual(base_type)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool SymbolType::FindMember(const std::string &name, SymbolMember_t &out) const
@@ -594,36 +606,36 @@ SymbolTypePtr_t SymbolType::TypePromotion(
         // T + Any = Any
         return BuiltinTypes::ANY;//lptr;
     } else if (lptr->TypeEqual(*BuiltinTypes::NUMBER)) {
-        return rptr->TypeCompatible(*BuiltinTypes::INT, true) ||
-               rptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
+        return rptr->TypeEqual(*BuiltinTypes::INT) ||
+               rptr->TypeEqual(*BuiltinTypes::FLOAT)
                ? BuiltinTypes::NUMBER
                : BuiltinTypes::UNDEFINED;
     } else if (lptr->TypeEqual(*BuiltinTypes::INT)) {
-        return rptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
-               rptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
+        return rptr->TypeEqual(*BuiltinTypes::NUMBER) ||
+               rptr->TypeEqual(*BuiltinTypes::FLOAT)
                ? (use_number ? BuiltinTypes::NUMBER : rptr)
                : BuiltinTypes::UNDEFINED;
     } else if (lptr->TypeEqual(*BuiltinTypes::FLOAT)) {
-        return rptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
-               rptr->TypeCompatible(*BuiltinTypes::INT, true)
+        return rptr->TypeEqual(*BuiltinTypes::NUMBER) ||
+               rptr->TypeEqual(*BuiltinTypes::INT)
                ? (use_number ? BuiltinTypes::NUMBER : lptr)
                : BuiltinTypes::UNDEFINED;
     } else if (rptr->TypeEqual(*BuiltinTypes::NUMBER)) {
-        return lptr->TypeCompatible(*BuiltinTypes::INT, true) ||
-               lptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
+        return lptr->TypeEqual(*BuiltinTypes::INT) ||
+               lptr->TypeEqual(*BuiltinTypes::FLOAT)
                ? BuiltinTypes::NUMBER
                : BuiltinTypes::UNDEFINED;
     } else if (rptr->TypeEqual(*BuiltinTypes::INT)) {
-        return lptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
-               lptr->TypeCompatible(*BuiltinTypes::FLOAT, true)
+        return lptr->TypeEqual(*BuiltinTypes::NUMBER) ||
+               lptr->TypeEqual(*BuiltinTypes::FLOAT)
                ? (use_number ? BuiltinTypes::NUMBER : lptr)
                : BuiltinTypes::UNDEFINED;
     } else if (rptr->TypeEqual(*BuiltinTypes::FLOAT)) {
-        return lptr->TypeCompatible(*BuiltinTypes::NUMBER, true) ||
-               lptr->TypeCompatible(*BuiltinTypes::INT, true)
+        return lptr->TypeEqual(*BuiltinTypes::NUMBER) ||
+               lptr->TypeEqual(*BuiltinTypes::INT)
                ? (use_number ? BuiltinTypes::NUMBER : rptr)
                : BuiltinTypes::UNDEFINED;
     }
 
-    return lptr;//BuiltinTypes::UNDEFINED;
+    return BuiltinTypes::UNDEFINED;
 }

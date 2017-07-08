@@ -33,19 +33,15 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(object_type != nullptr);
 
     // get default value
-    auto object_value = object_type->GetDefaultValue();
-    ASSERT(object_value != nullptr);
-    //if (auto object_value = object_type->GetDefaultValue()) {
-        bool has_args = m_arg_list != nullptr && !m_arg_list->GetArguments().empty();
-        bool should_call_constructor = true;
+    if (auto object_value = object_type->GetDefaultValue()) {
+        bool should_call_constructor = false;
 
-        if (object_type == BuiltinTypes::ANY) {
-            should_call_constructor = false;
-        } else {
-            bool has_written_constructor = object_type->FindMember("new") != nullptr;
+        if (object_type != BuiltinTypes::ANY) {
+            const bool has_written_constructor = object_type->FindMember("new") != nullptr;
+            const bool has_args = m_arg_list != nullptr && !m_arg_list->GetArguments().empty();
 
-            if (!has_written_constructor && !has_args) {
-                should_call_constructor = false;
+            if (has_written_constructor || has_args) {
+                should_call_constructor = true;
             }
         }
 
@@ -71,14 +67,14 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
         }
 
         m_object_value = object_value;
-    /*} else {
+    } else {
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
             Msg_type_no_default_assignment,
             m_location,
             object_type->GetName()
         ));
-    }*/
+    }
 }
 
 std::unique_ptr<Buildable> AstNewExpression::Build(AstVisitor *visitor, Module *mod)

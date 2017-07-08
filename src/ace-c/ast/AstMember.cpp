@@ -45,16 +45,13 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
         SymbolTypePtr_t field_type = nullptr;
 
         while (field_type == nullptr && m_target_type != nullptr) {
-            // allow boxing/unboxing for Maybe(T), Const(T) types
-            if (m_target_type->GetBaseType() != nullptr) {
-                if (m_target_type->GetBaseType()->TypeEqual(*BuiltinTypes::MAYBE) ||
-                    m_target_type->GetBaseType()->TypeEqual(*BuiltinTypes::CONST_TYPE))
-                {
+            // allow boxing/unboxing
+            if (m_target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                if (m_target_type->IsBoxedType()) {
                     m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                    ASSERT(m_target_type != nullptr);
                 }
             }
-
-            ASSERT(m_target_type != nullptr);
             
             field_type = m_target_type->FindMember(m_field_name);
 

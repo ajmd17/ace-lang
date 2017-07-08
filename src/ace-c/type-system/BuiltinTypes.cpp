@@ -64,7 +64,8 @@ const SymbolTypePtr_t BuiltinTypes::FUNCTION = SymbolType::Generic(
         SourceLocation::eof
     )),
     {},
-    GenericTypeInfo{ -1 }
+    GenericTypeInfo{ -1 },
+    BuiltinTypes::OBJECT
 );
 
 const SymbolTypePtr_t BuiltinTypes::ARRAY = SymbolType::Generic(
@@ -74,7 +75,8 @@ const SymbolTypePtr_t BuiltinTypes::ARRAY = SymbolType::Generic(
         SourceLocation::eof
     )),
     {},
-    GenericTypeInfo { 1 }
+    GenericTypeInfo { 1 },
+    BuiltinTypes::OBJECT
 );
 
 const SymbolTypePtr_t BuiltinTypes::TUPLE = SymbolType::Generic(
@@ -84,7 +86,8 @@ const SymbolTypePtr_t BuiltinTypes::TUPLE = SymbolType::Generic(
         SourceLocation::eof
     )),
     {},
-    GenericTypeInfo { -1 }
+    GenericTypeInfo { -1 },
+    BuiltinTypes::OBJECT
 );
 
 const SymbolTypePtr_t BuiltinTypes::VAR_ARGS = SymbolType::Generic(
@@ -94,21 +97,24 @@ const SymbolTypePtr_t BuiltinTypes::VAR_ARGS = SymbolType::Generic(
         SourceLocation::eof
     )),
     {},
-    GenericTypeInfo { 1 }
+    GenericTypeInfo { 1 },
+    BuiltinTypes::OBJECT
 );
 
 const SymbolTypePtr_t BuiltinTypes::MAYBE = SymbolType::Generic(
     "Maybe",
     sp<AstNil>(new AstNil(SourceLocation::eof)),
     {},
-    GenericTypeInfo { 1 }
+    GenericTypeInfo { 1 },
+    BuiltinTypes::BOXED_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::CONST_TYPE = SymbolType::Generic(
     "Const",
     nullptr,
     {},
-    GenericTypeInfo { 1 }
+    GenericTypeInfo { 1 },
+    BuiltinTypes::BOXED_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::NULL_TYPE = SymbolType::Primitive(
@@ -136,7 +142,8 @@ const SymbolTypePtr_t BuiltinTypes::EVENT = SymbolType::Generic(
     "$Event",
     BuiltinTypes::UNDEFINED->GetDefaultValue(),
     {},
-    GenericTypeInfo { 1 }
+    GenericTypeInfo { 1 },
+    BuiltinTypes::OBJECT
 );
 
 const SymbolTypePtr_t BuiltinTypes::EVENT_ARRAY = SymbolType::Generic(
@@ -146,7 +153,8 @@ const SymbolTypePtr_t BuiltinTypes::EVENT_ARRAY = SymbolType::Generic(
         SourceLocation::eof
     )),
     {},
-    GenericTypeInfo { 1 }
+    GenericTypeInfo { 1 },
+    BuiltinTypes::OBJECT
 );
 
 const SymbolTypePtr_t BuiltinTypes::MODULE_INFO = SymbolType::Object(
@@ -177,5 +185,14 @@ const SymbolTypePtr_t BuiltinTypes::GENERATOR = SymbolType::Generic(
         SourceLocation::eof
     )),
     {},
-    GenericTypeInfo{ 1 }
+    GenericTypeInfo{ 1 },
+    BuiltinTypes::OBJECT
+);
+
+const SymbolTypePtr_t BuiltinTypes::BOXED_TYPE = SymbolType::Generic(
+    "Boxed",
+    nullptr,
+    {},
+    GenericTypeInfo { 1 },
+    BuiltinTypes::OBJECT
 );

@@ -59,6 +59,15 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             symbol_type = m_type_specification->GetSymbolType();
             ASSERT(symbol_type != nullptr);
 
+            if (symbol_type == BuiltinTypes::ANY) {
+                // Any type is reserved for method parameters
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_any_reserved_for_parameters,
+                    m_location
+                ));
+            }
+
             // if no assignment provided, set the assignment to be the default value of the provided type
             if (m_real_assignment == nullptr) {
                 if (symbol_type->GetDefaultValue() != nullptr) {
@@ -77,25 +86,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 }
             }
 
-            // Unbox specific builtin generic types
-            // note that this is below the default assignment check,
-            // because these "box" types may have a default assignment of their own
-            // (or they may intentionally not have one)
-            // e.g Maybe(T) defaults to null, and Const(T) has no assignment.
             
-            // TODO: make an Unbox() method or something like that,
-            // because this is used in multiple places
-            if (SymbolTypePtr_t base = symbol_type->GetBaseType()) {
-                // allow boxing/unboxing for Maybe(T) and Const(T) types
-                if (base->TypeEqual(*BuiltinTypes::MAYBE) ||
-                    base->TypeEqual(*BuiltinTypes::CONST_TYPE))
-                {
-                    const SymbolTypePtr_t &held_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
-                    ASSERT(held_type != nullptr);
-                    
-                    symbol_type = held_type;
-                }
-            }
         }
 
         if (m_real_assignment != nullptr) {
@@ -145,12 +136,26 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     }
 
                     if (is_type_strict) {
-                        if (!symbol_type->TypeCompatible(*assignment_type, true)) {
+                        SymbolTypePtr_t comparison_type = symbol_type;
+
+                        // unboxing values
+                        // note that this is below the default assignment check,
+                        // because these "box" types may have a default assignment of their own
+                        // (or they may intentionally not have one)
+                        // e.g Maybe(T) defaults to null, and Const(T) has no assignment.
+                        if (symbol_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                            if (symbol_type->IsBoxedType()) {
+                                comparison_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                                ASSERT(comparison_type != nullptr);
+                            }
+                        }
+
+                        if (!comparison_type->TypeCompatible(*assignment_type, true)) {
                             CompilerError error(
                                 LEVEL_ERROR,
                                 Msg_mismatched_types,
                                 m_real_assignment->GetLocation(),
-                                symbol_type->GetName(),
+                                comparison_type->GetName(),
                                 assignment_type->GetName()
                             );
 
@@ -159,7 +164,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                                     LEVEL_ERROR,
                                     Msg_implicit_any_mismatch,
                                     m_real_assignment->GetLocation(),
-                                    symbol_type->GetName()
+                                    comparison_type->GetName()
                                 );
                             }
 

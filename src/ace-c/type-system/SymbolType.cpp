@@ -200,6 +200,16 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
                     return true;
                 }
 
+                /*if (IsBoxedType()) {
+                    const SymbolTypePtr_t &held_type = m_generic_instance_info.m_generic_args[0].m_type;
+                    ASSERT(held_type != nullptr);
+
+                    return held_type->TypeCompatible(
+                        right,
+                        strict_numbers
+                    );
+                }*/
+
                 // allow boxing/unboxing for 'Maybe(T)' type
                 if (base->TypeEqual(*BuiltinTypes::MAYBE)) {
                     if (right.TypeEqual(*BuiltinTypes::NULL_TYPE)) {
@@ -278,11 +288,13 @@ const SymbolTypePtr_t SymbolType::FindMember(const std::string &name) const
     return nullptr;
 }
 
-bool SymbolType::LookupBase(const SymbolType &base_type) const
+bool SymbolType::HasBase(const SymbolType &base_type) const
 {
-    while (SymbolTypePtr_t this_base = GetBaseType()) {
+    if (SymbolTypePtr_t this_base = GetBaseType()) {
         if (this_base->TypeEqual(base_type)) {
             return true;
+        } else {
+            return this_base->HasBase(base_type);
         }
     }
 
@@ -327,6 +339,19 @@ bool SymbolType::IsConstType() const
     } else if (m_type_class == TYPE_GENERIC_INSTANCE) {
         if (const SymbolTypePtr_t base = m_base.lock()) {
             return base == BuiltinTypes::CONST_TYPE;
+        }
+    }
+
+    return false;
+}
+
+bool SymbolType::IsBoxedType() const
+{
+    if (SymbolTypePtr_t base_type = GetBaseType()) {
+        if (m_type_class == TYPE_GENERIC_INSTANCE) {
+            return base_type->GetBaseType() == BuiltinTypes::BOXED_TYPE;
+        } else if (m_type_class == TYPE_GENERIC) {
+            return base_type == BuiltinTypes::BOXED_TYPE;
         }
     }
 
@@ -399,12 +424,13 @@ SymbolTypePtr_t SymbolType::Object(const std::string &name,
 SymbolTypePtr_t SymbolType::Generic(const std::string &name, 
     const sp<AstExpression> &default_value,
     const vec<SymbolMember_t> &members, 
-    const GenericTypeInfo &info)
+    const GenericTypeInfo &info,
+    const SymbolTypePtr_t &base)
 {
     SymbolTypePtr_t res(new SymbolType(
         name,
         TYPE_GENERIC,
-        BuiltinTypes::OBJECT,
+        base,
         default_value,
         members
     ));

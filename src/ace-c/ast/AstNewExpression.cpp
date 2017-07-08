@@ -35,47 +35,50 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     // get default value
     auto object_value = object_type->GetDefaultValue();
     ASSERT(object_value != nullptr);
+    //if (auto object_value = object_type->GetDefaultValue()) {
+        bool has_args = m_arg_list != nullptr && !m_arg_list->GetArguments().empty();
+        bool should_call_constructor = true;
 
-    bool has_args = true;
-    if (m_arg_list == nullptr) {
-        has_args = false;
-    } else if (m_arg_list->GetArguments().empty()) {
-        has_args = false;
-    }
-
-    bool should_call_constructor = true;
-    if (object_type == BuiltinTypes::ANY) {
-        should_call_constructor = false;
-    } else {
-        bool has_written_constructor = object_type->FindMember("new") != nullptr;
-
-        if (!has_written_constructor && !has_args) {
+        if (object_type == BuiltinTypes::ANY) {
             should_call_constructor = false;
-        }
-    }
+        } else {
+            bool has_written_constructor = object_type->FindMember("new") != nullptr;
 
-    if (should_call_constructor) {
-        std::vector<std::shared_ptr<AstArgument>> args;
-
-        if (m_arg_list != nullptr) {
-            args = m_arg_list->GetArguments();
+            if (!has_written_constructor && !has_args) {
+                should_call_constructor = false;
+            }
         }
 
-        m_constructor_call.reset(new AstCallExpression(
-            std::shared_ptr<AstMember>(new AstMember(
-                "new",
-                object_value,
+        if (should_call_constructor) {
+            std::vector<std::shared_ptr<AstArgument>> args;
+
+            if (m_arg_list != nullptr) {
+                args = m_arg_list->GetArguments();
+            }
+
+            m_constructor_call.reset(new AstCallExpression(
+                std::shared_ptr<AstMember>(new AstMember(
+                    "new",
+                    object_value,
+                    m_location
+                )),
+                args,
+                true,
                 m_location
-            )),
-            args,
-            true,
-            m_location
+            ));
+
+            m_constructor_call->Visit(visitor, mod);
+        }
+
+        m_object_value = object_value;
+    /*} else {
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_type_no_default_assignment,
+            m_location,
+            object_type->GetName()
         ));
-
-        m_constructor_call->Visit(visitor, mod);
-    }
-
-    m_object_value = object_value;
+    }*/
 }
 
 std::unique_ptr<Buildable> AstNewExpression::Build(AstVisitor *visitor, Module *mod)

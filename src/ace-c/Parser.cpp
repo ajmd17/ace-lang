@@ -250,6 +250,13 @@ bool Parser::ExpectEndOfStmt()
             location
         ));
 
+        // skip until end of statement, end of line, or end of file.
+        do {
+            m_token_stream->Next();
+        } while (m_token_stream->HasNext() &&
+            !Match(TK_NEWLINE, true) &&
+            !Match(TK_SEMICOLON, true));
+
         return false;
     }
 

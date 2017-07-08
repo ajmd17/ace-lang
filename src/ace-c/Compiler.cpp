@@ -214,7 +214,7 @@ std::unique_ptr<Buildable> Compiler::LoadRightThenLeft(AstVisitor *visitor, Modu
     uint8_t rp;
 
     // load right-hand side into register 0
-    info.right->Build(visitor, mod);
+    chunk->Append(info.right->Build(visitor, mod));
     rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
     bool left_side_effects = info.left->MayHaveSideEffects();

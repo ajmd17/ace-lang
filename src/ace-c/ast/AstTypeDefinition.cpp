@@ -7,6 +7,8 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
+#include <ace-c/type-system/BuiltinTypes.hpp>
+
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -161,7 +163,8 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                     GenericTypeInfo {
                         (int)m_generic_params.size(),
                         generic_param_types
-                    }
+                    },
+                    BuiltinTypes::OBJECT
                 );
 
                 symbol_type->SetDefaultValue(std::shared_ptr<AstObject>(

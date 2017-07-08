@@ -87,7 +87,8 @@ public:
         const std::string &name, 
         const sp<AstExpression> &default_value, 
         const vec<SymbolMember_t> &members, 
-        const GenericTypeInfo &info
+        const GenericTypeInfo &info,
+        const SymbolTypePtr_t &base
     );
 
     static SymbolTypePtr_t GenericInstance(
@@ -183,10 +184,11 @@ public:
 
     /** Search the inheritance chain to see if the given type
         is a base of this type. */
-    bool LookupBase(const SymbolType &base_type) const;
+    bool HasBase(const SymbolType &base_type) const;
     
     bool IsArrayType() const;
     bool IsConstType() const;
+    bool IsBoxedType() const;
 
 private:
     std::string m_name;

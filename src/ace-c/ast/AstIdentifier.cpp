@@ -26,7 +26,7 @@ void AstIdentifier::PerformLookup(AstVisitor *visitor, Module *mod)
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_VARIABLE);
     } else if (mod->LookupNestedModule(m_name) != nullptr) {
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_MODULE);
-    } else if (mod->LookupSymbolType(m_name)) {
+    } else if ((m_properties.m_found_type = mod->LookupSymbolType(m_name))) {
         m_properties.SetIdentifierType(IDENTIFIER_TYPE_TYPE);
     } else {
         // nothing was found
@@ -70,6 +70,8 @@ SymbolTypePtr_t AstIdentifier::GetSymbolType() const
 {
     if (m_properties.GetIdentifier() != nullptr) {
         return m_properties.GetIdentifier()->GetSymbolType();
+    } else if (m_properties.m_found_type != nullptr) {
+        return m_properties.m_found_type;
     }
 
     return BuiltinTypes::UNDEFINED;

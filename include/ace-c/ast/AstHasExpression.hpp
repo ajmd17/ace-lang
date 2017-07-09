@@ -7,7 +7,7 @@
 
 class AstHasExpression : public AstExpression {
 public:
-    AstHasExpression(const std::shared_ptr<AstExpression> &target,
+    AstHasExpression(const std::shared_ptr<AstStatement> &target,
       const std::string &field_name,
       const SourceLocation &location);
     virtual ~AstHasExpression() = default;
@@ -23,12 +23,17 @@ public:
     virtual SymbolTypePtr_t GetSymbolType() const override;
 
 protected:
-    std::shared_ptr<AstExpression> m_target;
+    std::shared_ptr<AstStatement> m_target;
     std::string m_field_name;
 
     // set while analyzing
     int m_has_member;
+    // is it a check if an expression has the member,
+    // or is it a check if a type has a member?
+    bool m_is_expr;
+    bool m_has_side_effects;
 
+private:
     inline Pointer<AstHasExpression> CloneImpl() const
     {
         return Pointer<AstHasExpression>(new AstHasExpression(

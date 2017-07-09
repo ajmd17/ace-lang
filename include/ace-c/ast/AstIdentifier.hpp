@@ -20,6 +20,9 @@ struct AstIdentifierProperties {
     int m_depth = 0;
     Scope *m_function_scope = nullptr;
 
+    // if the found identifier was a type...
+    SymbolTypePtr_t m_found_type = nullptr;
+
     // getters & setters
     inline Identifier *GetIdentifier() { return m_identifier; }
     inline const Identifier *GetIdentifier() const { return m_identifier; }

@@ -583,7 +583,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
         }
     } else if (Match(TK_DOUBLE_COLON)) {
         expr = ParseModuleAccess();
-    } else if (MatchKeyword(Keyword_module) && MatchAhead(TK_DOT, 1)) {
+    } else if (MatchKeyword(Keyword_module)) {
         expr = ParseModuleProperty();
     } else if (MatchKeyword(Keyword_self)) {
         expr = ParseIdentifier(true);

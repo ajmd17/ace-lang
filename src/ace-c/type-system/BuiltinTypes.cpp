@@ -101,22 +101,6 @@ const SymbolTypePtr_t BuiltinTypes::VAR_ARGS = SymbolType::Generic(
     BuiltinTypes::OBJECT
 );
 
-const SymbolTypePtr_t BuiltinTypes::MAYBE = SymbolType::Generic(
-    "Maybe",
-    sp<AstNil>(new AstNil(SourceLocation::eof)),
-    {},
-    GenericTypeInfo { 1 },
-    BuiltinTypes::BOXED_TYPE
-);
-
-const SymbolTypePtr_t BuiltinTypes::CONST_TYPE = SymbolType::Generic(
-    "Const",
-    nullptr,
-    {},
-    GenericTypeInfo { 1 },
-    BuiltinTypes::BOXED_TYPE
-);
-
 const SymbolTypePtr_t BuiltinTypes::NULL_TYPE = SymbolType::Primitive(
     "Null",
     sp<AstNil>(new AstNil(SourceLocation::eof))
@@ -195,4 +179,20 @@ const SymbolTypePtr_t BuiltinTypes::BOXED_TYPE = SymbolType::Generic(
     {},
     GenericTypeInfo { 1 },
     BuiltinTypes::OBJECT
+);
+
+const SymbolTypePtr_t BuiltinTypes::MAYBE = SymbolType::Generic(
+    "Maybe",
+    sp<AstNil>(new AstNil(SourceLocation::eof)),
+    {},
+    GenericTypeInfo { 1 },
+    BuiltinTypes::BOXED_TYPE
+);
+
+const SymbolTypePtr_t BuiltinTypes::CONST_TYPE = SymbolType::Generic(
+    "Const",
+    nullptr,
+    {},
+    GenericTypeInfo { 1 },
+    BuiltinTypes::BOXED_TYPE
 );

@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
 
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
@@ -31,7 +32,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
     for (auto &param : m_generic_params) {
         if (param != nullptr) {
             param->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
-            if (param->GetSymbolType()) {
+            if (param->GetSymbolType() != nullptr) {
                 generic_types.push_back({
                     "of", param->GetSymbolType()
                 });
@@ -82,8 +83,10 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                     // check generic params
                     if (!m_generic_params.empty()) {
                         // look up generic instance to see if it's already been created
-                        if (!(m_symbol_type = visitor->GetCompilationUnit()->
-                            GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types))) {
+                        m_symbol_type = visitor->GetCompilationUnit()->
+                            GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types);
+
+                        if (m_symbol_type == nullptr) {
                             // nothing found from lookup,
                             // so create new generic instance
                             if (symbol_type->GetGenericInfo().m_num_parameters == -1 ||
@@ -95,52 +98,88 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 std::vector<SymbolTypePtr_t> substituted_types;
                                 substituted_types.reserve(generic_types.size());
 
+                                SymbolTypePtr_t new_instance = symbol_type;
+
                                 // for each supplied parameter, create substitution
                                 for (size_t i = 0; 
                                     i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
                                 {
+                                    
 
-                                    if (const SymbolTypePtr_t &gen = generic_types[i].m_type) {
+
+                                    /*if (const SymbolTypePtr_t &gen = generic_types[i].m_type) {
                                         SymbolTypePtr_t param_type = SymbolType::GenericParameter(
                                             symbol_type->GetGenericInfo().m_params[i]->GetName(),
-                                            gen /* set substitution to the given type */
+                                            gen // set substitution to the given type
                                         );
 
                                         visitor->GetCompilationUnit()->GetCurrentModule()->
                                             m_scopes.Top().GetIdentifierTable().AddSymbolType(param_type);
-                                    }
+                                    }*/
                                 }
 
-                                SymbolTypePtr_t new_instance = SymbolType::GenericInstance(
+                                /*SymbolTypePtr_t new_instance = SymbolType::GenericInstance(
                                     symbol_type,
                                     GenericInstanceTypeInfo {
                                         generic_types
                                     }
-                                );
+                                );*/
 
                                 // accept all members
                                 for (auto &mem : new_instance->GetMembers()) {
-                                    // accept assignment for new member instance
-                                    if (auto &mem_assignment = std::get<2>(mem)) {
-                                        mem_assignment->Visit(visitor, mod);
-                                        // update held type to new symbol type
-                                        std::get<1>(mem) = mem_assignment->GetSymbolType();
-                                    } else if (auto &mem_default = std::get<1>(mem)->GetDefaultValue()) {
-                                        // assignment is null, update default value
-                                        mem_default->Visit(visitor, mod);
-                                        //std::get<1>(mem) = mem_default->GetSymbolType();
-                                        //std::get<1>(mem) = mem_default->GetSymbolType();
+                                    SymbolTypePtr_t mem_symbol_type = std::get<1>(mem);
+
+                                    std::cout << "type of " << std::get<0>(mem) << " type = " << mem_symbol_type->GetName() << "\n";
+
+                                    for (size_t i = 0; 
+                                        i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
+                                    {
+                                        if (const SymbolTypePtr_t &placeholder = symbol_type->GetGenericInfo().m_params[i]) {
+                                            if (const SymbolTypePtr_t &substitute = generic_types[i].m_type) {
+                                                mem_symbol_type = SymbolType::SubstituteGenericParams(
+                                                    mem_symbol_type,
+                                                    placeholder,
+                                                    substitute
+                                                );
+                                            }
+                                        }
                                     }
+
+
+                                    std::shared_ptr<AstExpression> &mem_assignment = std::get<2>(mem);
+
+                                    if (mem_assignment == nullptr) {
+                                        // set to default value of symbol type if assignment not given
+                                        ASSERT(mem_symbol_type->GetDefaultValue() != nullptr);
+                                        mem_assignment = mem_symbol_type->GetDefaultValue();
+                                    }
+
+                                    // accept assignment for new member instance
+                                    mem_assignment->Visit(visitor, mod);
+
+                                    SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
+                                        visitor,
+                                        mod,
+                                        mem_symbol_type,
+                                        mem_assignment->GetSymbolType(),
+                                        mem_assignment->GetLocation()
+                                    );
                                 }
 
                                 // close the scope for data members
                                 mod->m_scopes.Close();
 
-                                m_symbol_type = new_instance;
-
-                                // add generic instance to be reused
+                                // allow generic instance to be used in code
                                 visitor->GetCompilationUnit()->GetCurrentModule()->
                                     m_scopes.Root().GetIdentifierTable().AddSymbolType(new_instance);
+                                
+                                if (!new_instance->GetMembers().empty()) {
+                                    new_instance->SetDefaultValue(std::shared_ptr<AstObject>(
+                                        new AstObject(new_instance, SourceLocation::eof)
+                                    ));
+                                }
+
+                                m_symbol_type = new_instance;
                             } else {
                                 visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                                     LEVEL_ERROR,
@@ -152,7 +191,9 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                             }
                         }
                     } else {
-                        if (symbol_type->GetDefaultValue() != nullptr) {
+                        m_symbol_type = symbol_type;
+
+                        /*if (symbol_type->GetDefaultValue() != nullptr) {
                             // if generics have a default value,
                             // allow user to omit parameters.
                             m_symbol_type = symbol_type;
@@ -164,7 +205,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 symbol_type->GetName(),
                                 symbol_type->GetGenericInfo().m_num_parameters
                             ));
-                        }
+                        }*/
                     }
 
                     break;

@@ -75,17 +75,21 @@ std::unique_ptr<Buildable> AstObject::Build(AstVisitor *visitor, Module *mod)
 
     // for each data member, load the default value
     int i = 0;
-    for (const auto &dm : sp->GetMembers()) {
-        ASSERT(std::get<1>(dm) != nullptr);
-        ASSERT(std::get<1>(dm)->GetDefaultValue() != nullptr);
+    for (const auto &mem : sp->GetMembers()) {
+        const SymbolTypePtr_t &mem_type = std::get<1>(mem);
+        ASSERT(mem_type != nullptr);
+
+        std::cout << "mem type for " << std::get<0>(mem) << " = " << mem_type->GetName() << "\n";
 
         // if there has not been an assignment provided,
         // use the default value of the members's type.
-        if (std::get<2>(dm) != nullptr) {
-            chunk->Append(std::get<2>(dm)->Build(visitor, mod));
+        if (std::get<2>(mem) != nullptr) {
+            chunk->Append(std::get<2>(mem)->Build(visitor, mod));
         } else {
             // load the data member's default value.
-            chunk->Append(std::get<1>(dm)->GetDefaultValue()->Build(visitor, mod));
+            ASSERT_MSG(mem_type->GetDefaultValue() != nullptr,
+                "Default value should not be null (and no assignment was provided)");
+            chunk->Append(mem_type->GetDefaultValue()->Build(visitor, mod));
         }
 
         // claim register for the data member

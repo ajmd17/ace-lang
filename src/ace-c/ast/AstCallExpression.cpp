@@ -93,10 +93,21 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
     }
 
+    SymbolTypePtr_t unboxed_type = target_type;
+
+    // allow unboxing
+    if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+        if (target_type->IsBoxedType()) {
+            unboxed_type = target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+        }
+    }
+
+    ASSERT(unboxed_type != nullptr);
+
     auto substituted = SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
         visitor, 
         mod,
-        target_type,
+        unboxed_type,
         m_args,
         m_location
     );

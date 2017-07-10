@@ -80,28 +80,37 @@ std::shared_ptr<AstConstant> Optimizer::ConstantFold(
     return result;
 }
 
-void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *visitor, Module *mod)
+std::shared_ptr<AstExpression> Optimizer::OptimizeExpr(
+    const std::shared_ptr<AstExpression> &expr,
+    AstVisitor *visitor,
+    Module *mod)
 {
     ASSERT(expr != nullptr);
     expr->Optimize(visitor, mod);
 
-    if (AstVariable *expr_as_var = dynamic_cast<AstVariable*>(expr.get())) {
+    if (const AstVariable *expr_as_var = dynamic_cast<AstVariable*>(expr.get())) {
         // the side is a variable, so we can further optimize by inlining,
         // only if it is const, and a literal.
-        if (expr_as_var->GetProperties().GetIdentifier() != nullptr) {
-            const auto &current_value = expr_as_var->GetProperties().GetIdentifier()->GetCurrentValue();
+        if (const Identifier *ident = expr_as_var->GetProperties().GetIdentifier()) {
+            const SymbolTypePtr_t &identifier_type = ident->GetSymbolType();
+            const std::shared_ptr<AstExpression> &current_value = ident->GetCurrentValue();
             
-            if (current_value != nullptr) {
-                SymbolTypePtr_t current_value_type = current_value->GetSymbolType();
-                ASSERT(current_value_type != nullptr);
+            //std::cout << "var " << expr_as_var->GetName() << " type = " << identifier_type->GetName() << "\n";
 
-                if (current_value_type->IsConstType()) {
-                    if (auto *constant = dynamic_cast<AstConstant*>(current_value.get())) {
+            if (current_value != nullptr) {
+                ASSERT(identifier_type != nullptr);
+                
+                if (identifier_type->IsConstType()) {
+                    //if (auto *constant = dynamic_cast<AstConstant*>(current_value.get())) {
                         // yay! we were able to retrieve the value that
                         // the variable is set to, so now we can use that
                         // at compile-time rather than using a variable.
-                        expr.reset(constant);
-                    }
+                        //expr.reset(constant);
+
+                        // decrement use count because it would have been incremented by Visit()
+                        ident->DecUseCount();
+                        return Optimizer::OptimizeExpr(current_value, visitor, mod);
+                    //}
                 }
             }
 
@@ -119,9 +128,11 @@ void Optimizer::OptimizeExpr(std::shared_ptr<AstExpression> &expr, AstVisitor *v
     } else if (AstBinaryExpression *expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) {
         if (expr_as_binop->GetRight() == nullptr) {
             // right side has been optimized away, to just left side
-            expr = expr_as_binop->GetLeft();
+            return Optimizer::OptimizeExpr(expr_as_binop->GetLeft(), visitor, mod);
         }
     }
+
+    return expr;
 }
 
 Optimizer::Optimizer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)

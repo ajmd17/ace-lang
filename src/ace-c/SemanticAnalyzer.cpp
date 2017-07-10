@@ -336,6 +336,38 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
     };
 }
 
+void SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
+    AstVisitor *visitor,
+    Module *mod,
+    const SymbolTypePtr_t &symbol_type,
+    const SymbolTypePtr_t &assignment_type,
+    const SourceLocation &location)
+{
+    ASSERT(symbol_type != nullptr);
+    ASSERT(assignment_type != nullptr);
+
+    if (!symbol_type->TypeCompatible(*assignment_type, true)) {
+        CompilerError error(
+            LEVEL_ERROR,
+            Msg_mismatched_types,
+            location,
+            symbol_type->GetName(),
+            assignment_type->GetName()
+        );
+
+        if (assignment_type == BuiltinTypes::ANY) {
+            error = CompilerError(
+                LEVEL_ERROR,
+                Msg_implicit_any_mismatch,
+                location,
+                symbol_type->GetName()
+            );
+        }
+
+        visitor->GetCompilationUnit()->GetErrorList().AddError(error);
+    }
+}
+
 SemanticAnalyzer::SemanticAnalyzer(
     AstIterator *ast_iterator,
     CompilationUnit *compilation_unit)

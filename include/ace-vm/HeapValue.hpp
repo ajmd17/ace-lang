@@ -90,7 +90,7 @@ private:
 
         virtual bool operator==(const BaseHolder &other) const override
         {
-            const auto *other_casted = dynamic_cast<const DerivedHolder<T>*>(&other);
+            const DerivedHolder<T> *other_casted = dynamic_cast<const DerivedHolder<T>*>(&other);
             return (other_casted != nullptr && other_casted->m_value == m_value);
         }
 

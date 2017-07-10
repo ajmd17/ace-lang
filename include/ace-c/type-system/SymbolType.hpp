@@ -112,6 +112,18 @@ public:
         bool use_number
     );
 
+    static SymbolTypePtr_t GenericPromotion(
+        const SymbolTypePtr_t &lptr,
+        const SymbolTypePtr_t &rptr
+    );
+
+    /** Substitute this or any generic parameters of this object which
+        are the given generic type with the supplied substitution */
+    static SymbolTypePtr_t SubstituteGenericParams(
+        const SymbolTypePtr_t &lptr,
+        const SymbolTypePtr_t &placeholder,
+        const SymbolTypePtr_t &substitute
+    );
 
 public:
     SymbolType(
@@ -189,6 +201,8 @@ public:
     bool IsArrayType() const;
     bool IsConstType() const;
     bool IsBoxedType() const;
+    /** Is is an uninstantiated generic parameter? (e.g T) */
+    bool IsGenericParameter() const;
 
 private:
     std::string m_name;

@@ -1,9 +1,6 @@
 #ifndef BUILDABLE_HPP
 #define BUILDABLE_HPP
 
-#define CEREAL_SERIALIZE_FUNCTION_NAME Serialize
-#include <cereal/cereal.hpp>
-
 #include <streambuf>
 #include <vector>
 #include <cstdint>
@@ -18,12 +15,6 @@ using LabelId = size_t;
 
 struct LabelInfo {
     LabelPosition position;
-
-    template <class Archive>
-    void Serialize(Archive &archive)
-    {
-        archive(CEREAL_NVP(position));
-    }
 };
 
 struct BuildParams {
@@ -34,9 +25,6 @@ struct BuildParams {
 
 struct Buildable {
     virtual ~Buildable() = default;
-
-    virtual size_t GetSize() const = 0;
-    virtual void Build(Buffer &buf, BuildParams &build_params) const = 0;
 };
 
 #endif

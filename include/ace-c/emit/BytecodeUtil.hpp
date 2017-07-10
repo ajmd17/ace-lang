@@ -19,12 +19,6 @@ public:
         static_assert(std::is_base_of<Buildable, T>::value, "Must be a Buildable type.");
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
-
-    static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk);
-    static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk, BuildParams &build_params);
-
-    static std::unique_ptr<BytecodeChunk> LoadSerialized(std::istream &is);
-    static void StoreSerialized(std::ostream &os, const std::unique_ptr<BytecodeChunk> &chunk);
 };
 
 #endif

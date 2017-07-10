@@ -131,11 +131,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                     if (mem->GetIdentifier()) {
                         std::string mem_name = mem->GetName();
                         SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
-
-                        // TODO find a better way to set up default assignment for members!
-                        // we can't  modify default values of types.
-                        //mem_type.SetDefaultValue(mem->GetAssignment());
-
+                        
                         member_types.push_back(std::make_tuple(
                             mem_name,
                             mem_type,

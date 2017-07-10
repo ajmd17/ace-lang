@@ -21,7 +21,8 @@ public:
         AstVisitor *visitor);
 
     /** Attemps to reduce a variable that is const literal to the actual value. */
-    static void OptimizeExpr(std::shared_ptr<AstExpression> &expr,
+    static std::shared_ptr<AstExpression> OptimizeExpr(
+        const std::shared_ptr<AstExpression> &expr,
         AstVisitor *visitor,
         Module *mod);
 

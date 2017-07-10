@@ -5,6 +5,7 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Optimizer.hpp>
 #include <ace-c/Compiler.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
@@ -41,46 +42,46 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     m_left->Visit(visitor, mod);
     m_right->Visit(visitor, mod);
 
-    SymbolTypePtr_t left_type  = m_left->GetSymbolType();
+    SymbolTypePtr_t left_type = m_left->GetSymbolType();
+    SymbolTypePtr_t left_type_unboxed = left_type;
+    
+    if (left_type->GetTypeClass() == TYPE_GENERIC_INSTANCE && left_type->IsBoxedType()) {
+        left_type_unboxed = left_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+    }
+
+    ASSERT(left_type_unboxed != nullptr);
+
     SymbolTypePtr_t right_type = m_right->GetSymbolType();
+    SymbolTypePtr_t right_type_unboxed = right_type;
+    
+    if (right_type->GetTypeClass() == TYPE_GENERIC_INSTANCE && right_type->IsBoxedType()) {
+        right_type_unboxed = right_type->GetGenericInstanceInfo().m_generic_args[0].m_type;   
+    }
+
+    ASSERT(right_type_unboxed != nullptr);
     
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
         visitor->Assert(
-            (left_type == BuiltinTypes::INT || left_type == BuiltinTypes::ANY) &&
-            (right_type == BuiltinTypes::INT || right_type == BuiltinTypes::ANY),
+            (left_type_unboxed == BuiltinTypes::INT || left_type_unboxed == BuiltinTypes::ANY) &&
+            (right_type_unboxed == BuiltinTypes::INT || right_type_unboxed == BuiltinTypes::ANY),
             CompilerError(
                 LEVEL_ERROR,
                 Msg_bitwise_operands_must_be_int, m_location,
-                left_type->GetName(),
-                right_type->GetName()
+                left_type_unboxed->GetName(),
+                right_type_unboxed->GetName()
             )
         );
     }
 
     if (m_op->ModifiesValue()) {
-        ASSERT(right_type != nullptr);
-
-        if (!left_type->TypeCompatible(*right_type, true)) {
-            CompilerError error(
-                LEVEL_ERROR,
-                Msg_mismatched_types,
-                m_location,
-                left_type->GetName(),
-                right_type->GetName()
-            );
-
-            if (right_type == BuiltinTypes::ANY) {
-                error = CompilerError(
-                    LEVEL_ERROR,
-                    Msg_implicit_any_mismatch,
-                    m_location,
-                    left_type->GetName()
-                );
-            }
-
-            visitor->GetCompilationUnit()->GetErrorList().AddError(error);
-        }
+        SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
+            visitor,
+            mod,
+            left_type_unboxed,
+            right_type_unboxed,
+            m_location
+        );
         
         // make sure we are not modifying a const
         if (left_type->IsConstType()) {
@@ -114,13 +115,13 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
         }
     } else {
         // compare both sides because assignment does not matter in this case
-        if (!left_type->TypeCompatible(*right_type, false)) {
+        if (!left_type_unboxed->TypeCompatible(*right_type_unboxed, false)) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                 LEVEL_ERROR,
                 Msg_mismatched_types,
                 m_location,
-                left_type->GetName(),
-                right_type->GetName()
+                left_type_unboxed->GetName(),
+                right_type_unboxed->GetName()
             ));
         }
     }
@@ -516,12 +517,15 @@ std::unique_ptr<Buildable> AstBinaryExpression::Build(AstVisitor *visitor, Modul
 
 void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
-    if (m_variable_declaration) {
+    if (m_variable_declaration != nullptr) {
         m_variable_declaration->Optimize(visitor, mod);
     } else {
-        Optimizer::OptimizeExpr(m_left, visitor, mod);
-        Optimizer::OptimizeExpr(m_right, visitor, mod);
+        m_left->Optimize(visitor, mod);
+        m_left = Optimizer::OptimizeExpr(m_left, visitor, mod);
 
+        m_right->Optimize(visitor, mod);
+        m_right = Optimizer::OptimizeExpr(m_right, visitor, mod);
+        
         // check that we can further optimize the
         // binary expression by optimizing away the right
         // side, and combining the resulting value into

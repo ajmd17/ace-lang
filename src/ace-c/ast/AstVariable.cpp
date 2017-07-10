@@ -43,11 +43,11 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                     AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
                 }*/
                 
-                ASSERT(m_properties.GetIdentifier()->GetSymbolType() != nullptr);
-                if (m_properties.GetIdentifier()->GetSymbolType()->IsConstType()) {
-                    // for const, set access options to only load
-                    AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
-                }
+                // ASSERT(m_properties.GetIdentifier()->GetSymbolType() != nullptr);
+                // if (m_properties.GetIdentifier()->GetSymbolType()->IsConstType()) {
+                //     // for const, set access options to only load
+                //     AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
+                // }
 
                 m_properties.GetIdentifier()->IncUseCount();
 
@@ -149,7 +149,7 @@ std::unique_ptr<Buildable> AstVariable::Build(AstVisitor *visitor, Module *mod)
         const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
 
         const bool is_alias = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS;
-        const bool is_const = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST;
+        const bool is_const = AstIdentifier::GetSymbolType()->IsConstType(); //m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST;
 
         // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
         // normal way.

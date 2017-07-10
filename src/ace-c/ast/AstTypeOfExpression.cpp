@@ -48,42 +48,25 @@ void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
 
 std::unique_ptr<Buildable> AstTypeOfExpression::Build(AstVisitor *visitor, Module *mod)
 {
-    ASSERT(m_runtime_typeof_call != nullptr);
-    //if (m_runtime_typeof_call != nullptr) {
-    return m_runtime_typeof_call->Build(visitor, mod);
-    /*} else {
+    //ASSERT(m_runtime_typeof_call != nullptr);
+    /*if (m_runtime_typeof_call != nullptr) {
+        return m_runtime_typeof_call->Build(visitor, mod);
+    } else {*/
         ASSERT(m_expr != nullptr);
 
         SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
         ASSERT(expr_type != nullptr);
-        
-        std::string expr_type_name = expr_type->GetName();
 
         // simply add a string representing the type
 
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        StaticObject so(expr_type_name.c_str());
-
-        int found_id = visitor->GetCompilationUnit()->GetInstructionStream().FindStaticObject(so);
-        if (found_id == -1) {
-            m_static_id = visitor->GetCompilationUnit()->GetInstructionStream().NewStaticId();
-            so.m_id = m_static_id;
-            visitor->GetCompilationUnit()->GetInstructionStream().AddStaticObject(so);
-        } else {
-            m_static_id = found_id;
-        }
-
-        // load static object into register
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t, uint8_t, uint16_t>(LOAD_STATIC, rp, m_static_id);
-
-        if (!ace::compiler::Config::use_static_objects) {
-            // fill with padding for LOAD_STRING instruction
-            visitor->GetCompilationUnit()->GetInstructionStream().GetPosition() += 2 + std::strlen(so.m_value.str);
-        }
-    }*/
+        auto instr_string = BytecodeUtil::Make<BuildableString>();
+        instr_string->reg = rp;
+        instr_string->value = expr_type->GetName();
+        return std::move(instr_string);
+    //}
 }
 
 void AstTypeOfExpression::Optimize(AstVisitor *visitor, Module *mod)

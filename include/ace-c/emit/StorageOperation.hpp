@@ -37,62 +37,6 @@ struct StorageOperation : public Buildable {
 
     OperationBuilder GetBuilder();
 
-    virtual size_t GetSize() const override;
-    virtual void Build(Buffer &buf, BuildParams &build_params) const override;
-
-    template <class Archive>
-    void Serialize(Archive &archive)
-    {
-        archive(op.a.reg);
-
-        switch (method) {
-            case Methods::LOCAL:
-            case Methods::STATIC:
-
-                switch (strategy) {
-                    case Strategies::BY_OFFSET:
-                        archive(op.b.offset);
-                        
-                        break;
-
-                    case Strategies::BY_INDEX:
-                        archive(op.b.index);
-
-                        break;
-                    
-                    case Strategies::BY_HASH:
-                        archive(op.b.hash);
-
-                        break;
-                }
-
-                break;
-
-            case Methods::ARRAY:
-            case Methods::MEMBER:
-                switch (strategy) {
-                    case Strategies::BY_OFFSET:
-                        ASSERT_MSG(false, "Not implemented");
-                        
-                        break;
-
-                    case Strategies::BY_INDEX:
-                        archive(op.b.object_data.member.index);
-
-                        break;
-                    
-                    case Strategies::BY_HASH:
-                        archive(op.b.object_data.member.hash);
-
-                        break;
-                }
-
-                break;
-        }
-        
-        archive(CEREAL_NVP(operation), CEREAL_NVP(method), CEREAL_NVP(strategy));
-    }
-
     struct {
         union {
             RegIndex reg;
@@ -177,8 +121,5 @@ struct StorageOperation : public Buildable {
         MethodBuilder *parent;
     };
 };
-
-CEREAL_REGISTER_TYPE(StorageOperation)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Buildable, StorageOperation)
 
 #endif

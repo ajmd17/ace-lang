@@ -138,10 +138,8 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
     if (TypeEqual(right)) {
         return true;
     }
-    
-    if (right.GetTypeClass() == TYPE_GENERIC_PARAMETER &&
-        right.GetGenericParameterInfo().m_substitution.lock() == nullptr) {
-        // right is a generic paramter that has not yet been substituted
+
+    if (right.IsGenericParameter()) {
         return true;
     }
 
@@ -358,6 +356,17 @@ bool SymbolType::IsBoxedType() const
     return false;
 }
 
+bool SymbolType::IsGenericParameter() const
+{
+    if (m_type_class == TYPE_GENERIC_PARAMETER &&
+        m_generic_param_info.m_substitution.lock() == nullptr) {
+        // right is a generic paramter that has not yet been substituted
+        return true;
+    }
+
+    return false;
+}
+
 SymbolTypePtr_t SymbolType::Alias(
     const std::string &name,
     const AliasTypeInfo &info)
@@ -508,7 +517,7 @@ SymbolTypePtr_t SymbolType::GenericInstance(
             ASSERT(base->GetGenericInfo().m_params.size() == info.m_generic_args.size());
             
             // find parameter and substitute it
-            for (size_t i = 0; !is_substituted && i < base->GetGenericInfo().m_params.size(); i++) {
+            for (size_t i = 0; i < base->GetGenericInfo().m_params.size(); i++) {
                 SymbolTypePtr_t &it = base->GetGenericInfo().m_params[i];
 
                 if (it->GetName() == std::get<1>(member)->GetName()) {
@@ -525,6 +534,7 @@ SymbolTypePtr_t SymbolType::GenericInstance(
                     ));
 
                     is_substituted = true;
+                    break;
                 }
             }
 
@@ -664,4 +674,135 @@ SymbolTypePtr_t SymbolType::TypePromotion(
     }
 
     return BuiltinTypes::UNDEFINED;
+}
+
+SymbolTypePtr_t SymbolType::GenericPromotion(
+    const SymbolTypePtr_t &lptr,
+    const SymbolTypePtr_t &rptr)
+{
+    ASSERT(lptr != nullptr);
+    ASSERT(rptr != nullptr);
+
+    switch (lptr->GetTypeClass()) {
+        case TYPE_GENERIC:
+            switch (rptr->GetTypeClass()) {
+                case TYPE_GENERIC_INSTANCE:
+                    if (auto right_base = rptr->GetBaseType()){
+                        if (lptr->TypeEqual(*right_base)) {
+                            // left-hand side is the base of the right hand side,
+                            // so upgrade left to the derived type.
+                            return rptr;
+                        }
+                    }
+                    // fallthrough
+                default:
+                    
+                    if (auto left_base = lptr->GetBaseType()) {
+                        if (left_base == BuiltinTypes::BOXED_TYPE) {
+                            // if left is a Boxed type and still generic (no params),
+                            // e.i Const or Maybe, fill it with the assignment type
+                            std::vector<GenericInstanceTypeInfo::Arg> generic_types {
+                                { "of", rptr }
+                            };
+                            
+                            return SymbolType::GenericInstance(
+                                lptr,
+                                GenericInstanceTypeInfo {
+                                    generic_types
+                                }
+                            );
+                        }
+                    }
+
+                    break;
+            }
+
+            break;
+        
+        case TYPE_GENERIC_INSTANCE: {
+            if (lptr->IsBoxedType()) {
+                // if left is a Boxed type and generic instance,
+                // perform promotion on the inner type.
+                const SymbolTypePtr_t &inner_type = lptr->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                ASSERT(inner_type != nullptr);
+
+                std::vector<GenericInstanceTypeInfo::Arg> new_generic_types {
+                    { "of", SymbolType::GenericPromotion(inner_type, rptr) }
+                };
+                
+                return SymbolType::GenericInstance(
+                    lptr->GetBaseType(),
+                    GenericInstanceTypeInfo {
+                        new_generic_types
+                    }
+                );
+            }
+
+            break;
+        }
+    }
+
+    // no promotion
+    return lptr;
+}
+
+SymbolTypePtr_t SymbolType::SubstituteGenericParams(
+    const SymbolTypePtr_t &lptr,
+    const SymbolTypePtr_t &placeholder,
+    const SymbolTypePtr_t &substitute)
+{
+    ASSERT(lptr != nullptr);
+    ASSERT(placeholder != nullptr);
+    ASSERT(substitute != nullptr);
+
+    if (lptr->TypeEqual(*placeholder)) {
+        return substitute;
+    }
+
+    switch (lptr->GetTypeClass()) {
+        case TYPE_GENERIC_INSTANCE: {
+            SymbolTypePtr_t base_type = lptr->GetBaseType();
+            ASSERT(base_type != nullptr);
+
+            std::vector<GenericInstanceTypeInfo::Arg> new_generic_types;
+
+            for (const GenericInstanceTypeInfo::Arg &arg : lptr->GetGenericInstanceInfo().m_generic_args) {
+                const SymbolTypePtr_t &arg_type = arg.m_type;
+                ASSERT(arg_type != nullptr);
+
+                GenericInstanceTypeInfo::Arg new_arg;
+                new_arg.m_name = arg.m_name;
+                new_arg.m_default_value = arg.m_default_value;
+
+                // perform substitution
+                std::cout << "compare: " << arg_type->GetName() << " to " << placeholder->GetName() << "...\n";
+                if (arg_type->TypeEqual(*placeholder)) {
+                    std::cout << "  they're equal\n";
+                    new_arg.m_type = substitute;
+                } else {
+                    SymbolTypePtr_t arg_type_substituted = SymbolType::SubstituteGenericParams(
+                        arg_type,
+                        placeholder,
+                        substitute
+                    );
+
+                    ASSERT(arg_type_substituted != nullptr);
+                    new_arg.m_type = arg_type_substituted;    
+                }
+
+                new_generic_types.push_back(new_arg);
+            }
+
+            return SymbolType::GenericInstance(
+                base_type,
+                GenericInstanceTypeInfo {
+                    new_generic_types
+                }
+            );
+
+            break;
+        }
+    }
+
+    return lptr;
 }

@@ -33,7 +33,16 @@ public:
             Module *mod, 
             const SymbolTypePtr_t &identifier_type, 
             const std::vector<std::shared_ptr<AstArgument>> &args,
-            const SourceLocation &location);
+            const SourceLocation &location
+        );
+
+        static void EnsureTypeAssignmentCompatibility(
+            AstVisitor *visitor,
+            Module *mod,
+            const SymbolTypePtr_t &symbol_type,
+            const SymbolTypePtr_t &assignment_type,
+            const SourceLocation &location
+        );
     };
 
 public:

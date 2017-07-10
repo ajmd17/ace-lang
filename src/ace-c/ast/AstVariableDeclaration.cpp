@@ -1,11 +1,13 @@
 #include <ace-c/ast/AstVariableDeclaration.hpp>
+#include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/AstVisitor.hpp>
-#include <ace-c/emit/Instruction.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
 
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
+#include <ace-c/emit/Instruction.hpp>
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
 
@@ -70,111 +72,138 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
             // if no assignment provided, set the assignment to be the default value of the provided type
             if (m_real_assignment == nullptr) {
+                // generic/non-concrete types that have default values
+                // will get assigned to their default value without causing
+                // an error
                 if (symbol_type->GetDefaultValue() != nullptr) {
                     // Assign variable to the default value for the specified type.
                     m_real_assignment = symbol_type->GetDefaultValue();
                     // built-in assignment, turn off strict mode
                     is_type_strict = false;
-                } else {
-                    // no default assignment for this type
+                } else if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
+                    // generic not yet promoted to an instance.
+                    // since there is no assignment to go by, we can't promote it
+
                     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                         LEVEL_ERROR,
-                        Msg_type_no_default_assignment,
+                        Msg_generic_parameters_missing,
                         m_location,
-                        symbol_type->GetName()
+                        symbol_type->GetName(),
+                        symbol_type->GetGenericInfo().m_num_parameters
                     ));
+                } else {
+                    // generic parameters will be resolved upon instantiation
+                    if (!symbol_type->IsGenericParameter()) {
+                        // no default assignment for this type
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_type_no_default_assignment,
+                            m_location,
+                            symbol_type->GetName()
+                        ));
+                    }
                 }
             }
-
-            
         }
 
-        if (m_real_assignment != nullptr) {
-            if (!m_assignment_already_visited) {
-                // visit assignment
-                m_real_assignment->Visit(visitor, mod);
-            }
+        if (m_real_assignment == nullptr) {
+            m_real_assignment.reset(new AstUndefined(m_location));
+        }
 
-            if (m_assignment != nullptr) { // has received an explicit assignment
-                // make sure type is compatible with assignment
-                SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
-                ASSERT(assignment_type != nullptr);
+        if (!m_assignment_already_visited) {
+            // visit assignment
+            m_real_assignment->Visit(visitor, mod);
+        }
 
-                if (m_type_specification != nullptr) {
-                    // symbol_type should be the user-specified type
-                    ASSERT(symbol_type != nullptr);
+        if (m_assignment != nullptr) {
+            // has received an explicit assignment
+            // make sure type is compatible with assignment
+            SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
+            ASSERT(assignment_type != nullptr);
 
-                    bool is_left_incomplete = false;
+            if (m_type_specification != nullptr) {
+                // symbol_type should be the user-specified type
+                symbol_type = SymbolType::GenericPromotion(symbol_type, assignment_type);
+                ASSERT(symbol_type != nullptr);
 
-                    switch (symbol_type->GetTypeClass()) {
-                        case TYPE_GENERIC:
-                            is_left_incomplete = true;
-                            break;
-                    }
-
-
-                    if (is_left_incomplete) {
-                        // perform type promotion on incomplete generics.
-                        // i.e: let x: Array = [1,2,3]
-                        // will actually be of the type `Array(Int)`
-
-                        // NOTE: removed because if somebody writes a: Array = [1,2,3]
-                        // and later wants to assign it to ["hi"] they shouldn't receive an error,
-                        // as they did not explicitly specify that it is Array<Int> in this case.
-
-                        // Added back in
-
-                        if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                            if (auto base = assignment_type->GetBaseType()) {
-                                if (symbol_type->TypeEqual(*base)) {
-                                    // here is where type promotion is performed
-                                    
-                                    symbol_type = assignment_type;
-                                }
-                            }
-                        }
-                    }
-
-                    if (is_type_strict) {
-                        SymbolTypePtr_t comparison_type = symbol_type;
-
-                        // unboxing values
-                        // note that this is below the default assignment check,
-                        // because these "box" types may have a default assignment of their own
-                        // (or they may intentionally not have one)
-                        // e.g Maybe(T) defaults to null, and Const(T) has no assignment.
-                        if (symbol_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                            if (symbol_type->IsBoxedType()) {
-                                comparison_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
-                                ASSERT(comparison_type != nullptr);
-                            }
-                        }
-
-                        if (!comparison_type->TypeCompatible(*assignment_type, true)) {
-                            CompilerError error(
-                                LEVEL_ERROR,
-                                Msg_mismatched_types,
-                                m_real_assignment->GetLocation(),
-                                comparison_type->GetName(),
-                                assignment_type->GetName()
-                            );
-
-                            if (assignment_type == BuiltinTypes::ANY) {
-                                error = CompilerError(
-                                    LEVEL_ERROR,
-                                    Msg_implicit_any_mismatch,
-                                    m_real_assignment->GetLocation(),
-                                    comparison_type->GetName()
-                                );
-                            }
-
-                            visitor->GetCompilationUnit()->GetErrorList().AddError(error);
-                        }
-                    }
-                } else {
-                    // Set the type to be the deduced type from the expression.
-                    symbol_type = assignment_type;
+                // generic not yet promoted to an instance
+                if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_generic_parameters_missing,
+                        m_location,
+                        symbol_type->GetName(),
+                        symbol_type->GetGenericInfo().m_num_parameters
+                    ));
                 }
+
+                /*bool is_left_incomplete = false;
+
+                switch (symbol_type->GetTypeClass()) {
+                    case TYPE_GENERIC:
+                        is_left_incomplete = true;
+                        break;
+                }
+
+
+                if (is_left_incomplete) {
+                    // perform type promotion on incomplete generics.
+                    // i.e: let x: Array = [1,2,3]
+                    // will actually be of the type `Array(Int)`
+
+                    // NOTE: removed because if somebody writes a: Array = [1,2,3]
+                    // and later wants to assign it to ["hi"] they shouldn't receive an error,
+                    // as they did not explicitly specify that it is Array<Int> in this case.
+
+                    // Added back in
+
+                    // TODO: move this into TypePromotion in the SymbolType class
+                    if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                        if (auto base = assignment_type->GetBaseType()) {
+                            // here is where type promotion is performed
+
+                            if (symbol_type->TypeEqual(*base)) {
+                                symbol_type = assignment_type;
+                            }
+                            // if it is a boxed type (e.g Maybe(T) or Const(T)),
+                            // allow type promotion on the inner boxed type.
+                            // else if (symbol_type->IsBoxedType()) {
+                            //     SymbolTypePtr &boxed_inner_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                            //     ASSERT(boxed_inner_type != nullptr);
+
+                            //     //if (boxed_inner_type)
+                            //     symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type = assignment_type;
+                            // }
+                        }
+                    }
+                }*/
+
+                if (is_type_strict) {
+                    SymbolTypePtr_t comparison_type = symbol_type;
+
+                    // unboxing values
+                    // note that this is below the default assignment check,
+                    // because these "box" types may have a default assignment of their own
+                    // (or they may intentionally not have one)
+                    // e.g Maybe(T) defaults to null, and Const(T) has no assignment.
+                    if (symbol_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+                        if (symbol_type->IsBoxedType()) {
+                            comparison_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                            ASSERT(comparison_type != nullptr);
+                        }
+                    }
+
+                    SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
+                        visitor,
+                        mod,
+                        comparison_type,
+                        assignment_type,
+                        m_real_assignment->GetLocation()
+                    );
+                }
+            } else {
+                // Set the type to be the deduced type from the expression.
+                symbol_type = assignment_type;
             }
         }
     }

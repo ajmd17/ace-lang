@@ -19,8 +19,6 @@ struct BuiltinTypes {
     static const SymbolTypePtr_t ARRAY;
     static const SymbolTypePtr_t TUPLE;
     static const SymbolTypePtr_t VAR_ARGS;
-    static const SymbolTypePtr_t MAYBE;
-    static const SymbolTypePtr_t CONST_TYPE;
     static const SymbolTypePtr_t NULL_TYPE;
     static const SymbolTypePtr_t EVENT;
     static const SymbolTypePtr_t EVENT_IMPL;
@@ -28,6 +26,8 @@ struct BuiltinTypes {
     static const SymbolTypePtr_t MODULE_INFO;
     static const SymbolTypePtr_t GENERATOR;
     static const SymbolTypePtr_t BOXED_TYPE;
+    static const SymbolTypePtr_t MAYBE;
+    static const SymbolTypePtr_t CONST_TYPE;
 };
 
 #endif

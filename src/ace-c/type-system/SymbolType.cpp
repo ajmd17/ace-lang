@@ -139,8 +139,15 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
         return true;
     }
 
-    if (right.IsGenericParameter()) {
+    if (TypeEqual(*BuiltinTypes::ANY) || right.TypeEqual(*BuiltinTypes::ANY)) {
         return true;
+    }
+
+    if (right.IsGenericParameter()) {
+        // no substitution yet, compatible
+        if (right.GetGenericParameterInfo().m_substitution.lock() == nullptr) {
+            return true;
+        }
     }
 
     switch (m_type_class) {
@@ -157,7 +164,7 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
                 }
             } // equality would have already been checked
 
-            return right.TypeEqual(*BuiltinTypes::ANY);
+            return false;
         }
         case TYPE_GENERIC_INSTANCE: {
             SymbolTypePtr_t base = m_base.lock();
@@ -186,18 +193,19 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
                     ASSERT(param_type != nullptr);
                     ASSERT(other_param_type != nullptr);
 
-                    if (param_type != other_param_type && !param_type->TypeEqual(*other_param_type)) {
+                    if (param_type == other_param_type) {
+                        continue;
+                    } else if (param_type->TypeEqual(*other_param_type)) {
+                        continue;
+                    } else if (param_type == BuiltinTypes::ANY || other_param_type == BuiltinTypes::ANY) {
+                        continue;
+                    } else {
                         return false;
                     }
                 }
 
                 return true;
             } else {
-                // allow 'any' on right as well for generics
-                if (right.TypeEqual(*BuiltinTypes::ANY)) {
-                    return true;
-                }
-
                 /*if (IsBoxedType()) {
                     const SymbolTypePtr_t &held_type = m_generic_instance_info.m_generic_args[0].m_type;
                     ASSERT(held_type != nullptr);
@@ -243,9 +251,7 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
         }
         case TYPE_BUILTIN: {
             if (!TypeEqual(*BuiltinTypes::UNDEFINED) && !right.TypeEqual(*BuiltinTypes::UNDEFINED)) {
-                if (TypeEqual(*BuiltinTypes::ANY) || right.TypeEqual(*BuiltinTypes::ANY)) {
-                    return true;
-                } else if (TypeEqual(*BuiltinTypes::NUMBER)) {
+                if (TypeEqual(*BuiltinTypes::NUMBER)) {
                     return (right.TypeEqual(*BuiltinTypes::INT) ||
                             right.TypeEqual(*BuiltinTypes::FLOAT));
                 } else if (!strict_numbers) {
@@ -262,12 +268,14 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
         
         case TYPE_USER_DEFINED:
             // only allow incompatible assignment for the Any type
-            return right.TypeEqual(*BuiltinTypes::ANY);
+            return false;
 
         case TYPE_GENERIC_PARAMETER: {
             if (auto sp = m_generic_param_info.m_substitution.lock()) {
                 return sp->TypeCompatible(right, strict_numbers);
             }
+
+            // uninstantiated generic parameters are compatible with anything
             return true;
         }
     }
@@ -696,7 +704,6 @@ SymbolTypePtr_t SymbolType::GenericPromotion(
                     }
                     // fallthrough
                 default:
-                    
                     if (auto left_base = lptr->GetBaseType()) {
                         if (left_base == BuiltinTypes::BOXED_TYPE) {
                             // if left is a Boxed type and still generic (no params),
@@ -776,19 +783,15 @@ SymbolTypePtr_t SymbolType::SubstituteGenericParams(
 
                 // perform substitution
                 std::cout << "compare: " << arg_type->GetName() << " to " << placeholder->GetName() << "...\n";
-                if (arg_type->TypeEqual(*placeholder)) {
-                    std::cout << "  they're equal\n";
-                    new_arg.m_type = substitute;
-                } else {
-                    SymbolTypePtr_t arg_type_substituted = SymbolType::SubstituteGenericParams(
-                        arg_type,
-                        placeholder,
-                        substitute
-                    );
 
-                    ASSERT(arg_type_substituted != nullptr);
-                    new_arg.m_type = arg_type_substituted;    
-                }
+                SymbolTypePtr_t arg_type_substituted = SymbolType::SubstituteGenericParams(
+                    arg_type,
+                    placeholder,
+                    substitute
+                );
+
+                ASSERT(arg_type_substituted != nullptr);
+                new_arg.m_type = arg_type_substituted;
 
                 new_generic_types.push_back(new_arg);
             }

@@ -59,15 +59,6 @@ std::unique_ptr<Buildable> AstReturnStatement::Build(AstVisitor *visitor, Module
     ASSERT(m_expr != nullptr);
     chunk->Append(m_expr->Build(visitor, mod));
 
-    // pop all variables in the way off of the stack
-    /*for (int i = 0; i < m_num_pops; i++) {
-        auto instr_pop = BytecodeUtil::Make<RawOperation<>>();
-        instr_pop->opcode = 
-
-        visitor->GetCompilationUnit()->GetInstructionStream() <<
-            Instruction<uint8_t>(POP);
-    }*/
-
     chunk->Append(Compiler::PopStack(visitor, m_num_pops));
 
     // add RET instruction

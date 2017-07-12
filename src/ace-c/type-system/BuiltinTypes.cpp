@@ -10,6 +10,7 @@
 #include <ace-c/ast/AstFloat.hpp>
 #include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
+#include <ace-c/ast/AstBlockExpression.hpp>
 
 const SymbolTypePtr_t BuiltinTypes::UNDEFINED = SymbolType::Primitive(
     "Undefined",
@@ -195,4 +196,12 @@ const SymbolTypePtr_t BuiltinTypes::CONST_TYPE = SymbolType::Generic(
     {},
     GenericTypeInfo { 1 },
     BuiltinTypes::BOXED_TYPE
+);
+
+const SymbolTypePtr_t BuiltinTypes::BLOCK_TYPE = SymbolType::Generic(
+    "Block",
+    nullptr,
+    {},
+    GenericTypeInfo { -1 },
+    BuiltinTypes::OBJECT
 );

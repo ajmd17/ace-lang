@@ -58,10 +58,8 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
         } else {
             m_original_type = symbol_type;
 
-            // if the type is an alias, get the original type
-            while (symbol_type != nullptr && symbol_type->GetTypeClass() == TYPE_ALIAS) {
-                symbol_type = symbol_type->GetAliasInfo().m_aliasee.lock();
-            }
+            // if the type is an alias, get the aliasee
+            symbol_type = symbol_type->GetUnaliased();
 
             switch (symbol_type->GetTypeClass()) {
                 case TYPE_GENERIC_PARAMETER:
@@ -89,9 +87,10 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                         if (m_symbol_type == nullptr) {
                             // nothing found from lookup,
                             // so create new generic instance
-                            if (symbol_type->GetGenericInfo().m_num_parameters == -1 ||
-                                symbol_type->GetGenericInfo().m_num_parameters == generic_types.size())
-                            {
+                            const bool valid_parameters = symbol_type->GetGenericInfo().m_num_parameters == -1
+                                || symbol_type->GetGenericInfo().m_num_parameters == generic_types.size();
+
+                            if (valid_parameters) {
                                 // open the scope for data members
                                 mod->m_scopes.Open(Scope());
 
@@ -111,17 +110,6 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                     // add it
                                     visitor->GetCompilationUnit()->GetCurrentModule()->
                                         m_scopes.Top().GetIdentifierTable().AddSymbolType(alias_type);
-
-
-                                    // if (const SymbolTypePtr_t &gen = generic_types[i].m_type) {
-                                    //     SymbolTypePtr_t param_type = SymbolType::GenericParameter(
-                                    //         symbol_type->GetGenericInfo().m_params[i]->GetName(),
-                                    //         gen // set substitution to the given type
-                                    //     );
-
-                                    //     visitor->GetCompilationUnit()->GetCurrentModule()->
-                                    //         m_scopes.Top().GetIdentifierTable().AddSymbolType(param_type);
-                                    // }
                                 }
 
                                 SymbolTypePtr_t new_instance = SymbolType::GenericInstance(
@@ -134,6 +122,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                 // accept all members
                                 for (auto &mem : new_instance->GetMembers()) {
                                     SymbolTypePtr_t &mem_symbol_type = std::get<1>(mem);
+                                    std::shared_ptr<AstExpression> &mem_assignment = std::get<2>(mem);
 
                                     for (size_t i = 0; 
                                         i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
@@ -149,9 +138,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                         }
                                     }
 
-                                    std::cout << "type of " << std::get<0>(mem) << " = " << mem_symbol_type->GetName() << "\n";
-
-                                    std::shared_ptr<AstExpression> &mem_assignment = std::get<2>(mem);
+                                    ASSERT(mem_symbol_type != nullptr);
 
                                     if (mem_assignment == nullptr) {
                                         // set to default value of symbol type if assignment not given
@@ -161,9 +148,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 
                                     // accept assignment for new member instance
                                     mem_assignment->Visit(visitor, mod);
-
-                                    std::cout << "  assignment type = " << mem_assignment->GetSymbolType()->GetName() << "\n";
-
+                                    
                                     SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
                                         visitor,
                                         mod,
@@ -195,6 +180,8 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                     symbol_type->GetName(),
                                     symbol_type->GetGenericInfo().m_num_parameters
                                 ));
+
+                                m_symbol_type = symbol_type;
                             }
                         }
                     } else {

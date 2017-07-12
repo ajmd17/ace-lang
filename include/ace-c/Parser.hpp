@@ -40,6 +40,7 @@
 #include <ace-c/ast/AstFalse.hpp>
 #include <ace-c/ast/AstNil.hpp>
 #include <ace-c/ast/AstBlock.hpp>
+#include <ace-c/ast/AstBlockExpression.hpp>
 #include <ace-c/ast/AstIfStatement.hpp>
 #include <ace-c/ast/AstWhileLoop.hpp>
 #include <ace-c/ast/AstPrintStatement.hpp>
@@ -107,6 +108,7 @@ private:
     std::shared_ptr<AstFalse> ParseFalse();
     std::shared_ptr<AstNil> ParseNil();
     std::shared_ptr<AstBlock> ParseBlock();
+    std::shared_ptr<AstBlockExpression> ParseBlockExpression();
     std::shared_ptr<AstIfStatement> ParseIfStatement();
     std::shared_ptr<AstWhileLoop> ParseWhileLoop();
     std::shared_ptr<AstPrintStatement> ParsePrintStatement();

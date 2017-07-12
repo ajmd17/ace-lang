@@ -28,6 +28,7 @@ struct BuiltinTypes {
     static const SymbolTypePtr_t BOXED_TYPE;
     static const SymbolTypePtr_t MAYBE;
     static const SymbolTypePtr_t CONST_TYPE;
+    static const SymbolTypePtr_t BLOCK_TYPE;
 };
 
 #endif

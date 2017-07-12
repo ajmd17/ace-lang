@@ -43,15 +43,22 @@ SymbolType::SymbolType(const SymbolType &other)
 
 bool SymbolType::TypeEqual(const SymbolType &other) const
 {
+    if (m_name != other.m_name) {
+        return false;
+    }
+
     if (m_type_class != other.m_type_class) {
         return false;
     }
 
     switch (m_type_class) {
-        case TYPE_ALIAS: {
-            SymbolTypePtr_t sp = m_alias_info.m_aliasee.lock();
-            return sp != nullptr && (*sp) == other;
-        }
+        case TYPE_ALIAS:
+            if (SymbolTypePtr_t sp = m_alias_info.m_aliasee.lock()) {
+                return (*sp) == other;
+            }
+
+            return false;
+
         case TYPE_FUNCTION:
             if (!m_function_info.m_return_type || !other.m_function_info.m_return_type) {
                 return false;
@@ -72,12 +79,16 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
                     }
                 }
             }
+
             break;
+
         case TYPE_GENERIC:
             if (m_generic_info.m_num_parameters != other.m_generic_info.m_num_parameters) {
                 return false;
             }
-            break;
+
+            return true;
+            
         case TYPE_GENERIC_INSTANCE:
             if (m_generic_instance_info.m_generic_args.size() != other.m_generic_instance_info.m_generic_args.size()) {
                 return false;
@@ -96,13 +107,11 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
                 }
             }
 
-            break;
+            // do not go to end (where members are compared)
+            return true;
+
         default:
             break;
-    }
-
-    if (m_name != other.m_name) {
-        return false;
     }
 
     if (m_members.size() != other.m_members.size()) {
@@ -158,11 +167,11 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
             return sp->TypeCompatible(right, strict_numbers);
         }
         case TYPE_GENERIC: {
-            if (right.m_type_class != TYPE_GENERIC) {
+            //if (right.m_type_class != TYPE_GENERIC) {
                 if (SymbolTypePtr_t other_base = right.m_base.lock()) {
                     return TypeCompatible(*other_base, strict_numbers);
                 }
-            } // equality would have already been checked
+            //} // equality would have already been checked
 
             return false;
         }
@@ -294,6 +303,18 @@ const SymbolTypePtr_t SymbolType::FindMember(const std::string &name) const
     return nullptr;
 }
 
+bool SymbolType::FindMember(const std::string &name, SymbolMember_t &out) const
+{
+    for (const SymbolMember_t &member : m_members) {
+        if (std::get<0>(member) == name) {
+            out = member;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool SymbolType::HasBase(const SymbolType &base_type) const
 {
     if (SymbolTypePtr_t this_base = GetBaseType()) {
@@ -307,16 +328,15 @@ bool SymbolType::HasBase(const SymbolType &base_type) const
     return false;
 }
 
-bool SymbolType::FindMember(const std::string &name, SymbolMember_t &out) const
+SymbolTypePtr_t SymbolType::GetUnaliased()
 {
-    for (const SymbolMember_t &member : m_members) {
-        if (std::get<0>(member) == name) {
-            out = member;
-            return true;
+    if (m_type_class == TYPE_ALIAS) {
+        if (const SymbolTypePtr_t aliasee = m_alias_info.m_aliasee.lock()) {
+            return aliasee->GetUnaliased();
         }
     }
 
-    return false;
+    return shared_from_this();
 }
 
 bool SymbolType::IsArrayType() const
@@ -496,8 +516,8 @@ SymbolTypePtr_t SymbolType::GenericInstance(
                     has_return_type = true;
                     return_type_name = generic_arg_type->GetName();
                 } else {
-                    //name += generic_arg_name;
-                    //name += ": ";
+                    name += generic_arg_name;
+                    name += ": ";
                     name += generic_arg_type->GetName();
                     if (i != info.m_generic_args.size() - 1) {
                         name += ", ";
@@ -511,6 +531,8 @@ SymbolTypePtr_t SymbolType::GenericInstance(
                 name += " -> " + return_type_name;
             }
         }
+    } else {
+        name = base->GetName() + "()";
     }
 
     vec<SymbolMember_t> members;
@@ -613,13 +635,13 @@ SymbolTypePtr_t SymbolType::Extend(
         base->GetName(),
         TYPE_USER_DEFINED,
         base,
-        nullptr,
+        base->GetDefaultValue(),
         members
     ));
 
-    symbol_type->SetDefaultValue(sp<AstObject>(
-        new AstObject(symbol_type, SourceLocation::eof)
-    ));
+    // symbol_type->SetDefaultValue(sp<AstObject>(
+    //     new AstObject(symbol_type, SourceLocation::eof)
+    // ));
     
     return symbol_type;
 }

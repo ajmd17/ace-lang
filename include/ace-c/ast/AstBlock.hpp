@@ -14,6 +14,10 @@ public:
 
     inline void AddChild(const std::shared_ptr<AstStatement> &stmt)
         { m_children.push_back(stmt); }
+    inline std::vector<std::shared_ptr<AstStatement>> &GetChildren()
+        { return m_children; }
+    inline const std::vector<std::shared_ptr<AstStatement>> &GetChildren() const
+        { return m_children; }
     inline int NumLocals() const
         { return m_num_locals; }
     inline bool IsLastStatementReturn() const

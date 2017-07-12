@@ -569,6 +569,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
         expr = ParseParentheses();
     } else if (Match(TK_OPEN_BRACKET)) {
         expr = ParseArrayExpression();
+    } else if (Match(TK_OPEN_BRACE)) {
+        expr = ParseBlockExpression();
     } else if (Match(TK_INTEGER)) {
         expr = ParseIntegerLiteral();
     } else if (Match(TK_FLOAT)) {
@@ -1197,6 +1199,18 @@ std::shared_ptr<AstBlock> Parser::ParseBlock()
         Expect(TK_CLOSE_BRACE, true);
 
         return block;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstBlockExpression> Parser::ParseBlockExpression()
+{
+    if (auto block = ParseBlock()) {
+        return std::shared_ptr<AstBlockExpression>(new AstBlockExpression(
+            block,
+            block->GetLocation()
+        ));
     }
 
     return nullptr;

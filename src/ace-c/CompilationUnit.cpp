@@ -34,6 +34,7 @@ CompilationUnit::CompilationUnit()
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::NULL_TYPE);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT_ARRAY);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::BLOCK_TYPE);
 
     m_module_tree.TopNode()->m_value = m_global_module.get();
 }

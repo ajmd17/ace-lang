@@ -93,7 +93,6 @@ bool ObjectMap::ObjectBucket::Lookup(uint32_t hash, Member **out)
 ObjectMap::ObjectMap(size_t size)
     : m_size(size)
 {
-    ASSERT(m_size != 0);
     
     m_buckets = new ObjectMap::ObjectBucket[m_size];
 }
@@ -101,9 +100,8 @@ ObjectMap::ObjectMap(size_t size)
 ObjectMap::ObjectMap(const ObjectMap &other)
     : m_size(other.m_size)
 {
-    ASSERT(m_size != 0);
-
     m_buckets = new ObjectMap::ObjectBucket[m_size];
+
     for (size_t i = 0; i < m_size; i++) {
         m_buckets[i] = other.m_buckets[i];
     }
@@ -116,8 +114,6 @@ ObjectMap::~ObjectMap()
 
 ObjectMap &ObjectMap::operator=(const ObjectMap &other)
 {
-    ASSERT(other.m_size != 0);
-
     if (m_size != other.m_size) {
         // delete buckets and recreate with new size
         delete[] m_buckets;
@@ -151,9 +147,7 @@ Object::Object(TypeInfo *type_ptr,
       m_type_ptr_value(type_ptr_value)
 {
     ASSERT(m_type_ptr != nullptr);
-
     size_t size = m_type_ptr->GetSize();
-    ASSERT(size > 0);
 
     auto **names = m_type_ptr->GetNames();
     ASSERT(names != nullptr);
@@ -175,9 +169,7 @@ Object::Object(const Object &other)
       m_type_ptr_value(other.m_type_ptr_value)
 {
     ASSERT(m_type_ptr != nullptr);
-
     size_t size = m_type_ptr->GetSize();
-    ASSERT(size > 0);
 
     auto **names = m_type_ptr->GetNames();
     ASSERT(names != nullptr);
@@ -206,9 +198,7 @@ void Object::GetRepresentation(std::stringstream &ss, bool add_type_name) const
 {
     // get type
     ASSERT(m_type_ptr != nullptr);
-
     const size_t size = m_type_ptr->GetSize();
-    ASSERT(size > 0);
 
     if (add_type_name) {
         // add the type name

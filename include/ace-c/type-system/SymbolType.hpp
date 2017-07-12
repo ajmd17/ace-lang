@@ -57,7 +57,7 @@ struct GenericParameterTypeInfo {
     SymbolTypeWeakPtr_t m_substitution;
 };
 
-class SymbolType {
+class SymbolType : public std::enable_shared_from_this<SymbolType> {
 public:
     static SymbolTypePtr_t Alias(
         const std::string &name,
@@ -197,6 +197,8 @@ public:
     /** Search the inheritance chain to see if the given type
         is a base of this type. */
     bool HasBase(const SymbolType &base_type) const;
+    /** Find the root aliasee. If not an alias, just returns itself */
+    SymbolTypePtr_t GetUnaliased();
     
     bool IsArrayType() const;
     bool IsConstType() const;

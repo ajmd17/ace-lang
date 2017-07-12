@@ -549,8 +549,6 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
             uint16_t size;
             bs->Read(&size);
 
-            ASSERT(size > 0);
-
             char **names = new char*[size];
             
             // load each name

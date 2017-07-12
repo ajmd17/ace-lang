@@ -13,7 +13,8 @@
 
 #include <iostream>
 
-AstVariable::AstVariable(const std::string &name, const SourceLocation &location)
+AstVariable::AstVariable(const std::string &name,
+    const SourceLocation &location)
     : AstIdentifier(name, location)
 {
 }

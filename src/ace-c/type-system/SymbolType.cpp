@@ -167,11 +167,13 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
             return sp->TypeCompatible(right, strict_numbers);
         }
         case TYPE_GENERIC: {
-            //if (right.m_type_class != TYPE_GENERIC) {
-                if (SymbolTypePtr_t other_base = right.m_base.lock()) {
-                    return TypeCompatible(*other_base, strict_numbers);
+            if (right.m_type_class == TYPE_GENERIC || right.m_type_class == TYPE_GENERIC_INSTANCE) {
+                if (auto right_base = right.GetBaseType()) {
+                    if (TypeCompatible(*right_base, strict_numbers)) {
+                        return true;
+                    }
                 }
-            //} // equality would have already been checked
+            }
 
             return false;
         }
@@ -181,13 +183,12 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
 
             if (right.m_type_class == TYPE_GENERIC_INSTANCE) {
                 // check for compatibility between instances
-                SymbolTypePtr_t other_base = right.m_base.lock();
+                SymbolTypePtr_t other_base = right.GetBaseType();
                 ASSERT(other_base != nullptr);
 
-                // check if bases are compatible
-                if (base != other_base && !base->TypeCompatible(*other_base, strict_numbers)) {
+                if (!TypeCompatible(*other_base, strict_numbers) && !base->TypeCompatible(*other_base, strict_numbers)) {
                     return false;
-                }
+                } 
 
                 // check all params
                 if (m_generic_instance_info.m_generic_args.size() != right.m_generic_instance_info.m_generic_args.size()) {
@@ -633,15 +634,17 @@ SymbolTypePtr_t SymbolType::Extend(
 {
     SymbolTypePtr_t symbol_type(new SymbolType(
         base->GetName(),
-        TYPE_USER_DEFINED,
+        base->GetTypeClass() == TYPE_BUILTIN
+            ? TYPE_USER_DEFINED
+            : base->GetTypeClass(),
         base,
         base->GetDefaultValue(),
         members
     ));
 
-    // symbol_type->SetDefaultValue(sp<AstObject>(
-    //     new AstObject(symbol_type, SourceLocation::eof)
-    // ));
+    symbol_type->SetDefaultValue(sp<AstObject>(
+        new AstObject(symbol_type, SourceLocation::eof)
+    ));
     
     return symbol_type;
 }
@@ -716,16 +719,21 @@ SymbolTypePtr_t SymbolType::GenericPromotion(
     switch (lptr->GetTypeClass()) {
         case TYPE_GENERIC:
             switch (rptr->GetTypeClass()) {
-                case TYPE_GENERIC_INSTANCE:
-                    if (auto right_base = rptr->GetBaseType()){
+                case TYPE_GENERIC_INSTANCE: {
+                    auto right_base = rptr->GetBaseType();
+
+                    while (right_base != nullptr) {
                         if (lptr->TypeEqual(*right_base)) {
                             // left-hand side is the base of the right hand side,
                             // so upgrade left to the derived type.
                             return rptr;
                         }
+                        right_base = right_base->GetBaseType();
                     }
+                }
                     // fallthrough
                 default:
+                    // check if left is a Boxed type so we can upgrade the inner type
                     if (auto left_base = lptr->GetBaseType()) {
                         if (left_base == BuiltinTypes::BOXED_TYPE) {
                             // if left is a Boxed type and still generic (no params),
@@ -804,8 +812,6 @@ SymbolTypePtr_t SymbolType::SubstituteGenericParams(
                 new_arg.m_default_value = arg.m_default_value;
 
                 // perform substitution
-                std::cout << "compare: " << arg_type->GetName() << " to " << placeholder->GetName() << "...\n";
-
                 SymbolTypePtr_t arg_type_substituted = SymbolType::SubstituteGenericParams(
                     arg_type,
                     placeholder,

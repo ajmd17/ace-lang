@@ -205,3 +205,11 @@ const SymbolTypePtr_t BuiltinTypes::BLOCK_TYPE = SymbolType::Generic(
     GenericTypeInfo { -1 },
     BuiltinTypes::OBJECT
 );
+
+const SymbolTypePtr_t BuiltinTypes::CLOSURE_TYPE = SymbolType::Generic(
+    "Closure",
+    nullptr,
+    {},
+    GenericTypeInfo { -1 },
+    BuiltinTypes::FUNCTION
+);

@@ -96,12 +96,17 @@ void AstBlockExpression::Visit(AstVisitor *visitor, Module *mod)
     // go down to previous scope
     mod->m_scopes.Close();
 
-    m_symbol_type = SymbolType::Extend(SymbolType::GenericInstance(
+    SymbolTypePtr_t symbol_type_base = SymbolType::GenericInstance(
         BuiltinTypes::BLOCK_TYPE, 
         GenericInstanceTypeInfo {
             generic_param_types
         }
-    ), member_types);
+    );
+
+    visitor->GetCompilationUnit()->GetCurrentModule()->
+        m_scopes.Root().GetIdentifierTable().AddSymbolType(symbol_type_base);
+
+    m_symbol_type = SymbolType::Extend(symbol_type_base, member_types);
 
     // allow generic instance to be used in code
     visitor->GetCompilationUnit()->GetCurrentModule()->

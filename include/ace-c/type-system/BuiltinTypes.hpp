@@ -29,6 +29,7 @@ struct BuiltinTypes {
     static const SymbolTypePtr_t MAYBE;
     static const SymbolTypePtr_t CONST_TYPE;
     static const SymbolTypePtr_t BLOCK_TYPE;
+    static const SymbolTypePtr_t CLOSURE_TYPE;
 };
 
 #endif

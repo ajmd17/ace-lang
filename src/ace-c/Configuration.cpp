@@ -9,10 +9,10 @@ const std::string Config::global_module_name = "global";
 const bool Config::allow_identifiers_other_modules = false;
 const bool Config::use_config_file = true;
 
-bool Config::lazy_declarations = true;
+bool Config::lazy_declarations = false;
+
 bool Config::use_static_objects = true;
 bool Config::cull_unused_objects = true;
-int Config::max_registers = 1;
 
 } // compiler
 } // ace

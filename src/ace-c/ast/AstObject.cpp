@@ -79,8 +79,6 @@ std::unique_ptr<Buildable> AstObject::Build(AstVisitor *visitor, Module *mod)
         const SymbolTypePtr_t &mem_type = std::get<1>(mem);
         ASSERT(mem_type != nullptr);
 
-        std::cout << "mem type for " << std::get<0>(mem) << " = " << mem_type->GetName() << "\n";
-
         // if there has not been an assignment provided,
         // use the default value of the members's type.
         if (std::get<2>(mem) != nullptr) {
@@ -89,6 +87,7 @@ std::unique_ptr<Buildable> AstObject::Build(AstVisitor *visitor, Module *mod)
             // load the data member's default value.
             ASSERT_MSG(mem_type->GetDefaultValue() != nullptr,
                 "Default value should not be null (and no assignment was provided)");
+            
             chunk->Append(mem_type->GetDefaultValue()->Build(visitor, mod));
         }
 

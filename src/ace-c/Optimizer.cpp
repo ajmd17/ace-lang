@@ -94,36 +94,16 @@ std::shared_ptr<AstExpression> Optimizer::OptimizeExpr(
         if (const Identifier *ident = expr_as_var->GetProperties().GetIdentifier()) {
             const SymbolTypePtr_t &identifier_type = ident->GetSymbolType();
             const std::shared_ptr<AstExpression> &current_value = ident->GetCurrentValue();
-            
-            //std::cout << "var " << expr_as_var->GetName() << " type = " << identifier_type->GetName() << "\n";
 
             if (current_value != nullptr) {
                 ASSERT(identifier_type != nullptr);
                 
                 if (identifier_type->IsConstType()) {
-                    //if (auto *constant = dynamic_cast<AstConstant*>(current_value.get())) {
-                        // yay! we were able to retrieve the value that
-                        // the variable is set to, so now we can use that
-                        // at compile-time rather than using a variable.
-                        //expr.reset(constant);
-
-                        // decrement use count because it would have been incremented by Visit()
-                        ident->DecUseCount();
-                        return Optimizer::OptimizeExpr(current_value, visitor, mod);
-                    //}
+                    // decrement use count because it would have been incremented by Visit()
+                    ident->DecUseCount();
+                    return Optimizer::OptimizeExpr(current_value, visitor, mod);
                 }
             }
-
-            /*if (expr_as_var->GetProperties().GetIdentifier()->GetFlags() & FLAG_CONST) {
-                // the variable is a const, now we make sure that the current
-                // value is a literal value
-                if (auto *constant = dynamic_cast<AstConstant*>(current_value.get())) {
-                    // yay! we were able to retrieve the value that
-                    // the variable is set to, so now we can use that
-                    // at compile-time rather than using a variable.
-                    expr.reset(constant);
-                }
-            }*/
         }
     } else if (AstBinaryExpression *expr_as_binop = dynamic_cast<AstBinaryExpression*>(expr.get())) {
         if (expr_as_binop->GetRight() == nullptr) {

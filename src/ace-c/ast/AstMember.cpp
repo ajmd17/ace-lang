@@ -35,8 +35,8 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
     m_target->Visit(visitor, mod);
 
     m_access_options = m_target->GetAccessOptions();
-    
     m_target_type = m_target->GetSymbolType();
+    
     ASSERT(m_target_type != nullptr);
 
     if (m_target_type != BuiltinTypes::ANY) {

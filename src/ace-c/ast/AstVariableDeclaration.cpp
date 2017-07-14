@@ -137,47 +137,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     ));
                 }
 
-                /*bool is_left_incomplete = false;
-
-                switch (symbol_type->GetTypeClass()) {
-                    case TYPE_GENERIC:
-                        is_left_incomplete = true;
-                        break;
-                }
-
-
-                if (is_left_incomplete) {
-                    // perform type promotion on incomplete generics.
-                    // i.e: let x: Array = [1,2,3]
-                    // will actually be of the type `Array(Int)`
-
-                    // NOTE: removed because if somebody writes a: Array = [1,2,3]
-                    // and later wants to assign it to ["hi"] they shouldn't receive an error,
-                    // as they did not explicitly specify that it is Array<Int> in this case.
-
-                    // Added back in
-
-                    // TODO: move this into TypePromotion in the SymbolType class
-                    if (assignment_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                        if (auto base = assignment_type->GetBaseType()) {
-                            // here is where type promotion is performed
-
-                            if (symbol_type->TypeEqual(*base)) {
-                                symbol_type = assignment_type;
-                            }
-                            // if it is a boxed type (e.g Maybe(T) or Const(T)),
-                            // allow type promotion on the inner boxed type.
-                            // else if (symbol_type->IsBoxedType()) {
-                            //     SymbolTypePtr &boxed_inner_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
-                            //     ASSERT(boxed_inner_type != nullptr);
-
-                            //     //if (boxed_inner_type)
-                            //     symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type = assignment_type;
-                            // }
-                        }
-                    }
-                }*/
-
                 if (is_type_strict) {
                     SymbolTypePtr_t comparison_type = symbol_type;
 

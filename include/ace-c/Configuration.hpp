@@ -19,12 +19,12 @@ struct Config {
 
     /** Allow Python-style declarations? */
     static bool lazy_declarations;
+    
     /** Store strings, functions, etc.... at
         the top of the program, or load them at the point they're needed */
     static bool use_static_objects;
     /** Optimize by removing unused variables */
     static bool cull_unused_objects;
-    static int max_registers;
 };
 
 } // compiler

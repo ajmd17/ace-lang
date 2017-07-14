@@ -44,11 +44,13 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         if (AstMember *target_mem = dynamic_cast<AstMember*>(m_target.get())) {
             m_is_method_call = true;
 
+            ASSERT(target_mem->GetTarget() != nullptr);
+
             std::shared_ptr<AstArgument> self_arg(new AstArgument(
                 target_mem->GetTarget(),
                 true,
                 "self",
-                m_target->GetLocation()
+                target_mem->GetTarget()->GetLocation()
             ));
             
             // insert at front

@@ -95,12 +95,14 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
     // set m_is_closure to be true if we are already
     // located within a function
-    m_is_closure = mod->IsInFunction();
+    m_is_closure = true;//mod->IsInFunction();
 
     int scope_flags = 0;
+    
     if (m_is_pure) {
         scope_flags |= ScopeFunctionFlags::PURE_FUNCTION_FLAG;
     }
+
     if (m_is_closure) {
         scope_flags |= ScopeFunctionFlags::CLOSURE_FUNCTION_FLAG;
 
@@ -115,6 +117,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             m_location
         ));
     }
+
     if (m_is_generator) {
         scope_flags |= ScopeFunctionFlags::GENERATOR_FUNCTION_FLAG;
 
@@ -274,6 +277,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         m_return_type
     });
 
+    // perform checking to see if it should still be considered a closure
     if (m_is_closure) {
         ASSERT(m_closure_self_param != nullptr);
         ASSERT(m_closure_self_param->GetIdentifier() != nullptr);
@@ -302,29 +306,39 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
     );
 
     if (m_is_closure) {
-        SymbolMember_t closure_member;
-        std::get<0>(closure_member) = "$invoke";
-        std::get<1>(closure_member) = m_symbol_type;
+        // add $invoke to call this object
+        SymbolMember_t invoke_member;
+        std::get<0>(invoke_member) = "$invoke";
+        std::get<1>(invoke_member) = m_symbol_type;
+        closure_obj_members.push_back(invoke_member);
 
-        closure_obj_members.push_back(closure_member);
-
+        // visit each member
         for (auto &member : closure_obj_members) {
             if (std::get<2>(member) != nullptr) {
                 std::get<2>(member)->Visit(visitor, mod);
             }
         }
 
-        // create a new type for the 'events' field containing all listeners as fields
-        m_closure_type = SymbolType::Object(
-            "Closure",
-            closure_obj_members
+        SymbolTypePtr_t closure_base_type = SymbolType::GenericInstance(
+            BuiltinTypes::CLOSURE_TYPE,
+            GenericInstanceTypeInfo {
+                generic_param_types
+            }
         );
-        
+
+        visitor->GetCompilationUnit()->GetCurrentModule()->
+            m_scopes.Root().GetIdentifierTable().AddSymbolType(closure_base_type);
+
+        m_closure_type = SymbolType::Extend(closure_base_type, closure_obj_members);
+
+        // register type
         visitor->GetCompilationUnit()->RegisterType(m_closure_type);
+        // allow generic instance to be reused
+        visitor->GetCompilationUnit()->GetCurrentModule()->
+            m_scopes.Root().GetIdentifierTable().AddSymbolType(m_closure_type);
 
         ASSERT(m_closure_type->GetDefaultValue() != nullptr);
 
-        // builtin members:
         m_closure_object = m_closure_type->GetDefaultValue();
         m_closure_object->Visit(visitor, mod);
     }

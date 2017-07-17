@@ -8,6 +8,16 @@
 
 struct TokenStreamInfo {
     std::string filepath;
+
+    TokenStreamInfo(const std::string &filepath)
+        : filepath(filepath)
+    {
+    }
+
+    TokenStreamInfo(const TokenStreamInfo &other)
+        : filepath(other.filepath)
+    {
+    }
 };
 
 class TokenStream {

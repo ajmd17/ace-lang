@@ -13,6 +13,7 @@ public:
     virtual ~AstDeclaration() = default;
 
     inline const std::string &GetName() const { return m_name; }
+    inline void SetName(const std::string &name) { m_name = name; }
     inline Identifier *GetIdentifier() const { return m_identifier; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;

@@ -333,6 +333,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
         // register type
         visitor->GetCompilationUnit()->RegisterType(m_closure_type);
+
         // allow generic instance to be reused
         visitor->GetCompilationUnit()->GetCurrentModule()->
             m_scopes.Root().GetIdentifierTable().AddSymbolType(m_closure_type);

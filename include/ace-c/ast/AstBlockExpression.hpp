@@ -3,6 +3,8 @@
 
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstBlock.hpp>
+#include <ace-c/ast/AstCallExpression.hpp>
+#include <ace-c/ast/AstFunctionExpression.hpp>
 
 #include <string>
 #include <vector>
@@ -35,6 +37,10 @@ protected:
     SymbolTypePtr_t m_symbol_type;
     int m_num_locals;
     bool m_last_is_return;
+    std::vector<std::shared_ptr<AstStatement>> m_children;
+
+    //std::shared_ptr<AstCallExpression> m_call_expr;
+    std::shared_ptr<AstFunctionExpression> m_result_closure;
 
     inline Pointer<AstBlockExpression> CloneImpl() const
     {

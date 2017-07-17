@@ -36,32 +36,43 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
 
     m_access_options = m_target->GetAccessOptions();
     m_target_type = m_target->GetSymbolType();
-    
+
+    ASSERT(m_target_type != nullptr);
+
+    // start looking at the target type,
+    // iterate through base type
+    SymbolTypePtr_t field_type = nullptr;
+
+    while (field_type == nullptr && m_target_type != nullptr) {
+        // allow boxing/unboxing
+        if (m_target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+            if (m_target_type->IsBoxedType()) {
+                m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+                ASSERT(m_target_type != nullptr);
+            }
+        }
+        
+        if ((field_type = m_target_type->FindMember(m_field_name)) != nullptr) {
+            break;
+        }
+
+        if (auto base = m_target_type->GetBaseType()) {
+            m_target_type = base;
+        } else {
+            break;
+        }
+
+        // if (field_type == nullptr) {
+        //     // look for members in base class
+        //     m_target_type = m_target_type->GetBaseType();
+        // } else {
+        //     break;
+        // }
+    }
+
     ASSERT(m_target_type != nullptr);
 
     if (m_target_type != BuiltinTypes::ANY) {
-        // start looking at the target type,
-        // iterate through base type
-        SymbolTypePtr_t field_type = nullptr;
-
-        while (field_type == nullptr && m_target_type != nullptr) {
-            // allow boxing/unboxing
-            if (m_target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                if (m_target_type->IsBoxedType()) {
-                    m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
-                    ASSERT(m_target_type != nullptr);
-                }
-            }
-            
-            field_type = m_target_type->FindMember(m_field_name);
-
-            if (field_type == nullptr) {
-                m_target_type = m_target_type->GetBaseType();
-            } else {
-                break;
-            }
-        }
-
         if (field_type != nullptr) {
             m_symbol_type = field_type;
         } else {

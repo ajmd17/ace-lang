@@ -15,7 +15,8 @@
 
 AstVariable::AstVariable(const std::string &name,
     const SourceLocation &location)
-    : AstIdentifier(name, location)
+    : AstIdentifier(name, location),
+      m_should_inline(false)
 {
 }
 
@@ -29,21 +30,44 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
         case IDENTIFIER_TYPE_VARIABLE: {
             ASSERT(m_properties.GetIdentifier() != nullptr);
 
-            if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS) {
-                const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
-                ASSERT(current_value != nullptr);
+            // clone the AST node so we don't double-visit
+            m_inline_value = CloneAstNode(m_properties.GetIdentifier()->GetCurrentValue());
 
+            // if alias or const, load direct value.
+            // if it's an alias then it will just refer to whatever other variable
+            // is being referenced. if it is const, load the direct value held in the variable
+            const bool is_alias = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS;
+            const bool is_mixin = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_MIXIN;
+            const bool is_const = AstIdentifier::GetSymbolType()->IsConstType();
+
+            bool force_inline = false;
+
+            // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
+            // normal way.
+            if (is_alias || is_mixin) {
+                ASSERT(m_inline_value != nullptr);
+                force_inline = true;
+            }
+
+            m_should_inline = force_inline || is_const;
+
+            if (m_should_inline) {
                 // set access options for this variable based on those of the current value
-                AstExpression::m_access_options = current_value->GetAccessOptions();
+                AstExpression::m_access_options = m_inline_value->GetAccessOptions();
 
                 // if alias, accept the current value instead
-                current_value->Visit(visitor, mod);
-            } else {
-                /*if (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST) {
-                    // for const, set access options to only load
-                    AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
-                }*/
-                
+                m_inline_value->Visit(visitor, mod);
+            }
+
+            if (!force_inline) {
+                if (m_should_inline) {
+                    if (const SymbolTypePtr_t value_type = m_inline_value->GetSymbolType()) {
+                        // only load basic types inline.
+                        if (value_type->GetTypeClass() != SymbolTypeClass::TYPE_BUILTIN) {
+                            m_should_inline = false;
+                        }
+                    }
+                }
                 // ASSERT(m_properties.GetIdentifier()->GetSymbolType() != nullptr);
                 // if (m_properties.GetIdentifier()->GetSymbolType()->IsConstType()) {
                 //     // for const, set access options to only load
@@ -144,40 +168,13 @@ std::unique_ptr<Buildable> AstVariable::Build(AstVisitor *visitor, Module *mod)
     } else {
         ASSERT(m_properties.GetIdentifier() != nullptr);
 
-        // if alias or const, load direct value.
-        // if it's an alias then it will just refer to whatever other variable
-        // is being referenced. if it is const, load the direct value held in the variable
-        const std::shared_ptr<AstExpression> &current_value = m_properties.GetIdentifier()->GetCurrentValue();
-
-        const bool is_alias = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS;
-        const bool is_const = AstIdentifier::GetSymbolType()->IsConstType(); //m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST;
-
-        // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
-        // normal way.
-        bool should_load_inline = false;
-
-        if (is_alias) {
-            ASSERT(current_value != nullptr);
-            should_load_inline = true;
-        } else if (is_const) {
-            if (current_value != nullptr) {
-                const SymbolTypePtr_t current_value_type = current_value->GetSymbolType();
-                if (current_value_type != nullptr) {
-                    // only load basic types inline.
-                    if (current_value_type->GetTypeClass() == SymbolTypeClass::TYPE_BUILTIN) {
-                        should_load_inline = true;
-                    }
-                }
-            }
-        }
-
-        if (should_load_inline) {
+        if (m_should_inline) {
             // if alias, accept the current value instead
-            const AccessMode current_access_mode = current_value->GetAccessMode();
-            current_value->SetAccessMode(m_access_mode);
-            chunk->Append(current_value->Build(visitor, mod));
+            const AccessMode current_access_mode = m_inline_value->GetAccessMode();
+            m_inline_value->SetAccessMode(m_access_mode);
+            chunk->Append(m_inline_value->Build(visitor, mod));
             // reset access mode
-            current_value->SetAccessMode(current_access_mode);
+            m_inline_value->SetAccessMode(current_access_mode);
         } else {
             int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
             int stack_location = m_properties.GetIdentifier()->GetStackLocation();
@@ -229,13 +226,9 @@ Pointer<AstStatement> AstVariable::Clone() const
 
 Tribool AstVariable::IsTrue() const
 {
-    if (m_properties.GetIdentifier() != nullptr) {
-        // we can only check if this is true during
-        // compile time if it is const literal
-        if (m_properties.GetIdentifier()->GetFlags() & FLAG_CONST) {
-            if (auto *constant = dynamic_cast<AstConstant*>(m_properties.GetIdentifier()->GetCurrentValue().get())) {
-                return constant->IsTrue();
-            }
+    if (m_should_inline && m_inline_value != nullptr) {
+        if (auto *constant = dynamic_cast<AstConstant*>(m_inline_value.get())) {
+            return constant->IsTrue();
         }
     }
 

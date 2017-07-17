@@ -12,7 +12,8 @@
 #include <sstream>
 #include <iostream>
 
-Parser::Parser(AstIterator *ast_iterator, TokenStream *token_stream,
+Parser::Parser(AstIterator *ast_iterator,
+    TokenStream *token_stream,
     CompilationUnit *compilation_unit)
     : m_ast_iterator(ast_iterator),
       m_token_stream(token_stream),
@@ -343,30 +344,13 @@ void Parser::Parse(bool expect_module_decl)
             }
         }*/
     } else {
-        while (m_token_stream->HasNext()) {
-            SourceLocation location = CurrentLocation();
-
+        // build up the module declaration with statements
+        while (m_token_stream->HasNext() && !Match(TK_CLOSE_BRACE, false)) {
             // skip statement terminator tokens
-            if (Match(TK_SEMICOLON, true) || Match(TK_NEWLINE, true)) {
-                continue;
-            }
+            if (!Match(TK_SEMICOLON, true) && !Match(TK_NEWLINE, true)) {
 
-            std::shared_ptr<AstStatement> stmt;
-
-            // check for module declaration
-            if (MatchKeyword(Keyword_module, false) && !MatchAhead(TK_DOT, 1)) {
-                stmt = ParseModuleDeclaration();
-            } else {
-                stmt = ParseStatement();
-            }
-            
-            if (stmt != nullptr) {
-                m_ast_iterator->Push(stmt);
-            } else {
-                // skip ahead to avoid endlessly looping
-                if (m_token_stream->HasNext()) {
-                    m_token_stream->Next();
-                }
+                // parse at top level, to allow for nested modules
+                m_ast_iterator->Push(ParseStatement(true));
             }
         }
     }
@@ -438,6 +422,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseTypeDefinition();
         } else if (MatchKeyword(Keyword_alias, false)) {
             res = ParseAliasDeclaration();
+        } else if (MatchKeyword(Keyword_mixin, false)) {
+            res = ParseMixinDeclaration();
         } else if (MatchKeyword(Keyword_if, false)) {
             res = ParseIfStatement();
         } else if (MatchKeyword(Keyword_while, false)) {
@@ -2120,6 +2106,36 @@ std::shared_ptr<AstAliasDeclaration> Parser::ParseAliasDeclaration()
         ident.GetValue(),
         expr,
         token.GetLocation()
+    ));
+}
+
+std::shared_ptr<AstMixinDeclaration> Parser::ParseMixinDeclaration()
+{
+    const Token token = ExpectKeyword(Keyword_mixin, true);
+    if (!token) {
+        return nullptr;
+    }
+
+    const Token ident = ExpectIdentifier(true, true);
+    if (!ident) {
+        return nullptr;
+    }
+
+    const Token op = ExpectOperator("=", true);
+    if (!op) {
+        return nullptr;
+    }
+
+    // parse the mixin-expr string
+    const Token mixin_expr = Expect(TK_STRING, true);
+    if (!mixin_expr) {
+        return nullptr;
+    }
+
+    return std::shared_ptr<AstMixinDeclaration>(new AstMixinDeclaration(
+        ident.GetValue(),
+        mixin_expr.GetValue(),
+        ident.GetLocation()
     ));
 }
 

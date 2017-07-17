@@ -3,6 +3,8 @@
 
 #include <ace-c/ast/AstStatement.hpp>
 
+#include <common/my_assert.hpp>
+
 #include <memory>
 #include <vector>
 

@@ -8,9 +8,10 @@
 #include <memory>
 
 enum IdentifierFlags {
-   FLAG_CONST = 0x01,
-   FLAG_ALIAS = 0x02,
-   FLAG_DECLARED_IN_FUNCTION = 0x04,
+   FLAG_CONST = 1,
+   FLAG_ALIAS = 2,
+   FLAG_MIXIN = 4,
+   FLAG_DECLARED_IN_FUNCTION = 8,
 };
 
 class Identifier {

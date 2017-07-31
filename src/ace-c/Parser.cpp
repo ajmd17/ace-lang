@@ -283,12 +283,6 @@ void Parser::Parse(bool expect_module_decl)
 {
     SkipStatementTerminators();
 
-    // allow 'import' and 'use' statements in global (non-module) scopes.
-    /*while (MatchKeyword(Keyword_use, false) || MatchKeyword(Keyword_import, false)) {
-        m_ast_iterator->Push(ParseStatement());
-        SkipStatementTerminators();
-    }*/
-
     if (expect_module_decl) {
         // create a module based upon the filename
         const std::string filepath = m_token_stream->GetInfo().filepath;
@@ -316,33 +310,6 @@ void Parser::Parse(bool expect_module_decl)
         }
 
         m_ast_iterator->Push(module_ast);
-
-
-        /*if (std::shared_ptr<AstModuleDeclaration> module_ast = ParseModuleDeclaration()) {
-            m_ast_iterator->Push(module_ast);
-            
-            while (m_token_stream->HasNext()) {
-                if (Match(TK_SEMICOLON, true) || Match(TK_NEWLINE, true)) {
-                    continue;
-                }
-
-                // check for modules declared after the first
-                if (MatchKeyword(Keyword_module, false)) {
-                    m_ast_iterator->Push(ParseModuleDeclaration());
-                } else if (MatchKeyword(Keyword_use, false) || MatchKeyword(Keyword_import, false)) {
-                    m_ast_iterator->Push(ParseStatement());
-                } else {
-                    SourceLocation location = CurrentLocation();
-
-                    // call ParseStatement() to read to next
-                    ParseStatement();
-
-                    // error, statement outside of module
-                    CompilerError error(LEVEL_ERROR, Msg_statement_outside_module, location);
-                    m_compilation_unit->GetErrorList().AddError(error);
-                }
-            }
-        }*/
     } else {
         // build up the module declaration with statements
         while (m_token_stream->HasNext() && !Match(TK_CLOSE_BRACE, false)) {
@@ -555,9 +522,13 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
         expr = ParseParentheses();
     } else if (Match(TK_OPEN_BRACKET)) {
         expr = ParseArrayExpression();
-    } else if (Match(TK_OPEN_BRACE)) {
+    }
+#if ACE_ENABLE_BLOCK_EXPRESSIONS
+    else if (Match(TK_OPEN_BRACE)) {
         expr = ParseBlockExpression();
-    } else if (Match(TK_INTEGER)) {
+    }
+#endif
+    else if (Match(TK_INTEGER)) {
         expr = ParseIntegerLiteral();
     } else if (Match(TK_FLOAT)) {
         expr = ParseFloatLiteral();

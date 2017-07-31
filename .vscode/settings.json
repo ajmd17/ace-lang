@@ -66,6 +66,7 @@
     "unordered_map": "cpp",
     "valarray": "cpp",
     "queue": "cpp",
-    "cmakeccompilerid.c": "cpp"
+    "cmakeccompilerid.c": "cpp",
+    "cstring": "cpp"
   }
 }

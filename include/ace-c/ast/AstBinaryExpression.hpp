@@ -4,6 +4,7 @@
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/Operator.hpp>
+#include <ace-c/Configuration.hpp>
 
 class AstBinaryExpression : public AstExpression {
 public:
@@ -30,10 +31,11 @@ private:
     std::shared_ptr<AstExpression> m_right;
     const Operator *m_op;
 
+#if ACE_ENABLE_LAZY_DECLARATIONS
     // if the expression is lazy declaration
     std::shared_ptr<AstVariableDeclaration> m_variable_declaration;
-
     std::shared_ptr<AstVariableDeclaration> CheckLazyDeclaration(AstVisitor *visitor, Module *mod);
+#endif
 
     inline std::shared_ptr<AstBinaryExpression> CloneImpl() const
     {

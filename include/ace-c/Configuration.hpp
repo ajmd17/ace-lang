@@ -5,21 +5,17 @@
 #include <map>
 #include <fstream>
 
+#define ACE_ENABLE_BLOCK_EXPRESSIONS 0
+#define ACE_ENABLE_LAZY_DECLARATIONS 0
+#define ACE_ALLOW_IDENTIFIERS_OTHER_MODULES 0
+#define ACE_ENABLE_CONFIG_FILE 0
+
 namespace ace {
 namespace compiler {
 
 struct Config {
     static const int max_data_members;
     static const std::string global_module_name;
-
-    /** Allow implicit usage of variables from different modules? */
-    static const bool allow_identifiers_other_modules;
-    /** Use aceconfig.ini in path to change compilation parameters */
-    static const bool use_config_file;
-
-    /** Allow Python-style declarations? */
-    static bool lazy_declarations;
-    
     /** Store strings, functions, etc.... at
         the top of the program, or load them at the point they're needed */
     static bool use_static_objects;

@@ -30,30 +30,7 @@ AstBlockExpression::AstBlockExpression(
 
 void AstBlockExpression::Visit(AstVisitor *visitor, Module *mod)
 {
-#if 0
-    // block-expr is actually just an immediately invoked closure
     ASSERT(m_block != nullptr);
-
-    m_call_expr.reset(new AstCallExpression(
-        std::shared_ptr<AstFunctionExpression>(new AstFunctionExpression(
-            {},
-            nullptr,
-            m_block,
-            false,
-            false,
-            false,
-            m_location
-        )),
-        {},
-        false,
-        m_location
-    ));
-
-    m_call_expr->Visit(visitor, mod);
-
-#else
-    ASSERT(m_block != nullptr);
-    //m_block->Visit(visitor, mod);
 
     // hold a vector of all declarations in the block.
     // at the end of the block, create an Object declaration where all members are
@@ -62,7 +39,6 @@ void AstBlockExpression::Visit(AstVisitor *visitor, Module *mod)
     // it will be assigned to the variable itself, so that expressions are only evaluated once.
     std::vector<SymbolMember_t> member_types;
     std::vector<GenericInstanceTypeInfo::Arg> generic_param_types;
-    //std::vector<std::shared_ptr<AstVariableDeclaration>> block_members;
     std::vector<std::tuple<std::string, std::shared_ptr<AstVariable>>> block_member_refs;
 
     // open the new scope
@@ -80,25 +56,11 @@ void AstBlockExpression::Visit(AstVisitor *visitor, Module *mod)
             // prefix the original with $__ to hide it,
             // and create an alias with the original name pointing to this.<var name>
             const std::string var_name = decl->GetName();
-            /*decl->SetName(std::string("$__") + var_name);
-
-            m_children.push_back(std::shared_ptr<AstAliasDeclaration>(new AstAliasDeclaration(
-                var_name,
-                std::shared_ptr<AstMember>(new AstMember(
-                    var_name,
-                    std::shared_ptr<AstVariable>(new AstVariable(
-                        "self",
-                        m_location
-                    )),
-                    m_location
-                )),
-                decl->GetLocation()
-            )));*/
 
             block_member_refs.push_back(std::make_tuple(
                 var_name, // original name
                 std::shared_ptr<AstVariable>(new AstVariable(
-                    /*std::string("$__") +*/ var_name,
+                    var_name,
                     decl->GetLocation()
                 ))
             ));
@@ -128,26 +90,6 @@ void AstBlockExpression::Visit(AstVisitor *visitor, Module *mod)
     ));
 
     m_result_closure->Visit(visitor, mod);
-
-    /*for (auto &tup : block_member_refs) {
-        const std::string &name = std::get<0>(tup);
-        auto &expr = std::get<1>(tup);
-
-        ASSERT(expr != nullptr);
-        expr->Visit(visitor, mod);
-
-        member_types.push_back(std::make_tuple(
-            name,
-            expr->GetSymbolType(),
-            expr
-        ));
-
-        generic_param_types.push_back(GenericInstanceTypeInfo::Arg {
-            name,
-            expr->GetSymbolType(),
-            nullptr
-        });
-    }*/
     
     m_last_is_return = !(m_children.empty()) &&
         (dynamic_cast<AstReturnStatement*>(m_children.back().get()) != nullptr);
@@ -158,39 +100,10 @@ void AstBlockExpression::Visit(AstVisitor *visitor, Module *mod)
 
     // go down to previous scope
     mod->m_scopes.Close();
-
-    /*SymbolTypePtr_t symbol_type_base = SymbolType::GenericInstance(
-        BuiltinTypes::BLOCK_TYPE, 
-        GenericInstanceTypeInfo {
-            generic_param_types
-        }
-    );
-
-    visitor->GetCompilationUnit()->GetCurrentModule()->
-        m_scopes.Root().GetIdentifierTable().AddSymbolType(symbol_type_base);
-
-    m_symbol_type = SymbolType::Extend(symbol_type_base, member_types);
-
-    // allow generic instance to be used in code
-    visitor->GetCompilationUnit()->GetCurrentModule()->
-        m_scopes.Root().GetIdentifierTable().AddSymbolType(m_symbol_type);
-    
-    // register the type
-    visitor->GetCompilationUnit()->RegisterType(m_symbol_type);*/
-#endif
 }
 
 std::unique_ptr<Buildable> AstBlockExpression::Build(AstVisitor *visitor, Module *mod)
 {
-#if 0
-    ASSERT(m_call_expr != nullptr);
-    return m_call_expr->Build(visitor, mod);
-
-#else
-
-    //ASSERT(m_symbol_type != nullptr);
-    //ASSERT(m_symbol_type->GetDefaultValue() != nullptr);
-
     ASSERT(m_result_closure != nullptr);
 
     std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
@@ -202,9 +115,6 @@ std::unique_ptr<Buildable> AstBlockExpression::Build(AstVisitor *visitor, Module
     }
 
     chunk->Append(m_result_closure->Build(visitor, mod));
-    
-    // build in the created object (this will be the result value obtained)
-    //chunk->Append(m_symbol_type->GetDefaultValue()->Build(visitor, mod));
 
     // how many times to pop the stack
     size_t pop_times = 0;
@@ -221,17 +131,10 @@ std::unique_ptr<Buildable> AstBlockExpression::Build(AstVisitor *visitor, Module
     chunk->Append(Compiler::PopStack(visitor, pop_times));
 
     return std::move(chunk);
-#endif
 }
 
 void AstBlockExpression::Optimize(AstVisitor *visitor, Module *mod)
 {
-#if 0
-    ASSERT(m_call_expr != nullptr);
-    m_call_expr->Optimize(visitor, mod);
-    
-#else
-   // ASSERT(m_block != nullptr);
     ASSERT(m_result_closure != nullptr);
 
     for (auto &child : m_children) {
@@ -240,8 +143,6 @@ void AstBlockExpression::Optimize(AstVisitor *visitor, Module *mod)
     }
 
     m_result_closure->Optimize(visitor, mod);
-
-#endif
 }
 
 Pointer<AstStatement> AstBlockExpression::Clone() const
@@ -256,13 +157,6 @@ Tribool AstBlockExpression::IsTrue() const
 
 bool AstBlockExpression::MayHaveSideEffects() const
 {
-#if 0
-    ASSERT(m_call_expr != nullptr);
-    return m_call_expr->MayHaveSideEffects();
-
-#else
-    //ASSERT(m_block != nullptr);
-    
     for (const auto &child : m_children) {
         if (AstExpression *expr = dynamic_cast<AstExpression*>(child.get())) {
             if (expr->MayHaveSideEffects()) {
@@ -272,23 +166,12 @@ bool AstBlockExpression::MayHaveSideEffects() const
     }
 
     return false;
-#endif
 }
 
 SymbolTypePtr_t AstBlockExpression::GetSymbolType() const
 {
-#if 0
-    ASSERT(m_call_expr != nullptr);
-    ASSERT(m_call_expr->GetSymbolType() != nullptr);
-
-    return m_call_expr->GetSymbolType();
-#else
-    //ASSERT(m_symbol_type != nullptr);
-    //return m_symbol_type;
-
     ASSERT(m_result_closure != nullptr);
     ASSERT(m_result_closure->GetSymbolType() != nullptr);
 
     return m_result_closure->GetSymbolType();
-#endif
 }

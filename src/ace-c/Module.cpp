@@ -109,27 +109,27 @@ Identifier *Module::LookUpIdentifier(const std::string &name, bool this_scope_on
         top = top->m_parent;
     }
 
-    if (ace::compiler::Config::allow_identifiers_other_modules) {
-        if (m_tree_link != nullptr && m_tree_link->m_parent != nullptr) {
-            if (Module *other = m_tree_link->m_parent->m_value) {
-                if (other->GetLocation().GetFileName() == m_location.GetFileName()) {
-                    return other->LookUpIdentifier(name, false);
-                } else {
-                    // we are outside of file scope, so loop until root/global module found
-                    const TreeNode<Module*> *mod_link = m_tree_link->m_parent;
+#if ACE_ALLOW_IDENTIFIERS_OTHER_MODULES
+    if (m_tree_link != nullptr && m_tree_link->m_parent != nullptr) {
+        if (Module *other = m_tree_link->m_parent->m_value) {
+            if (other->GetLocation().GetFileName() == m_location.GetFileName()) {
+                return other->LookUpIdentifier(name, false);
+            } else {
+                // we are outside of file scope, so loop until root/global module found
+                const TreeNode<Module*> *mod_link = m_tree_link->m_parent;
 
-                    while (mod_link->m_parent != nullptr) {
-                        mod_link = mod_link->m_parent;
-                    }
-
-                    ASSERT(mod_link->m_value != nullptr);
-                    ASSERT(mod_link->m_value->GetName() == ace::compiler::Config::global_module_name);
-
-                    return mod_link->m_value->LookUpIdentifier(name, false);
+                while (mod_link->m_parent != nullptr) {
+                    mod_link = mod_link->m_parent;
                 }
+
+                ASSERT(mod_link->m_value != nullptr);
+                ASSERT(mod_link->m_value->GetName() == ace::compiler::Config::global_module_name);
+
+                return mod_link->m_value->LookUpIdentifier(name, false);
             }
         }
     }
+#endif
 
     return nullptr;
 }

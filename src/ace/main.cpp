@@ -14,7 +14,6 @@
 .....MMM .................... .....................MMM .....
 */
 
-#include <ace/API.hpp>
 #include <ace/Runtime.hpp>
 
 #include <ace-c/ace-c.hpp>
@@ -26,6 +25,7 @@
 #include <ace-c/Compiler.hpp>
 #include <ace-c/dis/DecompilationUnit.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
+#include <ace-c/emit/aex-builder/AEXGenerator.hpp>
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <ace-vm/Object.hpp>
@@ -34,7 +34,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
 
-#include <aex-builder/AEXGenerator.hpp>
+#include <ace-c/meta-scripting/API.hpp>
 
 #include <common/cli_args.hpp>
 #include <common/str_util.hpp>

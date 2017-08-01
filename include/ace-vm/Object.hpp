@@ -53,6 +53,10 @@ private:
 
 class Object {
 public:
+    // type_ptr_value is needed for garbage collection, so we can
+    // mark that the TypeInfo object is still in use.
+    // later on, it'd be better to store this statically,
+    // as most type info objects will persist... right?
     Object(TypeInfo *type_ptr, const Value &type_ptr_value);
     Object(const Object &other);
     ~Object();

@@ -59,6 +59,7 @@ class ImmutableString;
 // native typedefs
 typedef void(*NativeFunctionPtr_t)(ace::sdk::Params);
 typedef void(*NativeInitializerPtr_t)(ace::vm::VMState*, ace::vm::ExecutionThread *thread, ace::vm::Value*);
+typedef void *UserData_t;
 
 namespace ace {
 namespace vm {
@@ -83,6 +84,7 @@ struct Value {
         HEAP_POINTER,
         FUNCTION,
         NATIVE_FUNCTION,
+        USER_DATA,
         ADDRESS,
         FUNCTION_CALL,
         TRY_CATCH_INFO
@@ -107,6 +109,7 @@ struct Value {
         } func;
 
         NativeFunctionPtr_t native_func;
+        UserData_t user_data;
         
         struct {
             bc_address_t addr;
@@ -159,8 +162,7 @@ struct Value {
 
     const char *GetTypeString() const;
     ImmutableString ToString() const;
-    void ToRepresentation(std::stringstream &ss,
-        bool add_type_name = true) const;
+    void ToRepresentation(std::stringstream &ss, bool add_type_name = true) const;
 };
 
 } // namespace vm

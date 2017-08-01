@@ -20,7 +20,22 @@ public:
     struct NativeVariableDefine {
         std::string name;
         SymbolTypePtr_t type;
-        NativeInitializerPtr_t initializer_ptr;
+
+        enum { INITIALIZER, USER_DATA } value_type;
+        union NativeVariableData {
+            NativeInitializerPtr_t initializer_ptr;
+            UserData_t user_data;
+
+            NativeVariableData(NativeInitializerPtr_t initializer_ptr)
+                : initializer_ptr(initializer_ptr)
+            {
+            }
+
+            NativeVariableData(UserData_t user_data)
+                : user_data(user_data)
+            {
+            }
+        } value;
 
         NativeVariableDefine(
             const std::string &name,
@@ -28,14 +43,27 @@ public:
             NativeInitializerPtr_t initializer_ptr)
             : name(name),
               type(type),
-              initializer_ptr(initializer_ptr)
+              value_type(INITIALIZER),
+              value(initializer_ptr)
+        {
+        }
+
+        NativeVariableDefine(
+            const std::string &name,
+            const SymbolTypePtr_t &type,
+            UserData_t user_data)
+            : name(name),
+              type(type),
+              value_type(USER_DATA),
+              value(user_data)
         {
         }
 
         NativeVariableDefine(const NativeVariableDefine &other)
             : name(other.name),
               type(other.type),
-              initializer_ptr(other.initializer_ptr)
+              value_type(other.value_type),
+              value(other.value)
         {
         }
     };
@@ -91,12 +119,17 @@ public:
         std::vector<TypeDefine> m_type_defs;
         std::vector<NativeFunctionDefine> m_function_defs;
         std::vector<NativeVariableDefine> m_variable_defs;
+        std::shared_ptr<Module> m_mod;
 
         ModuleDefine &Type(const SymbolTypePtr_t &type);
 
         ModuleDefine &Variable(const std::string &variable_name,
             const SymbolTypePtr_t &variable_type,
             NativeInitializerPtr_t ptr);
+
+        ModuleDefine &Variable(const std::string &variable_name,
+            const SymbolTypePtr_t &variable_type,
+            UserData_t ptr);
 
         ModuleDefine &Function(const std::string &function_name,
             const SymbolTypePtr_t &return_type,

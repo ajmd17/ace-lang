@@ -99,7 +99,7 @@ Token Lexer::NextToken()
         }*/
     } else if (ch[0] == '#') {
         return ReadDirective();
-    }  else if (ch[0] == '_' || utf32_isalpha(ch[0])) {
+    }  else if (utf32_isalpha(ch[0]) || ch[0] == '_' || ch[0] == '$') {
         return ReadIdentifier();
     } else if (ch[0] == '<' && ch[1] == '-') {
         for (int i = 0; i < 2; i++) {
@@ -558,7 +558,7 @@ Token Lexer::ReadIdentifier()
     // the character as a utf-32 character
     u32char ch = m_source_stream.Peek();
 
-    while (utf32_isdigit(ch) || ch == (u32char)('_') || utf32_isalpha(ch)) {
+    while (utf32_isdigit(ch) || utf32_isalpha(ch) || ch == '_' || ch == '$') {
         int pos_change = 0;
         ch = m_source_stream.Next(pos_change);
         m_source_location.GetColumn() += pos_change;

@@ -65,10 +65,10 @@ void Value::Mark()
 const char *Value::GetTypeString() const
 {
     switch (m_type) {
-        case I32: // fallthrough
-        case I64: return "Int";
-        case F32: // fallthrough
-        case F64: return "Float";
+        case I32:     // fallthrough
+        case I64:     return "Int";
+        case F32:     // fallthrough
+        case F64:     return "Float";
         case BOOLEAN: return "Boolean";
         case VALUE_REF:
             ASSERT(m_value.value_ref != nullptr);
@@ -85,13 +85,15 @@ const char *Value::GetTypeString() const
                 ASSERT(object->GetTypePtr() != nullptr);
                 return object->GetTypePtr()->GetName();
             }
+
             return "Object";
-            
-        case FUNCTION: return "Function";
+
+        case FUNCTION:        return "Function";
         case NATIVE_FUNCTION: return "NativeFunction";
-        case ADDRESS: return "Address";
-        case FUNCTION_CALL: return "FunctionCallInfo";
-        case TRY_CATCH_INFO: return "TryCatchInfo";
+        case ADDRESS:         return "Address";
+        case FUNCTION_CALL:   return "FunctionCallInfo";
+        case TRY_CATCH_INFO:  return "TryCatchInfo";
+        case USER_DATA:       return "UserData";
         default: return "??";
     }
 }

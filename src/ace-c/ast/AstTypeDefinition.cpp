@@ -50,13 +50,13 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             depth++;
         }
 
-        if (depth > 1) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_type_not_defined_globally,
-                m_location
-            ));
-        } else {
+        // if (depth > 1) {
+        //     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+        //         LEVEL_ERROR,
+        //         Msg_type_not_defined_globally,
+        //         m_location
+        //     ));
+        // } else {
             // open the scope for data members
             mod->m_scopes.Open(Scope(SCOPE_TYPE_TYPE_DEFINITION, 0));
 
@@ -174,7 +174,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             // add the type to the identifier table, so it's usable
             Scope &top_scope = mod->m_scopes.Top();
             top_scope.GetIdentifierTable().AddSymbolType(symbol_type);
-        }
+        //}
     }
 }
 

@@ -44,7 +44,8 @@ enum Keywords {
     Keyword_pure,
     Keyword_impure,
     Keyword_valueof,
-    Keyword_typeof
+    Keyword_typeof,
+    Keyword_meta
 };
 
 class Keyword {

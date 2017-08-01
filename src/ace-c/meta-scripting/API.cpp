@@ -1,12 +1,7 @@
-#include <ace/API.hpp>
-
-#include <ace-c/Parser.hpp>
-#include <ace-c/Configuration.hpp>
-
+#include <ace-c/meta-scripting/API.hpp>
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <common/my_assert.hpp>
-#include <common/hasher.hpp>
 
 #include <memory>
 #include <vector>
@@ -14,9 +9,6 @@
 namespace ace {
 
 using namespace vm;
-
-// modules that have been declared
-static std::vector<std::shared_ptr<Module>> declared_modules;
 
 static Module *GetModule(CompilationUnit *compilation_unit, const std::string &module_name)
 {
@@ -50,27 +42,6 @@ static Identifier *CreateIdentifier(
     return ident;
 }
 
-/*API::TypeDefine &API::TypeDefine::Member(const std::string &member_name,
-    const SymbolTypePtr_t &member_type,
-    NativeInitializerPtr_t ptr)
-{
-    m_members.push_back(API::NativeVariableDefine(
-        member_name, member_type, ptr
-    ));
-    return *this;
-}
-
-API::TypeDefine &API::TypeDefine::Method(const std::string &method_name,
-    const SymbolTypePtr_t &return_type,
-    const std::vector<std::pair<std::string, SymbolTypePtr_t>> &param_types,
-    NativeFunctionPtr_t ptr)
-{
-    m_methods.push_back(API::NativeFunctionDefine(
-        method_name, return_type, param_types, ptr
-    ));
-    return *this;
-}*/
-
 API::ModuleDefine &API::ModuleDefine::Type(const SymbolTypePtr_t &type)
 {
     m_type_defs.push_back(TypeDefine {
@@ -86,11 +57,25 @@ API::ModuleDefine &API::ModuleDefine::Variable(
     const SymbolTypePtr_t &variable_type,
     NativeInitializerPtr_t ptr)
 {
-    m_variable_defs.push_back(API::NativeVariableDefine(
+    m_variable_defs.emplace_back(
         variable_name,
         variable_type,
         ptr
-    ));
+    );
+
+    return *this;
+}
+
+API::ModuleDefine &API::ModuleDefine::Variable(
+    const std::string &variable_name,
+    const SymbolTypePtr_t &variable_type,
+    UserData_t user_data)
+{
+    m_variable_defs.emplace_back(
+        variable_name,
+        variable_type,
+        user_data
+    );
 
     return *this;
 }
@@ -110,7 +95,7 @@ API::ModuleDefine &API::ModuleDefine::Function(
 
 void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
 {
-    // bind module
+    // look up if already created
     Module *mod = GetModule(compilation_unit, m_name);
 
     bool close_mod = false;
@@ -119,18 +104,13 @@ void API::ModuleDefine::BindAll(VM *vm, CompilationUnit *compilation_unit)
     if (mod == nullptr) {
         close_mod = true;
 
-        std::shared_ptr<Module> new_mod(new Module(m_name, SourceLocation::eof));
-        declared_modules.push_back(new_mod);
-
-        mod = new_mod.get();
+        m_mod.reset(new Module(m_name, SourceLocation::eof));
+        mod = m_mod.get();
 
         // add this module to the compilation unit
         compilation_unit->m_module_tree.Open(mod);
         // set the link to the module in the tree
         mod->SetImportTreeLink(compilation_unit->m_module_tree.TopNode());
-
-        // open a new scope for this module
-        //mod->m_scopes.Open(Scope());
     }
 
     for (auto &def : m_variable_defs) {
@@ -178,11 +158,20 @@ void API::ModuleDefine::BindNativeVariable(
 
     // create the object that will be stored
     Value obj;
-    obj.m_type = Value::HEAP_POINTER;
-    obj.m_value.ptr = nullptr;
 
-    // call the initializer
-    def.initializer_ptr(&vm->GetState(), main_thread, &obj);
+    switch (def.value_type) {
+        case NativeVariableDefine::INITIALIZER:
+            obj.m_type = Value::HEAP_POINTER;
+            obj.m_value.ptr = nullptr;
+            // call the initializer
+            def.value.initializer_ptr(&vm->GetState(), main_thread, &obj);
+            break;
+
+        case NativeVariableDefine::USER_DATA:
+            obj.m_type = Value::USER_DATA;
+            obj.m_value.user_data = def.value.user_data;
+            break;
+    }
 
     // push the object to the main thread's stack
     main_thread->GetStack().Push(obj);

@@ -213,3 +213,11 @@ const SymbolTypePtr_t BuiltinTypes::CLOSURE_TYPE = SymbolType::Generic(
     GenericTypeInfo { -1 },
     BuiltinTypes::FUNCTION
 );
+
+const SymbolTypePtr_t BuiltinTypes::META_CLOSURE_TYPE = SymbolType::Generic(
+    "MetaClosure",
+    nullptr,
+    {},
+    GenericTypeInfo { -1 },
+    BuiltinTypes::FUNCTION
+);

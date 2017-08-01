@@ -52,6 +52,7 @@
 #include <ace-c/ast/AstActionExpression.hpp>
 #include <ace-c/ast/AstReturnStatement.hpp>
 #include <ace-c/ast/AstYieldStatement.hpp>
+#include <ace-c/ast/AstMetaBlock.hpp>
 
 #include <string>
 
@@ -146,6 +147,7 @@ private:
     std::shared_ptr<AstModuleImportPart> ParseModuleImportPart(bool allow_braces = false);
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
     std::shared_ptr<AstYieldStatement> ParseYieldStatement();
+    std::shared_ptr<AstMetaBlock> ParseMetaBlock();
 };
 
 #endif

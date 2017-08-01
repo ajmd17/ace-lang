@@ -15,3 +15,4 @@ foreach(f IN LISTS ace-c_HEADERS)
 endforeach()
 
 add_library(ace-c STATIC ${ace-c_SOURCES} ${ace-c_HEADERS})
+target_link_libraries(ace-c ace-vm)

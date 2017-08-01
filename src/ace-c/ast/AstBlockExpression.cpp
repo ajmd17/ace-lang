@@ -79,6 +79,7 @@ void AstBlockExpression::Visit(AstVisitor *visitor, Module *mod)
         closure_block->AddChild(std::get<1>(tup));
     }
     
+    // this closure object be the last item in the expression, so it will be returned.
     m_result_closure.reset(new AstFunctionExpression(
         {},
         nullptr,

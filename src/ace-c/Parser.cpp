@@ -403,6 +403,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseReturnStatement();
         } else if (MatchKeyword(Keyword_yield, false)) {
             res = ParseYieldStatement();
+        } else if (MatchKeyword(Keyword_meta, false)) {
+            res = ParseMetaBlock();
         } else {
             res = ParseExpression();
         }
@@ -1912,7 +1914,6 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
 std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
 {
     if (Token token = ExpectKeyword(Keyword_type, true)) {
-
         // type names may not be a keyword
         if (Token identifier = ExpectIdentifier(false, true)) {
             std::vector<std::string> generic_params;
@@ -2227,6 +2228,22 @@ std::shared_ptr<AstYieldStatement> Parser::ParseYieldStatement()
         if (auto expr = ParseExpression()) {
             return std::shared_ptr<AstYieldStatement>(new AstYieldStatement(
                 expr,
+                location
+            ));
+        }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstMetaBlock> Parser::ParseMetaBlock()
+{
+    const SourceLocation location = CurrentLocation();
+
+    if (Token token = ExpectKeyword(Keyword_meta, true)) {
+        if (auto block = ParseBlock()) {
+            return std::shared_ptr<AstMetaBlock>(new AstMetaBlock(
+                block,
                 location
             ));
         }

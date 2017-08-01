@@ -1,8 +1,8 @@
 #ifndef AEX_GENERATOR_HPP
 #define AEX_GENERATOR_HPP
 
-#include <aex-builder/InternalByteStream.hpp>
 #include <ace-c/emit/BuildableVisitor.hpp>
+#include <ace-c/emit/aex-builder/InternalByteStream.hpp>
 
 #include <common/my_assert.hpp>
 

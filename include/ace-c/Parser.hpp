@@ -14,6 +14,7 @@
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/ast/AstTupleExpression.hpp>
 #include <ace-c/ast/AstTypeDefinition.hpp>
+#include <ace-c/ast/AstPrototypeDefinition.hpp>
 #include <ace-c/ast/AstTypeAlias.hpp>
 #include <ace-c/ast/AstAliasDeclaration.hpp>
 #include <ace-c/ast/AstMixinDeclaration.hpp>

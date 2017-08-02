@@ -38,6 +38,8 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             // is being referenced. if it is const, load the direct value held in the variable
             const bool is_alias = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS;
             const bool is_mixin = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_MIXIN;
+
+            ASSERT(AstIdentifier::GetSymbolType() != nullptr);
             const bool is_const = AstIdentifier::GetSymbolType()->IsConstType();
 
             bool force_inline = false;
@@ -45,11 +47,10 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
             // normal way.
             if (is_alias || is_mixin) {
-                ASSERT(m_inline_value != nullptr);
                 force_inline = true;
             }
 
-            m_should_inline = force_inline || is_const;
+            m_should_inline = m_inline_value != nullptr && (force_inline || is_const);
 
             if (m_should_inline) {
                 // set access options for this variable based on those of the current value
@@ -59,7 +60,9 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 m_inline_value->Visit(visitor, mod);
             }
 
-            if (!force_inline) {
+            if (force_inline) {
+                ASSERT(m_inline_value != nullptr);
+            } else {
                 if (m_should_inline) {
                     if (const SymbolTypePtr_t value_type = m_inline_value->GetSymbolType()) {
                         // only load basic types inline.
@@ -68,11 +71,6 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                         }
                     }
                 }
-                // ASSERT(m_properties.GetIdentifier()->GetSymbolType() != nullptr);
-                // if (m_properties.GetIdentifier()->GetSymbolType()->IsConstType()) {
-                //     // for const, set access options to only load
-                //     AstExpression::m_access_options = AccessMode::ACCESS_MODE_LOAD;
-                // }
 
                 m_properties.GetIdentifier()->IncUseCount();
 

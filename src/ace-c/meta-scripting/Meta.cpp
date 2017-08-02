@@ -1,7 +1,9 @@
 #include <ace-c/meta-scripting/Meta.hpp>
 #include <ace-sdk/ace-sdk.hpp>
 
+#include <ace-vm/InstructionHandler.hpp>
 #include <ace-vm/Value.hpp>
+#include <ace-vm/Exception.hpp>
 
 using namespace ace;
 

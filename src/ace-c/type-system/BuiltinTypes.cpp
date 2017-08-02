@@ -12,25 +12,46 @@
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/ast/AstBlockExpression.hpp>
 
+const SymbolTypePtr_t BuiltinTypes::PRIMITIVE_TYPE = SymbolType::Primitive(
+    "Primitive",
+    nullptr,
+    nullptr
+);
+
+const SymbolTypePtr_t BuiltinTypes::TRAIT_TYPE = SymbolType::Primitive(
+    "Trait",
+    nullptr,
+    BuiltinTypes::PRIMITIVE_TYPE
+);
+
 const SymbolTypePtr_t BuiltinTypes::UNDEFINED = SymbolType::Primitive(
     "Undefined",
-    sp<AstUndefined>(new AstUndefined(SourceLocation::eof))
+    sp<AstUndefined>(new AstUndefined(SourceLocation::eof)),
+    BuiltinTypes::PRIMITIVE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::ANY = SymbolType::Primitive(
     "Any",
-    sp<AstNil>(new AstNil(SourceLocation::eof))
+    sp<AstNil>(new AstNil(SourceLocation::eof)),
+    BuiltinTypes::TRAIT_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::OBJECT = SymbolType::Primitive(
     "Object",
     nullptr,
-    nullptr
+    BuiltinTypes::PRIMITIVE_TYPE
+);
+
+const SymbolTypePtr_t BuiltinTypes::TYPE_TYPE = SymbolType::Primitive(
+    "Type",
+    nullptr,
+    BuiltinTypes::OBJECT
 );
 
 const SymbolTypePtr_t BuiltinTypes::INT = SymbolType::Primitive(
     "Int",
-    sp<AstInteger>(new AstInteger(0, SourceLocation::eof))
+    sp<AstInteger>(new AstInteger(0, SourceLocation::eof)),
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::FLOAT = SymbolType::Primitive(
@@ -66,7 +87,7 @@ const SymbolTypePtr_t BuiltinTypes::FUNCTION = SymbolType::Generic(
     )),
     {},
     GenericTypeInfo{ -1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::ARRAY = SymbolType::Generic(
@@ -77,7 +98,7 @@ const SymbolTypePtr_t BuiltinTypes::ARRAY = SymbolType::Generic(
     )),
     {},
     GenericTypeInfo { 1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::TUPLE = SymbolType::Generic(
@@ -88,7 +109,7 @@ const SymbolTypePtr_t BuiltinTypes::TUPLE = SymbolType::Generic(
     )),
     {},
     GenericTypeInfo { -1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::VAR_ARGS = SymbolType::Generic(
@@ -99,12 +120,13 @@ const SymbolTypePtr_t BuiltinTypes::VAR_ARGS = SymbolType::Generic(
     )),
     {},
     GenericTypeInfo { 1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::NULL_TYPE = SymbolType::Primitive(
     "Null",
-    sp<AstNil>(new AstNil(SourceLocation::eof))
+    sp<AstNil>(new AstNil(SourceLocation::eof)),
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::EVENT_IMPL = SymbolType::Object(
@@ -128,7 +150,7 @@ const SymbolTypePtr_t BuiltinTypes::EVENT = SymbolType::Generic(
     BuiltinTypes::UNDEFINED->GetDefaultValue(),
     {},
     GenericTypeInfo { 1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::EVENT_ARRAY = SymbolType::Generic(
@@ -139,7 +161,7 @@ const SymbolTypePtr_t BuiltinTypes::EVENT_ARRAY = SymbolType::Generic(
     )),
     {},
     GenericTypeInfo { 1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::MODULE_INFO = SymbolType::Object(
@@ -171,7 +193,7 @@ const SymbolTypePtr_t BuiltinTypes::GENERATOR = SymbolType::Generic(
     )),
     {},
     GenericTypeInfo{ 1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::BOXED_TYPE = SymbolType::Generic(
@@ -179,7 +201,7 @@ const SymbolTypePtr_t BuiltinTypes::BOXED_TYPE = SymbolType::Generic(
     nullptr,
     {},
     GenericTypeInfo { 1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TRAIT_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::MAYBE = SymbolType::Generic(
@@ -203,7 +225,7 @@ const SymbolTypePtr_t BuiltinTypes::BLOCK_TYPE = SymbolType::Generic(
     nullptr,
     {},
     GenericTypeInfo { -1 },
-    BuiltinTypes::OBJECT
+    BuiltinTypes::TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::CLOSURE_TYPE = SymbolType::Generic(

@@ -7,8 +7,11 @@ class SymbolType;
 using SymbolTypePtr_t = std::shared_ptr<SymbolType>;
 
 struct BuiltinTypes {
+    static const SymbolTypePtr_t PRIMITIVE_TYPE;
+    static const SymbolTypePtr_t TRAIT_TYPE;
     static const SymbolTypePtr_t UNDEFINED;
     static const SymbolTypePtr_t OBJECT;
+    static const SymbolTypePtr_t TYPE_TYPE;
     static const SymbolTypePtr_t ANY;
     static const SymbolTypePtr_t INT;
     static const SymbolTypePtr_t FLOAT;

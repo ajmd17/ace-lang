@@ -58,7 +58,18 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    if (SymbolTypePtr_t call_member_type = target_type->FindMember("$invoke")) {
+    // allow unboxing
+    SymbolTypePtr_t unboxed_type = target_type;
+
+    if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+        if (target_type->IsBoxedType()) {
+            unboxed_type = target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+        }
+    }
+
+    ASSERT(unboxed_type != nullptr);
+
+    if (SymbolTypePtr_t call_member_type = unboxed_type->FindMember("$invoke")) {
         m_is_method_call = true;
 
         // closure objects have a self parameter for the '$invoke' call.
@@ -81,8 +92,8 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         ASSERT(m_target != nullptr);
         m_target->Visit(visitor, mod);
 
-        target_type = call_member_type;
-        ASSERT(target_type != nullptr);
+        unboxed_type = call_member_type;
+        ASSERT(unboxed_type != nullptr);
     }
 
     // visit each argument
@@ -94,17 +105,6 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         // yet still pass variables from the local module.
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
     }
-
-    SymbolTypePtr_t unboxed_type = target_type;
-
-    // allow unboxing
-    if (target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-        if (target_type->IsBoxedType()) {
-            unboxed_type = target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
-        }
-    }
-
-    ASSERT(unboxed_type != nullptr);
 
     auto substituted = SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
         visitor, 

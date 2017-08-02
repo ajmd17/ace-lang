@@ -13,6 +13,7 @@
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
 #include <common/typedefs.hpp>
+#include <common/hasher.hpp>
 
 #include <stdint.h>
 
@@ -180,7 +181,17 @@ struct InstructionHandler {
         HeapValue *hv = state->HeapAlloc(thread);
         ASSERT(hv != nullptr);
 
-        hv->Assign(TypeInfo(type_name, size, names));
+        // create members
+        Member *members = new Member[size];
+        
+        for (size_t i = 0; i < size; i++) {
+            members[i].hash = hash_fnv_1(names[i]);
+        }
+
+        // create prototype object
+        hv->Assign(Object(members, size));
+
+        delete[] members;
 
         // assign register value to the allocated object
         Value &sv = thread->m_regs[reg];
@@ -201,11 +212,7 @@ struct InstructionHandler {
                 );
                 return;
             } else if (Object *obj_ptr = hv->GetPointer<Object>()) {
-                const vm::TypeInfo *type_ptr = obj_ptr->GetTypePtr();
-                
-                ASSERT(type_ptr != nullptr);
-                ASSERT(index < type_ptr->GetSize());
-                
+                ASSERT(index < obj_ptr->GetSize());
                 thread->m_regs[dst] = obj_ptr->GetMember(index).value;
                 return;
             }
@@ -395,10 +402,7 @@ struct InstructionHandler {
             return;
         }
 
-        const vm::TypeInfo *type_ptr = object->GetTypePtr();
-        ASSERT(type_ptr != nullptr);
-
-        if (index >= type_ptr->GetSize()) {
+        if (index >= object->GetSize()) {
             state->ThrowException(
                 thread,
                 Exception::OutOfBoundsException()
@@ -673,18 +677,24 @@ struct InstructionHandler {
     inline void New(bc_reg_t dst, bc_reg_t src)
     {
         // read value from register
-        Value &type_sv = thread->m_regs[src];
-        ASSERT(type_sv.m_type == Value::HEAP_POINTER);
+        Value &proto_sv = thread->m_regs[src];
+        ASSERT(proto_sv.m_type == Value::HEAP_POINTER);
 
-        TypeInfo *type_ptr = type_sv.m_value.ptr->GetPointer<TypeInfo>();
-        ASSERT(type_ptr != nullptr);
+        // the NEW instruction makes a copy of the $proto data member
+        // of the prototype object.
+        Object *proto_obj = proto_sv.m_value.ptr->GetPointer<Object>();
+        ASSERT(proto_obj != nullptr);
+
+        Member *proto_mem = proto_obj->LookupMemberFromHash(Object::PROTO_MEMBER_HASH);
+        ASSERT(proto_mem != nullptr);
+        ASSERT(proto_mem->value.m_type == Value::HEAP_POINTER);
 
         // allocate heap object
         HeapValue *hv = state->HeapAlloc(thread);
         ASSERT(hv != nullptr);
         
-        // create the Object from the info type_ptr provides us with.
-        hv->Assign(Object(type_ptr, type_sv));
+        // create the Object from the proto
+        hv->Assign(Object(proto_mem->value.m_value.ptr));
 
         // assign register value to the allocated object
         Value &sv = thread->m_regs[dst];

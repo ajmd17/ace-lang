@@ -453,7 +453,10 @@ std::unique_ptr<BytecodeChunk> Compiler::Compile()
     ASSERT(mod != nullptr);
     
     while (m_ast_iterator->HasNext()) {
-        chunk->Append(m_ast_iterator->Next()->Build(this, mod));
+        auto next = m_ast_iterator->Next();
+        ASSERT(next != nullptr);
+
+        chunk->Append(next->Build(this, mod));
     }
 
     return chunk;

@@ -2,6 +2,7 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
+#include <ace-c/ast/AstVariable.hpp>
 
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
@@ -32,146 +33,190 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
     for (auto &param : m_generic_params) {
         if (param != nullptr) {
             param->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
-            if (param->GetSymbolType() != nullptr) {
-                generic_types.push_back({
-                    "of", param->GetSymbolType()
-                });
-            } else {
-                generic_types.push_back({
-                    "of", BuiltinTypes::UNDEFINED
-                });
-            }
+
+            ASSERT(param->GetSymbolType() != nullptr);
+            generic_types.push_back({
+                "", param->GetSymbolType()
+            });
         }
     }
 
     if (m_right == nullptr) {
-        SymbolTypePtr_t symbol_type = mod->LookupSymbolType(m_left);
+        AstVariable left_var(m_left, m_location);
+        left_var.Visit(visitor, mod);
 
-        if (symbol_type == nullptr) {
-            // error, unknown type
-            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_undefined_type,
-                m_location,
-                m_left
-            ));
-        } else {
-            m_original_type = symbol_type;
+        if (left_var.GetProperties().GetIdentifier() != nullptr) {
+            const auto current_value = left_var.GetProperties().GetIdentifier()->GetCurrentValue();
+            if (current_value == nullptr) {
+                return;
+            }
+            
+            SymbolTypePtr_t symbol_type = current_value->GetSymbolType();
+            if (symbol_type == nullptr) {
+                return;
+            }
 
-            // if the type is an alias, get the aliasee
-            symbol_type = symbol_type->GetUnaliased();
+            //SymbolTypePtr_t symbol_type = left_var.GetSymbolType();//mod->LookupSymbolType(m_left);
+            //ASSERT(symbol_type != nullptr);
 
-            switch (symbol_type->GetTypeClass()) {
-                case TYPE_GENERIC_PARAMETER:
-                    // if it is a generic parameter:
-                    //   if the substitution has been supplied:
-                    //     set the type to be that.
-                    //   else:
-                    //     set the type to be the param itself.
-                    if (auto substitution_type = symbol_type->GetGenericParameterInfo().m_substitution.lock()) {
-                        // set type to be substituted type
-                        m_symbol_type = substitution_type;
-                    } else {
-                        m_symbol_type = symbol_type;
-                    }
+            if (symbol_type != BuiltinTypes::TYPE_TYPE && !symbol_type->HasBase(*BuiltinTypes::TYPE_TYPE) &&
+                symbol_type != BuiltinTypes::TRAIT_TYPE && !symbol_type->HasBase(*BuiltinTypes::TRAIT_TYPE)) {
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_not_a_type,
+                    m_location,
+                    symbol_type->GetName()
+                ));
+            }
+            /*if (symbol_type == nullptr) {
+                // error, unknown type
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_undefined_type,
+                    m_location,
+                    m_left
+                ));
+            }*/
+            else {
+                // get type of the '$proto' member, which is an instance type
+                if (SymbolTypePtr_t proto_member_type = symbol_type->FindMember("$proto")) {
+                    symbol_type = proto_member_type;
+                }
 
-                    break;
-                
-                case TYPE_GENERIC:
-                    // check generic params
-                    if (!m_generic_params.empty()) {
-                        // look up generic instance to see if it's already been created
-                        m_symbol_type = visitor->GetCompilationUnit()->
-                            GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types);
+                m_original_type = symbol_type;
 
-                        if (m_symbol_type == nullptr) {
-                            // nothing found from lookup,
-                            // so create new generic instance
-                            const bool valid_parameters = symbol_type->GetGenericInfo().m_num_parameters == -1
-                                || symbol_type->GetGenericInfo().m_num_parameters == generic_types.size();
+                // if the type is an alias, get the aliasee
+                symbol_type = symbol_type->GetUnaliased();
 
-                            if (valid_parameters) {
-                                // open the scope for data members
-                                mod->m_scopes.Open(Scope());
+                switch (symbol_type->GetTypeClass()) {
+                    case TYPE_GENERIC_PARAMETER:
+                        // if it is a generic parameter:
+                        //   if the substitution has been supplied:
+                        //     set the type to be that.
+                        //   else:
+                        //     set the type to be the param itself.
+                        if (auto substitution_type = symbol_type->GetGenericParameterInfo().m_substitution.lock()) {
+                            // set type to be substituted type
+                            m_symbol_type = substitution_type;
+                        } else {
+                            m_symbol_type = symbol_type;
+                        }
 
-                                // for each supplied parameter, create substitution
-                                for (size_t i = 0; 
-                                    i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
-                                {
-                                    const SymbolTypePtr_t &aliasee_type = generic_types[i].m_type;
-                                    ASSERT(aliasee_type != nullptr);
+                        break;
+                    
+                    case TYPE_GENERIC:
+                        // check generic params
+                        if (!m_generic_params.empty()) {
+                            // look up generic instance to see if it's already been created
+                            m_symbol_type = visitor->GetCompilationUnit()->
+                                GetCurrentModule()->LookupGenericInstance(symbol_type, generic_types);
 
-                                    // create alias type
-                                    SymbolTypePtr_t alias_type = SymbolType::Alias(
-                                        symbol_type->GetGenericInfo().m_params[i]->GetName(),
-                                        { aliasee_type }
-                                    );
+                            if (m_symbol_type == nullptr) {
+                                // nothing found from lookup,
+                                // so create new generic instance
+                                const bool valid_parameters = symbol_type->GetGenericInfo().m_num_parameters == -1
+                                    || symbol_type->GetGenericInfo().m_num_parameters == generic_types.size();
 
-                                    // add it
-                                    visitor->GetCompilationUnit()->GetCurrentModule()->
-                                        m_scopes.Top().GetIdentifierTable().AddSymbolType(alias_type);
-                                }
+                                if (valid_parameters) {
+                                    // open the scope for data members
+                                    mod->m_scopes.Open(Scope());
 
-                                SymbolTypePtr_t new_instance = SymbolType::GenericInstance(
-                                    symbol_type,
-                                    GenericInstanceTypeInfo {
-                                        generic_types
-                                    }
-                                );
-
-                                // accept all members
-                                for (auto &mem : new_instance->GetMembers()) {
-                                    SymbolTypePtr_t &mem_symbol_type = std::get<1>(mem);
-                                    std::shared_ptr<AstExpression> &mem_assignment = std::get<2>(mem);
-
+                                    // for each supplied parameter, create substitution
                                     for (size_t i = 0; 
                                         i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
                                     {
-                                        if (const SymbolTypePtr_t &placeholder = symbol_type->GetGenericInfo().m_params[i]) {
-                                            if (const SymbolTypePtr_t &substitute = generic_types[i].m_type) {
-                                                mem_symbol_type = SymbolType::SubstituteGenericParams(
-                                                    mem_symbol_type,
-                                                    placeholder,
-                                                    substitute
-                                                );
+                                        const SymbolTypePtr_t &aliasee_type = generic_types[i].m_type;
+                                        ASSERT(aliasee_type != nullptr);
+
+                                        // create alias type
+                                        SymbolTypePtr_t alias_type = SymbolType::Alias(
+                                            symbol_type->GetGenericInfo().m_params[i]->GetName(),
+                                            { aliasee_type }
+                                        );
+
+                                        // add it
+                                        visitor->GetCompilationUnit()->GetCurrentModule()->
+                                            m_scopes.Top().GetIdentifierTable().AddSymbolType(alias_type);
+                                    }
+
+                                    SymbolTypePtr_t new_instance = SymbolType::GenericInstance(
+                                        symbol_type,
+                                        GenericInstanceTypeInfo {
+                                            generic_types
+                                        }
+                                    );
+
+                                    // accept all members
+                                    for (auto &mem : new_instance->GetMembers()) {
+                                        SymbolTypePtr_t &mem_symbol_type = std::get<1>(mem);
+                                        std::shared_ptr<AstExpression> &mem_assignment = std::get<2>(mem);
+
+                                        for (size_t i = 0; i < generic_types.size() && i < symbol_type->GetGenericInfo().m_params.size(); i++)
+                                        {
+                                            if (const SymbolTypePtr_t &placeholder = symbol_type->GetGenericInfo().m_params[i]) {
+                                                if (const SymbolTypePtr_t &substitute = generic_types[i].m_type) {
+                                                    mem_symbol_type = SymbolType::SubstituteGenericParams(
+                                                        mem_symbol_type,
+                                                        placeholder,
+                                                        substitute
+                                                    );
+                                                }
                                             }
                                         }
+
+                                        ASSERT(mem_symbol_type != nullptr);
+
+                                        if (mem_assignment == nullptr) {
+                                            // set to default value of symbol type if assignment not given
+                                            ASSERT(mem_symbol_type->GetDefaultValue() != nullptr);
+                                            mem_assignment = mem_symbol_type->GetDefaultValue();
+                                        }
+
+                                        // accept assignment for new member instance
+                                        mem_assignment->Visit(visitor, mod);
+                                        
+                                        SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
+                                            visitor,
+                                            mod,
+                                            mem_symbol_type,
+                                            mem_assignment->GetSymbolType(),
+                                            mem_assignment->GetLocation()
+                                        );
                                     }
 
-                                    ASSERT(mem_symbol_type != nullptr);
+                                    // close the scope for data members
+                                    mod->m_scopes.Close();
 
-                                    if (mem_assignment == nullptr) {
-                                        // set to default value of symbol type if assignment not given
-                                        ASSERT(mem_symbol_type->GetDefaultValue() != nullptr);
-                                        mem_assignment = mem_symbol_type->GetDefaultValue();
-                                    }
-
-                                    // accept assignment for new member instance
-                                    mem_assignment->Visit(visitor, mod);
+                                    // allow generic instance to be used in code
+                                    visitor->GetCompilationUnit()->GetCurrentModule()->
+                                        m_scopes.Root().GetIdentifierTable().AddSymbolType(new_instance);
                                     
-                                    SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
-                                        visitor,
-                                        mod,
-                                        mem_symbol_type,
-                                        mem_assignment->GetSymbolType(),
-                                        mem_assignment->GetLocation()
-                                    );
-                                }
+                                    if (!new_instance->GetMembers().empty()) {
+                                        new_instance->SetDefaultValue(std::shared_ptr<AstObject>(
+                                            new AstObject(new_instance, SourceLocation::eof)
+                                        ));
+                                    }
 
-                                // close the scope for data members
-                                mod->m_scopes.Close();
-
-                                // allow generic instance to be used in code
-                                visitor->GetCompilationUnit()->GetCurrentModule()->
-                                    m_scopes.Root().GetIdentifierTable().AddSymbolType(new_instance);
-                                
-                                if (!new_instance->GetMembers().empty()) {
-                                    new_instance->SetDefaultValue(std::shared_ptr<AstObject>(
-                                        new AstObject(new_instance, SourceLocation::eof)
+                                    m_symbol_type = new_instance;
+                                } else {
+                                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                                        LEVEL_ERROR,
+                                        Msg_generic_parameters_missing,
+                                        m_location,
+                                        symbol_type->GetName(),
+                                        symbol_type->GetGenericInfo().m_num_parameters
                                     ));
-                                }
 
-                                m_symbol_type = new_instance;
+                                    m_symbol_type = symbol_type;
+                                }
+                            }
+                        } else {
+                            m_symbol_type = symbol_type;
+
+                            /*if (symbol_type->GetDefaultValue() != nullptr) {
+                                // if generics have a default value,
+                                // allow user to omit parameters.
+                                m_symbol_type = symbol_type;
                             } else {
                                 visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                                     LEVEL_ERROR,
@@ -180,44 +225,26 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                     symbol_type->GetName(),
                                     symbol_type->GetGenericInfo().m_num_parameters
                                 ));
-
-                                m_symbol_type = symbol_type;
-                            }
+                            }*/
                         }
-                    } else {
+
+                        break;
+
+                    default:
                         m_symbol_type = symbol_type;
 
-                        /*if (symbol_type->GetDefaultValue() != nullptr) {
-                            // if generics have a default value,
-                            // allow user to omit parameters.
-                            m_symbol_type = symbol_type;
-                        } else {
+                        if (!m_generic_params.empty()) {
+                            // not a generic type but generic params supplied
                             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                                 LEVEL_ERROR,
-                                Msg_generic_parameters_missing,
+                                Msg_type_not_generic,
                                 m_location,
-                                symbol_type->GetName(),
-                                symbol_type->GetGenericInfo().m_num_parameters
+                                symbol_type->GetName()
                             ));
-                        }*/
-                    }
+                        }
 
-                    break;
-
-                default:
-                    m_symbol_type = symbol_type;
-
-                    if (!m_generic_params.empty()) {
-                        // not a generic type but generic params supplied
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            LEVEL_ERROR,
-                            Msg_type_not_generic,
-                            m_location,
-                            symbol_type->GetName()
-                        ));
-                    }
-
-                    break;
+                        break;
+                }
             }
         }
     } else {

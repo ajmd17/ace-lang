@@ -21,6 +21,8 @@
 #include <ace-vm/Object.hpp>
 #include <ace-vm/TypeInfo.hpp>
 
+#include <common/hasher.hpp>
+
 #include <functional>
 #include <cstdint>
 #include <iostream>
@@ -56,34 +58,38 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
     APIInstance meta_api;
 
     meta_api.Module(compiler::Config::global_module_name)
-        .Variable("__meta_context", BuiltinTypes::ANY, (UserData_t)&meta_context)
-        .Variable("compiler", BuiltinTypes::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+        .Variable("__meta_context", BuiltinTypes::ANY, (UserData_t)&meta_context);
+        /*.Variable("compiler", BuiltinTypes::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
             static const char *items[] = { "define", "fields" };
 
-            // create TypeInfo object.
-            vm::HeapValue *type_info = state->HeapAlloc(thread);
-            ASSERT(type_info != nullptr);
-            type_info->Assign(vm::TypeInfo("Compiler", sizeof(items) / sizeof(void*), (char**)items));
+            vm::Value meta_define;
+            meta_define.m_type = vm::Value::I32;
+            meta_define.m_value.i32 = 12345;
 
-            vm::Value type_info_val;
-            type_info_val.m_type = vm::Value::ValueType::HEAP_POINTER;
-            type_info_val.m_value.ptr = type_info;
+            static const vm::Member members[] = {
+                vm::Member { hash_fnv_1("define"), vm::Value(meta_define) }
+            };
+
+            // create prototype object.
+            vm::HeapValue *proto = state->HeapAlloc(thread);
+            ASSERT(proto != nullptr);
+            proto->Assign(vm::Object(&members[0], sizeof(members) / sizeof(members[0])));
 
             // create Object instance
-            vm::Object object_val(type_info->GetPointer<vm::TypeInfo>(), type_info_val);
+            vm::Object ins(proto);
             // TODO
 
             vm::HeapValue *object = state->HeapAlloc(thread);
             ASSERT(object != nullptr);
-            object->Assign(object_val);
+            object->Assign(ins);
             
             // assign the out value to this
             out->m_type = vm::Value::ValueType::HEAP_POINTER;
             out->m_value.ptr = object;
-        });
+        });*/
     
     meta_api.BindAll(&vm, &compilation_unit);
 

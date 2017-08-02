@@ -66,6 +66,7 @@ enum ErrorMessage {
     Msg_not_an_array,
 
     /* TYPES */
+    Msg_not_a_type,
     Msg_undefined_type,
     Msg_redefined_type,
     Msg_redefined_builtin_type,

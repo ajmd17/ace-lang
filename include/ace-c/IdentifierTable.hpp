@@ -3,6 +3,7 @@
 
 #include <ace-c/Identifier.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <string>
 #include <memory>
@@ -24,10 +25,18 @@ public:
 
     /** Constructs an identifier with the given name, as an alias to the given identifier. */
     Identifier *AddAlias(const std::string &name, Identifier *aliasee);
+
     /** Constructs an identifier with the given name, and assigns an index to it. */
-    Identifier *AddIdentifier(const std::string &name, int flags = 0);
+    Identifier *AddIdentifier(const std::string &name,
+        int flags = 0,
+        std::shared_ptr<AstExpression> current_value = nullptr,
+        SymbolTypePtr_t symbol_type = nullptr);
+
     /** Look up an identifier by name. Returns nullptr if not found */
     Identifier *LookUpIdentifier(const std::string &name);
+
+    Identifier *BindTypeToIdentifier(const std::string &name, SymbolTypePtr_t symbol_type);
+
     /** Look up symbol type by name */
     SymbolTypePtr_t LookupSymbolType(const std::string &name) const;
     /** Look up an instance of a generic type, with the given parameters*/

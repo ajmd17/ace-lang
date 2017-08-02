@@ -312,10 +312,9 @@ void Parser::Parse(bool expect_module_decl)
         m_ast_iterator->Push(module_ast);
     } else {
         // build up the module declaration with statements
-        while (m_token_stream->HasNext() && !Match(TK_CLOSE_BRACE, false)) {
+        while (m_token_stream->HasNext()) {
             // skip statement terminator tokens
             if (!Match(TK_SEMICOLON, true) && !Match(TK_NEWLINE, true)) {
-
                 // parse at top level, to allow for nested modules
                 m_ast_iterator->Push(ParseStatement(true));
             }
@@ -446,7 +445,9 @@ std::shared_ptr<AstModuleDeclaration> Parser::ParseModuleDeclaration()
                     if (!Match(TK_SEMICOLON, true) && !Match(TK_NEWLINE, true)) {
 
                         // parse at top level, to allow for nested modules
-                        module_ast->AddChild(ParseStatement(true));
+                        if (auto stmt = ParseStatement(true)) {
+                            module_ast->AddChild(stmt);
+                        }
                     }
                 }
 
@@ -2038,8 +2039,9 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                     SkipStatementTerminators();
                 }
 
-                return std::shared_ptr<AstTypeDefinition>(new AstTypeDefinition(
-                    identifier.GetValue(), 
+                return std::shared_ptr<AstPrototypeDefinition>(new AstPrototypeDefinition(
+                    identifier.GetValue(),
+                    nullptr, // TODO
                     generic_params,
                     members,
                     events,

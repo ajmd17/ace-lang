@@ -37,16 +37,22 @@ void Value::Mark()
             HeapValue *ptr = m_value.ptr;
             if (ptr != nullptr && !(ptr->GetFlags() & GC_MARKED)) {
                 if (Object *object = ptr->GetPointer<Object>()) {
-                    const vm::TypeInfo *type_ptr = object->GetTypePtr();
-                    ASSERT(type_ptr != nullptr);
+                    HeapValue *proto = nullptr;
 
-                    const size_t size = type_ptr->GetSize();
-                    for (size_t i = 0; i < size; i++) {
-                        object->GetMember(i).value.Mark();
-                    }
+                    do {
+                        const size_t size = object->GetSize();
 
-                    // mark the type
-                    object->GetTypePtrValue().Mark();
+                        for (size_t i = 0; i < size; i++) {
+                            object->GetMember(i).value.Mark();
+                        }
+
+                        proto = object->GetPrototype();
+
+                        if (proto != nullptr) {
+                            proto->GetFlags() |= GC_MARKED;
+                            object = proto->GetPointer<Object>();
+                        }
+                    } while (proto != nullptr);
                 } else if (Array *array = ptr->GetPointer<Array>()) {
                     const size_t size = array->GetSize();
                     for (int i = 0; i < size; i++) {
@@ -82,8 +88,7 @@ const char *Value::GetTypeString() const
             } else if (m_value.ptr->GetPointer<Array>()) {
                 return "Array";
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
-                ASSERT(object->GetTypePtr() != nullptr);
-                return object->GetTypePtr()->GetName();
+                return "Object"; // TODO prototype name
             }
 
             return "Object";
@@ -94,7 +99,7 @@ const char *Value::GetTypeString() const
         case FUNCTION_CALL:   return "FunctionCallInfo";
         case TRY_CATCH_INFO:  return "TryCatchInfo";
         case USER_DATA:       return "UserData";
-        default: return "??";
+        default:              return "??";
     }
 }
 

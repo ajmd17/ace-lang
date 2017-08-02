@@ -80,6 +80,12 @@ public:
         const vec<SymbolMember_t> &members
     );
 
+    static SymbolTypePtr_t Object(
+        const std::string &name,
+        const vec<SymbolMember_t> &members,
+        const SymbolTypePtr_t &base
+    );
+
     /** A generic type template. Members may have the type class TYPE_GENERIC_PARAMETER.
         They will be substituted when an instance of the generic type is created.
     */
@@ -99,6 +105,12 @@ public:
     static SymbolTypePtr_t GenericParameter(
         const std::string &name, 
         const SymbolTypePtr_t &substitution
+    );
+    
+    static SymbolTypePtr_t Extend(
+        const std::string &name,
+        const SymbolTypePtr_t &base,
+        const vec<SymbolMember_t> &members
     );
     
     static SymbolTypePtr_t Extend(

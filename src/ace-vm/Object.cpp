@@ -10,6 +10,8 @@
 namespace ace {
 namespace vm {
 
+const uint32_t Object::PROTO_MEMBER_HASH = hash_fnv_1("$proto");
+
 ObjectMap::ObjectBucket::ObjectBucket()
     : m_data(new Member*[DEFAULT_BUCKET_CAPACITY]),
       m_capacity(DEFAULT_BUCKET_CAPACITY),
@@ -131,60 +133,73 @@ ObjectMap &ObjectMap::operator=(const ObjectMap &other)
 
 void ObjectMap::Push(uint32_t hash, Member *member)
 {
+    ASSERT(m_size != 0);
     m_buckets[hash % m_size].Push(member);
 }
 
 Member *ObjectMap::Get(uint32_t hash)
 {
+    ASSERT(m_size != 0);
     Member *res = nullptr;
     m_buckets[hash % m_size].Lookup(hash, &res);
     return res;
 }
 
-Object::Object(TypeInfo *type_ptr,
-    const Value &type_ptr_value)
-    : m_type_ptr(type_ptr),
-      m_type_ptr_value(type_ptr_value)
+Object::Object(HeapValue *proto)
+    : m_proto(proto)
 {
-    ASSERT(m_type_ptr != nullptr);
-    size_t size = m_type_ptr->GetSize();
+    ASSERT(proto != nullptr);
 
-    auto **names = m_type_ptr->GetNames();
-    ASSERT(names != nullptr);
+    const Object *proto_obj = proto->GetPointer<Object>();
+    ASSERT(proto_obj != nullptr);
+
+    size_t size = proto_obj->GetSize();
+
+    // auto **names = m_type_ptr->GetNames();
+    // ASSERT(names != nullptr);
 
     m_members = new Member[size];
+    std::memcpy(m_members, proto_obj->GetMembers(), sizeof(Member) * size);
+
+    ASSERT(proto_obj->GetObjectMap() != nullptr);
+    m_object_map = new ObjectMap(*proto_obj->GetObjectMap());
+
+    /*// compute hash for member name
+    uint32_t hash = hash_fnv_1(names[i]);
+    m_members[i].hash = hash;
+    
+    m_object_map->Push(hash, &m_members[i]);*/
+}
+
+Object::Object(const Member *members, size_t size)
+    : m_proto(nullptr)
+{
+    ASSERT(members != nullptr);
+
     m_object_map = new ObjectMap(size);
+    m_members = new Member[size];
+
+    std::memcpy(m_members, members, sizeof(Member) * size);
 
     for (size_t i = 0; i < size; i++) {
-        // compute hash for member name
-        uint32_t hash = hash_fnv_1(names[i]);
-        m_members[i].hash = hash;
-        
-        m_object_map->Push(hash, &m_members[i]);
+        m_object_map->Push(m_members[i].hash, &m_members[i]);
     }
 }
 
 Object::Object(const Object &other)
-    : m_type_ptr(other.m_type_ptr),
-      m_type_ptr_value(other.m_type_ptr_value)
+    : m_proto(other.m_proto)
 {
-    ASSERT(m_type_ptr != nullptr);
-    size_t size = m_type_ptr->GetSize();
-
-    auto **names = m_type_ptr->GetNames();
-    ASSERT(names != nullptr);
+    const size_t size = other.GetSize();
 
     m_members = new Member[size];
-    m_object_map = new ObjectMap(size);
 
-    // copy all members
+    ASSERT(other.GetObjectMap() != nullptr);
+    m_object_map = new ObjectMap(*other.GetObjectMap());
+
+    std::memcpy(m_members, other.m_members, sizeof(Member) * size);
+
     for (size_t i = 0; i < size; i++) {
-        m_members[i] = other.m_members[i];
-        // compute hash for member name
-        uint32_t hash = hash_fnv_1(names[i]);
-        m_members[i].hash = hash;
-        
-        m_object_map->Push(hash, &m_members[i]);
+        m_object_map->Push(m_members[i].hash, &m_members[i]);
     }
 }
 
@@ -196,23 +211,12 @@ Object::~Object()
 
 void Object::GetRepresentation(std::stringstream &ss, bool add_type_name) const
 {
-    // get type
-    ASSERT(m_type_ptr != nullptr);
-    const size_t size = m_type_ptr->GetSize();
-
-    if (add_type_name) {
-        // add the type name
-        ss << m_type_ptr->GetName();
-    }
+    const size_t size = GetSize();
 
     ss << '{';
 
     for (size_t i = 0; i < size; i++) {
         vm::Member &mem = m_members[i];
-
-        ss << '\"';
-        ss << m_type_ptr->GetMemberName(i);
-        ss << "\":";
 
         if (mem.value.m_type == Value::HEAP_POINTER &&
             mem.value.m_value.ptr != nullptr &&

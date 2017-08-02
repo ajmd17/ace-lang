@@ -3,6 +3,7 @@
 #include <ace-c/emit/StaticObject.hpp>
 #include <ace-c/emit/NamesPair.hpp>
 #include <ace-c/Configuration.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
@@ -20,6 +21,7 @@ CompilationUnit::CompilationUnit()
     m_global_module->SetImportTreeLink(m_module_tree.TopNode());
 
     Scope &top = m_global_module->m_scopes.Top();
+    /*top.GetIdentifierTable().AddSymbolType(BuiltinTypes::OBJECT);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::ANY);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::INT);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::FLOAT);
@@ -36,6 +38,26 @@ CompilationUnit::CompilationUnit()
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT_ARRAY);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::BLOCK_TYPE);
     top.GetIdentifierTable().AddSymbolType(BuiltinTypes::CLOSURE_TYPE);
+    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::TYPE_TYPE);*/
+
+    top.GetIdentifierTable().BindTypeToIdentifier("Object", BuiltinTypes::OBJECT);
+    top.GetIdentifierTable().BindTypeToIdentifier("Any", BuiltinTypes::ANY);
+    top.GetIdentifierTable().BindTypeToIdentifier("Int", BuiltinTypes::INT);
+    top.GetIdentifierTable().BindTypeToIdentifier("Float", BuiltinTypes::FLOAT);
+    top.GetIdentifierTable().BindTypeToIdentifier("Number", BuiltinTypes::NUMBER);
+    top.GetIdentifierTable().BindTypeToIdentifier("Boolean", BuiltinTypes::BOOLEAN);
+    top.GetIdentifierTable().BindTypeToIdentifier("String", BuiltinTypes::STRING);
+    top.GetIdentifierTable().BindTypeToIdentifier("Function", BuiltinTypes::FUNCTION);
+    top.GetIdentifierTable().BindTypeToIdentifier("Array", BuiltinTypes::ARRAY);
+    top.GetIdentifierTable().BindTypeToIdentifier("Tuple", BuiltinTypes::TUPLE);
+    top.GetIdentifierTable().BindTypeToIdentifier("Maybe", BuiltinTypes::MAYBE);
+    top.GetIdentifierTable().BindTypeToIdentifier("Const", BuiltinTypes::CONST_TYPE);
+    top.GetIdentifierTable().BindTypeToIdentifier("Null", BuiltinTypes::NULL_TYPE);
+    top.GetIdentifierTable().BindTypeToIdentifier("$Event", BuiltinTypes::EVENT);
+    top.GetIdentifierTable().BindTypeToIdentifier("$EventArray", BuiltinTypes::EVENT_ARRAY);
+    top.GetIdentifierTable().BindTypeToIdentifier("Block", BuiltinTypes::BLOCK_TYPE);
+    top.GetIdentifierTable().BindTypeToIdentifier("Closure", BuiltinTypes::CLOSURE_TYPE);
+    top.GetIdentifierTable().BindTypeToIdentifier("Type", BuiltinTypes::TYPE_TYPE);
 
     m_module_tree.TopNode()->m_value = m_global_module.get();
 }

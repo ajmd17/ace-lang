@@ -67,6 +67,11 @@
     "valarray": "cpp",
     "queue": "cpp",
     "cmakeccompilerid.c": "cpp",
-    "cstring": "cpp"
+    "cstring": "cpp",
+    "clocale": "cpp",
+    "condition_variable": "cpp",
+    "ctime": "cpp",
+    "iostream": "cpp",
+    "mutex": "cpp"
   }
 }

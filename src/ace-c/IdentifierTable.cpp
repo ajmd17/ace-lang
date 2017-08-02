@@ -1,5 +1,6 @@
 #include <ace-c/IdentifierTable.hpp>
 #include <ace-c/Configuration.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 
 #include <common/my_assert.hpp>
 
@@ -42,14 +43,30 @@ Identifier *IdentifierTable::AddAlias(const std::string &name, Identifier *alias
     return m_identifiers.back().get();
 }
 
-Identifier *IdentifierTable::AddIdentifier(const std::string &name, int flags)
+Identifier *IdentifierTable::AddIdentifier(const std::string &name,
+    int flags,
+    std::shared_ptr<AstExpression> current_value,
+    SymbolTypePtr_t symbol_type)
 {
-    m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(
+    std::shared_ptr<Identifier> ident(new Identifier(
         name,
         m_identifier_index++,
         flags
-    )));
-    
+    ));
+
+    if (current_value != nullptr) {
+        ident->SetCurrentValue(current_value);
+
+        if (symbol_type == nullptr) {
+            ident->SetSymbolType(symbol_type);
+        }
+    }
+
+    if (symbol_type != nullptr) {
+        ident->SetSymbolType(symbol_type);
+    }
+
+    m_identifiers.push_back(ident);
     return m_identifiers.back().get();
 }
 
@@ -64,6 +81,13 @@ Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
     }
 
     return nullptr;
+}
+
+Identifier *IdentifierTable::BindTypeToIdentifier(const std::string &name, SymbolTypePtr_t symbol_type)
+{
+    AddIdentifier(name, 0, std::shared_ptr<AstTypeObject>(new AstTypeObject(
+        symbol_type, nullptr, SourceLocation::eof
+    )), symbol_type->GetBaseType());
 }
 
 SymbolTypePtr_t IdentifierTable::LookupSymbolType(const std::string &name) const

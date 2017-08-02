@@ -35,21 +35,36 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
     m_target->Visit(visitor, mod);
 
     m_access_options = m_target->GetAccessOptions();
-    m_target_type = m_target->GetSymbolType();
 
+    m_target_type = m_target->GetSymbolType();
     ASSERT(m_target_type != nullptr);
+
+    const SymbolTypePtr_t original_type = m_target_type;
 
     // start looking at the target type,
     // iterate through base type
     SymbolTypePtr_t field_type = nullptr;
 
     while (field_type == nullptr && m_target_type != nullptr) {
+        /*// find in $proto value of Type instances
+        if (m_target_type->HasBase(*BuiltinTypes::TYPE_TYPE)) {
+            if (SymbolTypePtr_t proto_member_type = m_target_type->FindMember("$proto")) {
+                // make the target be the $proto member, which contains instance variables.
+                m_target_type = proto_member_type;
+            }
+        }*/
+
         // allow boxing/unboxing
         if (m_target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
             if (m_target_type->IsBoxedType()) {
                 m_target_type = m_target_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
                 ASSERT(m_target_type != nullptr);
             }
+        }
+
+        if (m_target_type == BuiltinTypes::ANY) {
+            field_type = BuiltinTypes::ANY;
+            break;
         }
         
         if ((field_type = m_target_type->FindMember(m_field_name)) != nullptr) {
@@ -72,20 +87,16 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
 
     ASSERT(m_target_type != nullptr);
 
-    if (m_target_type != BuiltinTypes::ANY) {
-        if (field_type != nullptr) {
-            m_symbol_type = field_type;
-        } else {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_not_a_data_member,
-                m_location,
-                m_field_name,
-                m_target->GetSymbolType()->GetName()
-            ));
-        }
+    if (field_type != nullptr) {
+        m_symbol_type = field_type;
     } else {
-        m_symbol_type = BuiltinTypes::ANY;
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_not_a_data_member,
+            m_location,
+            m_field_name,
+            original_type->GetName()
+        ));
     }
 }
 

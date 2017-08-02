@@ -56,8 +56,7 @@ std::ostream &operator<<(std::ostream &os, const Heap &heap)
                 data.array_ptr->GetRepresentation(ss, false);
                 os << ss.rdbuf();
             } else if ((data.obj_ptr = tmp_head->value.GetPointer<Object>()) != nullptr) {
-                ASSERT(data.obj_ptr->GetTypePtr() != nullptr);
-                os << data.obj_ptr->GetTypePtr()->GetName() << "| ";
+                os << "Object" << "| ";
 
                 os << std::setw(16);
                 std::stringstream ss;

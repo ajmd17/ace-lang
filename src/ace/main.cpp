@@ -614,7 +614,7 @@ void Runtime_load_function(ace::sdk::Params params)
     }
 }
 
-void Global_get_keys(ace::sdk::Params params)
+/*void Global_get_keys(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(==, 1);
 
@@ -656,9 +656,9 @@ void Global_get_keys(ace::sdk::Params params)
     res.m_value.ptr = ptr;
 
     ACE_RETURN(res);
-}
+}*/
 
-static void PushObjectKeysToArray(ace::sdk::Params &params,
+/*static void PushObjectKeysToArray(ace::sdk::Params &params,
     vm::Object *object, vm::Array *arr)
 {
     ASSERT(arr != nullptr);
@@ -728,7 +728,7 @@ void Global_to_multi_array(ace::sdk::Params params)
     res.m_value.ptr = ptr;
 
     ACE_RETURN(res);
-}
+}*/
 
 void Global_to_array(ace::sdk::Params params)
 {
@@ -795,7 +795,7 @@ void Global_to_json(ace::sdk::Params params)
     ACE_RETURN(res);
 }
 
-static void MergeIntoArray(ace::sdk::Params &params, vm::Array *res_arr)
+/*static void MergeIntoArray(ace::sdk::Params &params, vm::Array *res_arr)
 {
     for (size_t i = 1; i < params.nargs; i++) {
         ASSERT(params.args[i] != nullptr);
@@ -812,12 +812,12 @@ static void MergeIntoArray(ace::sdk::Params &params, vm::Array *res_arr)
             res_arr->PushMany(1, &params.args[i]);
         }
     }
-}
+}*/
 
 /**
     TODO: Support Object merging.
 */
-void Global_merge(ace::sdk::Params params)
+/*void Global_merge(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(>=, 2);
 
@@ -856,7 +856,7 @@ void Global_merge(ace::sdk::Params params)
     res.m_value.ptr = ptr;
 
     ACE_RETURN(res);
-}
+}*/
 
 void Global_decompile(ace::sdk::Params params)
 {
@@ -1154,11 +1154,7 @@ void Global_length(ace::sdk::Params params)
             len = data.array_ptr->GetSize();
         } else if ((data.obj_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Object>()) != nullptr) {
             // get number of members in object
-            // first, get type
-            const vm::TypeInfo *type_ptr = data.obj_ptr->GetTypePtr();
-            ASSERT(type_ptr != nullptr);
-            
-            len = type_ptr->GetSize();
+            len = data.obj_ptr->GetSize();
         } else {
             params.handler->state->ThrowException(params.handler->thread, e);
         }
@@ -1937,12 +1933,12 @@ void BuildLibraries(
                 }
             ) }
         }, Global_fmt)
-        .Function("get_keys", BuiltinTypes::ARRAY, {
-            { "object", BuiltinTypes::ANY }
-        }, Global_get_keys)
-        .Function("to_multi_array", BuiltinTypes::ARRAY, {
-            { "object", BuiltinTypes::ANY }
-        }, Global_to_multi_array)
+        // .Function("get_keys", BuiltinTypes::ARRAY, {
+        //     { "object", BuiltinTypes::ANY }
+        // }, Global_get_keys)
+        // .Function("to_multi_array", BuiltinTypes::ARRAY, {
+        //     { "object", BuiltinTypes::ANY }
+        // }, Global_to_multi_array)
         .Function("to_array", BuiltinTypes::ARRAY, {
             { "args", SymbolType::GenericInstance(
                 BuiltinTypes::VAR_ARGS,
@@ -1956,7 +1952,7 @@ void BuildLibraries(
         .Function("to_json", BuiltinTypes::STRING, {
             { "object", BuiltinTypes::ANY }
         }, Global_to_json)
-        .Function("merge", BuiltinTypes::ANY, {
+        /*.Function("merge", BuiltinTypes::ANY, {
             { "a", BuiltinTypes::ANY },
             { "b", BuiltinTypes::ANY },
             { "more", SymbolType::GenericInstance(
@@ -1967,7 +1963,7 @@ void BuildLibraries(
                     }
                 }
             ) }
-        }, Global_merge)
+        }, Global_merge)*/
         .Function("array_push", BuiltinTypes::ARRAY, {
             { "arr", BuiltinTypes::ARRAY },
             { "args", SymbolType::GenericInstance(

@@ -169,10 +169,10 @@ bool AstBlockExpression::MayHaveSideEffects() const
     return false;
 }
 
-SymbolTypePtr_t AstBlockExpression::GetSymbolType() const
+SymbolTypePtr_t AstBlockExpression::GetExprType() const
 {
     ASSERT(m_result_closure != nullptr);
-    ASSERT(m_result_closure->GetSymbolType() != nullptr);
+    ASSERT(m_result_closure->GetExprType() != nullptr);
 
-    return m_result_closure->GetSymbolType();
+    return m_result_closure->GetExprType();
 }

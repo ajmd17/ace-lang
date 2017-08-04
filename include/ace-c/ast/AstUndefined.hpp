@@ -15,7 +15,7 @@ public:
     virtual bool IsNumber() const override;
     virtual ace::aint32 IntValue() const override;
     virtual ace::afloat32 FloatValue() const override;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override;
     
     virtual std::shared_ptr<AstConstant> HandleOperator(Operators op_type, AstConstant *right) const override;
 

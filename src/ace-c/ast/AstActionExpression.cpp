@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstActionExpression.hpp>
 #include <ace-c/ast/AstCallExpression.hpp>
 #include <ace-c/ast/AstMember.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
@@ -85,7 +86,7 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_expr != nullptr);
     m_expr->Visit(visitor, mod);
 
-    SymbolTypePtr_t target_type = m_target->GetSymbolType();
+    SymbolTypePtr_t target_type = m_target->GetExprType();
     ASSERT(target_type != nullptr);
 
     if (target_type != BuiltinTypes::ANY) {
@@ -159,10 +160,9 @@ bool AstActionExpression::MayHaveSideEffects() const
     return m_member_found != 0;
 }
 
-SymbolTypePtr_t AstActionExpression::GetSymbolType() const
+std::shared_ptr<AstTypeObject> AstActionExpression::GetTypeOf() const
 {
     ASSERT(m_expr != nullptr);
-    ASSERT(m_expr->GetSymbolType() != nullptr);
-
-    return m_expr->GetSymbolType();
+    ASSERT(m_expr->GetTypeOf() != nullptr);
+    return m_expr->GetTypeOf();
 }

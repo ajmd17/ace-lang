@@ -32,15 +32,15 @@ void AstParameter::Visit(AstVisitor *visitor, Module *mod)
     if (m_type_spec != nullptr) {
         m_type_spec->Visit(visitor, mod);
 
-        ASSERT(m_type_spec->GetSymbolType() != nullptr);
-        symbol_type = m_type_spec->GetSymbolType();
+        ASSERT(m_type_spec->GetSpecifiedType() != nullptr);
+        symbol_type = m_type_spec->GetSpecifiedType();
     }
 
     if (m_default_param != nullptr) {
         m_default_param->Visit(visitor, mod);
 
-        ASSERT(m_default_param->GetSymbolType() != nullptr);
-        const SymbolTypePtr_t default_param_type = m_default_param->GetSymbolType();
+        ASSERT(m_default_param->GetExprType() != nullptr);
+        const SymbolTypePtr_t default_param_type = m_default_param->GetExprType();
 
         // make sure the types are compatible
         if (m_type_spec != nullptr && !symbol_type->TypeCompatible(*default_param_type, true)) {

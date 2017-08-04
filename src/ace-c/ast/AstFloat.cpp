@@ -51,7 +51,7 @@ ace::afloat32 AstFloat::FloatValue() const
     return m_value;
 }
 
-SymbolTypePtr_t AstFloat::GetSymbolType() const
+SymbolTypePtr_t AstFloat::GetExprType() const
 {
     return BuiltinTypes::FLOAT;
 }

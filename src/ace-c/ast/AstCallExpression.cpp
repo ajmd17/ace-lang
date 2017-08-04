@@ -35,7 +35,7 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_target != nullptr);
     m_target->Visit(visitor, mod);
 
-    SymbolTypePtr_t target_type = m_target->GetSymbolType();
+    SymbolTypePtr_t target_type = m_target->GetExprType();
     ASSERT(target_type != nullptr);
 
     if (m_insert_self) {
@@ -106,15 +106,15 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
         arg->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
     }
 
-    auto substituted = SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
-        visitor, 
-        mod,
-        unboxed_type,
-        m_args,
-        m_location
+    FunctionTypeSignature_t substituted = SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
+        visitor, mod, unboxed_type, m_args, m_location
     );
 
-    if (substituted.first == nullptr) {
+    if (substituted.first != nullptr) {
+        m_return_type = substituted.first;
+        // change args to be newly ordered vector
+        m_args = substituted.second;
+    } else {
         // not a function type
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
@@ -122,10 +122,6 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
             m_location,
             target_type->GetName()
         ));
-    } else {
-        m_return_type = substituted.first;
-        // change args to be newly ordered vector
-        m_args = substituted.second;
     }
 }
 
@@ -190,7 +186,7 @@ bool AstCallExpression::MayHaveSideEffects() const
     return true;
 }
 
-SymbolTypePtr_t AstCallExpression::GetSymbolType() const
+SymbolTypePtr_t AstCallExpression::GetExprType() const
 {
     ASSERT(m_return_type != nullptr);
     return m_return_type;

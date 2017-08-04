@@ -45,7 +45,7 @@ ace::afloat32 AstFalse::FloatValue() const
     return 0.0f;
 }
 
-SymbolTypePtr_t AstFalse::GetSymbolType() const
+SymbolTypePtr_t AstFalse::GetExprType() const
 {
     return BuiltinTypes::BOOLEAN;
 }

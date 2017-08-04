@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <utility>
 
 template <typename T> using sp = std::shared_ptr<T>;
 template <typename T> using wp = std::weak_ptr<T>;
@@ -13,10 +14,12 @@ template <typename T> using vec = std::vector<T>;
 // forward declaration
 class SymbolType;
 class AstExpression;
+class AstArgument;
 
-typedef sp<SymbolType> SymbolTypePtr_t;
-typedef wp<SymbolType> SymbolTypeWeakPtr_t;
-typedef std::tuple<std::string, SymbolTypePtr_t, sp<AstExpression>> SymbolMember_t;
+using SymbolTypePtr_t = sp<SymbolType>;
+using SymbolTypeWeakPtr_t = wp<SymbolType>;
+using SymbolMember_t = std::tuple<std::string, SymbolTypePtr_t, sp<AstExpression>>;
+using FunctionTypeSignature_t = std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>>;
 
 enum SymbolTypeClass {
     TYPE_BUILTIN,

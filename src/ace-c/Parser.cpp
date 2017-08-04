@@ -1086,7 +1086,8 @@ std::shared_ptr<AstActionExpression> Parser::ParseActionExpression(std::shared_p
 std::shared_ptr<AstNewExpression> Parser::ParseNewExpression()
 {
     if (Token token = ExpectKeyword(Keyword_new, true)) {
-        if (auto type_spec = ParseTypeSpecification()) {
+        if (auto proto = ParseExpression()) {
+        //if (auto type_spec = ParseTypeSpecification()) {
             std::shared_ptr<AstArgumentList> arg_list;
 
             if (Match(TK_OPEN_PARENTH, false)) {
@@ -1095,7 +1096,8 @@ std::shared_ptr<AstNewExpression> Parser::ParseNewExpression()
             }
 
             return std::shared_ptr<AstNewExpression>(new AstNewExpression(
-                type_spec,
+                proto,
+                //type_spec,
                 arg_list,
                 token.GetLocation()
             ));

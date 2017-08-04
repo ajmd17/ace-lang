@@ -39,8 +39,8 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             const bool is_alias = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS;
             const bool is_mixin = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_MIXIN;
 
-            ASSERT(AstIdentifier::GetSymbolType() != nullptr);
-            const bool is_const = AstIdentifier::GetSymbolType()->IsConstType();
+            ASSERT(AstIdentifier::GetExprType() != nullptr);
+            const bool is_const = AstIdentifier::GetExprType()->IsConstType();
 
             bool force_inline = false;
 
@@ -64,7 +64,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 ASSERT(m_inline_value != nullptr);
             } else {
                 if (m_should_inline) {
-                    if (const SymbolTypePtr_t value_type = m_inline_value->GetSymbolType()) {
+                    if (const SymbolTypePtr_t value_type = m_inline_value->GetExprType()) {
                         // only load basic types inline.
                         if (value_type->GetTypeClass() != SymbolTypeClass::TYPE_BUILTIN) {
                             m_should_inline = false;

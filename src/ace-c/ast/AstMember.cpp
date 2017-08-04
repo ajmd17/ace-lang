@@ -36,7 +36,7 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
 
     m_access_options = m_target->GetAccessOptions();
 
-    m_target_type = m_target->GetSymbolType();
+    m_target_type = m_target->GetExprType();
     ASSERT(m_target_type != nullptr);
 
     const SymbolTypePtr_t original_type = m_target_type;
@@ -46,14 +46,6 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
     SymbolTypePtr_t field_type = nullptr;
 
     while (field_type == nullptr && m_target_type != nullptr) {
-        /*// find in $proto value of Type instances
-        if (m_target_type->HasBase(*BuiltinTypes::TYPE_TYPE)) {
-            if (SymbolTypePtr_t proto_member_type = m_target_type->FindMember("$proto")) {
-                // make the target be the $proto member, which contains instance variables.
-                m_target_type = proto_member_type;
-            }
-        }*/
-
         // allow boxing/unboxing
         if (m_target_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
             if (m_target_type->IsBoxedType()) {
@@ -182,7 +174,7 @@ bool AstMember::MayHaveSideEffects() const
     return false;
 }
 
-SymbolTypePtr_t AstMember::GetSymbolType() const
+SymbolTypePtr_t AstMember::GetExprType() const
 {
     ASSERT(m_symbol_type != nullptr);
     return m_symbol_type;

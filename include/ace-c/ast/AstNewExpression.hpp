@@ -12,7 +12,7 @@
 class AstNewExpression: public AstExpression {
 public:
     AstNewExpression(
-        const std::shared_ptr<AstTypeSpecification> &type_expr,
+        const std::shared_ptr<AstExpression> &proto,
         const std::shared_ptr<AstArgumentList> &arg_list,
         const SourceLocation &location);
     virtual ~AstNewExpression() = default;
@@ -25,20 +25,24 @@ public:
 
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override;
 
 private:
-    std::shared_ptr<AstTypeSpecification> m_type_expr;
+    std::shared_ptr<AstExpression> m_proto;
     std::shared_ptr<AstArgumentList> m_arg_list;
 
     /** Set while analyzing */
     std::shared_ptr<AstExpression> m_object_value;
+    SymbolTypePtr_t m_instance_type;
+    SymbolTypePtr_t m_constructor_type;
     std::shared_ptr<AstCallExpression> m_constructor_call;
+    std::shared_ptr<AstStatement> m_dynamic_check;
+    bool m_is_dynamic_type;
 
     inline Pointer<AstNewExpression> CloneImpl() const
     {
         return Pointer<AstNewExpression>(new AstNewExpression(
-            CloneAstNode(m_type_expr),
+            CloneAstNode(m_proto),
             CloneAstNode(m_arg_list),
             m_location
         ));

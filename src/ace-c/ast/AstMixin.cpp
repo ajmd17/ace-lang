@@ -144,7 +144,7 @@ bool AstMixin::MayHaveSideEffects() const
     return false;
 }
 
-SymbolTypePtr_t AstMixin::GetSymbolType() const
+SymbolTypePtr_t AstMixin::GetExprType() const
 {
     ASSERT(!m_statements.empty());
 
@@ -152,6 +152,5 @@ SymbolTypePtr_t AstMixin::GetSymbolType() const
         dynamic_cast<AstExpression*>(m_statements.back().get());
 
     ASSERT(last_as_expr != nullptr);
-
-    return last_as_expr->GetSymbolType();
+    return last_as_expr->GetExprType();
 }

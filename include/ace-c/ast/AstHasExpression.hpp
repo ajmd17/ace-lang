@@ -20,7 +20,7 @@ public:
 
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override;
 
 protected:
     std::shared_ptr<AstStatement> m_target;

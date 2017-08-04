@@ -50,7 +50,7 @@ ace::afloat32 AstNil::FloatValue() const
     return 0.0f;
 }
 
-SymbolTypePtr_t AstNil::GetSymbolType() const
+SymbolTypePtr_t AstNil::GetExprType() const
 {
     return BuiltinTypes::NULL_TYPE;
 }

@@ -48,37 +48,109 @@ const SymbolTypePtr_t BuiltinTypes::TYPE_TYPE = SymbolType::Primitive(
     BuiltinTypes::OBJECT
 );
 
-const SymbolTypePtr_t BuiltinTypes::INT = SymbolType::Primitive(
+const SymbolTypePtr_t BuiltinTypes::INT = SymbolType::Extend(
+    "Int",
+    BuiltinTypes::TYPE_TYPE,
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            SymbolType::Primitive(
+                "IntInstance", nullptr
+            ),
+            sp<AstInteger>(new AstInteger(0, SourceLocation::eof))
+        }
+    }
+);
+
+/*const SymbolTypePtr_t BuiltinTypes::INT = SymbolType::Primitive(
     "Int",
     sp<AstInteger>(new AstInteger(0, SourceLocation::eof)),
     BuiltinTypes::TYPE_TYPE
-);
+);*/
 
-const SymbolTypePtr_t BuiltinTypes::FLOAT = SymbolType::Primitive(
+
+const SymbolTypePtr_t BuiltinTypes::FLOAT = SymbolType::Extend(
     "Float",
-    sp<AstFloat>(new AstFloat(0.0, SourceLocation::eof))
+    BuiltinTypes::TYPE_TYPE,
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            SymbolType::Primitive(
+                "FloatInstance", nullptr
+            ),
+            sp<AstFloat>(new AstFloat(0.0, SourceLocation::eof))
+        }
+    }
 );
 
-const SymbolTypePtr_t BuiltinTypes::NUMBER = SymbolType::Primitive(
+// const SymbolTypePtr_t BuiltinTypes::FLOAT = SymbolType::Primitive(
+//     "Float",
+//     sp<AstFloat>(new AstFloat(0.0, SourceLocation::eof))
+// );
+
+// const SymbolTypePtr_t BuiltinTypes::NUMBER = SymbolType::Primitive(
+//     "Number",
+//     sp<AstInteger>(new AstInteger(0, SourceLocation::eof))
+// );
+const SymbolTypePtr_t BuiltinTypes::NUMBER = SymbolType::Extend(
     "Number",
-    sp<AstInteger>(new AstInteger(0, SourceLocation::eof))
+    BuiltinTypes::TYPE_TYPE,
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            SymbolType::Primitive(
+                "NumberInstance", nullptr
+            ),
+            sp<AstFloat>(new AstFloat(0.0, SourceLocation::eof))
+        }
+    }
 );
 
-const SymbolTypePtr_t BuiltinTypes::BOOLEAN = SymbolType::Primitive(
-    "Boolean",
-    sp<AstFalse>(new AstFalse(SourceLocation::eof))
+
+// const SymbolTypePtr_t BuiltinTypes::BOOLEAN = SymbolType::Primitive(
+//     "Boolean",
+//     sp<AstFalse>(new AstFalse(SourceLocation::eof))
+// );
+
+const SymbolTypePtr_t BuiltinTypes::BOOLEAN = SymbolType::Extend(
+    "Bool",
+    BuiltinTypes::TYPE_TYPE,
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            SymbolType::Primitive(
+                "BoolInstance", nullptr
+            ),
+            sp<AstFalse>(new AstFalse(SourceLocation::eof))
+        }
+    }
 );
 
-const SymbolTypePtr_t BuiltinTypes::STRING = SymbolType::Primitive(
+// const SymbolTypePtr_t BuiltinTypes::STRING = SymbolType::Primitive(
+//     "String",
+//     sp<AstString>(new AstString("", SourceLocation::eof))
+// );
+
+
+const SymbolTypePtr_t BuiltinTypes::STRING = SymbolType::Extend(
     "String",
-    sp<AstString>(new AstString("", SourceLocation::eof))
+    BuiltinTypes::TYPE_TYPE,
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            SymbolType::Primitive(
+                "StringInstance", nullptr
+            ),
+            sp<AstString>(new AstString("", SourceLocation::eof))
+        }
+    }
 );
 
 const SymbolTypePtr_t BuiltinTypes::FUNCTION = SymbolType::Generic(
     "Function",
     sp<AstFunctionExpression>(new AstFunctionExpression(
         {},
-        nullptr, 
+        nullptr,
         sp<AstBlock>(new AstBlock(SourceLocation::eof)),
         false,
         false,
@@ -92,11 +164,18 @@ const SymbolTypePtr_t BuiltinTypes::FUNCTION = SymbolType::Generic(
 
 const SymbolTypePtr_t BuiltinTypes::ARRAY = SymbolType::Generic(
     "Array",
-    sp<AstArrayExpression>(new AstArrayExpression(
-        {},
-        SourceLocation::eof
-    )),
-    {},
+    nullptr,
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            SymbolType::Primitive(
+                "ArrayInstance", nullptr
+            ),
+            sp<AstArrayExpression>(new AstArrayExpression(
+                {}, SourceLocation::eof
+            ))
+        }
+    },
     GenericTypeInfo { 1 },
     BuiltinTypes::TYPE_TYPE
 );

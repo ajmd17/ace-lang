@@ -31,7 +31,7 @@ public:
 
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override;
 
 private:
     std::string m_target;

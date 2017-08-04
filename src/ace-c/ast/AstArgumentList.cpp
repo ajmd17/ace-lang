@@ -69,7 +69,7 @@ bool AstArgumentList::MayHaveSideEffects() const
     return false;
 }
 
-SymbolTypePtr_t AstArgumentList::GetSymbolType() const
+SymbolTypePtr_t AstArgumentList::GetExprType() const
 {
     return BuiltinTypes::ANY;
 }

@@ -174,9 +174,8 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         ASSERT(m_generator_closure != nullptr);
         m_generator_closure->Visit(visitor, mod);
 
-        ASSERT(m_generator_closure->GetSymbolType() != nullptr);
-
-        m_return_type = m_generator_closure->GetSymbolType();
+        ASSERT(m_generator_closure->GetExprType() != nullptr);
+        m_return_type = m_generator_closure->GetExprType();
     } else {
         // function body
         if (m_block != nullptr) {
@@ -186,7 +185,9 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
         if (m_type_specification != nullptr) {
             m_type_specification->Visit(visitor, mod);
-            m_return_type = m_type_specification->GetSymbolType();
+
+            ASSERT(m_type_specification->GetSpecifiedType() != nullptr);
+            m_return_type = m_type_specification->GetSpecifiedType();
         }
 
         const Scope &function_scope = mod->m_scopes.Top();
@@ -258,12 +259,11 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             m_location
         ));
         
-        SymbolMember_t closure_member;
-        std::get<0>(closure_member) = ident->GetName();
-        std::get<1>(closure_member) = ident->GetSymbolType();
-        std::get<2>(closure_member) = current_value;
-        
-        closure_obj_members.push_back(closure_member);
+        closure_obj_members.push_back(SymbolMember_t {
+            ident->GetName(),
+            ident->GetSymbolType(),
+            current_value
+        });
     }
 
     // close parameter scope
@@ -307,10 +307,11 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
     if (m_is_closure) {
         // add $invoke to call this object
-        SymbolMember_t invoke_member;
-        std::get<0>(invoke_member) = "$invoke";
-        std::get<1>(invoke_member) = m_symbol_type;
-        closure_obj_members.push_back(invoke_member);
+        closure_obj_members.push_back(SymbolMember_t {
+            "$invoke",
+            m_symbol_type,
+            nullptr
+        });
 
         // visit each member
         for (auto &member : closure_obj_members) {
@@ -471,7 +472,7 @@ bool AstFunctionExpression::MayHaveSideEffects() const
     return true;
 }
 
-SymbolTypePtr_t AstFunctionExpression::GetSymbolType() const
+SymbolTypePtr_t AstFunctionExpression::GetExprType() const
 {
     if (m_is_closure && m_closure_type != nullptr) {
         return m_closure_type;

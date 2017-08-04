@@ -22,7 +22,7 @@ public:
     
     virtual Pointer<AstStatement> Clone() const override;
 
-    inline const SymbolTypePtr_t &GetSymbolType() const { return m_symbol_type; }
+    inline const SymbolTypePtr_t &GetSpecifiedType() const { return m_symbol_type; }
     inline const SymbolTypePtr_t &GetOriginalType() const { return m_original_type; }
 
 private:

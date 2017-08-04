@@ -1,6 +1,10 @@
 #include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstVariableDeclaration.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
+
+#include <ace-c/type-system/BuiltinTypes.hpp>
 
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>

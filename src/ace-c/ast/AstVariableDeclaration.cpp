@@ -58,7 +58,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         if (m_type_specification != nullptr) {
             m_type_specification->Visit(visitor, mod);
 
-            symbol_type = m_type_specification->GetSymbolType();
+            symbol_type = m_type_specification->GetSpecifiedType();
             ASSERT(symbol_type != nullptr);
 
             if (symbol_type == BuiltinTypes::ANY) {
@@ -118,7 +118,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         if (m_assignment != nullptr) {
             // has received an explicit assignment
             // make sure type is compatible with assignment
-            SymbolTypePtr_t assignment_type = m_real_assignment->GetSymbolType();
+            SymbolTypePtr_t assignment_type = m_real_assignment->GetExprType();
             ASSERT(assignment_type != nullptr);
 
             if (m_type_specification != nullptr) {
@@ -176,6 +176,8 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
         m_identifier->SetSymbolType(symbol_type);
         m_identifier->SetCurrentValue(m_real_assignment);
+
+        std::cout << "m_real_assignment type = " << typeid(*m_real_assignment).name() << "\n";
     }
 }
 

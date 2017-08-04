@@ -24,7 +24,7 @@ void AstTypeOfExpression::Visit(AstVisitor *visitor, Module *mod)
      ASSERT(m_expr != nullptr);
      m_expr->Visit(visitor, mod);
     
-     SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
+     SymbolTypePtr_t expr_type = m_expr->GetExprType();
      ASSERT(expr_type != nullptr);
 
 #if 0
@@ -56,7 +56,7 @@ std::unique_ptr<Buildable> AstTypeOfExpression::Build(AstVisitor *visitor, Modul
     } else {*/
         ASSERT(m_expr != nullptr);
 
-        SymbolTypePtr_t expr_type = m_expr->GetSymbolType();
+        SymbolTypePtr_t expr_type = m_expr->GetExprType();
         ASSERT(expr_type != nullptr);
 
         // simply add a string representing the type
@@ -98,9 +98,9 @@ bool AstTypeOfExpression::MayHaveSideEffects() const
     return m_expr->MayHaveSideEffects();
 }
 
-SymbolTypePtr_t AstTypeOfExpression::GetSymbolType() const
+SymbolTypePtr_t AstTypeOfExpression::GetExprType() const
 {
     ASSERT(m_expr != nullptr);
     
-    return BuiltinTypes::STRING;
+    return BuiltinTypes::TYPE_TYPE;//BuiltinTypes::STRING;
 }

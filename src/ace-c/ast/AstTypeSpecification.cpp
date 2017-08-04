@@ -3,6 +3,7 @@
 #include <ace-c/Module.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/ast/AstVariable.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
@@ -34,9 +35,9 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
         if (param != nullptr) {
             param->Visit(visitor, visitor->GetCompilationUnit()->GetCurrentModule());
 
-            ASSERT(param->GetSymbolType() != nullptr);
+            ASSERT(param->GetSpecifiedType() != nullptr);
             generic_types.push_back({
-                "", param->GetSymbolType()
+                "", param->GetSpecifiedType()
             });
         }
     }
@@ -46,20 +47,24 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
         left_var.Visit(visitor, mod);
 
         if (left_var.GetProperties().GetIdentifier() != nullptr) {
-            const auto current_value = left_var.GetProperties().GetIdentifier()->GetCurrentValue();
-            if (current_value == nullptr) {
-                return;
-            }
-            
-            SymbolTypePtr_t symbol_type = current_value->GetSymbolType();
-            if (symbol_type == nullptr) {
-                return;
+            const SymbolTypePtr_t expr_type = left_var.GetExprType();
+            SymbolTypePtr_t symbol_type = nullptr;
+
+            // attempt to extract the held SymbolType out of an identifier's value
+            if (const auto current_value = left_var.GetProperties().GetIdentifier()->GetCurrentValue()) {
+                if (AstTypeObject *type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
+                    ASSERT(type_object->GetHeldType() != nullptr);
+                    symbol_type = type_object->GetHeldType();
+                }
             }
 
-            //SymbolTypePtr_t symbol_type = left_var.GetSymbolType();//mod->LookupSymbolType(m_left);
+            //SymbolTypePtr_t symbol_type = left_var.GetExprType();//mod->LookupSymbolType(m_left);
             //ASSERT(symbol_type != nullptr);
 
-            if (symbol_type != BuiltinTypes::TYPE_TYPE && !symbol_type->HasBase(*BuiltinTypes::TYPE_TYPE) &&
+            if (expr_type == BuiltinTypes::ANY || (expr_type == BuiltinTypes::TYPE_TYPE && symbol_type == nullptr)) {
+                // ???
+                m_symbol_type = BuiltinTypes::ANY;
+            } else if (symbol_type != BuiltinTypes::TYPE_TYPE && !symbol_type->HasBase(*BuiltinTypes::TYPE_TYPE) &&
                 symbol_type != BuiltinTypes::TRAIT_TYPE && !symbol_type->HasBase(*BuiltinTypes::TRAIT_TYPE)) {
                 visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                     LEVEL_ERROR,
@@ -179,7 +184,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                                             visitor,
                                             mod,
                                             mem_symbol_type,
-                                            mem_assignment->GetSymbolType(),
+                                            mem_assignment->GetExprType(),
                                             mem_assignment->GetLocation()
                                         );
                                     }
@@ -277,9 +282,9 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
         if (left_mod != nullptr) {
             // accept the right-hand side
             m_right->Visit(visitor, left_mod);
-            ASSERT(m_right->GetSymbolType() != nullptr);
+            ASSERT(m_right->GetSpecifiedType() != nullptr);
 
-            m_symbol_type = m_right->GetSymbolType();
+            m_symbol_type = m_right->GetSpecifiedType();
         } else {
             // did not find module
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(

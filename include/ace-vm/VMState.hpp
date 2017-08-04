@@ -83,18 +83,23 @@ struct VMState {
     HeapValue *HeapAlloc(ExecutionThread *thread);
     void GC();
 
+    void CloneValue(const Value &other, ExecutionThread *thread, Value &out);
+
     /** Add a thread */
     ExecutionThread *CreateThread();
     /** Destroy thread with ID */
     void DestroyThread(int id);
+    
     /** Get the number of threads currently in use */
-    inline int GetNumThreads() const { return m_num_threads; }
+    inline size_t GetNumThreads() const { return m_num_threads; }
+    inline ExecutionThread *GetMainThread() const { ASSERT(m_num_threads != 0); return m_threads[0]; }
 
     inline Heap &GetHeap() { return m_heap; }
     inline StaticMemory &GetStaticMemory() { return m_static_memory; }
+    
 
 private:
-    int m_num_threads = 0;
+    size_t m_num_threads = 0;
 };
 
 } // namespace vm

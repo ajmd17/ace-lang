@@ -58,7 +58,7 @@ public:
 
     virtual Tribool IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override = 0;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override;
 
 protected:
     std::string m_name;

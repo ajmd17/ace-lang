@@ -22,11 +22,13 @@ AstArrayAccess::AstArrayAccess(const std::shared_ptr<AstExpression> &target,
 
 void AstArrayAccess::Visit(AstVisitor *visitor, Module *mod)
 {
+    ASSERT(m_target != nullptr);
+    ASSERT(m_index != nullptr);
+
     m_target->Visit(visitor, mod);
     m_index->Visit(visitor, mod);
 
-    SymbolTypePtr_t target_type = m_target->GetSymbolType();
-
+    SymbolTypePtr_t target_type = m_target->GetExprType();
 
     // check if target is an array
     if (target_type != BuiltinTypes::ANY) {
@@ -123,11 +125,11 @@ bool AstArrayAccess::MayHaveSideEffects() const
         m_access_mode == ACCESS_MODE_STORE;
 }
 
-SymbolTypePtr_t AstArrayAccess::GetSymbolType() const
+SymbolTypePtr_t AstArrayAccess::GetExprType() const
 {
     ASSERT(m_target != nullptr);
 
-    SymbolTypePtr_t target_type = m_target->GetSymbolType();
+    SymbolTypePtr_t target_type = m_target->GetExprType();
     ASSERT(target_type != nullptr);
 
     if (target_type->GetTypeClass() == TYPE_ARRAY) {
@@ -139,7 +141,6 @@ SymbolTypePtr_t AstArrayAccess::GetSymbolType() const
         }
 
         ASSERT(held_type != nullptr);
-
         return held_type;
     }
 

@@ -40,15 +40,15 @@ void AstTupleExpression::Visit(AstVisitor *visitor, Module *mod)
         // we can't  modify default values of types.
         //mem_type.SetDefaultValue(mem->GetAssignment());
 
-        member_types.push_back(std::make_tuple(
+        member_types.push_back(SymbolMember_t {
             mem_name,
-            member->GetSymbolType(),
+            member->GetExprType(),
             member->GetExpr()
-        ));
+        });
 
         generic_param_types.push_back(GenericInstanceTypeInfo::Arg {
             mem_name,
-            member->GetSymbolType(),
+            member->GetExprType(),
             nullptr
         });
     }
@@ -109,7 +109,7 @@ bool AstTupleExpression::MayHaveSideEffects() const
     return side_effects;
 }
 
-SymbolTypePtr_t AstTupleExpression::GetSymbolType() const
+SymbolTypePtr_t AstTupleExpression::GetExprType() const
 {
     ASSERT(m_symbol_type != nullptr);
     return m_symbol_type;

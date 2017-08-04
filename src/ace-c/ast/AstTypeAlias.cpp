@@ -22,7 +22,7 @@ void AstTypeAlias::Visit(AstVisitor *visitor, Module *mod)
 
     m_aliasee->Visit(visitor, mod);
 
-    SymbolTypePtr_t aliasee_type = m_aliasee->GetSymbolType();
+    SymbolTypePtr_t aliasee_type = m_aliasee->GetSpecifiedType();
     ASSERT(aliasee_type != nullptr);
 
     // make sure name isn't already defined

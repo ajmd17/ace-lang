@@ -6,7 +6,7 @@
 
 class AstTypeObject : public AstExpression {
 public:
-    AstTypeObject(const SymbolTypeWeakPtr_t &symbol_type,
+    AstTypeObject(const SymbolTypePtr_t &symbol_type,
         const std::shared_ptr<AstVariable> &proto,
         const SourceLocation &location);
     virtual ~AstTypeObject() = default;
@@ -19,10 +19,12 @@ public:
 
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override;
+
+    inline const SymbolTypePtr_t &GetHeldType() const { return m_symbol_type; }
 
 private:
-    SymbolTypeWeakPtr_t m_symbol_type;
+    SymbolTypePtr_t m_symbol_type;
     std::shared_ptr<AstVariable> m_proto;
 
     inline Pointer<AstTypeObject> CloneImpl() const

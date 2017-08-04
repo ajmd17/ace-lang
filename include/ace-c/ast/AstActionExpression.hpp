@@ -28,7 +28,8 @@ public:
 
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual std::shared_ptr<AstTypeObject> GetTypeOf() const override;
+    //virtual SymbolTypePtr_t GetExprType() const override;
 
 protected:
     std::vector<std::shared_ptr<AstArgument>> m_actions;

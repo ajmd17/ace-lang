@@ -122,10 +122,8 @@ static int ArgIndex(
     );
 }
 
-std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>>
-SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
-    AstVisitor *visitor,
-    Module *mod, 
+FunctionTypeSignature_t SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
+    AstVisitor *visitor, Module *mod, 
     const SymbolTypePtr_t &identifier_type, 
     const std::vector<std::shared_ptr<AstArgument>> &args,
     const SourceLocation &location)
@@ -163,9 +161,7 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
 
             std::set<int> used_indices;
 
-            if (generic_args.size() - 1 <= args.size() ||
-                (is_varargs && generic_args.size() - 2 <= args.size()))
-            {
+            if (generic_args.size() - 1 <= args.size() || (is_varargs && generic_args.size() - 2 <= args.size())) {
                 using ArgDataPair = std::pair<ArgInfo, std::shared_ptr<AstArgument>>;
 
                 std::vector<ArgDataPair> named_args;
@@ -178,7 +174,7 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
                     ArgInfo arg_info;
                     arg_info.is_named = args[i]->IsNamed();
                     arg_info.name = args[i]->GetName();
-                    arg_info.type = args[i]->GetSymbolType();
+                    arg_info.type = args[i]->GetExprType();
 
                     ArgDataPair arg_data_pair = {
                         arg_info,
@@ -305,9 +301,7 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
                     LEVEL_ERROR,
                     msg,
                     location,
-                    is_varargs
-                        ? generic_args.size() - 2
-                        : generic_args.size() - 1,
+                    is_varargs ? generic_args.size() - 2 : generic_args.size() - 1,
                     args.size()
                 ));
             }
@@ -317,22 +311,19 @@ SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
             ASSERT(generic_args[0].m_type != nullptr);
 
             // return the "return type" of the function
-            return {
-                generic_args[0].m_type,
-                res_args
+            return FunctionTypeSignature_t {
+                generic_args[0].m_type, res_args
             };
         }
     } else if (identifier_type == BuiltinTypes::FUNCTION || identifier_type == BuiltinTypes::ANY) {
         // abstract function, allow any params
-        return {
-            BuiltinTypes::ANY,
-            args
+        return FunctionTypeSignature_t {
+            BuiltinTypes::ANY, args
         };
     }
     
-    return {
-        nullptr,
-        args
+    return FunctionTypeSignature_t {
+        nullptr, args
     };
 }
 

@@ -119,7 +119,7 @@ bool AstEvent::MayHaveSideEffects() const
     return false;
 }
 
-SymbolTypePtr_t AstEvent::GetSymbolType() const
+SymbolTypePtr_t AstEvent::GetExprType() const
 {
     return BuiltinTypes::EVENT;
 }

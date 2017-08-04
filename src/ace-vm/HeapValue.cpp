@@ -12,7 +12,7 @@ HeapValue::HeapValue()
 
 HeapValue::~HeapValue()
 {
-    if (m_holder) {
+    if (m_holder != nullptr) {
         delete m_holder;
     }
 }

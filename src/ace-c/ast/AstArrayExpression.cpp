@@ -30,8 +30,8 @@ void AstArrayExpression::Visit(AstVisitor *visitor, Module *mod)
         ASSERT(member != nullptr);
         member->Visit(visitor, mod);
 
-        if (member->GetSymbolType() != nullptr) {
-            held_types.insert(member->GetSymbolType());
+        if (member->GetExprType() != nullptr) {
+            held_types.insert(member->GetExprType());
         } else {
             held_types.insert(BuiltinTypes::ANY);
         }
@@ -218,7 +218,7 @@ bool AstArrayExpression::MayHaveSideEffects() const
     return side_effects;
 }
 
-SymbolTypePtr_t AstArrayExpression::GetSymbolType() const
+SymbolTypePtr_t AstArrayExpression::GetExprType() const
 {
     return SymbolType::GenericInstance(
         BuiltinTypes::ARRAY,

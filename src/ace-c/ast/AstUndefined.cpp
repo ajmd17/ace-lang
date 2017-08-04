@@ -37,7 +37,7 @@ ace::afloat32 AstUndefined::FloatValue() const
     return 0.0f;
 }
 
-SymbolTypePtr_t AstUndefined::GetSymbolType() const
+SymbolTypePtr_t AstUndefined::GetExprType() const
 {
     return BuiltinTypes::UNDEFINED;
 }

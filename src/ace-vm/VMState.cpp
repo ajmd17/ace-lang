@@ -60,6 +60,27 @@ void VMState::ThrowException(ExecutionThread *thread, const Exception &exception
     }
 }
 
+void VMState::CloneValue(const Value &other, ExecutionThread *thread, Value &out)
+{
+    switch (other.m_type) {
+        case Value::HEAP_POINTER:
+            if (other.m_value.ptr != nullptr) {
+                HeapValue *hv = HeapAlloc(thread);
+                ASSERT(hv != nullptr);
+
+                hv->AssignCopy(*other.m_value.ptr);
+
+                out.m_type = Value::HEAP_POINTER;
+                out.m_value.ptr = hv;
+
+                break;
+            }
+            // fallthrough
+        default:
+            out = Value(other);
+    }
+}
+
 HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
 {
     ASSERT(thread != nullptr);

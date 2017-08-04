@@ -71,6 +71,7 @@ void Value::Mark()
 const char *Value::GetTypeString() const
 {
     switch (m_type) {
+        case NONE:    return "<Uninitialized Data>";
         case I32:     // fallthrough
         case I64:     return "Int";
         case F32:     // fallthrough

@@ -21,34 +21,9 @@ CompilationUnit::CompilationUnit()
     m_global_module->SetImportTreeLink(m_module_tree.TopNode());
 
     Scope &top = m_global_module->m_scopes.Top();
-    /*top.GetIdentifierTable().AddSymbolType(BuiltinTypes::OBJECT);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::ANY);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::INT);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::FLOAT);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::NUMBER);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::BOOLEAN);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::STRING);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::FUNCTION);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::ARRAY);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::TUPLE);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::MAYBE);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::CONST_TYPE);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::NULL_TYPE);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::EVENT_ARRAY);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::BLOCK_TYPE);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::CLOSURE_TYPE);
-    top.GetIdentifierTable().AddSymbolType(BuiltinTypes::TYPE_TYPE);*/
 
     top.GetIdentifierTable().BindTypeToIdentifier("Object", BuiltinTypes::OBJECT);
     top.GetIdentifierTable().BindTypeToIdentifier("Any", BuiltinTypes::ANY);
-    top.GetIdentifierTable().BindTypeToIdentifier("Int", BuiltinTypes::INT);
-    top.GetIdentifierTable().BindTypeToIdentifier("Float", BuiltinTypes::FLOAT);
-    top.GetIdentifierTable().BindTypeToIdentifier("Number", BuiltinTypes::NUMBER);
-    top.GetIdentifierTable().BindTypeToIdentifier("Boolean", BuiltinTypes::BOOLEAN);
-    top.GetIdentifierTable().BindTypeToIdentifier("String", BuiltinTypes::STRING);
-    top.GetIdentifierTable().BindTypeToIdentifier("Function", BuiltinTypes::FUNCTION);
-    top.GetIdentifierTable().BindTypeToIdentifier("Array", BuiltinTypes::ARRAY);
     top.GetIdentifierTable().BindTypeToIdentifier("Tuple", BuiltinTypes::TUPLE);
     top.GetIdentifierTable().BindTypeToIdentifier("Maybe", BuiltinTypes::MAYBE);
     top.GetIdentifierTable().BindTypeToIdentifier("Const", BuiltinTypes::CONST_TYPE);

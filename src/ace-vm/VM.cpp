@@ -36,12 +36,12 @@ VM::~VM()
 
 void VM::PushNativeFunctionPtr(NativeFunctionPtr_t ptr)
 {
-    ASSERT(m_state.GetNumThreads() > 0);
-
     Value sv;
     sv.m_type = Value::NATIVE_FUNCTION;
     sv.m_value.native_func = ptr;
-    m_state.MAIN_THREAD->m_stack.Push(sv);
+
+    ASSERT(m_state.GetMainThread() != nullptr);
+    m_state.GetMainThread()->m_stack.Push(sv);
 }
 
 void VM::Print(const Value &value)
@@ -73,6 +73,7 @@ void VM::Print(const Value &value)
             } else {
                 VM::Print(*value.m_value.value_ref);
             }
+
             break;
 
         case Value::HEAP_POINTER: {
@@ -1077,7 +1078,7 @@ void VM::HandleInstruction(InstructionHandler *handler, uint8_t code)
 void VM::Execute(BytecodeStream *bs)
 {
     ASSERT(bs != nullptr);
-    ASSERT(m_state.GetNumThreads() > 0);
+    ASSERT(m_state.GetNumThreads() != 0);
 
     InstructionHandler handler(
         &m_state,

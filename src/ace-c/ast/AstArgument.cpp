@@ -1,5 +1,6 @@
 #include <ace-c/ast/AstArgument.hpp>
 #include <ace-c/AstVisitor.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 
 #include <ace-c/emit/BytecodeChunk.hpp>
 #include <ace-c/emit/BytecodeUtil.hpp>
@@ -54,8 +55,8 @@ bool AstArgument::MayHaveSideEffects() const
     return m_expr->MayHaveSideEffects();
 }
 
-SymbolTypePtr_t AstArgument::GetSymbolType() const
+SymbolTypePtr_t AstArgument::GetExprType() const
 {
     ASSERT(m_expr != nullptr);
-    return m_expr->GetSymbolType();
+    return m_expr->GetExprType();
 }

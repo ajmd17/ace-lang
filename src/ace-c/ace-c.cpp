@@ -9,6 +9,7 @@
 #include <ace-c/Lexer.hpp>
 #include <ace-c/Parser.hpp>
 #include <ace-c/Compiler.hpp>
+#include <ace-c/builtins/Builtins.hpp>
 #include <ace-c/dis/DecompilationUnit.hpp>
 
 #include <common/str_util.hpp>
@@ -31,6 +32,8 @@ std::unique_ptr<BytecodeChunk> BuildSourceFile(
     const utf::Utf8String &out_filename,
     CompilationUnit &compilation_unit)
 {
+    std::unique_ptr<BytecodeChunk> result(new BytecodeChunk());
+
     std::ifstream in_file(
         filename.GetData(),
         std::ios::in | std::ios::ate | std::ios::binary
@@ -58,6 +61,10 @@ std::unique_ptr<BytecodeChunk> BuildSourceFile(
         lex.Analyze();
 
         AstIterator ast_iterator;
+
+        Builtins builtins;
+        builtins.Visit(&compilation_unit);
+
         Parser parser(&ast_iterator, &token_stream, &compilation_unit);
         parser.Parse();
 
@@ -92,7 +99,11 @@ std::unique_ptr<BytecodeChunk> BuildSourceFile(
             // compile into bytecode instructions
             ast_iterator.ResetPosition();
             Compiler compiler(&ast_iterator, &compilation_unit);
-            return compiler.Compile();
+
+            result->Append(builtins.Build(&compilation_unit));
+            result->Append(compiler.Compile());
+
+            return result;
         }
     }
 

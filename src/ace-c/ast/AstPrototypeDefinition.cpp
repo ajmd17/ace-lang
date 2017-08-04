@@ -140,11 +140,11 @@ void AstPrototypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                 std::string mem_name = mem->GetName();
                 SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
                 
-                member_types.push_back(std::make_tuple(
+                member_types.push_back(SymbolMember_t {
                     mem_name,
                     mem_type,
                     mem->GetAssignment()
-                ));
+                });
             }
         }
     }

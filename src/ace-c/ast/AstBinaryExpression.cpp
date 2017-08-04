@@ -43,7 +43,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     m_left->Visit(visitor, mod);
     m_right->Visit(visitor, mod);
 
-    SymbolTypePtr_t left_type = m_left->GetSymbolType();
+    SymbolTypePtr_t left_type = m_left->GetExprType();
     SymbolTypePtr_t left_type_unboxed = left_type;
     
     if (left_type->GetTypeClass() == TYPE_GENERIC_INSTANCE && left_type->IsBoxedType()) {
@@ -52,7 +52,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
 
     ASSERT(left_type_unboxed != nullptr);
 
-    SymbolTypePtr_t right_type = m_right->GetSymbolType();
+    SymbolTypePtr_t right_type = m_right->GetExprType();
     SymbolTypePtr_t right_type_unboxed = right_type;
     
     if (right_type->GetTypeClass() == TYPE_GENERIC_INSTANCE && right_type->IsBoxedType()) {
@@ -595,20 +595,20 @@ bool AstBinaryExpression::MayHaveSideEffects() const
     //}
 }
 
-SymbolTypePtr_t AstBinaryExpression::GetSymbolType() const
+SymbolTypePtr_t AstBinaryExpression::GetExprType() const
 {
     // if (m_member_access) {
-    //     return m_member_access->GetSymbolType();
+    //     return m_member_access->GetExprType();
     // } else {
         ASSERT(m_left != nullptr);
 
-        SymbolTypePtr_t l_type_ptr = m_left->GetSymbolType();
+        SymbolTypePtr_t l_type_ptr = m_left->GetExprType();
         ASSERT(l_type_ptr != nullptr);
 
         if (m_right != nullptr) {
             // the right was not optimized away,
             // return type promotion
-            SymbolTypePtr_t r_type_ptr = m_right->GetSymbolType();
+            SymbolTypePtr_t r_type_ptr = m_right->GetExprType();
 
             ASSERT(r_type_ptr != nullptr);
 

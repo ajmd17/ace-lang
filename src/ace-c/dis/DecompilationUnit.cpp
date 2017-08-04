@@ -357,15 +357,11 @@ void DecompilationUnit::DecodeNext(
             (*os)
                 << "load_type ["
                     << "%" << (int)reg << ", "
-                    << "str(" << type_name.data() << ")"
-                    << "u16(" << (int)size << "), ";
+                    << "str(" << type_name.data() << "), "
+                    << "u16(" << (int)size << ")";
 
             for (int i = 0; i < size; i++) {
-                (*os)
-                    << "str(" << names[i].data() << ")";
-                if (i != size - 1) {
-                    (*os) << ", ";
-                }
+                (*os) << ", str(" << names[i].data() << ")";
             }
                     
             (*os)

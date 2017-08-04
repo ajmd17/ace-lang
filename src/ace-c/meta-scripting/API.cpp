@@ -152,9 +152,9 @@ void API::ModuleDefine::BindNativeVariable(
     ident->SetStackLocation(compilation_unit->GetInstructionStream().GetStackSize());
     compilation_unit->GetInstructionStream().IncStackSize();
 
-    ASSERT(vm->GetState().GetNumThreads() > 0);
+    ASSERT(vm->GetState().GetNumThreads() != 0);
 
-    ExecutionThread *main_thread = vm->GetState().m_threads[0];
+    ExecutionThread *main_thread = vm->GetState().GetMainThread();
 
     // create the object that will be stored
     Value obj;

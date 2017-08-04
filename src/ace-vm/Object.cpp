@@ -139,9 +139,13 @@ void ObjectMap::Push(uint32_t hash, Member *member)
 
 Member *ObjectMap::Get(uint32_t hash)
 {
-    ASSERT(m_size != 0);
+    if (m_size == 0) {
+        return nullptr;
+    }
+
     Member *res = nullptr;
     m_buckets[hash % m_size].Lookup(hash, &res);
+
     return res;
 }
 

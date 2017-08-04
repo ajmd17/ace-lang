@@ -71,6 +71,8 @@ class HeapValue;
     
 struct Value {
     enum ValueType {
+        NONE,
+
         /* These first four types are listed in order of precedence */
         I32,
         I64,

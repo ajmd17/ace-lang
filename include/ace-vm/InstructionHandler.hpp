@@ -678,17 +678,21 @@ struct InstructionHandler {
     {
         // read value from register
         Value &proto_sv = thread->m_regs[src];
-        ASSERT(proto_sv.m_type == Value::HEAP_POINTER);
+        ASSERT_MSG(proto_sv.m_type == Value::HEAP_POINTER, "NEW operand should be a pointer type");
 
         // the NEW instruction makes a copy of the $proto data member
         // of the prototype object.
         Object *proto_obj = proto_sv.m_value.ptr->GetPointer<Object>();
-        ASSERT(proto_obj != nullptr);
+        ASSERT_MSG(proto_obj != nullptr, "NEW operand should be an Object");
 
         Member *proto_mem = proto_obj->LookupMemberFromHash(Object::PROTO_MEMBER_HASH);
         ASSERT(proto_mem != nullptr);
-        ASSERT(proto_mem->value.m_type == Value::HEAP_POINTER);
+        //ASSERT(proto_mem->value.m_type == Value::HEAP_POINTER);
 
+        // assign destination to cloned value
+        state->CloneValue(proto_mem->value, thread, thread->m_regs[dst]);
+
+        /*
         // allocate heap object
         HeapValue *hv = state->HeapAlloc(thread);
         ASSERT(hv != nullptr);
@@ -699,7 +703,7 @@ struct InstructionHandler {
         // assign register value to the allocated object
         Value &sv = thread->m_regs[dst];
         sv.m_type = Value::HEAP_POINTER;
-        sv.m_value.ptr = hv;
+        sv.m_value.ptr = hv;*/
     }
 
     inline void NewArray(bc_reg_t dst, uint32_t size)

@@ -44,7 +44,7 @@ void AstUnaryExpression::Visit(AstVisitor *visitor, Module *mod)
 {
     m_target->Visit(visitor, mod);
 
-    SymbolTypePtr_t type = m_target->GetSymbolType();
+    SymbolTypePtr_t type = m_target->GetExprType();
     
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
@@ -213,7 +213,7 @@ bool AstUnaryExpression::MayHaveSideEffects() const
     return m_target->MayHaveSideEffects();
 }
 
-SymbolTypePtr_t AstUnaryExpression::GetSymbolType() const
+SymbolTypePtr_t AstUnaryExpression::GetExprType() const
 {
-    return m_target->GetSymbolType();
+    return m_target->GetExprType();
 }

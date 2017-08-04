@@ -27,6 +27,7 @@
 #include <ace-c/emit/BytecodeUtil.hpp>
 #include <ace-c/emit/aex-builder/AEXGenerator.hpp>
 #include <ace-c/type-system/BuiltinTypes.hpp>
+#include <ace-c/builtins/Builtins.hpp>
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
@@ -1336,49 +1337,212 @@ static int RunBytecodeFile(
     return 0;
 }
 
-static int REPL(
-    vm::VM *vm,
-    CompilationUnit &compilation_unit,
-    const utf::Utf8String &template_code,
-    bool first_time = true)
-{
-    AstIterator ast_iterator;
+class Repl {
+public:
+    Repl(CompilationUnit &unit)
+        : m_unit(unit)
+    {
+        m_stack_record = unit.GetInstructionStream().GetStackSize();
+        m_num_identifiers = unit.GetCurrentModule()->m_scopes.Top()
+            .GetIdentifierTable().GetIdentifiers().size();
+    }
 
-    int indent = 0;
-    int parentheses_counter = 0;
-    int bracket_counter = 0;
+    AstIterator Parse(utf::Utf8String &line)
+    {
+        m_num_identifiers = m_unit.GetCurrentModule()->m_scopes.Top()
+            .GetIdentifierTable().GetIdentifiers().size();
 
-    size_t offset = 0;
-
-    utf::Utf8String code;
-    utf::Utf8String out_filename = "tmp.aex";
-
-    if (first_time) {
-        // truncate the file, overwriting any previous data
-        std::ofstream out_file(out_filename.GetData(),
-            std::ios::out | std::ios::binary | std::ios::trunc);
-        out_file.close();
-
-        code = template_code;
-        utf::cout << code;
+        AstIterator ast;
 
         // send code to be compiled
-        SourceFile source_file("<stdin>", code.GetBufferSize());
-        std::memcpy(source_file.GetBuffer(), code.GetData(), code.GetBufferSize());
+        SourceFile source_file("<stdin>", line.GetBufferSize());
+        source_file.ReadIntoBuffer(line.GetData(), line.GetBufferSize());
         SourceStream source_stream(&source_file);
 
         TokenStream token_stream(TokenStreamInfo {
             source_file.GetFilePath()
         });
 
-        Lexer lex(source_stream, &token_stream, &compilation_unit);
+        Lexer lex(source_stream, &token_stream, &m_unit);
         lex.Analyze();
 
-        Parser parser(&ast_iterator, &token_stream, &compilation_unit);
+        Parser parser(&ast, &token_stream, &m_unit);
         parser.Parse(false);
 
-        SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
+        // in REPL mode only analyze if parsing and lexing went okay.
+        SemanticAnalyzer semantic_analyzer(&ast, &m_unit);
         semantic_analyzer.Analyze(false);
+
+        return ast;
+    }
+
+    std::unique_ptr<BytecodeChunk> Compile(AstIterator &ast)
+    {
+        // set stack_record to be compiler's stack size before.
+        m_stack_record = m_unit.GetInstructionStream().GetStackSize();
+
+        ast.ResetPosition();
+        Optimizer optimizer(&ast, &m_unit);
+        optimizer.Optimize(false);
+
+        // compile into bytecode instructions
+        ast.ResetPosition();
+        Compiler compiler(&ast, &m_unit);
+
+        return compiler.Compile();
+    }
+
+    std::vector<std::uint8_t> Encode(const std::unique_ptr<BytecodeChunk> &chunk, size_t offset = 0)
+    {
+        BuildParams build_params;
+        build_params.block_offset = offset;
+        build_params.local_offset = 0;
+
+        return GenerateBytes(chunk.get(), build_params);
+    }
+
+    void Emit(const utf::Utf8String &out_filename,
+        const std::vector<std::uint8_t> &encoded_bytes)
+    {
+        // emit bytecode instructions to file
+        std::ofstream temp_bytecode_file(
+            out_filename.GetData(),
+            std::ios::out | std::ios::binary | std::ios::app | std::ios::ate
+        );
+
+        int64_t file_pos = temp_bytecode_file.tellp();
+
+        if (!temp_bytecode_file.is_open()) {
+            utf::cout << "Could not open file for writing: " << out_filename << "\n";
+            return;
+        }
+
+        temp_bytecode_file.write((char*)&encoded_bytes[0], encoded_bytes.size());
+        temp_bytecode_file.close();
+    }
+
+    void DisplayCompileErrors()
+    {
+        m_unit.GetErrorList().SortErrors();
+        m_unit.GetErrorList().WriteOutput(utf::cout);
+    }
+
+    void RecoverCompileErrors()
+    {
+        ASSERT(m_unit.GetCurrentModule() != nullptr);
+        ASSERT(m_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
+        
+        IdentifierTable &table = m_unit.GetCurrentModule()->m_scopes.Top().GetIdentifierTable();
+        const size_t diff = table.GetIdentifiers().size() - m_num_identifiers;
+
+        for (size_t i = 0; i < diff; i++) {
+            table.PopIdentifier();
+        }
+
+        m_unit.GetErrorList().ClearErrors();
+    }
+
+    bool Exec(vm::VM *vm, vm::BytecodeStream *bs, bc_reg_t active_reg = 0)
+    {
+        ASSERT(vm != nullptr);
+        ASSERT(vm->GetState().GetMainThread() != nullptr);
+
+        // store stack size so that we can revert on error
+        m_stack_size = vm->GetState().GetMainThread()->GetStack().GetStackPointer();
+
+        vm->Execute(bs);
+
+        utf::cout << termcolor::green;
+
+        // print whatever is in active_reg
+        vm->Print(vm->GetState().GetMainThread()->GetRegisters()[active_reg]);
+
+        utf::cout << termcolor::reset;
+        utf::printf(UTF8_CSTR("\n"));
+
+        return vm->GetState().good;
+    }
+
+    void RecoverExceptions(vm::VM *vm)
+    {
+        ASSERT(vm->GetState().GetMainThread() != nullptr);
+        vm::ExecutionThread *main_thread = vm->GetState().GetMainThread();
+
+        size_t stack_size_now = main_thread->GetStack().GetStackPointer();
+        main_thread->GetStack().Pop(stack_size_now - m_stack_size);
+
+        stack_size_now = m_stack_size;
+
+        // kill off any thread that isn't the main thread
+        for (int i = 1; i < vm->GetState().GetNumThreads(); i++) {
+            if (vm->GetState().m_threads[i] != nullptr) {
+                vm->GetState().DestroyThread(i);
+            }
+        }
+
+        // trigger the GC after popping items from stack,
+        // to clean up any heap variables no longer in use.
+        main_thread->GetStack().MarkAll();
+        vm->GetState().GetHeap().Sweep();
+
+        // clear vm exception state
+        main_thread->GetExceptionState().Reset();
+
+        // we're good to go now
+        vm->GetState().good = true;
+
+        // reset compiler's stack size record.
+        m_unit.GetInstructionStream().SetStackSize(m_stack_record);
+    }
+
+//private:
+    size_t m_num_identifiers = 0;
+    size_t m_stack_size = 0; // runtime's stack size
+    size_t m_stack_record = 0; // compiler's stack size
+    CompilationUnit &m_unit;
+
+    std::vector<uint8_t> m_all_data;
+};
+
+
+
+static int REPL(
+    vm::VM *vm,
+    CompilationUnit &compilation_unit,
+    const utf::Utf8String &template_code,
+    bool first_time = true)
+{
+    // ReplState repl_state;
+    // repl_state.unit = &compilation_unit;
+    // repl_state.stack_record = repl_state.unit->GetInstructionStream().GetStackSize();
+    // repl_state.num_identifiers = repl_state.unit->GetCurrentModule()->m_scopes.Top()
+    //     .GetIdentifierTable().GetIdentifiers().size();
+
+    Repl repl(compilation_unit);
+
+    AstIterator ast_iterator;
+
+    int indent = 0;
+    int parentheses_counter = 0;
+    int bracket_counter = 0;
+
+    size_t exec_offset = 0;
+
+    utf::Utf8String code;
+    utf::Utf8String out_filename = "tmp.aex";
+
+    // truncate the file, overwriting any previous data
+    std::ofstream out_file(out_filename.GetData(),
+        std::ios::out | std::ios::binary | std::ios::trunc);
+    out_file.close();
+
+    Builtins repl_builtins;
+    repl_builtins.Visit(&compilation_unit);
+    repl.m_all_data = repl.Encode(repl_builtins.Build(&compilation_unit));
+
+    AstIterator builtins_ast = repl_builtins.GetAst();
+    while (builtins_ast.HasNext()) {
+        ast_iterator.Push(builtins_ast.Next());
     }
 
     std::vector<utf::Utf8String> lines;
@@ -1435,238 +1599,74 @@ static int REPL(
 
             cont_token = !tmp_ts.m_tokens.empty() && tmp_ts.m_tokens.back().IsContinuationToken();
             wait_for_next = indent > 0 ||
-                    parentheses_counter > 0 ||
-                    bracket_counter > 0 ||
-                    cont_token;
+                parentheses_counter > 0 ||
+                bracket_counter > 0 ||
+                cont_token;
         }
 
         lines.push_back(current_line);
 
-        if (!wait_for_next) {
-            // so we can rewind upon errors
-            int old_pos = ast_iterator.GetPosition();
-            int old_stack_record = compilation_unit.GetInstructionStream().GetStackSize();
-            // store the number of identifiers in the global scope,
-            // so we can remove them on error
-            
-            ASSERT(compilation_unit.GetCurrentModule() != nullptr);
-            ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
-            
-            size_t num_identifiers = compilation_unit
-                .GetCurrentModule()
-                ->m_scopes.Top()
-                .GetIdentifierTable()
-                .GetIdentifiers()
-                .size();
-
-            utf::Utf8String lines_combined;
-            for (size_t i = 0; i < lines.size(); i++) {
-                lines_combined += lines[i] + "\n";
-            }
-
-            // send code to be compiled
-            SourceFile source_file("<stdin>", lines_combined.GetBufferSize());
-            source_file.ReadIntoBuffer(lines_combined.GetData(), lines_combined.GetBufferSize());
-            SourceStream source_stream(&source_file);
-
-            TokenStream token_stream(TokenStreamInfo {
-                source_file.GetFilePath()
-            });
-
-            Lexer lex(source_stream, &token_stream, &compilation_unit);
-            lex.Analyze();
-
-            Parser parser(&ast_iterator, &token_stream, &compilation_unit);
-            parser.Parse(false);
-
-            // in REPL mode only analyze if parsing and lexing went okay.
-            SemanticAnalyzer semantic_analyzer(&ast_iterator, &compilation_unit);
-            semantic_analyzer.Analyze(false);
-
-            compilation_unit.GetErrorList().SortErrors();
-            compilation_unit.GetErrorList().WriteOutput(utf::cout);
-
-            if (!compilation_unit.GetErrorList().HasFatalErrors()) {
-                // only optimize if there were no errors
-                // before this point
-                ast_iterator.SetPosition(old_pos);
-                Optimizer optimizer(&ast_iterator, &compilation_unit);
-                optimizer.Optimize(false);
-
-                // compile into bytecode instructions
-                ast_iterator.SetPosition(old_pos);
-                Compiler compiler(&ast_iterator, &compilation_unit);
-
-                std::unique_ptr<BytecodeChunk> bc = compiler.Compile();
-                ASSERT(bc != nullptr);
-
-                /*// TESTING SERIALIZATION!
-                std::ofstream os("serialized.ir.json");
-                BytecodeUtil::StoreSerialized(os, bc);
-                os.close();
-                // load
-                std::ifstream is("serialized.ir.json");
-                std::unique_ptr<BytecodeChunk> bc2 = BytecodeUtil::LoadSerialized(is);
-                is.close();*/
-                
-                // get active register
-                int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();
-                
-                // emit bytecode instructions to file
-                std::ofstream temp_bytecode_file(
-                    out_filename.GetData(),
-                    std::ios::out | std::ios::binary | std::ios::app | std::ios::ate
-                );
-
-                int64_t file_pos = temp_bytecode_file.tellp();
-
-                if (!temp_bytecode_file.is_open()) {
-                    utf::cout << "Could not open file for writing: " << out_filename << "\n";
-                    for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
-                        ast_iterator.Pop();
-                    }
-                    ast_iterator.SetPosition(old_pos);
-                } else {
-                    int64_t bytecode_file_size;
-
-                    BuildParams build_params;
-                    // set offset
-                    build_params.block_offset = offset;
-                    build_params.local_offset = 0;
-
-                    std::vector<std::uint8_t> bytes = GenerateBytes(bc.get(), build_params);
-
-                    temp_bytecode_file.write((char*)&bytes[0], bytes.size());
-                    offset += bytes.size();
-
-                    //compilation_unit.GetInstructionStream().ClearInstructions();
-                    bytecode_file_size = temp_bytecode_file.tellp();
-                    temp_bytecode_file.close();
-
-                    // check if we even have to run the bytecode file
-                    if (bytecode_file_size - file_pos > 0) {
-                        ASSERT(vm->GetState().GetNumThreads() > 0);
-                        vm::ExecutionThread *main_thread = vm->GetState().m_threads[0];
-                        ASSERT(main_thread != nullptr);
-
-                        // store stack size so that we can revert on error
-                        size_t stack_size_before = main_thread->GetStack().GetStackPointer();
-
-                        RunBytecodeFile(vm, out_filename, false, file_pos);
-
-                        utf::cout << termcolor::green;
-                        // print whatever is in active_reg
-                        vm->Print(main_thread->GetRegisters()[active_reg]);
-                        utf::cout << termcolor::reset;
-                        utf::printf(UTF8_CSTR("\n"));
-
-                        if (!vm->GetState().good) {
-                            // if an exception was unhandled go back to previous state
-                            // overwrite the bytecode file with the code that has been generated up to the point of error
-                            // start by loading it into a temporary buffer
-                            std::ifstream tmp_is(
-                                out_filename.GetData(),
-                                std::ios::in | std::ios::binary | std::ios::ate
-                            );
-
-                            // len is only the amount of bytes up to where we were before in the file.
-                            int64_t len = std::min((int64_t)tmp_is.tellg(), file_pos);
-                            // create buffer
-                            char *buf = new char[len];
-                            // seek to beginning
-                            tmp_is.seekg(0, std::ios::beg);
-                            // read into buffer
-                            tmp_is.read(buf, len);
-                            // close temporary file
-                            tmp_is.close();
-
-                            // create the new file to write the buffer to
-                            std::ofstream tmp_os(
-                                out_filename.GetData(),
-                                std::ios::out | std::ios::binary
-                            );
-                            tmp_os.write(buf, len);
-                            tmp_os.close();
-
-                            // delete buffer, it's no longer needed
-                            delete[] buf;
-
-                            size_t stack_size_now = main_thread->GetStack().GetStackPointer();
-                            main_thread->GetStack().Pop(stack_size_now - stack_size_before);
-                            stack_size_now = stack_size_before;
-
-                            // kill off any thread that isn't the main thread
-                            for (int i = 1; i < vm->GetState().GetNumThreads(); i++) {
-                                if (vm->GetState().m_threads[i] != nullptr) {
-                                    vm->GetState().DestroyThread(i);
-                                }
-                            }
-
-                            // trigger the GC after popping items from stack,
-                            // to clean up any heap variables no longer in use.
-                            main_thread->GetStack().MarkAll();
-                            vm->GetState().GetHeap().Sweep();
-
-                            // clear vm exception state
-                            main_thread->GetExceptionState().Reset();
-
-                            // we're good to go now
-                            vm->GetState().good = true;
-
-                            // undo compilation
-                            compilation_unit.GetInstructionStream().SetStackSize(old_stack_record);
-                            for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
-                                ast_iterator.Pop();
-                            }
-                            ast_iterator.SetPosition(old_pos);
-
-                            // restart the script
-                            return REPL(vm, compilation_unit, "", false);
-                        } else {
-                            // everything is good, no compile or runtime errors here
-                            // store the line
-                            code += lines_combined;
-                        }
-                    }
-                }
-            } else {
-                // remove the identifiers that were since declared
-                ASSERT(compilation_unit.GetCurrentModule() != nullptr);
-                ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
-                
-                IdentifierTable &tbl = compilation_unit
-                    .GetCurrentModule()
-                    ->m_scopes.Top()
-                    .GetIdentifierTable();
-
-                const size_t diff = tbl.GetIdentifiers().size() - num_identifiers;
-
-                for (size_t i = 0; i < diff; i++) {
-                    tbl.PopIdentifier();
-                }
-                
-                for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
-                    ast_iterator.Pop();
-                }
-                ast_iterator.SetPosition(old_pos);
-                compilation_unit.GetErrorList().ClearErrors();
-            }
-
-            lines.clear();
-
-            utf::cout << "> ";
-        } else {
-            if (indent) {
+        if (wait_for_next) {
+            if (indent > 0) {
                 for (int i = 0; i < indent; i++) {
                     utf::cout << "  ";
                 }
-            } else {
-                if (parentheses_counter || bracket_counter || cont_token) {
-                    utf::cout << "  ";
-                }
+            } else if (parentheses_counter > 0 || bracket_counter > 0 || cont_token) {
+                utf::cout << "  ";
             }
+
             utf::cout << "  ";
+
+            continue;
         }
+
+        utf::Utf8String lines_combined;
+
+        for (size_t i = 0; i < lines.size(); i++) {
+            lines_combined += lines[i] + "\n";
+        }
+
+        lines.clear();
+
+        AstIterator line_ast = repl.Parse(lines_combined);
+
+        if (!compilation_unit.GetErrorList().HasFatalErrors()) {
+            auto chunk = repl.Compile(line_ast);
+            ASSERT(chunk != nullptr);
+
+            const size_t bytecode_offset = repl.m_all_data.size();
+
+            std::vector<uint8_t> line_data = repl.Encode(chunk, bytecode_offset);
+
+            std::vector<uint8_t> data;
+            data.resize(repl.m_all_data.size() + line_data.size());
+            std::memcpy(&data[0], &repl.m_all_data[0], sizeof(uint8_t) * repl.m_all_data.size());
+            std::memcpy(&data[repl.m_all_data.size()], &line_data[0], sizeof(uint8_t) * line_data.size());
+
+            vm::BytecodeStream bs((char*)&data[0], data.size(), exec_offset);
+            
+            if (repl.Exec(vm, &bs)) {
+                // execution was successful
+                ASSERT(bytecode_offset + line_data.size() == data.size());
+
+                // if successful, append what was executed to file.
+                repl.Emit(out_filename, std::vector<uint8_t>(data.begin() + exec_offset, data.end()));
+
+                exec_offset = data.size();
+                repl.m_all_data = data;
+            } else {
+                repl.RecoverExceptions(vm);
+            }
+
+            while (line_ast.HasNext()) {
+                ast_iterator.Push(line_ast.Next());
+            }
+        } else {
+            repl.DisplayCompileErrors();
+            repl.RecoverCompileErrors();
+        }
+
+        utf::cout << "> ";
     }
 
     // delete temporary bytecode file

@@ -67,7 +67,7 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
     CheckInFunction(visitor, mod);
 }
 
-SymbolTypePtr_t AstIdentifier::GetSymbolType() const
+SymbolTypePtr_t AstIdentifier::GetExprType() const
 {
     if (m_properties.GetIdentifier() != nullptr) {
         if (m_properties.GetIdentifier()->GetSymbolType() != nullptr) {

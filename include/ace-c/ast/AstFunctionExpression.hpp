@@ -30,7 +30,7 @@ public:
 
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
-    virtual SymbolTypePtr_t GetSymbolType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override;
     
     inline const SymbolTypePtr_t &GetReturnType() const { return m_return_type; }
     inline void SetReturnType(const SymbolTypePtr_t &return_type) { m_return_type = return_type; }

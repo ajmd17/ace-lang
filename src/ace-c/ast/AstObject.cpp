@@ -212,9 +212,10 @@ bool AstObject::MayHaveSideEffects() const
     return false;
 }
 
-SymbolTypePtr_t AstObject::GetSymbolType() const
+SymbolTypePtr_t AstObject::GetExprType() const
 {
     auto sp = m_symbol_type.lock();
     ASSERT(sp != nullptr);
+
     return sp;
 }

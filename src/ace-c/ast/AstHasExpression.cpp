@@ -41,12 +41,12 @@ void AstHasExpression::Visit(AstVisitor *visitor, Module *mod)
             m_is_expr = true;
         }
 
-        target_type = ident->GetSymbolType();
+        target_type = ident->GetExprType();
         m_has_side_effects = ident->MayHaveSideEffects();
     } else if (auto *type_spec = dynamic_cast<AstTypeSpecification*>(m_target.get())) {
-        target_type = type_spec->GetSymbolType();
+        target_type = type_spec->GetSpecifiedType();
     } else if (auto *expr = dynamic_cast<AstExpression*>(m_target.get())) {
-        target_type = ident->GetSymbolType();
+        target_type = expr->GetExprType();
         m_is_expr = true;
         m_has_side_effects = expr->MayHaveSideEffects();
     }
@@ -151,7 +151,7 @@ Pointer<AstStatement> AstHasExpression::Clone() const
     return CloneImpl();
 }
 
-SymbolTypePtr_t AstHasExpression::GetSymbolType() const
+SymbolTypePtr_t AstHasExpression::GetExprType() const
 {
     return BuiltinTypes::BOOLEAN;
 }

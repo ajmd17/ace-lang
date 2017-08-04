@@ -28,7 +28,7 @@ void AstAliasDeclaration::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_aliasee != nullptr);
     m_aliasee->Visit(visitor, mod);
 
-    ASSERT(m_aliasee->GetSymbolType() != nullptr);
+    ASSERT(m_aliasee->GetExprType() != nullptr);
 
     if (mod->LookUpIdentifier(m_name, true) != nullptr) {
         // a collision was found, add an error
@@ -41,7 +41,7 @@ void AstAliasDeclaration::Visit(AstVisitor *visitor, Module *mod)
     } else {
         Scope &scope = mod->m_scopes.Top();
         if ((m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name, FLAG_ALIAS))) {
-            m_identifier->SetSymbolType(m_aliasee->GetSymbolType());
+            m_identifier->SetSymbolType(m_aliasee->GetExprType());
             m_identifier->SetCurrentValue(m_aliasee);
         }
     }

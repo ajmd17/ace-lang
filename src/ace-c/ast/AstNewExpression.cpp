@@ -17,7 +17,7 @@
 #include <common/hasher.hpp>
 
 AstNewExpression::AstNewExpression(
-    const std::shared_ptr<AstExpression> &proto,
+    const std::shared_ptr<AstPrototypeSpecification> &proto,
     const std::shared_ptr<AstArgumentList> &arg_list,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
@@ -35,12 +35,17 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_proto != nullptr);
     m_proto->Visit(visitor, mod);
 
-    ASSERT(m_proto->GetExprType() != nullptr);
+    /*ASSERT(m_proto->GetExprType() != nullptr);
     m_constructor_type = m_proto->GetExprType();
 
-    const bool is_type = m_constructor_type == BuiltinTypes::TYPE_TYPE;
+    const bool is_type = m_constructor_type == BuiltinTypes::TYPE_TYPE;*/
+    ASSERT(m_proto->GetHeldType() != nullptr);
+    m_instance_type = m_proto->GetHeldType();
 
-    m_instance_type = BuiltinTypes::ANY;
+    ASSERT(m_proto->GetDefaultValue() != nullptr);
+    m_object_value = m_proto->GetDefaultValue();
+    m_prototype_type = m_proto->GetPrototypeType();
+    /*BuiltinTypes::ANY;
 
     if (m_constructor_type != BuiltinTypes::ANY) {
         if (const AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_proto.get())) {
@@ -68,7 +73,7 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
                 m_location
             ));
         }
-    }
+    }*/
 
     // get default value
     /*if (m_object_type != nullptr) {
@@ -128,7 +133,9 @@ std::unique_ptr<Buildable> AstNewExpression::Build(AstVisitor *visitor, Module *
     //ASSERT(m_type_expr != nullptr);
     //chunk->Append(m_type_expr->Build(visitor, mod));
 
-    if (m_object_value != nullptr && m_instance_type->GetTypeClass() == TYPE_BUILTIN) {
+    ASSERT(m_prototype_type != nullptr);
+
+    if (m_object_value != nullptr && m_prototype_type->GetTypeClass() == TYPE_BUILTIN) {
         chunk->Append(m_object_value->Build(visitor, mod));
     } else {
         ASSERT(m_proto != nullptr);

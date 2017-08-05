@@ -47,7 +47,7 @@
 #include <ace-c/ast/AstWhileLoop.hpp>
 #include <ace-c/ast/AstPrintStatement.hpp>
 #include <ace-c/ast/AstTryCatch.hpp>
-#include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstPrototypeSpecification.hpp>
 #include <ace-c/ast/AstTypeOfExpression.hpp>
 #include <ace-c/ast/AstEvent.hpp>
 #include <ace-c/ast/AstActionExpression.hpp>
@@ -122,6 +122,7 @@ private:
     std::shared_ptr<AstExpression> ParseExpression(bool override_commas = false,
         bool override_fat_arrows = false);
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
+    std::shared_ptr<AstPrototypeSpecification> ParsePrototypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true,
         bool allow_keyword_names = false,
         bool allow_quoted_names = false);

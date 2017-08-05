@@ -160,9 +160,9 @@ bool AstActionExpression::MayHaveSideEffects() const
     return m_member_found != 0;
 }
 
-std::shared_ptr<AstTypeObject> AstActionExpression::GetTypeOf() const
+SymbolTypePtr_t AstActionExpression::GetExprType() const
 {
     ASSERT(m_expr != nullptr);
-    ASSERT(m_expr->GetTypeOf() != nullptr);
-    return m_expr->GetTypeOf();
+    ASSERT(m_expr->GetExprType() != nullptr);
+    return m_expr->GetExprType();
 }

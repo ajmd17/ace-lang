@@ -1,5 +1,6 @@
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
@@ -18,12 +19,13 @@
 #include <iostream>
 
 AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
-    const std::shared_ptr<AstTypeSpecification> &type_specification,
+    const std::shared_ptr<AstPrototypeSpecification> &proto,
+    //const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstExpression> &assignment,
     bool is_const,
     const SourceLocation &location)
     : AstDeclaration(name, location),
-      m_type_specification(type_specification),
+      m_proto(proto),
       m_assignment(assignment),
       m_is_const(is_const),
       m_assignment_already_visited(false)
@@ -34,7 +36,9 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     SymbolTypePtr_t symbol_type;
 
-    if (m_type_specification == nullptr && m_assignment == nullptr) {
+    std::cout << "is assignment null ? " << (m_assignment == nullptr) << "\n";
+
+    if (m_proto == nullptr && m_assignment == nullptr) {
         // error; requires either type, or assignment.
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
@@ -55,11 +59,49 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         // with an empty array of type Array(Any)
         bool is_type_strict = true;
 
-        if (m_type_specification != nullptr) {
-            m_type_specification->Visit(visitor, mod);
+        if (m_proto != nullptr) {
+            m_proto->Visit(visitor, mod);
 
-            symbol_type = m_type_specification->GetSpecifiedType();
-            ASSERT(symbol_type != nullptr);
+            ASSERT(m_proto->GetHeldType() != nullptr);
+            symbol_type = m_proto->GetHeldType();
+
+            std::shared_ptr<AstExpression> default_value = m_proto->GetDefaultValue();
+
+            /*ASSERT(m_proto->GetExprType() != nullptr);
+            m_constructor_type = m_proto->GetExprType();
+
+            const bool is_type = m_constructor_type == BuiltinTypes::TYPE_TYPE;
+
+            m_instance_type = BuiltinTypes::ANY;
+
+            if (const AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_proto.get())) {
+                if (const auto current_value = as_ident->GetProperties().GetIdentifier()->GetCurrentValue()) {
+                    if (AstTypeObject *type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
+                        ASSERT(type_object->GetHeldType() != nullptr);
+                        m_instance_type = type_object->GetHeldType();
+
+                        SymbolMember_t proto_member;
+                        if (type_object->GetHeldType()->FindMember("$proto", proto_member)) {
+                            m_object_value = std::get<2>(proto_member); // NOTE: may be null causing NEW operand to be emitted
+                        }
+                    } else if (!is_type) {
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_not_a_type,
+                            m_location
+                        ));
+                    }
+                }
+            } else if (!is_type) {
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_not_a_type,
+                    m_location
+                ));
+            }*/
+
+            //symbol_type = m_type_specification->GetSpecifiedType();
+            //ASSERT(symbol_type != nullptr);
 
             if (symbol_type == BuiltinTypes::ANY) {
                 // Any type is reserved for method parameters
@@ -75,9 +117,9 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 // generic/non-concrete types that have default values
                 // will get assigned to their default value without causing
                 // an error
-                if (symbol_type->GetDefaultValue() != nullptr) {
+                if (default_value != nullptr) {
                     // Assign variable to the default value for the specified type.
-                    m_real_assignment = symbol_type->GetDefaultValue();
+                    m_real_assignment = CloneAstNode(default_value);
                     // built-in assignment, turn off strict mode
                     is_type_strict = false;
                 } else if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
@@ -121,7 +163,9 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             SymbolTypePtr_t assignment_type = m_real_assignment->GetExprType();
             ASSERT(assignment_type != nullptr);
 
-            if (m_type_specification != nullptr) {
+            std::cout << "assignment type : " << assignment_type->GetName() << "\n";
+
+            if (m_proto != nullptr) {
                 // symbol_type should be the user-specified type
                 symbol_type = SymbolType::GenericPromotion(symbol_type, assignment_type);
                 ASSERT(symbol_type != nullptr);
@@ -167,6 +211,8 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
+    std::cout << "symbol_type = " << symbol_type->GetName() << "\n";
+
     AstDeclaration::Visit(visitor, mod);
 
     if (m_identifier != nullptr) {
@@ -176,8 +222,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
         m_identifier->SetSymbolType(symbol_type);
         m_identifier->SetCurrentValue(m_real_assignment);
-
-        std::cout << "m_real_assignment type = " << typeid(*m_real_assignment).name() << "\n";
     }
 }
 

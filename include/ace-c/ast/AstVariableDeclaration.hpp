@@ -4,6 +4,7 @@
 #include <ace-c/ast/AstDeclaration.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstPrototypeSpecification.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 #include <memory>
@@ -11,7 +12,8 @@
 class AstVariableDeclaration : public AstDeclaration {
 public:
     AstVariableDeclaration(const std::string &name,
-        const std::shared_ptr<AstTypeSpecification> &type_specification,
+        const std::shared_ptr<AstPrototypeSpecification> &proto,
+        //const std::shared_ptr<AstTypeSpecification> &type_specification,
         const std::shared_ptr<AstExpression> &assignment,
         bool is_const,
         const SourceLocation &location);
@@ -28,7 +30,8 @@ public:
     virtual Pointer<AstStatement> Clone() const override;
 
 protected:
-    std::shared_ptr<AstTypeSpecification> m_type_specification;
+    std::shared_ptr<AstPrototypeSpecification> m_proto;
+    //std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstExpression> m_assignment;
     bool m_is_const;
 
@@ -42,7 +45,8 @@ protected:
     {
         return Pointer<AstVariableDeclaration>(new AstVariableDeclaration(
             m_name,
-            CloneAstNode(m_type_specification),
+            CloneAstNode(m_proto),
+            //CloneAstNode(m_type_specification),
             CloneAstNode(m_assignment),
             m_is_const,
             m_location

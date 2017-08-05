@@ -5,6 +5,7 @@
 #include <ace-c/ast/AstArgumentList.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/ast/AstCallExpression.hpp>
+#include <ace-c/ast/AstPrototypeSpecification.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 #include <string>
@@ -12,7 +13,7 @@
 class AstNewExpression: public AstExpression {
 public:
     AstNewExpression(
-        const std::shared_ptr<AstExpression> &proto,
+        const std::shared_ptr<AstPrototypeSpecification> &proto,
         const std::shared_ptr<AstArgumentList> &arg_list,
         const SourceLocation &location);
     virtual ~AstNewExpression() = default;
@@ -28,13 +29,13 @@ public:
     virtual SymbolTypePtr_t GetExprType() const override;
 
 private:
-    std::shared_ptr<AstExpression> m_proto;
+    std::shared_ptr<AstPrototypeSpecification> m_proto;
     std::shared_ptr<AstArgumentList> m_arg_list;
 
     /** Set while analyzing */
     std::shared_ptr<AstExpression> m_object_value;
     SymbolTypePtr_t m_instance_type;
-    SymbolTypePtr_t m_constructor_type;
+    SymbolTypePtr_t m_prototype_type;
     std::shared_ptr<AstCallExpression> m_constructor_call;
     std::shared_ptr<AstStatement> m_dynamic_check;
     bool m_is_dynamic_type;

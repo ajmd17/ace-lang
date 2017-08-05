@@ -36,17 +36,7 @@ public:
     inline int IsFalse() const { int t = IsTrue(); return (t == -1) ? t : !t; }
     /** Determine whether or not there is a possibility of side effects. */
     virtual bool MayHaveSideEffects() const = 0;
-    virtual std::shared_ptr<AstTypeObject> GetTypeOf() const = 0;
-
-    inline SymbolTypePtr_t GetExprType() const
-    {
-        if (std::shared_ptr<AstTypeObject> type_object = this->GetTypeOf()) {
-            return type_object->GetHeldType();
-        }
-
-        return nullptr;
-    }
-    //virtual SymbolTypePtr_t GetExprType() const = 0;
+    virtual SymbolTypePtr_t GetExprType() const = 0;
 
     bool m_is_standalone;
 

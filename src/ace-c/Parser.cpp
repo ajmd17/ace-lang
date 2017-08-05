@@ -1086,7 +1086,7 @@ std::shared_ptr<AstActionExpression> Parser::ParseActionExpression(std::shared_p
 std::shared_ptr<AstNewExpression> Parser::ParseNewExpression()
 {
     if (Token token = ExpectKeyword(Keyword_new, true)) {
-        if (auto proto = ParseExpression()) {
+        if (auto proto = ParsePrototypeSpecification()) {
         //if (auto type_spec = ParseTypeSpecification()) {
             std::shared_ptr<AstArgumentList> arg_list;
 
@@ -1367,6 +1367,18 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool override_commas,
     return nullptr;
 }
 
+std::shared_ptr<AstPrototypeSpecification> Parser::ParsePrototypeSpecification()
+{
+    if (auto term = ParseTerm()) {
+        return std::shared_ptr<AstPrototypeSpecification>(new AstPrototypeSpecification(
+            term,
+            term->GetLocation()
+        ));
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<AstTypeSpecification> Parser::ParseTypeSpecification()
 {
     if (Token left = Expect(TK_IDENT, true)) {
@@ -1566,11 +1578,13 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
     }
 
     if (!identifier.Empty()) {
-        std::shared_ptr<AstTypeSpecification> type_spec;
+        //std::shared_ptr<AstTypeSpecification> type_spec;
+        std::shared_ptr<AstPrototypeSpecification> proto;
 
         if (Match(TK_COLON, true)) {
             // read object type
-            type_spec = ParseTypeSpecification();
+            //type_spec = ParseTypeSpecification();
+            proto = ParsePrototypeSpecification();
         }
 
         std::shared_ptr<AstExpression> assignment;
@@ -1585,12 +1599,15 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
                     Msg_illegal_expression,
                     expr_location
                 ));
+
+                return nullptr;
             }
         }
 
         return std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
             identifier.GetValue(),
-            type_spec,
+            proto,
+            //type_spec,
             assignment,
             is_const,
             location

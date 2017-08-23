@@ -32,6 +32,7 @@ protected:
     // set while analyzing
     SymbolTypePtr_t m_symbol_type;
     SymbolTypePtr_t m_target_type;
+    int m_found_index;
 
     inline Pointer<AstMember> CloneImpl() const
     {

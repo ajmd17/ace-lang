@@ -42,7 +42,7 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_proto->GetHeldType() != nullptr);
     m_instance_type = m_proto->GetHeldType();
 
-    ASSERT(m_proto->GetDefaultValue() != nullptr);
+    // may be nullptr
     m_object_value = m_proto->GetDefaultValue();
     m_prototype_type = m_proto->GetPrototypeType();
     /*BuiltinTypes::ANY;

@@ -42,10 +42,16 @@ const SymbolTypePtr_t BuiltinTypes::OBJECT = SymbolType::Primitive(
     BuiltinTypes::PRIMITIVE_TYPE
 );
 
-const SymbolTypePtr_t BuiltinTypes::TYPE_TYPE = SymbolType::Primitive(
+const SymbolTypePtr_t BuiltinTypes::TYPE_TYPE = SymbolType::Extend(
     "Type",
-    nullptr,
-    BuiltinTypes::OBJECT
+    BuiltinTypes::OBJECT,
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            BuiltinTypes::ANY,
+            nullptr
+        }
+    }
 );
 
 const SymbolTypePtr_t BuiltinTypes::INT = SymbolType::Extend(

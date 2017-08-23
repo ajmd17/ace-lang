@@ -1,7 +1,9 @@
 #include <ace-c/ast/AstFunctionExpression.hpp>
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/ast/AstVariable.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 #include <ace-c/AstVisitor.hpp>
+#include <ace-c/Compiler.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Scope.hpp>
@@ -307,6 +309,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
 
     if (m_is_closure) {
         // add $invoke to call this object
+
         closure_obj_members.push_back(SymbolMember_t {
             "$invoke",
             m_symbol_type,
@@ -330,7 +333,28 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetCurrentModule()->
             m_scopes.Root().GetIdentifierTable().AddSymbolType(closure_base_type);
 
-        m_closure_type = SymbolType::Extend(closure_base_type, closure_obj_members);
+        SymbolTypePtr_t prototype_type = SymbolType::Object(
+            "ClosureInstance", // Prototype type
+            closure_obj_members,
+            BuiltinTypes::OBJECT
+        );
+
+        auto prototype_value = std::shared_ptr<AstTypeObject>(new AstTypeObject(
+            prototype_type,
+            nullptr,
+            m_location
+        ));
+
+        m_closure_type = SymbolType::Extend(
+            closure_base_type,
+            {
+                SymbolMember_t {
+                    "$proto",
+                    prototype_type,
+                    prototype_value
+                }
+            }
+        );
 
         // register type
         visitor->GetCompilationUnit()->RegisterType(m_closure_type);
@@ -339,9 +363,9 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
         visitor->GetCompilationUnit()->GetCurrentModule()->
             m_scopes.Root().GetIdentifierTable().AddSymbolType(m_closure_type);
 
-        ASSERT(m_closure_type->GetDefaultValue() != nullptr);
+        ASSERT(prototype_value != nullptr);
 
-        m_closure_object = m_closure_type->GetDefaultValue();
+        m_closure_object = prototype_value;
         m_closure_object->Visit(visitor, mod);
     }
 }
@@ -417,25 +441,22 @@ std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Mod
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         const int closure_obj_reg = rp;
+        std::cout << "closure_obj_reg = " << closure_obj_reg << std::endl;
 
         chunk->Append(m_closure_object->Build(visitor, mod));
 
         const uint32_t hash = hash_fnv_1("$invoke");
-
-        auto instr_mov_mem_hash = BytecodeUtil::Make<RawOperation<>>();
-        instr_mov_mem_hash->opcode = MOV_MEM_HASH;
-        instr_mov_mem_hash->Accept<uint8_t>(rp); // dst
-        instr_mov_mem_hash->Accept<uint32_t>(hash); // hash
-        instr_mov_mem_hash->Accept<uint8_t>(func_expr_reg); // src
-        chunk->Append(std::move(instr_mov_mem_hash));
+        chunk->Append(Compiler::StoreMemberFromHash(visitor, mod, hash));
         
         visitor->GetCompilationUnit()->GetInstructionStream().DecRegisterUsage();
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
         
-        // swap regs, so the closure object returned
+        //ASSERT_MSG(rp == 0, "Register position should be 0 to return closure object");
+
+        // swap regs, so the closure object returned (put on register zero)
         auto instr_mov_reg = BytecodeUtil::Make<RawOperation<>>();
         instr_mov_reg->opcode = MOV_REG;
-        instr_mov_reg->Accept<uint8_t>(rp); // dst
+        instr_mov_reg->Accept<uint8_t>(0); // dst
         instr_mov_reg->Accept<uint8_t>(closure_obj_reg); // src
         chunk->Append(std::move(instr_mov_reg));
     }

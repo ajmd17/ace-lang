@@ -102,5 +102,5 @@ SymbolTypePtr_t AstTypeOfExpression::GetExprType() const
 {
     ASSERT(m_expr != nullptr);
     
-    return BuiltinTypes::TYPE_TYPE;//BuiltinTypes::STRING;
+    return BuiltinTypes::STRING;
 }

@@ -15,6 +15,7 @@ public:
         const std::shared_ptr<AstTypeSpecification> &base_specification,
         const std::vector<std::string> &generic_params,
         const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
+        const std::vector<std::shared_ptr<AstVariableDeclaration>> &static_members,
         const std::vector<std::shared_ptr<AstEvent>> &events,
         const SourceLocation &location);
     virtual ~AstPrototypeDefinition() = default;
@@ -34,6 +35,7 @@ protected:
     std::shared_ptr<AstTypeSpecification> m_base_specification;
     std::vector<std::string> m_generic_params;
     std::vector<std::shared_ptr<AstVariableDeclaration>> m_members;
+    std::vector<std::shared_ptr<AstVariableDeclaration>> m_static_members;
     std::vector<std::shared_ptr<AstEvent>> m_events;
     int m_num_members;
 
@@ -48,6 +50,7 @@ protected:
             CloneAstNode(m_base_specification),
             m_generic_params,
             CloneAllAstNodes(m_members),
+            CloneAllAstNodes(m_static_members),
             CloneAllAstNodes(m_events),
             m_location
         ));

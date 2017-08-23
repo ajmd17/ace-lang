@@ -51,6 +51,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     ASSERT(left_type_unboxed != nullptr);
+    std::cout << "left : " << left_type_unboxed->GetName() << "\n";
 
     SymbolTypePtr_t right_type = m_right->GetExprType();
     SymbolTypePtr_t right_type_unboxed = right_type;
@@ -60,6 +61,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     ASSERT(right_type_unboxed != nullptr);
+    std::cout << "right : " << right_type_unboxed->GetName() << "\n";
     
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
@@ -645,6 +647,7 @@ std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaratio
                 var_name,
                 nullptr,
                 m_right,
+                {},
                 false,
                 m_left->GetLocation()
             ));

@@ -3,6 +3,7 @@
 
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/ast/AstArgument.hpp>
+#include <ace-c/ast/AstMember.hpp>
 #include <ace-c/emit/BytecodeChunk.hpp>
 
 #include <common/my_assert.hpp>
@@ -38,7 +39,15 @@ public:
         AstVisitor *visitor,
         Module *mod,
         const std::shared_ptr<AstExpression> &target,
-        uint8_t nargs);
+        uint8_t nargs
+    );
+
+    static std::unique_ptr<Buildable> BuildMethodCall(
+        AstVisitor *visitor,
+        Module *mod,
+        const std::shared_ptr<AstMember> &target,
+        const std::vector<std::shared_ptr<AstArgument>> &args
+    );
 
     static std::unique_ptr<Buildable> LoadMemberFromHash(AstVisitor *visitor, Module *mod, uint32_t hash);
 

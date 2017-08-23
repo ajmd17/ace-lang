@@ -3,6 +3,7 @@
 
 #include <ace-c/ast/AstDeclaration.hpp>
 #include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/ast/AstParameter.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
 #include <ace-c/ast/AstPrototypeSpecification.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
@@ -15,12 +16,15 @@ public:
         const std::shared_ptr<AstPrototypeSpecification> &proto,
         //const std::shared_ptr<AstTypeSpecification> &type_specification,
         const std::shared_ptr<AstExpression> &assignment,
+        const std::vector<std::shared_ptr<AstParameter>> &template_params,
         bool is_const,
         const SourceLocation &location);
     virtual ~AstVariableDeclaration() = default;
 
     inline const std::shared_ptr<AstExpression> &GetAssignment() const
         { return m_assignment; }
+    inline const std::shared_ptr<AstExpression> &GetRealAssignment() const
+        { return m_real_assignment; }
     inline bool IsConst() const { return m_is_const; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
@@ -33,6 +37,7 @@ protected:
     std::shared_ptr<AstPrototypeSpecification> m_proto;
     //std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstExpression> m_assignment;
+    std::vector<std::shared_ptr<AstParameter>> m_template_params;
     bool m_is_const;
 
     // set while analyzing
@@ -48,6 +53,7 @@ protected:
             CloneAstNode(m_proto),
             //CloneAstNode(m_type_specification),
             CloneAstNode(m_assignment),
+            CloneAllAstNodes(m_template_params),
             m_is_const,
             m_location
         ));

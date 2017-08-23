@@ -54,6 +54,8 @@
 #include <ace-c/ast/AstReturnStatement.hpp>
 #include <ace-c/ast/AstYieldStatement.hpp>
 #include <ace-c/ast/AstMetaBlock.hpp>
+#include <ace-c/ast/AstTemplateExpression.hpp>
+#include <ace-c/ast/AstTemplateInstantiation.hpp>
 
 #include <string>
 
@@ -76,6 +78,7 @@ private:
     Token MatchKeyword(Keywords keyword, bool read = false);
     Token MatchKeywordAhead(Keywords keyword, int n);
     Token MatchOperator(const std::string &op, bool read = false);
+    Token MatchOperatorAhead(const std::string &op, int n);
     Token Expect(TokenClass token_class, bool read = false);
     Token ExpectKeyword(Keywords keyword, bool read = false);
     Token ExpectOperator(const std::string &op, bool read = false);
@@ -89,9 +92,13 @@ private:
     std::shared_ptr<AstStatement> ParseStatement(bool top_level = false);
     std::shared_ptr<AstModuleDeclaration> ParseModuleDeclaration();
     std::shared_ptr<AstDirective> ParseDirective();
-    std::shared_ptr<AstExpression> ParseTerm(bool override_commas = false,
-        bool override_fat_arrows = false);
+    std::shared_ptr<AstExpression> ParseTerm(
+        bool override_commas = false,
+        bool override_fat_arrows = false,
+        bool override_angle_brackets = false
+    );
     std::shared_ptr<AstExpression> ParseParentheses();
+    std::shared_ptr<AstExpression> ParseAngleBrackets();
     std::shared_ptr<AstInteger> ParseIntegerLiteral();
     std::shared_ptr<AstFloat> ParseFloatLiteral();
     std::shared_ptr<AstString> ParseStringLiteral();
@@ -106,6 +113,7 @@ private:
     std::shared_ptr<AstArrayAccess> ParseArrayAccess(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstHasExpression> ParseHasExpression(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstActionExpression> ParseActionExpression(std::shared_ptr<AstExpression> expr);
+    std::shared_ptr<AstTemplateInstantiation> ParseTemplateInstantiation(std::shared_ptr<AstIdentifier> expr);
     std::shared_ptr<AstNewExpression> ParseNewExpression();
     std::shared_ptr<AstTrue> ParseTrue();
     std::shared_ptr<AstFalse> ParseFalse();
@@ -119,8 +127,11 @@ private:
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,
         std::shared_ptr<AstExpression> left);
     std::shared_ptr<AstExpression> ParseUnaryExpression();
-    std::shared_ptr<AstExpression> ParseExpression(bool override_commas = false,
-        bool override_fat_arrows = false);
+    std::shared_ptr<AstExpression> ParseExpression(
+        bool override_commas = false,
+        bool override_fat_arrows = false,
+        bool override_angle_brackets = false
+    );
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
     std::shared_ptr<AstPrototypeSpecification> ParsePrototypeSpecification();
     std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true,

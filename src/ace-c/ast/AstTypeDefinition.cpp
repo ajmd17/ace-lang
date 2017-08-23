@@ -117,6 +117,7 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                         event_items,
                         m_location
                     )),
+                    {},
                     false,
                     m_location
                 )));
@@ -128,16 +129,16 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                 if (mem != nullptr) {
                     mem->Visit(visitor, mod);
 
-                    if (mem->GetIdentifier()) {
-                        std::string mem_name = mem->GetName();
-                        SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
-                        
-                        member_types.push_back(std::make_tuple(
-                            mem_name,
-                            mem_type,
-                            mem->GetAssignment()
-                        ));
-                    }
+                    ASSERT(mem->GetIdentifier() != nullptr);
+
+                    std::string mem_name = mem->GetName();
+                    SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
+                    
+                    member_types.push_back(std::make_tuple(
+                        mem_name,
+                        mem_type,
+                        mem->GetRealAssignment()
+                    ));
                 }
             }
 

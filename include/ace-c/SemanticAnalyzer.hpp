@@ -27,8 +27,16 @@ public:
 
         static IdentifierLookupResult LookupIdentifier(AstVisitor *visitor, Module *mod, const std::string &name);
 
-        static std::pair<SymbolTypePtr_t, std::vector<std::shared_ptr<AstArgument>>>
-        SubstituteFunctionArgs(
+
+        static std::vector<std::shared_ptr<AstArgument>> SubstituteGenericArgs(
+            AstVisitor *visitor,
+            Module *mod,
+            const std::vector<GenericInstanceTypeInfo::Arg> &generic_args,
+            const std::vector<std::shared_ptr<AstArgument>> &args,
+            const SourceLocation &location
+        );
+
+        static FunctionTypeSignature_t SubstituteFunctionArgs(
             AstVisitor *visitor,
             Module *mod, 
             const SymbolTypePtr_t &identifier_type, 

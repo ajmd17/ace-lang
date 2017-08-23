@@ -103,6 +103,19 @@ Token Parser::MatchOperator(const std::string &op, bool read)
     return Token::EMPTY;
 }
 
+Token Parser::MatchOperatorAhead(const std::string &op, int n)
+{
+    Token peek = m_token_stream->Peek(n);
+    
+    if (peek && peek.GetTokenClass() == TK_OPERATOR) {
+        if (peek.GetValue() == op) {
+            return peek;
+        }
+    }
+    
+    return Token::EMPTY;
+}
+
 Token Parser::Expect(TokenClass token_class, bool read)
 {
     Token token = Match(token_class, read);
@@ -407,7 +420,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
         } else {
             res = ParseExpression();
         }
-    } else if (Match(TK_IDENT, false) && MatchAhead(TK_COLON, 1)) {
+    } else if (Match(TK_IDENT, false) && (MatchAhead(TK_COLON, 1) || MatchOperatorAhead("<", 1))) {
         res = ParseVariableDeclaration(false);
     } else if (Match(TK_OPEN_BRACE, false)) {
         res = ParseBlock();
@@ -501,7 +514,8 @@ std::shared_ptr<AstDirective> Parser::ParseDirective()
 }
 
 std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
-    bool override_fat_arrows)
+    bool override_fat_arrows,
+    bool override_angle_brackets)
 {
     Token token = m_token_stream->Peek();
     
@@ -540,6 +554,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
     } else if (Match(TK_IDENT)) {
         if (MatchAhead(TK_DOUBLE_COLON, 1)) {
             expr = ParseModuleAccess();
+        } else if (!override_angle_brackets && MatchOperatorAhead("<", 1)) {
+            expr = ParseAngleBrackets();
         } else {
             expr = ParseIdentifier();
         }
@@ -641,7 +657,15 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
             // if '()' found, it is a function with empty parameters
             // allow ParseFunctionParameters() to handle parentheses
             m_token_stream->SetPosition(before_pos);
-            expr = ParseFunctionExpression(false, ParseFunctionParameters());
+
+            std::vector<std::shared_ptr<AstParameter>> params;
+            
+            if (Match(TK_OPEN_PARENTH, true)) {
+                params = ParseFunctionParameters();
+                Expect(TK_CLOSE_PARENTH, true);
+            }
+
+            expr = ParseFunctionExpression(false, params);
         } else {
             bool found_function_token = false;
 
@@ -674,89 +698,105 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
                 // to allow ParseFunctionParameters() to handle it
                 m_token_stream->SetPosition(before_pos);
 
+                std::vector<std::shared_ptr<AstParameter>> params;
+                
+                if (Match(TK_OPEN_PARENTH, true)) {
+                    params = ParseFunctionParameters();
+                    Expect(TK_CLOSE_PARENTH, true);
+                }
+
                 // parse function parameters
-                expr = ParseFunctionExpression(false, ParseFunctionParameters());
+                expr = ParseFunctionExpression(false, params);
             } else {
                 Expect(TK_CLOSE_PARENTH, true);
 
                 if (Match(TK_OPEN_BRACE, true)) {
                     // if '{' found after ')', it is a function
                     m_token_stream->SetPosition(before_pos);
-                    expr = ParseFunctionExpression(false, ParseFunctionParameters());
+
+                    std::vector<std::shared_ptr<AstParameter>> params;
+                    
+                    if (Match(TK_OPEN_PARENTH, true)) {
+                        params = ParseFunctionParameters();
+                        Expect(TK_CLOSE_PARENTH, true);
+                    }
+
+                    expr = ParseFunctionExpression(false, params);
                 }
             }
         }
     }
 
-/*
-    // if it's a function expression
-    bool is_function_expr = false;
+    return expr;
+}
 
-    std::vector<std::shared_ptr<AstParameter>> parameters;
-    bool found_variadic = false;
+std::shared_ptr<AstExpression> Parser::ParseAngleBrackets()
+{
+    std::cout << "ParseAngleBrackets()" << std::endl;
+    SourceLocation location = CurrentLocation();
+    int before_pos = m_token_stream->GetPosition();
 
-    while (Match(Token::Token_comma, true)) {
-        is_function_expr = true;
+    if (auto ident = ParseIdentifier()) {
+        std::vector<std::shared_ptr<AstArgument>> args;
 
-        Token param_token = Match(Token::Token_identifier, true);
-        if (!param_token) {
-            break;
-        }
+        if (Token token = ExpectOperator("<", true)) {
+            if (MatchOperator(">", true)) {
+                return std::shared_ptr<AstTemplateInstantiation>(new AstTemplateInstantiation(
+                    ident,
+                    args,
+                    token.GetLocation()
+                ));
+            }
 
-        // TODO make use of the type specification
-        std::shared_ptr<AstTypeSpecification> type_spec;
-        std::shared_ptr<AstTypeContractExpression> type_contract;
+            do {
+                const SourceLocation arg_location = CurrentLocation();
+                bool is_named_arg = false;
+                std::string arg_name;
 
-        // check if parameter type has been declared
-        if (Match(Token::Token_colon, true)) {
-            // type contracts are denoted by <angle brackets>
-            if (MatchOperator(&Operator::operator_less, false)) {
-                // parse type contracts
-                type_contract = ParseTypeContract();
+                // check for name: value expressions (named arguments)
+                if (Match(TK_IDENT)) {
+                    if (MatchAhead(TK_COLON, 1)) {
+                        // named argument
+                        is_named_arg = true;
+                        Token name_token = Expect(TK_IDENT, true);
+                        arg_name = name_token.GetValue();
+
+                        // read the colon
+                        Expect(TK_COLON, true);
+                    }
+                }
+
+                if (auto term = ParseTerm(true)) { // override commas
+                    args.push_back(std::shared_ptr<AstArgument>(new AstArgument(
+                        term,
+                        is_named_arg,
+                        arg_name,
+                        arg_location
+                    )));
+                } else {
+                    // not an argument, revert to start.
+                    m_token_stream->SetPosition(before_pos);
+                    // return as comparison expression
+                    return ParseTerm(false, false, true);
+                }
+            } while (Match(TK_COMMA, true));
+
+            if (MatchOperator(">", true)) {
+                return std::shared_ptr<AstTemplateInstantiation>(new AstTemplateInstantiation(
+                    ident,
+                    args,
+                    token.GetLocation()
+                ));
             } else {
-                type_spec = ParseTypeSpecification();
+                // no closing bracket found
+                m_token_stream->SetPosition(before_pos);
+                // return as comparison expression
+                return ParseTerm(false, false, true);
             }
         }
+    }
 
-
-        if (found_variadic) {
-            // found another parameter after variadic
-            m_compilation_unit->GetErrorList().AddError(
-                CompilerError(LEVEL_ERROR, Msg_argument_after_varargs, param_token.GetLocation()));
-        }
-
-        bool is_variadic = false;
-        if (Match(Token::Token_ellipsis, true)) {
-            is_variadic = true;
-            found_variadic = true;
-        }
-
-        auto param = std::shared_ptr<AstParameter>(
-            new AstParameter(param_token.GetValue(), is_variadic, param_token.GetLocation()));
-
-        if (type_contract) {
-            param->SetTypeContract(type_contract);
-        }
-
-        parameters.push_back(param);
-    }*/
-
-    /*if (is_function_expr) {
-        std::shared_ptr<AstTypeSpecification> return_type_spec;
-
-        // return type specification
-        if (Match(Token::Token_colon, true)) {
-            // read return type for functions
-            return_type_spec = ParseTypeSpecification();
-        }
-
-        if (auto block = ParseBlock()) {
-            return std::shared_ptr<AstFunctionExpression>(
-                new AstFunctionExpression(parameters, return_type_spec, block, location));
-        }
-    }*/
-
-    return expr;
+    return nullptr;
 }
 
 std::shared_ptr<AstInteger> Parser::ParseIntegerLiteral()
@@ -863,15 +903,15 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
             arg_name,
             location
         ));
-    } else {
-        m_compilation_unit->GetErrorList().AddError(CompilerError(
-            LEVEL_ERROR,
-            Msg_illegal_expression,
-            location
-        ));
-
-        return nullptr;
     }
+
+    m_compilation_unit->GetErrorList().AddError(CompilerError(
+        LEVEL_ERROR,
+        Msg_illegal_expression,
+        location
+    ));
+
+    return nullptr;
 }
 
 std::shared_ptr<AstArgumentList> Parser::ParseArguments(bool require_parentheses,
@@ -1078,6 +1118,32 @@ std::shared_ptr<AstActionExpression> Parser::ParseActionExpression(std::shared_p
                 ));
             }
         }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstTemplateInstantiation> Parser::ParseTemplateInstantiation(std::shared_ptr<AstIdentifier> expr)
+{
+    if (Token token = ExpectOperator("!", true)) {
+        std::shared_ptr<AstArgumentList> arg_list;
+
+        if (Match(TK_OPEN_PARENTH, false)) {
+            // parse args
+            arg_list = ParseArguments();
+        }
+
+        std::vector<std::shared_ptr<AstArgument>> args;
+
+        if (arg_list != nullptr) {
+            args = arg_list->GetArguments();
+        }
+
+        return std::shared_ptr<AstTemplateInstantiation>(new AstTemplateInstantiation(
+            expr,
+            args,
+            token.GetLocation()
+        ));
     }
 
     return nullptr;
@@ -1350,9 +1416,10 @@ std::shared_ptr<AstExpression> Parser::ParseUnaryExpression()
 }
 
 std::shared_ptr<AstExpression> Parser::ParseExpression(bool override_commas,
-    bool override_fat_arrows)
+    bool override_fat_arrows,
+    bool override_angle_brackets)
 {
-    if (auto term = ParseTerm(override_commas, override_fat_arrows)) {
+    if (auto term = ParseTerm(override_commas, override_fat_arrows, override_angle_brackets)) {
         if (Match(TK_OPERATOR, false)) {
             if (auto bin_expr = ParseBinaryExpression(0, term)) {
                 term = bin_expr;
@@ -1578,6 +1645,17 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
     }
 
     if (!identifier.Empty()) {
+        bool is_template_expr = false;
+        SourceLocation template_expr_location = CurrentLocation();
+        std::vector<std::shared_ptr<AstParameter>> template_expr_params;
+
+        if (Token lt = MatchOperator("<", true)) {
+            is_template_expr = true;
+            template_expr_location = lt.GetLocation();
+            template_expr_params = ParseFunctionParameters();
+            ExpectOperator(">", true);
+        }
+
         //std::shared_ptr<AstTypeSpecification> type_spec;
         std::shared_ptr<AstPrototypeSpecification> proto;
 
@@ -1604,11 +1682,20 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
             }
         }
 
+        // if (is_template_expr && assignment != nullptr) {
+        //     assignment = std::shared_ptr<AstTemplateExpression>(new AstTemplateExpression(
+        //         assignment,
+        //         template_expr_params,
+        //         assignment->GetLocation()
+        //     ));
+        // }
+
         return std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
             identifier.GetValue(),
             proto,
             //type_spec,
             assignment,
+            template_expr_params,
             is_const,
             location
         ));
@@ -1631,7 +1718,14 @@ std::shared_ptr<AstFunctionDefinition> Parser::ParseFunctionDefinition(bool requ
     }
 
     if (Token identifier = Expect(TK_IDENT, true)) {
-        if (auto expr = ParseFunctionExpression(false, ParseFunctionParameters())) {
+        std::vector<std::shared_ptr<AstParameter>> params;
+        
+        if (Match(TK_OPEN_PARENTH, true)) {
+            params = ParseFunctionParameters();
+            Expect(TK_CLOSE_PARENTH, true);
+        }
+
+        if (auto expr = ParseFunctionExpression(false, params)) {
             return std::shared_ptr<AstFunctionDefinition>(new AstFunctionDefinition(
                 identifier.GetValue(),
                 expr,
@@ -1660,7 +1754,10 @@ std::shared_ptr<AstFunctionExpression> Parser::ParseFunctionExpression(
     if (require_keyword || !token) {
         if (require_keyword) {
             // read params
-            params = ParseFunctionParameters();
+            if (Match(TK_OPEN_PARENTH, true)) {
+                params = ParseFunctionParameters();
+                Expect(TK_CLOSE_PARENTH, true);
+            }
         }
 
         std::shared_ptr<AstTypeSpecification> type_spec;
@@ -1762,9 +1859,17 @@ std::shared_ptr<AstExpression> Parser::ParseAsyncExpression()
     if (Token token = ExpectKeyword(Keyword_async, true)) {
         MatchKeyword(Keyword_func, true); // skip 'function' keyword if found
         // for now, only functions are supported.
+
+        std::vector<std::shared_ptr<AstParameter>> params;
+        
+        if (Match(TK_OPEN_PARENTH, true)) {
+            params = ParseFunctionParameters();
+            Expect(TK_CLOSE_PARENTH, true);
+        }
+
         return ParseFunctionExpression(
             false,
-            ParseFunctionParameters(),
+            params,
             true,
             false
         );
@@ -1777,9 +1882,17 @@ std::shared_ptr<AstExpression> Parser::ParsePureExpression()
 {
     if (Token token = ExpectKeyword(Keyword_pure, true)) {
         MatchKeyword(Keyword_func, true); // skip 'function' keyword if found
+
+        std::vector<std::shared_ptr<AstParameter>> params;
+        
+        if (Match(TK_OPEN_PARENTH, true)) {
+            params = ParseFunctionParameters();
+            Expect(TK_CLOSE_PARENTH, true);
+        }
+
         return ParseFunctionExpression(
             false,
-            ParseFunctionParameters(),
+            params,
             false,
             true
         );
@@ -1792,9 +1905,17 @@ std::shared_ptr<AstExpression> Parser::ParseImpureExpression()
 {
     if (Token token = ExpectKeyword(Keyword_impure, true)) {
         MatchKeyword(Keyword_func, true); // skip 'function' keyword if found
+
+        std::vector<std::shared_ptr<AstParameter>> params;
+        
+        if (Match(TK_OPEN_PARENTH, true)) {
+            params = ParseFunctionParameters();
+            Expect(TK_CLOSE_PARENTH, true);
+        }
+
         return ParseFunctionExpression(
             false,
-            ParseFunctionParameters(),
+            params,
             false,
             false
         );
@@ -1858,74 +1979,69 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
 {
     std::vector<std::shared_ptr<AstParameter>> parameters;
 
-    if (Match(TK_OPEN_PARENTH, true)) {
-        bool found_variadic = false;
-        bool keep_reading = true;
+    bool found_variadic = false;
+    bool keep_reading = true;
 
-        while (keep_reading) {
-            Token token = Token::EMPTY;
+    while (keep_reading) {
+        Token token = Token::EMPTY;
 
-            if (Match(TK_CLOSE_PARENTH, false)) {
-                keep_reading = false;
-                break;
-            }
-
-            bool is_const = false;
-
-            if (MatchKeyword(Keyword_const, true)) {
-                is_const = true;
-            }
-            
-            if ((token = MatchKeyword(Keyword_self, true)) || (token = Expect(TK_IDENT, true)))
-            {
-                std::shared_ptr<AstTypeSpecification> type_spec;
-                std::shared_ptr<AstExpression> default_param;
-
-                // check if parameter type has been declared
-                if (Match(TK_COLON, true)) {
-                    type_spec = ParseTypeSpecification();
-                }
-
-                if (found_variadic) {
-                    // found another parameter after variadic
-                    m_compilation_unit->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_argument_after_varargs,
-                        token.GetLocation()
-                    ));
-                }
-
-                // if this parameter is variadic
-                bool is_variadic = false;
-
-                if (Match(TK_ELLIPSIS, true)) {
-                    is_variadic = true;
-                    found_variadic = true;
-                }
-
-                // check for default assignment
-                if (MatchOperator("=", true)) {
-                    default_param = ParseExpression(true);
-                }
-
-                parameters.push_back(std::shared_ptr<AstParameter>(new AstParameter(
-                    token.GetValue(),
-                    type_spec,
-                    default_param,
-                    is_variadic,
-                    is_const,
-                    token.GetLocation()
-                )));
-
-                if (!Match(TK_COMMA, true)) {
-                    keep_reading = false;
-                }
-            } else {
-                keep_reading = false;
-            }
+        if (Match(TK_CLOSE_PARENTH, false)) {
+            keep_reading = false;
+            break;
         }
 
-        Expect(TK_CLOSE_PARENTH, true);
+        bool is_const = false;
+
+        if (MatchKeyword(Keyword_const, true)) {
+            is_const = true;
+        }
+        
+        if ((token = MatchKeyword(Keyword_self, true)) || (token = Expect(TK_IDENT, true))) {
+            std::shared_ptr<AstTypeSpecification> type_spec;
+            std::shared_ptr<AstExpression> default_param;
+
+            // check if parameter type has been declared
+            if (Match(TK_COLON, true)) {
+                type_spec = ParseTypeSpecification();
+            }
+
+            if (found_variadic) {
+                // found another parameter after variadic
+                m_compilation_unit->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_argument_after_varargs,
+                    token.GetLocation()
+                ));
+            }
+
+            // if this parameter is variadic
+            bool is_variadic = false;
+
+            if (Match(TK_ELLIPSIS, true)) {
+                is_variadic = true;
+                found_variadic = true;
+            }
+
+            // check for default assignment
+            if (MatchOperator("=", true)) {
+                default_param = ParseExpression(true);
+            }
+
+            parameters.push_back(std::shared_ptr<AstParameter>(new AstParameter(
+                token.GetValue(),
+                type_spec,
+                default_param,
+                is_variadic,
+                is_const,
+                token.GetLocation()
+            )));
+
+            if (!Match(TK_COMMA, true)) {
+                keep_reading = false;
+            }
+        } else {
+            keep_reading = false;
+        }
     }
 
     return parameters;
@@ -1938,6 +2054,7 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
         if (Token identifier = ExpectIdentifier(false, true)) {
             std::vector<std::string> generic_params;
             std::vector<std::shared_ptr<AstVariableDeclaration>> members;
+            std::vector<std::shared_ptr<AstVariableDeclaration>> static_members;
             std::vector<std::shared_ptr<AstEvent>> events;
 
             // parse generic parameters after '<'
@@ -1989,7 +2106,15 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                             if (Expect(TK_FAT_ARROW, true)) {
                                 // read function expression
                                 MatchKeyword(Keyword_func, true); // skip 'function' keyword if found
-                                if (auto event_trigger = ParseFunctionExpression(false, ParseFunctionParameters())) {
+                                
+                                std::vector<std::shared_ptr<AstParameter>> params;
+
+                                if (Match(TK_OPEN_PARENTH, true)) {
+                                    params = ParseFunctionParameters();
+                                    Expect(TK_CLOSE_PARENTH, true);
+                                }
+
+                                if (auto event_trigger = ParseFunctionExpression(false, params)) {
                                     events.push_back(std::shared_ptr<AstConstantEvent>(new AstConstantEvent(
                                         key_constant,
                                         event_trigger,
@@ -1998,17 +2123,40 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                                 }
                             }
                         }
-                    } else if (MatchIdentifier(true, false) || Match(TK_STRING, false)) {
+                    } else {
+                        bool is_static = false;
+
+                        if (MatchKeyword(Keyword_static, true)) {
+                            is_static = true;
+                            !Match(TK_STRING, false) || ExpectIdentifier(true, false);
+                        } else {
+                            if (!MatchIdentifier(true, false) && !Match(TK_STRING, false)) {
+                                // error; unexpected token
+                                m_compilation_unit->GetErrorList().AddError(CompilerError(
+                                    LEVEL_ERROR,
+                                    Msg_unexpected_token,
+                                    m_token_stream->Peek().GetLocation(),
+                                    m_token_stream->Peek().GetValue()
+                                ));
+
+                                if (m_token_stream->HasNext()) {
+                                    m_token_stream->Next();
+                                }
+
+                                continue;
+                            }
+                        }
+
                         // do not require declaration keyword for data members.
                         // also, data members may be keywords.
                         // note: a variable may be declared with ANY name if it enquoted
 
                         // if parentheses matched, it will be a function:
                         /* type Whatever { 
-                             do_something() {
-                               // ...
-                             }
-                           } */
+                            do_something() {
+                            // ...
+                            }
+                        } */
                         if (MatchAhead(TK_OPEN_PARENTH, 1)) {
                             // read the identifier token
                             Token identifier = Match(TK_STRING, false)
@@ -2016,18 +2164,31 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                                 : ExpectIdentifier(true, true);
 
                             MatchKeyword(Keyword_func, true); // skip 'function' keyword if found
-                            if (auto expr = ParseFunctionExpression(false, ParseFunctionParameters())) {
+
+                            std::vector<std::shared_ptr<AstParameter>> params;
+                            
+                            if (Match(TK_OPEN_PARENTH, true)) {
+                                params = ParseFunctionParameters();
+                                Expect(TK_CLOSE_PARENTH, true);
+                            }
+
+                            if (auto expr = ParseFunctionExpression(false, params)) {
                                 // first, read the identifier
                                 std::shared_ptr<AstVariableDeclaration> member(new AstVariableDeclaration(
                                     identifier.GetValue(),
                                     nullptr,
                                     expr,
+                                    {}, // TODO generic functions
                                     true, // (free functions are also implicitly const,
-                                          // so set the member to be const as well for consistency)
+                                        // so set the member to be const as well for consistency)
                                     identifier.GetLocation()
                                 ));
 
-                                members.push_back(member);
+                                if (is_static) {
+                                    static_members.push_back(member);
+                                } else {
+                                    members.push_back(member);
+                                }
                             }
                         } else {
                             if (auto member = ParseVariableDeclaration(
@@ -2035,22 +2196,14 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                                 true, // allow keyword names
                                 true // allow quoted names
                             )) {
-                                members.push_back(member);
+                                if (is_static) {
+                                    static_members.push_back(member);
+                                } else {
+                                    members.push_back(member);
+                                }
                             } else {
                                 break;
                             }
-                        }
-                    } else {
-                        // error; unexpected token
-                        m_compilation_unit->GetErrorList().AddError(CompilerError(
-                            LEVEL_ERROR,
-                            Msg_unexpected_token,
-                            m_token_stream->Peek().GetLocation(),
-                            m_token_stream->Peek().GetValue()
-                        ));
-
-                        if (m_token_stream->HasNext()) {
-                            m_token_stream->Next();
                         }
                     }
 
@@ -2063,6 +2216,7 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                     nullptr, // TODO
                     generic_params,
                     members,
+                    static_members,
                     events,
                     token.GetLocation()
                 ));

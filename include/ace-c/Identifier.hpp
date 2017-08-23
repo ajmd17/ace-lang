@@ -11,7 +11,8 @@ enum IdentifierFlags {
    FLAG_CONST = 1,
    FLAG_ALIAS = 2,
    FLAG_MIXIN = 4,
-   FLAG_DECLARED_IN_FUNCTION = 8,
+   FLAG_GENERIC = 8,
+   FLAG_DECLARED_IN_FUNCTION = 16,
 };
 
 class Identifier {
@@ -43,6 +44,11 @@ public:
     inline const SymbolTypePtr_t &GetSymbolType() const { return m_symbol_type; }
     inline void SetSymbolType(const SymbolTypePtr_t &symbol_type) { m_symbol_type = symbol_type; }
 
+    inline const std::vector<GenericInstanceTypeInfo::Arg> &GetTemplateParams() const
+        { return m_template_params; }
+    inline void SetTemplateParams(const std::vector<GenericInstanceTypeInfo::Arg> &template_params)
+        { m_template_params = template_params; }
+
 private:
     std::string m_name;
     int m_index;
@@ -51,6 +57,8 @@ private:
     int m_flags;
     std::shared_ptr<AstExpression> m_current_value;
     SymbolTypePtr_t m_symbol_type;
+
+    std::vector<GenericInstanceTypeInfo::Arg> m_template_params;
 };
 
 #endif

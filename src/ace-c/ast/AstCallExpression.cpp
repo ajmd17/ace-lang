@@ -69,7 +69,7 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
 
     ASSERT(unboxed_type != nullptr);
 
-    if (SymbolTypePtr_t call_member_type = unboxed_type->FindMember("$invoke")) {
+    if (SymbolTypePtr_t call_member_type = unboxed_type->FindPrototypeMember("$invoke")) {
         m_is_method_call = true;
 
         // closure objects have a self parameter for the '$invoke' call.
@@ -85,7 +85,7 @@ void AstCallExpression::Visit(AstVisitor *visitor, Module *mod)
 
         m_target.reset(new AstMember(
             "$invoke",
-            m_target,
+            CloneAstNode(m_target),
             m_location
         ));
         

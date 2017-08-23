@@ -7,18 +7,6 @@
 AstIterator::AstIterator()
     : m_position(0)
 {
-
-    // m_list = std::vector<std::shared_ptr<AstStatement>> {
-    //    std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
-    //         "Int",
-    //         nullptr,
-    //         std::shared_ptr<AstTypeObject>(new AstTypeObject(
-    //             BuiltinTypes::INT, nullptr, SourceLocation::eof
-    //         )),
-    //         false,
-    //         SourceLocation::eof
-    //     ))
-    // };
 }
 
 AstIterator::AstIterator(const AstIterator &other)

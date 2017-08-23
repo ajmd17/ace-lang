@@ -120,6 +120,12 @@ public:
         const SymbolTypePtr_t &base,
         const vec<SymbolMember_t> &members
     );
+    
+    static SymbolTypePtr_t PrototypedObject(
+        const std::string &name,
+        const SymbolTypePtr_t &base,
+        const vec<SymbolMember_t> &prototype_members
+    );
 
     static SymbolTypePtr_t TypePromotion(
         const SymbolTypePtr_t &lptr,
@@ -208,6 +214,9 @@ public:
     inline bool operator!=(const SymbolType &other) const { return !operator==(other); }
     const SymbolTypePtr_t FindMember(const std::string &name) const;
     bool FindMember(const std::string &name, SymbolMember_t &out) const;
+    const SymbolTypePtr_t FindPrototypeMember(const std::string &name) const;
+    bool FindPrototypeMember(const std::string &name, SymbolMember_t &out) const;
+    const sp<AstExpression> GetPrototypeValue() const;
 
     /** Search the inheritance chain to see if the given type
         is a base of this type. */

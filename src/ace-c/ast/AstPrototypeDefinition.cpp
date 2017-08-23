@@ -20,12 +20,14 @@ AstPrototypeDefinition::AstPrototypeDefinition(const std::string &name,
     const std::shared_ptr<AstTypeSpecification> &base_specification,
     const std::vector<std::string> &generic_params,
     const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
+    const std::vector<std::shared_ptr<AstVariableDeclaration>> &static_members,
     const std::vector<std::shared_ptr<AstEvent>> &events,
     const SourceLocation &location)
     : AstDeclaration(name, location),
       m_base_specification(base_specification),
       m_generic_params(generic_params),
       m_members(members),
+      m_static_members(static_members),
       m_events(events),
       m_num_members(0)
 {
@@ -125,6 +127,7 @@ void AstPrototypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                 event_items,
                 m_location
             )),
+            {},
             false,
             m_location
         )));
@@ -136,16 +139,16 @@ void AstPrototypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         if (mem != nullptr) {
             mem->Visit(visitor, mod);
 
-            if (mem->GetIdentifier()) {
-                std::string mem_name = mem->GetName();
-                SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
-                
-                member_types.push_back(SymbolMember_t {
-                    mem_name,
-                    mem_type,
-                    mem->GetAssignment()
-                });
-            }
+            ASSERT(mem->GetIdentifier() != nullptr);
+
+            std::string mem_name = mem->GetName();
+            SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
+            
+            member_types.push_back(SymbolMember_t {
+                mem_name,
+                mem_type,
+                mem->GetRealAssignment()
+            });
         }
     }
 
@@ -153,31 +156,67 @@ void AstPrototypeDefinition::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Close();
 
     SymbolTypePtr_t prototype_type = SymbolType::Object(
-        m_name, // Prototype type
+        m_name + "Instance", // Prototype type
         member_types,
         BuiltinTypes::OBJECT
     );
 
-    prototype_type->SetDefaultValue(std::shared_ptr<AstTypeObject>(new AstTypeObject(
-        prototype_type,
-        nullptr,
-        m_location
-    )));
-
     // TODO visit base type spec
 
-    std::vector<SymbolMember_t> static_members = {
-        SymbolMember_t {
+    std::vector<SymbolMember_t> static_members;
+
+    // check if one with the name $proto already exists.
+    bool proto_found = false;
+
+    for (const auto &mem : m_static_members) {
+        ASSERT(mem != nullptr);
+
+        if (mem->GetName() == "$proto") {
+            proto_found = true;
+            break;
+        }
+    }
+
+    if (!proto_found) {
+        static_members.push_back(SymbolMember_t {
             "$proto",
             prototype_type,
-            nullptr
-        }
-    };
+            std::shared_ptr<AstTypeObject>(new AstTypeObject(
+                prototype_type,
+                nullptr,
+                m_location
+            ))
+        });
+    }
+
+
+    // open the scope for static data members
+    mod->m_scopes.Open(Scope(SCOPE_TYPE_TYPE_DEFINITION, 0));
+
+    for (const auto &mem : m_static_members) {
+        ASSERT(mem != nullptr);
+        mem->Visit(visitor, mod);
+
+        std::string mem_name = mem->GetName();
+
+        ASSERT(mem->GetIdentifier() != nullptr);
+        SymbolTypePtr_t mem_type = mem->GetIdentifier()->GetSymbolType();
+        
+        static_members.push_back(SymbolMember_t {
+            mem_name,
+            mem_type,
+            mem->GetRealAssignment()
+        });
+    }
+
+    // close the scope for static data members
+    mod->m_scopes.Close();
 
     const SymbolTypePtr_t base_type = BuiltinTypes::TYPE_TYPE;
 
     if (!is_generic) {
         m_symbol_type = SymbolType::Extend(
+            m_name,
             base_type,
             static_members
         );

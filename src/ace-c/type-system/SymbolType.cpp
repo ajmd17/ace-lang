@@ -316,6 +316,43 @@ bool SymbolType::FindMember(const std::string &name, SymbolMember_t &out) const
     return false;
 }
 
+const SymbolTypePtr_t SymbolType::FindPrototypeMember(const std::string &name) const
+{
+    if (SymbolTypePtr_t proto_type = FindMember("$proto")) {
+        if (proto_type == BuiltinTypes::ANY) {
+            return BuiltinTypes::ANY;
+        }
+
+        return proto_type->FindMember(name);
+    }
+
+    return nullptr;
+}
+
+
+bool SymbolType::FindPrototypeMember(const std::string &name, SymbolMember_t &out) const
+{
+    if (SymbolTypePtr_t proto_type = FindMember("$proto")) {
+        return proto_type->FindMember(name, out);
+    }
+
+    return false;
+}
+
+const sp<AstExpression> SymbolType::GetPrototypeValue() const
+{
+    SymbolMember_t proto_mem;
+
+    if (FindMember("$proto", proto_mem)) {
+        if (auto value = std::get<2>(proto_mem)) {
+            return value;
+        }
+        return std::get<1>(proto_mem)->GetDefaultValue();
+    }
+
+    return nullptr;
+}
+
 bool SymbolType::HasBase(const SymbolType &base_type) const
 {
     if (SymbolTypePtr_t this_base = GetBaseType()) {
@@ -691,6 +728,27 @@ SymbolTypePtr_t SymbolType::Extend(
     ));
     
     return symbol_type;
+}
+    
+SymbolTypePtr_t PrototypedObject(
+    const std::string &name,
+    const SymbolTypePtr_t &base,
+    const vec<SymbolMember_t> &prototype_members)
+{
+    return SymbolType::Extend(
+        name,
+        base,
+        std::vector<SymbolMember_t> {
+            SymbolMember_t {
+                "$proto",
+                SymbolType::Object(
+                    name + "Instance",
+                    prototype_members
+                ),
+                nullptr
+            }
+        }
+    );
 }
 
 SymbolTypePtr_t SymbolType::TypePromotion(

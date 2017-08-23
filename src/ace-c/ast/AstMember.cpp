@@ -1,6 +1,8 @@
 #include <ace-c/ast/AstMember.hpp>
 #include <ace-c/ast/AstVariable.hpp>
 #include <ace-c/ast/AstNil.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
+#include <ace-c/ast/AstIdentifier.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Compiler.hpp>
 #include <ace-c/SemanticAnalyzer.hpp>
@@ -25,7 +27,8 @@ AstMember::AstMember(
     : AstExpression(location, ACCESS_MODE_LOAD | ACCESS_MODE_STORE),
       m_field_name(field_name),
       m_target(target),
-      m_symbol_type(BuiltinTypes::UNDEFINED)
+      m_symbol_type(BuiltinTypes::UNDEFINED),
+      m_found_index(-1)
 {
 }
 
@@ -58,9 +61,48 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
             field_type = BuiltinTypes::ANY;
             break;
         }
-        
-        if ((field_type = m_target_type->FindMember(m_field_name)) != nullptr) {
-            break;
+
+        if (SymbolTypePtr_t proto_type = m_target_type->FindMember("$proto")) {
+            // get member index from name
+            for (size_t i = 0; i < proto_type->GetMembers().size(); i++) {
+                const SymbolMember_t &mem = proto_type->GetMembers()[i];
+
+                if (std::get<0>(mem) == m_field_name) {
+                    m_found_index = i;
+                    field_type = std::get<1>(mem);
+                    break;
+                }
+            }
+
+            if (m_found_index != -1) {
+                break;
+            }
+        }
+
+        if (const AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_target.get())) {
+            if (const Identifier *ident = as_ident->GetProperties().GetIdentifier()) {
+                if (const auto current_value = ident->GetCurrentValue()) {
+                    if (AstTypeObject *as_type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
+                        ASSERT(as_type_object->GetHeldType() != nullptr);
+                        auto instance_type = as_type_object->GetHeldType();
+
+                        // get member index from name
+                        for (size_t i = 0; i < instance_type->GetMembers().size(); i++) {
+                            const SymbolMember_t &mem = instance_type->GetMembers()[i];
+
+                            if (std::get<0>(mem) == m_field_name) {
+                                m_found_index = i;
+                                field_type = std::get<1>(mem);
+                                break;
+                            }
+                        }
+
+                        if (m_found_index != -1) {
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         if (auto base = m_target_type->GetBaseType()) {
@@ -114,35 +156,25 @@ std::unique_ptr<Buildable> AstMember::Build(AstVisitor *visitor, Module *mod)
                 break;
         }
     } else {
-        int found_index = -1;
+        ASSERT(m_found_index != -1);
 
-        // get member index from name
-        for (size_t i = 0; i < m_target_type->GetMembers().size(); i++) {
-            if (std::get<0>(m_target_type->GetMembers()[i]) == m_field_name) {
-                found_index = i;
+        switch (m_access_mode) {
+            case ACCESS_MODE_LOAD:
+                // just load the data member.
+                chunk->Append(Compiler::LoadMemberAtIndex(
+                    visitor,
+                    mod,
+                    m_found_index
+                ));
                 break;
-            }
-        }
-
-        if (found_index != -1) {
-            switch (m_access_mode) {
-                case ACCESS_MODE_LOAD:
-                    // just load the data member.
-                    chunk->Append(Compiler::LoadMemberAtIndex(
-                        visitor,
-                        mod,
-                        found_index
-                    ));
-                    break;
-                case ACCESS_MODE_STORE:
-                    // we are in storing mode, so store to LAST item in the member expr.
-                    chunk->Append(Compiler::StoreMemberAtIndex(
-                        visitor,
-                        mod,
-                        found_index
-                    ));
-                    break;
-            }
+            case ACCESS_MODE_STORE:
+                // we are in storing mode, so store to LAST item in the member expr.
+                chunk->Append(Compiler::StoreMemberAtIndex(
+                    visitor,
+                    mod,
+                    m_found_index
+                ));
+                break;
         }
     }
 

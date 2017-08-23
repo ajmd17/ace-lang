@@ -35,8 +35,6 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_proto->GetExprType() != nullptr);
     SymbolTypePtr_t constructor_type = m_proto->GetExprType();
 
-    std::cout << "constructor_type = " << constructor_type->GetName() << "\n";
-
     const bool is_type = constructor_type == BuiltinTypes::TYPE_TYPE;
 
     m_symbol_type = BuiltinTypes::ANY;
@@ -44,22 +42,25 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 
     if (constructor_type != BuiltinTypes::ANY) {
         if (const AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_proto.get())) {
-            if (const auto current_value = as_ident->GetProperties().GetIdentifier()->GetCurrentValue()) {
-                if (AstTypeObject *type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
-                    ASSERT(type_object->GetHeldType() != nullptr);
-                    m_symbol_type = type_object->GetHeldType();
 
-                    SymbolMember_t proto_member;
-                    if (type_object->GetHeldType()->FindMember("$proto", proto_member)) {
-                        m_prototype_type = std::get<1>(proto_member);
-                        m_default_value = std::get<2>(proto_member);
+            if (const Identifier *ident = as_ident->GetProperties().GetIdentifier()) {
+                if (const auto current_value = ident->GetCurrentValue()) {
+                    if (AstTypeObject *type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
+                        ASSERT(type_object->GetHeldType() != nullptr);
+                        m_symbol_type = type_object->GetHeldType();
+
+                        SymbolMember_t proto_member;
+                        if (type_object->GetHeldType()->FindMember("$proto", proto_member)) {
+                            m_prototype_type = std::get<1>(proto_member)->GetUnaliased();
+                            m_default_value = std::get<2>(proto_member);
+                        }
+                    } else if (!is_type) {
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_not_a_type,
+                            m_location
+                        ));
                     }
-                } else if (!is_type) {
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_not_a_type,
-                        m_location
-                    ));
                 }
             }
         } else if (!is_type) {

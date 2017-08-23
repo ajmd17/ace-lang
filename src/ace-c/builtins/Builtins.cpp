@@ -43,7 +43,7 @@ Builtins::Builtins()
 
     for (const auto &it : m_vars) {
         m_ast.Push(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
-            it.first, nullptr, it.second, false, BUILTIN_SOURCE_LOCATION
+            it.first, nullptr, it.second, {}, false, BUILTIN_SOURCE_LOCATION
         )));
     }
 }

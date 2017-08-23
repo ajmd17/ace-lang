@@ -22,11 +22,13 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
     const std::shared_ptr<AstPrototypeSpecification> &proto,
     //const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstExpression> &assignment,
+    const std::vector<std::shared_ptr<AstParameter>> &template_params,
     bool is_const,
     const SourceLocation &location)
     : AstDeclaration(name, location),
       m_proto(proto),
       m_assignment(assignment),
+      m_template_params(template_params),
       m_is_const(is_const),
       m_assignment_already_visited(false)
 {
@@ -35,8 +37,26 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
 void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     SymbolTypePtr_t symbol_type;
+    std::vector<GenericInstanceTypeInfo::Arg> ident_template_params;
 
-    std::cout << "is assignment null ? " << (m_assignment == nullptr) << "\n";
+    if (!m_template_params.empty()) {
+        // declare template params in a new scope
+        // open the new scope for parameters
+        mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
+
+        for (auto &param : m_template_params) {
+            ASSERT(param != nullptr);
+            param->Visit(visitor, mod);
+
+            ASSERT(param->GetIdentifier() != nullptr);
+
+            ident_template_params.push_back(GenericInstanceTypeInfo::Arg {
+                param->GetName(),
+                param->GetIdentifier()->GetSymbolType(),
+                param->GetDefaultValue()
+            });
+        }
+    }
 
     if (m_proto == nullptr && m_assignment == nullptr) {
         // error; requires either type, or assignment.
@@ -163,8 +183,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             SymbolTypePtr_t assignment_type = m_real_assignment->GetExprType();
             ASSERT(assignment_type != nullptr);
 
-            std::cout << "assignment type : " << assignment_type->GetName() << "\n";
-
             if (m_proto != nullptr) {
                 // symbol_type should be the user-specified type
                 symbol_type = SymbolType::GenericPromotion(symbol_type, assignment_type);
@@ -211,13 +229,21 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    std::cout << "symbol_type = " << symbol_type->GetName() << "\n";
+    if (!m_template_params.empty()) {
+        // close template param scope
+        mod->m_scopes.Close();
+    }
 
     AstDeclaration::Visit(visitor, mod);
 
     if (m_identifier != nullptr) {
         if (m_is_const) {
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_CONST);
+        }
+
+        if (!m_template_params.empty()) {
+            m_identifier->SetTemplateParams(ident_template_params);
+            m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_GENERIC);
         }
 
         m_identifier->SetSymbolType(symbol_type);
@@ -227,6 +253,11 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
 std::unique_ptr<Buildable> AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
+    if (!m_template_params.empty()) {
+        // generics do not build anything
+        return nullptr;
+    }
+
     std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 
     ASSERT(m_real_assignment != nullptr);

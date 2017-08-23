@@ -23,6 +23,8 @@ public:
     inline void SetAccessMode(AccessMode access_mode)
       { m_access_mode = access_mode; }
 
+    SymbolTypePtr_t GetMemberType(const std::string &name) const;
+
     virtual void Visit(AstVisitor *visitor, Module *mod) override = 0;
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override = 0;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override = 0;

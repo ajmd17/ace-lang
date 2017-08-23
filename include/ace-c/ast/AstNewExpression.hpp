@@ -10,7 +10,7 @@
 
 #include <string>
 
-class AstNewExpression: public AstExpression {
+class AstNewExpression : public AstExpression {
 public:
     AstNewExpression(
         const std::shared_ptr<AstPrototypeSpecification> &proto,

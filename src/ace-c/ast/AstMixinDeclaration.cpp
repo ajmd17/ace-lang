@@ -43,6 +43,7 @@ void AstMixinDeclaration::Visit(AstVisitor *visitor, Module *mod)
                             m_name,
                             m_location
                         )),
+                        {},
                         false,
                         m_location
                     ));

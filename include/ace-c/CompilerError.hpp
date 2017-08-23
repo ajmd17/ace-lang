@@ -48,6 +48,9 @@ enum ErrorMessage {
     Msg_expected_type_got_identifier,
     Msg_missing_type_and_assignment,
     Msg_type_no_default_assignment,
+    Msg_expression_not_generic,
+    Msg_too_many_generic_args,
+    Msg_too_few_generic_args,
 
     /* FUNCTIONS */
     Msg_multiple_return_types,
@@ -73,6 +76,7 @@ enum ErrorMessage {
     Msg_type_not_defined_globally,
     Msg_identifier_is_type,
     Msg_mismatched_types,
+    Msg_mismatched_types_assignment,
     Msg_implicit_any_mismatch,
     Msg_type_not_generic,
     Msg_generic_parameters_missing,

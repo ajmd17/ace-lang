@@ -2,13 +2,13 @@
 #define AST_PARAMETER_HPP
 
 #include <ace-c/ast/AstDeclaration.hpp>
-#include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstPrototypeSpecification.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 
 class AstParameter : public AstDeclaration {
 public:
     AstParameter(const std::string &name,
-        const std::shared_ptr<AstTypeSpecification> &type_spec,
+        const std::shared_ptr<AstPrototypeSpecification> &type_spec,
         const std::shared_ptr<AstExpression> &default_param,
         bool is_variadic,
         bool is_const,
@@ -28,7 +28,7 @@ public:
     inline bool IsConst() const { return m_is_const; }
 
 private:
-    std::shared_ptr<AstTypeSpecification> m_type_spec;
+    std::shared_ptr<AstPrototypeSpecification> m_type_spec;
     std::shared_ptr<AstExpression> m_default_param;
     bool m_is_variadic;
     bool m_is_const;

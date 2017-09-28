@@ -238,7 +238,7 @@ std::vector<std::shared_ptr<AstArgument>> SemanticAnalyzer::Helpers::SubstituteG
                     std::get<0>(arg).type,
                     vararg_type
                 );
-                
+
                 if (found_index == -1 || found_index >= res_args.size()) {
                     used_indices.insert(res_args.size());
                     // at end, push

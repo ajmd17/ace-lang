@@ -8,10 +8,11 @@
 
 class AstArgument : public AstExpression {
 public:
-    AstArgument(const std::shared_ptr<AstExpression> &expr,
-      bool is_named,
-      const std::string &name,
-      const SourceLocation &location);
+    AstArgument(
+        const std::shared_ptr<AstExpression> &expr,
+        bool is_named,
+        const std::string &name,
+        const SourceLocation &location);
     virtual ~AstArgument() = default;
 
     inline const std::shared_ptr<AstExpression> &GetExpr() const
@@ -25,10 +26,12 @@ public:
     
     virtual Pointer<AstStatement> Clone() const override;
 
+    //virtual const AstExpression *GetValueOf() const override { return m_expr.get(); }
+
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
     virtual SymbolTypePtr_t GetExprType() const override;
-    
+
 private:
     std::shared_ptr<AstExpression> m_expr;
     bool m_is_named;

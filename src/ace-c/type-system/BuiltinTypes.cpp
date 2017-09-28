@@ -9,6 +9,7 @@
 #include <ace-c/ast/AstInteger.hpp>
 #include <ace-c/ast/AstFloat.hpp>
 #include <ace-c/ast/AstFalse.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/ast/AstBlockExpression.hpp>
 
@@ -50,6 +51,15 @@ const SymbolTypePtr_t BuiltinTypes::TYPE_TYPE = SymbolType::Extend(
             "$proto",
             BuiltinTypes::ANY,
             nullptr
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::OBJECT,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::OBJECT,
+                nullptr,
+                SourceLocation::eof
+            )),
         }
     }
 );
@@ -64,6 +74,15 @@ const SymbolTypePtr_t BuiltinTypes::INT = SymbolType::Extend(
                 "IntInstance", nullptr
             ),
             sp<AstInteger>(new AstInteger(0, SourceLocation::eof))
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::TYPE_TYPE,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::TYPE_TYPE,
+                nullptr,
+                SourceLocation::eof
+            )),
         }
     }
 );
@@ -85,6 +104,15 @@ const SymbolTypePtr_t BuiltinTypes::FLOAT = SymbolType::Extend(
                 "FloatInstance", nullptr
             ),
             sp<AstFloat>(new AstFloat(0.0, SourceLocation::eof))
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::TYPE_TYPE,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::TYPE_TYPE,
+                nullptr,
+                SourceLocation::eof
+            )),
         }
     }
 );
@@ -108,6 +136,15 @@ const SymbolTypePtr_t BuiltinTypes::NUMBER = SymbolType::Extend(
                 "NumberInstance", nullptr
             ),
             sp<AstFloat>(new AstFloat(0.0, SourceLocation::eof))
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::TYPE_TYPE,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::TYPE_TYPE,
+                nullptr,
+                SourceLocation::eof
+            )),
         }
     }
 );
@@ -128,6 +165,15 @@ const SymbolTypePtr_t BuiltinTypes::BOOLEAN = SymbolType::Extend(
                 "BoolInstance", nullptr
             ),
             sp<AstFalse>(new AstFalse(SourceLocation::eof))
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::TYPE_TYPE,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::TYPE_TYPE,
+                nullptr,
+                SourceLocation::eof
+            )),
         }
     }
 );
@@ -148,6 +194,15 @@ const SymbolTypePtr_t BuiltinTypes::STRING = SymbolType::Extend(
                 "StringInstance", nullptr
             ),
             sp<AstString>(new AstString("", SourceLocation::eof))
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::TYPE_TYPE,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::TYPE_TYPE,
+                nullptr,
+                SourceLocation::eof
+            )),
         }
     }
 );
@@ -170,7 +225,6 @@ const SymbolTypePtr_t BuiltinTypes::FUNCTION = SymbolType::Generic(
 
 const SymbolTypePtr_t BuiltinTypes::ARRAY = SymbolType::Generic(
     "Array",
-    nullptr,
     std::vector<SymbolMember_t> {
         SymbolMember_t {
             "$proto",
@@ -180,6 +234,15 @@ const SymbolTypePtr_t BuiltinTypes::ARRAY = SymbolType::Generic(
             sp<AstArrayExpression>(new AstArrayExpression(
                 {}, SourceLocation::eof
             ))
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::TYPE_TYPE,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::TYPE_TYPE,
+                nullptr,
+                SourceLocation::eof
+            )),
         }
     },
     GenericTypeInfo { 1 },
@@ -233,17 +296,6 @@ const SymbolTypePtr_t BuiltinTypes::EVENT_IMPL = SymbolType::Object(
 const SymbolTypePtr_t BuiltinTypes::EVENT = SymbolType::Generic(
     "$Event",
     BuiltinTypes::UNDEFINED->GetDefaultValue(),
-    {},
-    GenericTypeInfo { 1 },
-    BuiltinTypes::TYPE_TYPE
-);
-
-const SymbolTypePtr_t BuiltinTypes::EVENT_ARRAY = SymbolType::Generic(
-    "$EventArray",
-    sp<AstArrayExpression>(new AstArrayExpression(
-        {},
-        SourceLocation::eof
-    )),
     {},
     GenericTypeInfo { 1 },
     BuiltinTypes::TYPE_TYPE
@@ -315,7 +367,6 @@ const SymbolTypePtr_t BuiltinTypes::BLOCK_TYPE = SymbolType::Generic(
 
 const SymbolTypePtr_t BuiltinTypes::CLOSURE_TYPE = SymbolType::Generic(
     "Closure",
-    nullptr,
     {},
     GenericTypeInfo { -1 },
     BuiltinTypes::FUNCTION

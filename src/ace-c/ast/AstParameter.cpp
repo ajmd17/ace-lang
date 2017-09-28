@@ -9,7 +9,7 @@
 #include <common/my_assert.hpp>
 
 AstParameter::AstParameter(const std::string &name, 
-    const std::shared_ptr<AstTypeSpecification> &type_spec, 
+    const std::shared_ptr<AstPrototypeSpecification> &type_spec, 
     const std::shared_ptr<AstExpression> &default_param, 
     bool is_variadic,
     bool is_const,
@@ -32,8 +32,8 @@ void AstParameter::Visit(AstVisitor *visitor, Module *mod)
     if (m_type_spec != nullptr) {
         m_type_spec->Visit(visitor, mod);
 
-        ASSERT(m_type_spec->GetSpecifiedType() != nullptr);
-        symbol_type = m_type_spec->GetSpecifiedType();
+        ASSERT(m_type_spec->GetHeldType() != nullptr);
+        symbol_type = m_type_spec->GetHeldType();
     }
 
     if (m_default_param != nullptr) {

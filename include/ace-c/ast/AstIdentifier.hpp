@@ -9,6 +9,7 @@
 
 // forward declaration
 class Scope;
+class AstTypeObject;
 
 struct AstIdentifierProperties {
     Identifier *m_identifier = nullptr;
@@ -58,7 +59,12 @@ public:
 
     virtual Tribool IsTrue() const override = 0;
     virtual bool MayHaveSideEffects() const override = 0;
-    virtual SymbolTypePtr_t GetExprType() const override;
+    virtual SymbolTypePtr_t GetExprType() const override = 0;
+
+    virtual const AstExpression *GetValueOf() const override;
+
+    /** temporary, used for extracting a type object located in the stored value */
+    AstTypeObject *ExtractTypeObject() const;
 
 protected:
     std::string m_name;

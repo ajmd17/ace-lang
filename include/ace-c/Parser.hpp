@@ -18,6 +18,7 @@
 #include <ace-c/ast/AstTypeAlias.hpp>
 #include <ace-c/ast/AstAliasDeclaration.hpp>
 #include <ace-c/ast/AstMixinDeclaration.hpp>
+#include <ace-c/ast/AstMixin.hpp>
 #include <ace-c/ast/AstStatement.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstImport.hpp>
@@ -98,7 +99,7 @@ private:
         bool override_angle_brackets = false
     );
     std::shared_ptr<AstExpression> ParseParentheses();
-    std::shared_ptr<AstExpression> ParseAngleBrackets();
+    std::shared_ptr<AstExpression> ParseAngleBrackets(std::shared_ptr<AstExpression> target);
     std::shared_ptr<AstInteger> ParseIntegerLiteral();
     std::shared_ptr<AstFloat> ParseFloatLiteral();
     std::shared_ptr<AstString> ParseStringLiteral();
@@ -154,6 +155,7 @@ private:
     std::shared_ptr<AstStatement> ParseTypeDefinition();
     std::shared_ptr<AstAliasDeclaration> ParseAliasDeclaration();
     std::shared_ptr<AstMixinDeclaration> ParseMixinDeclaration();
+    std::shared_ptr<AstMixin> ParseMixinExpression(const std::string &name);
     std::shared_ptr<AstImport> ParseImport();
     std::shared_ptr<AstFileImport> ParseFileImport();
     std::shared_ptr<AstModuleImport> ParseModuleImport();

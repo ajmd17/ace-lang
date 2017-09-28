@@ -161,28 +161,47 @@ void AstPrototypeDefinition::Visit(AstVisitor *visitor, Module *mod)
         BuiltinTypes::OBJECT
     );
 
-    // TODO visit base type spec
+    // TODO: allow custom bases (which would have to extend Type somewhere)
+    SymbolTypePtr_t base_type = BuiltinTypes::TYPE_TYPE;
 
     std::vector<SymbolMember_t> static_members;
 
     // check if one with the name $proto already exists.
     bool proto_found = false;
+    bool base_found = false;
 
     for (const auto &mem : m_static_members) {
         ASSERT(mem != nullptr);
 
         if (mem->GetName() == "$proto") {
             proto_found = true;
-            break;
+        } else if (mem->GetName() == "base") {
+            base_found = true;
+        }
+
+        if (proto_found && base_found) {
+            break; // no need to keep searching
         }
     }
 
-    if (!proto_found) {
+    if (!proto_found) { // no custom '$proto' member, add default.
         static_members.push_back(SymbolMember_t {
             "$proto",
             prototype_type,
             std::shared_ptr<AstTypeObject>(new AstTypeObject(
                 prototype_type,
+                nullptr,
+                m_location
+            ))
+        });
+    }
+
+    if (!base_found) { // no custom 'base' member, add default
+        static_members.push_back(SymbolMember_t {
+            "base",
+            base_type,
+            std::shared_ptr<AstTypeObject>(new AstTypeObject(
+                base_type,
                 nullptr,
                 m_location
             ))
@@ -211,8 +230,6 @@ void AstPrototypeDefinition::Visit(AstVisitor *visitor, Module *mod)
 
     // close the scope for static data members
     mod->m_scopes.Close();
-
-    const SymbolTypePtr_t base_type = BuiltinTypes::TYPE_TYPE;
 
     if (!is_generic) {
         m_symbol_type = SymbolType::Extend(

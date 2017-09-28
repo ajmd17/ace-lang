@@ -144,6 +144,10 @@ bool SymbolType::TypeEqual(const SymbolType &other) const
 bool SymbolType::TypeCompatible(const SymbolType &right,
     bool strict_numbers, bool strict_const) const
 {
+    if (TypeEqual(*BuiltinTypes::UNDEFINED) || right.TypeEqual(*BuiltinTypes::UNDEFINED)) {
+        return false;
+    }
+
     if (TypeEqual(right)) {
         return true;
     }
@@ -259,26 +263,6 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
 
             break;
         }
-        case TYPE_BUILTIN: {
-            if (!TypeEqual(*BuiltinTypes::UNDEFINED) && !right.TypeEqual(*BuiltinTypes::UNDEFINED)) {
-                if (TypeEqual(*BuiltinTypes::NUMBER)) {
-                    return (right.TypeEqual(*BuiltinTypes::INT) ||
-                            right.TypeEqual(*BuiltinTypes::FLOAT));
-                } else if (!strict_numbers) {
-                    if (TypeEqual(*BuiltinTypes::INT) || TypeEqual(*BuiltinTypes::FLOAT)) {
-                        return (right.TypeEqual(*BuiltinTypes::NUMBER) ||
-                                right.TypeEqual(*BuiltinTypes::FLOAT) ||
-                                right.TypeEqual(*BuiltinTypes::INT));
-                    }
-                }
-            }
-
-            return false;
-        }
-        
-        case TYPE_USER_DEFINED:
-            // only allow incompatible assignment for the Any type
-            return false;
 
         case TYPE_GENERIC_PARAMETER: {
             if (auto sp = m_generic_param_info.m_substitution.lock()) {
@@ -288,6 +272,20 @@ bool SymbolType::TypeCompatible(const SymbolType &right,
             // uninstantiated generic parameters are compatible with anything
             return true;
         }
+
+        default:
+            if (TypeEqual(*BuiltinTypes::NUMBER)) {
+                return (right.TypeEqual(*BuiltinTypes::INT) ||
+                        right.TypeEqual(*BuiltinTypes::FLOAT));
+            } else if (!strict_numbers) {
+                if (TypeEqual(*BuiltinTypes::INT) || TypeEqual(*BuiltinTypes::FLOAT)) {
+                    return (right.TypeEqual(*BuiltinTypes::NUMBER) ||
+                            right.TypeEqual(*BuiltinTypes::FLOAT) ||
+                            right.TypeEqual(*BuiltinTypes::INT));
+                }
+            }
+
+            return false;
     }
 
     return true;
@@ -347,7 +345,10 @@ const sp<AstExpression> SymbolType::GetPrototypeValue() const
         if (auto value = std::get<2>(proto_mem)) {
             return value;
         }
-        return std::get<1>(proto_mem)->GetDefaultValue();
+
+        if (auto proto_type = std::get<1>(proto_mem)) {
+            return proto_type->GetPrototypeValue();
+        }
     }
 
     return nullptr;
@@ -515,7 +516,25 @@ SymbolTypePtr_t SymbolType::Object(const std::string &name,
     return symbol_type;
 }
 
-SymbolTypePtr_t SymbolType::Generic(const std::string &name, 
+SymbolTypePtr_t SymbolType::Generic(const std::string &name,
+    const vec<SymbolMember_t> &members, 
+    const GenericTypeInfo &info,
+    const SymbolTypePtr_t &base)
+{
+    SymbolTypePtr_t res(new SymbolType(
+        name,
+        TYPE_GENERIC,
+        base,
+        nullptr,
+        members
+    ));
+    
+    res->m_generic_info = info;
+    
+    return res;
+}
+
+SymbolTypePtr_t SymbolType::Generic(const std::string &name,
     const sp<AstExpression> &default_value,
     const vec<SymbolMember_t> &members, 
     const GenericTypeInfo &info,

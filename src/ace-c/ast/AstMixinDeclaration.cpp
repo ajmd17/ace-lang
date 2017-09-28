@@ -1,5 +1,4 @@
 #include <ace-c/ast/AstMixinDeclaration.hpp>
-#include <ace-c/ast/AstMixin.hpp>
 #include <ace-c/AstVisitor.hpp>
 
 #include <ace-c/type-system/BuiltinTypes.hpp>
@@ -10,10 +9,10 @@
 
 AstMixinDeclaration::AstMixinDeclaration(
     const std::string &name,
-    const std::string &mixin_expr,
+    const std::shared_ptr<AstExpression> &expr,
     const SourceLocation &location)
     : AstDeclaration(name, location),
-      m_mixin_expr(mixin_expr),
+      m_expr(expr),
       m_prevent_shadowing(true)
 {
 }
@@ -22,6 +21,7 @@ void AstMixinDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
+    ASSERT(m_expr != nullptr);
 
     if (mod->LookUpIdentifier(m_name, true) != nullptr) {
         // a collision was found, add an error
@@ -53,16 +53,10 @@ void AstMixinDeclaration::Visit(AstVisitor *visitor, Module *mod)
             }
         }
 
-        std::shared_ptr<AstMixin> mixin_expr(new AstMixin(
-            m_name,
-            m_mixin_expr,
-            m_location
-        ));
-
         Scope &scope = mod->m_scopes.Top();
         if ((m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name, FLAG_MIXIN | FLAG_ALIAS))) {
             m_identifier->SetSymbolType(BuiltinTypes::ANY);
-            m_identifier->SetCurrentValue(mixin_expr);
+            m_identifier->SetCurrentValue(m_expr); // do not visit - will be visited upon mix
         }
     }
 }

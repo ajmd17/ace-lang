@@ -45,6 +45,7 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     // may be nullptr
     m_object_value = m_proto->GetDefaultValue();
     m_prototype_type = m_proto->GetPrototypeType();
+
     /*BuiltinTypes::ANY;
 
     if (m_constructor_type != BuiltinTypes::ANY) {

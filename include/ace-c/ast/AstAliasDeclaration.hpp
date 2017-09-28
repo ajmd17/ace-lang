@@ -4,6 +4,7 @@
 #include <ace-c/ast/AstDeclaration.hpp>
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstTypeSpecification.hpp>
+#include <ace-c/ast/AstIdentifier.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 #include <memory>

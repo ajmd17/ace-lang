@@ -51,7 +51,6 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     ASSERT(left_type_unboxed != nullptr);
-    std::cout << "left : " << left_type_unboxed->GetName() << "\n";
 
     SymbolTypePtr_t right_type = m_right->GetExprType();
     SymbolTypePtr_t right_type_unboxed = right_type;
@@ -61,8 +60,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
     }
 
     ASSERT(right_type_unboxed != nullptr);
-    std::cout << "right : " << right_type_unboxed->GetName() << "\n";
-    
+
     if (m_op->GetType() & BITWISE) {
         // no bitwise operators on floats allowed.
         visitor->Assert(
@@ -70,12 +68,27 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
             (right_type_unboxed == BuiltinTypes::INT || right_type_unboxed == BuiltinTypes::ANY),
             CompilerError(
                 LEVEL_ERROR,
-                Msg_bitwise_operands_must_be_int, m_location,
+                Msg_bitwise_operands_must_be_int,
+                m_location,
                 left_type_unboxed->GetName(),
                 right_type_unboxed->GetName()
             )
         );
-    }
+    } /*else if (m_op->GetType() & ARITHMETIC) {
+        // arithmetic operators are only for numbers
+        visitor->Assert(
+            left_type_unboxed->TypeCompatible(*BuiltinTypes::NUMBER, false) &&
+            right_type_unboxed->TypeCompatible(*BuiltinTypes::NUMBER, false),
+            CompilerError(
+                LEVEL_ERROR,
+                Msg_arithmetic_operands_must_be_numbers,
+                m_location,
+                m_op->LookupStringValue(),
+                left_type_unboxed->GetName(),
+                right_type_unboxed->GetName()
+            )
+        );
+    }*/
 
     if (m_op->ModifiesValue()) {
         SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(

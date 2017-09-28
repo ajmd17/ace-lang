@@ -7,8 +7,6 @@
 #include <vector>
 #include <memory>
 
-class AstMixinDeclaration;
-
 class AstMixin : public AstExpression {
 public:
     AstMixin(const std::string &name,

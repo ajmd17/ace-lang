@@ -155,7 +155,6 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
             } else {
                 symbol_type = SymbolType::Generic(
                     m_name,
-                    nullptr,
                     member_types, 
                     GenericTypeInfo {
                         (int)m_generic_params.size(),

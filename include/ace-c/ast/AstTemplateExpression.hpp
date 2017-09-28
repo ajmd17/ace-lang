@@ -14,6 +14,9 @@ public:
         const SourceLocation &location);
     virtual ~AstTemplateExpression() = default;
 
+    inline const std::vector<std::shared_ptr<AstParameter>> &GetGenericParameters() const { return m_generic_params; }
+    inline const std::shared_ptr<AstExpression> &GetInnerExpression() const { return m_expr; }
+
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;

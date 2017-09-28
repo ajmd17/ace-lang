@@ -13,6 +13,10 @@ const SourceLocation Builtins::BUILTIN_SOURCE_LOCATION(-1, -1, "<builtin>");
 
 Builtins::Builtins()
 {
+    m_vars["Type"].reset(new AstTypeObject(
+        BuiltinTypes::TYPE_TYPE, nullptr, SourceLocation::eof
+    ));
+
     m_vars["Int"].reset(new AstTypeObject(
         BuiltinTypes::INT, nullptr, SourceLocation::eof
     ));

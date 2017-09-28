@@ -31,6 +31,8 @@ public:
     
     virtual Pointer<AstStatement> Clone() const override = 0;
 
+    virtual const AstExpression *GetValueOf() const { return this; }
+
     /** Determine whether the expression would evaluate to true.
         Returns -1 if it cannot be evaluated at compile time.
     */

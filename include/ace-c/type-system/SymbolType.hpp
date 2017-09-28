@@ -93,6 +93,13 @@ public:
         They will be substituted when an instance of the generic type is created.
     */
     static SymbolTypePtr_t Generic(
+        const std::string &name,
+        const vec<SymbolMember_t> &members, 
+        const GenericTypeInfo &info,
+        const SymbolTypePtr_t &base
+    );
+    
+    static SymbolTypePtr_t Generic(
         const std::string &name, 
         const sp<AstExpression> &default_value, 
         const vec<SymbolMember_t> &members, 

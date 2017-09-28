@@ -40,10 +40,11 @@ void AstAliasDeclaration::Visit(AstVisitor *visitor, Module *mod)
         ));
     } else {
         Scope &scope = mod->m_scopes.Top();
-        if ((m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name, FLAG_ALIAS))) {
-            m_identifier->SetSymbolType(m_aliasee->GetExprType());
-            m_identifier->SetCurrentValue(m_aliasee);
-        }
+        m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name, FLAG_ALIAS);
+        ASSERT(m_identifier != nullptr);
+
+        m_identifier->SetSymbolType(m_aliasee->GetExprType());
+        m_identifier->SetCurrentValue(m_aliasee);
     }
 }
 

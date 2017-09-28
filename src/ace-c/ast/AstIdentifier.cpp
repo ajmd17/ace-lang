@@ -1,4 +1,5 @@
 #include <ace-c/ast/AstIdentifier.hpp>
+#include <ace-c/ast/AstTypeObject.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Scope.hpp>
@@ -67,21 +68,38 @@ void AstIdentifier::Visit(AstVisitor *visitor, Module *mod)
     CheckInFunction(visitor, mod);
 }
 
-SymbolTypePtr_t AstIdentifier::GetExprType() const
-{
-    if (m_properties.GetIdentifier() != nullptr) {
-        if (m_properties.GetIdentifier()->GetSymbolType() != nullptr) {
-            return m_properties.GetIdentifier()->GetSymbolType();
-        }
-    } else if (m_properties.m_found_type != nullptr) {
-        return m_properties.m_found_type;
-    }
-
-    return BuiltinTypes::UNDEFINED;
-}
-
 int AstIdentifier::GetStackOffset(int stack_size) const
 {
     ASSERT(m_properties.GetIdentifier() != nullptr);
     return stack_size - m_properties.GetIdentifier()->GetStackLocation();
+}
+
+const AstExpression *AstIdentifier::GetValueOf() const
+{
+    if (const Identifier *ident = m_properties.GetIdentifier()) {
+        if (const auto current_value = ident->GetCurrentValue()) {
+            if (AstIdentifier *nested_identifier = dynamic_cast<AstIdentifier*>(current_value.get())) {
+                return nested_identifier->GetValueOf();
+            } else {
+                return current_value.get();
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+AstTypeObject *AstIdentifier::ExtractTypeObject() const
+{
+    if (const Identifier *ident = m_properties.GetIdentifier()) {
+        if (const auto current_value = ident->GetCurrentValue()) {
+            if (AstIdentifier *nested_identifier = dynamic_cast<AstIdentifier*>(current_value.get())) {
+                return nested_identifier->ExtractTypeObject();
+            } else if (AstTypeObject *type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
+                return type_object;
+            }
+        }
+    }
+
+    return nullptr;
 }

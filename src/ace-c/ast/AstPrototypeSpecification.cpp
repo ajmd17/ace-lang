@@ -35,41 +35,41 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_proto->GetExprType() != nullptr);
     SymbolTypePtr_t constructor_type = m_proto->GetExprType();
 
-    const bool is_type = constructor_type == BuiltinTypes::TYPE_TYPE;
-
-    m_symbol_type = BuiltinTypes::ANY;
-    m_prototype_type = BuiltinTypes::ANY;
+    m_symbol_type = BuiltinTypes::UNDEFINED;
+    m_prototype_type = BuiltinTypes::UNDEFINED;
 
     if (constructor_type != BuiltinTypes::ANY) {
-        if (const AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_proto.get())) {
+        const bool is_type = constructor_type == BuiltinTypes::TYPE_TYPE;
 
-            if (const Identifier *ident = as_ident->GetProperties().GetIdentifier()) {
-                if (const auto current_value = ident->GetCurrentValue()) {
-                    if (AstTypeObject *type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
-                        ASSERT(type_object->GetHeldType() != nullptr);
-                        m_symbol_type = type_object->GetHeldType();
+        if (is_type) {
+            const AstExpression *value_of = m_proto->GetValueOf();
+            ASSERT(value_of != nullptr);
 
-                        SymbolMember_t proto_member;
-                        if (type_object->GetHeldType()->FindMember("$proto", proto_member)) {
-                            m_prototype_type = std::get<1>(proto_member)->GetUnaliased();
-                            m_default_value = std::get<2>(proto_member);
-                        }
-                    } else if (!is_type) {
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            LEVEL_ERROR,
-                            Msg_not_a_type,
-                            m_location
-                        ));
-                    }
+            // FIXME: this dynamic_casting stuff is nasty and we need a better way other than GetValueOf()
+            // and such. having 2 separate ways of getting expression types (AstTypeObject vs. the internal SymbolType)
+            if (const AstTypeObject *type_obj = dynamic_cast<const AstTypeObject*>(value_of)) {
+                ASSERT(type_obj->GetHeldType() != nullptr);
+                m_symbol_type = type_obj->GetHeldType();
+
+                //m_default_value = m_symbol_type->GetPrototypeValue();
+
+                SymbolMember_t proto_member;
+                if (m_symbol_type->FindMember("$proto", proto_member)) {
+                    m_prototype_type = std::get<1>(proto_member);
+                    m_default_value = std::get<2>(proto_member);
                 }
             }
-        } else if (!is_type) {
+        } else {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                 LEVEL_ERROR,
                 Msg_not_a_type,
-                m_location
+                m_location,
+                constructor_type->GetName()
             ));
         }
+    } else {
+        m_symbol_type = BuiltinTypes::ANY;
+        m_prototype_type = BuiltinTypes::ANY;
     }
 }
 

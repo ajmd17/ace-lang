@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/ast/AstTypeObject.hpp>
+#include <ace-c/ast/AstTemplateExpression.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
@@ -37,9 +38,16 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
 void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 {
     SymbolTypePtr_t symbol_type;
-    std::vector<GenericInstanceTypeInfo::Arg> ident_template_params;
 
-    if (!m_template_params.empty()) {
+    // set when this is a generic expression.
+    // if not null when the identifier is stored, it is set to this.
+    std::shared_ptr<AstTemplateExpression> template_expr;
+
+    const bool has_user_assigned = m_assignment != nullptr;
+    const bool has_user_specified_type = m_proto != nullptr;
+    const bool is_generic = !m_template_params.empty();
+
+    if (is_generic) {
         // declare template params in a new scope
         // open the new scope for parameters
         mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
@@ -47,18 +55,30 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         for (auto &param : m_template_params) {
             ASSERT(param != nullptr);
             param->Visit(visitor, mod);
-
-            ASSERT(param->GetIdentifier() != nullptr);
-
-            ident_template_params.push_back(GenericInstanceTypeInfo::Arg {
-                param->GetName(),
-                param->GetIdentifier()->GetSymbolType(),
-                param->GetDefaultValue()
-            });
+        }
+        
+        if (!has_user_assigned) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_generic_expression_requires_assignment,
+                m_location,
+                m_name
+            ));
+        } else {
+            template_expr.reset(new AstTemplateExpression(
+                m_assignment,
+                m_template_params,
+                m_location
+            ));
         }
     }
 
-    if (m_proto == nullptr && m_assignment == nullptr) {
+    // not generic - if user provided an assignment, set 'real assignment' to be what the user specified.
+    if (has_user_assigned) {
+        m_real_assignment = m_assignment;
+    }
+
+    if (!has_user_specified_type && !has_user_assigned) {
         // error; requires either type, or assignment.
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
@@ -67,10 +87,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             m_name
         ));
     } else {
-        if (m_assignment != nullptr) {
-            m_real_assignment = m_assignment;
-        }
-
         // the type_strict flag means that errors will be shown if
         // the assignment type and the user-supplied type differ.
         // it is to be turned off for built-in (default) values
@@ -169,21 +185,20 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
 
         if (m_real_assignment == nullptr) {
+            // no assignment found - set to undefined (instead of a null pointer)
             m_real_assignment.reset(new AstUndefined(m_location));
         }
 
-        if (!m_assignment_already_visited) {
-            // visit assignment
-            m_real_assignment->Visit(visitor, mod);
-        }
+        // visit assignment
+        m_real_assignment->Visit(visitor, mod);
 
-        if (m_assignment != nullptr) {
+        if (has_user_assigned) {
             // has received an explicit assignment
             // make sure type is compatible with assignment
             SymbolTypePtr_t assignment_type = m_real_assignment->GetExprType();
             ASSERT(assignment_type != nullptr);
 
-            if (m_proto != nullptr) {
+            if (has_user_specified_type && !is_generic) { // for generics, dont check compatibility
                 // symbol_type should be the user-specified type
                 symbol_type = SymbolType::GenericPromotion(symbol_type, assignment_type);
                 ASSERT(symbol_type != nullptr);
@@ -229,9 +244,15 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    if (!m_template_params.empty()) {
+    if (is_generic) {
         // close template param scope
         mod->m_scopes.Close();
+
+        // set the real assignment to be the template expression here.
+        // this way if the inner expression gets visited on its own (with no provided arguments)
+        // we can show an error
+        m_real_assignment = template_expr;
+        //symbol_type = BuiltinTypes::UNDEFINED;
     }
 
     AstDeclaration::Visit(visitor, mod);
@@ -241,8 +262,8 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_CONST);
         }
 
-        if (!m_template_params.empty()) {
-            m_identifier->SetTemplateParams(ident_template_params);
+        if (is_generic) {
+            //m_identifier->SetTemplateParams(ident_template_params);
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_GENERIC);
         }
 

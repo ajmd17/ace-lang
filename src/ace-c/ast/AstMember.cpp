@@ -79,29 +79,26 @@ void AstMember::Visit(AstVisitor *visitor, Module *mod)
             }
         }
 
-        if (const AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_target.get())) {
-            if (const Identifier *ident = as_ident->GetProperties().GetIdentifier()) {
-                if (const auto current_value = ident->GetCurrentValue()) {
-                    if (AstTypeObject *as_type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
-                        ASSERT(as_type_object->GetHeldType() != nullptr);
-                        auto instance_type = as_type_object->GetHeldType();
+        const AstExpression *value_of = m_target->GetValueOf();
+        ASSERT(value_of != nullptr);
 
-                        // get member index from name
-                        for (size_t i = 0; i < instance_type->GetMembers().size(); i++) {
-                            const SymbolMember_t &mem = instance_type->GetMembers()[i];
+        if (const AstTypeObject *as_type_object = dynamic_cast<const AstTypeObject*>(value_of)) {
+            ASSERT(as_type_object->GetHeldType() != nullptr);
+            auto instance_type = as_type_object->GetHeldType();
 
-                            if (std::get<0>(mem) == m_field_name) {
-                                m_found_index = i;
-                                field_type = std::get<1>(mem);
-                                break;
-                            }
-                        }
+            // get member index from name
+            for (size_t i = 0; i < instance_type->GetMembers().size(); i++) {
+                const SymbolMember_t &mem = instance_type->GetMembers()[i];
 
-                        if (m_found_index != -1) {
-                            break;
-                        }
-                    }
+                if (std::get<0>(mem) == m_field_name) {
+                    m_found_index = i;
+                    field_type = std::get<1>(mem);
+                    break;
                 }
+            }
+
+            if (m_found_index != -1) {
+                break;
             }
         }
 

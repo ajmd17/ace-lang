@@ -25,7 +25,6 @@ struct BuiltinTypes {
     static const SymbolTypePtr_t NULL_TYPE;
     static const SymbolTypePtr_t EVENT;
     static const SymbolTypePtr_t EVENT_IMPL;
-    static const SymbolTypePtr_t EVENT_ARRAY;
     static const SymbolTypePtr_t MODULE_INFO;
     static const SymbolTypePtr_t GENERATOR;
     static const SymbolTypePtr_t BOXED_TYPE;

@@ -31,37 +31,49 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             ASSERT(m_properties.GetIdentifier() != nullptr);
 
             // clone the AST node so we don't double-visit
-            m_inline_value = CloneAstNode(m_properties.GetIdentifier()->GetCurrentValue());
+            if (auto current_value = m_properties.GetIdentifier()->GetCurrentValue()) {
+                m_inline_value = CloneAstNode(current_value);
+            }
 
             // if alias or const, load direct value.
             // if it's an alias then it will just refer to whatever other variable
             // is being referenced. if it is const, load the direct value held in the variable
             const bool is_alias = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_ALIAS;
             const bool is_mixin = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_MIXIN;
+            const bool is_generic = m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_GENERIC;
 
-            ASSERT(AstIdentifier::GetExprType() != nullptr);
-            const bool is_const = AstIdentifier::GetExprType()->IsConstType();
+            const SymbolTypePtr_t ident_type = m_properties.GetIdentifier()->GetSymbolType();
+            ASSERT(ident_type != nullptr);
 
-            bool force_inline = false;
+            const bool is_const = ident_type->IsConstType();
+            const bool force_inline = is_alias || is_mixin;
 
             // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
             // normal way.
-            if (is_alias || is_mixin) {
-                force_inline = true;
+            if (force_inline) {
+                ASSERT(m_inline_value != nullptr);
             }
 
-            m_should_inline = m_inline_value != nullptr && (force_inline || is_const);
+            m_should_inline = force_inline || is_const;
+
+            if (m_inline_value == nullptr) {
+                m_should_inline = false;
+            }
 
             if (m_should_inline) {
                 // set access options for this variable based on those of the current value
-                AstExpression::m_access_options = m_inline_value->GetAccessOptions();
+                m_access_options = m_inline_value->GetAccessOptions();
 
                 // if alias, accept the current value instead
                 m_inline_value->Visit(visitor, mod);
             }
 
+            // if it is alias or mixin, update symbol type of this expression
             if (force_inline) {
-                ASSERT(m_inline_value != nullptr);
+                if (SymbolTypePtr_t inline_value_type = m_inline_value->GetExprType()) {
+                    // set symbol type to match alias inline value
+                    m_properties.GetIdentifier()->SetSymbolType(inline_value_type);
+                }
             } else {
                 if (m_should_inline) {
                     if (const SymbolTypePtr_t value_type = m_inline_value->GetExprType()) {
@@ -237,4 +249,20 @@ bool AstVariable::MayHaveSideEffects() const
 {
     // a simple variable reference does not cause side effects
     return false;
+}
+
+SymbolTypePtr_t AstVariable::GetExprType() const
+{
+    if (m_should_inline) {
+        ASSERT(m_inline_value != nullptr);
+        return m_inline_value->GetExprType();
+    }
+
+    if (m_properties.GetIdentifier() != nullptr) {
+        if (m_properties.GetIdentifier()->GetSymbolType() != nullptr) {
+            return m_properties.GetIdentifier()->GetSymbolType();
+        }
+    }
+
+    return BuiltinTypes::UNDEFINED;
 }

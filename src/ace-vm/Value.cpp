@@ -162,12 +162,12 @@ ImmutableString Value::ToString() const
                 array->GetRepresentation(ss, true);
                 const std::string &str = ss.str();
                 return ImmutableString(str.c_str());
-            } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
+            } /*else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 std::stringstream ss;
                 object->GetRepresentation(ss, true);
                 const std::string &str = ss.str();
                 return ImmutableString(str.c_str());
-            } else {
+            } */ else {
                 // return memory address as string
                 int n = snprintf(buf, buf_size, "%p", (void*)m_value.ptr);
                 return ImmutableString(buf, n);

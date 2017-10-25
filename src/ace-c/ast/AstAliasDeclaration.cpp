@@ -40,11 +40,32 @@ void AstAliasDeclaration::Visit(AstVisitor *visitor, Module *mod)
         ));
     } else {
         Scope &scope = mod->m_scopes.Top();
-        m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name, FLAG_ALIAS);
+        /*m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name, FLAG_ALIAS);
         ASSERT(m_identifier != nullptr);
 
         m_identifier->SetSymbolType(m_aliasee->GetExprType());
-        m_identifier->SetCurrentValue(m_aliasee);
+        m_identifier->SetCurrentValue(m_aliasee);*/
+
+        if (AstIdentifier *aliasee_ident = dynamic_cast<AstIdentifier*>(m_aliasee.get())) {
+            ASSERT(aliasee_ident->GetProperties().GetIdentifier() != nullptr);
+
+            m_identifier = scope.GetIdentifierTable().AddAlias(m_name, aliasee_ident->GetProperties().GetIdentifier());
+            ASSERT(m_identifier != nullptr);
+        } else {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_WARN,
+                Msg_alias_must_be_identifier,
+                m_location,
+                m_name
+            ));
+
+            // work like a mixin
+            m_identifier = scope.GetIdentifierTable().AddIdentifier(m_name, FLAG_ALIAS);
+            ASSERT(m_identifier != nullptr);
+
+            m_identifier->SetSymbolType(m_aliasee->GetExprType());
+            m_identifier->SetCurrentValue(m_aliasee);
+        }
     }
 }
 

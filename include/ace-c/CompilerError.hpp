@@ -22,6 +22,7 @@ enum ErrorMessage {
     Msg_illegal_operator,
     Msg_invalid_operator_for_type,
     Msg_const_modified,
+    Msg_const_missing_assignment,
     Msg_cannot_modify_rvalue,
     Msg_prohibited_action_attribute,
     Msg_unbalanced_expression,
@@ -82,8 +83,10 @@ enum ErrorMessage {
     Msg_generic_parameters_missing,
     Msg_generic_parameter_redeclared,
     Msg_generic_expression_no_arguments_provided,
+    Msg_generic_expression_must_be_const,
     Msg_generic_expression_invalid_arguments,
     Msg_generic_expression_requires_assignment,
+    Msg_generic_argument_must_be_literal,
     Msg_not_a_data_member,
 
     Msg_bitwise_operands_must_be_int,

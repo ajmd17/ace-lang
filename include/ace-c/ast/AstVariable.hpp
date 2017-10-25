@@ -13,6 +13,7 @@ public:
     virtual std::unique_ptr<Buildable> Build(AstVisitor *visitor, Module *mod) override;
     virtual void Optimize(AstVisitor *visitor, Module *mod) override;
     
+    virtual bool IsLiteral() const override;
     virtual Pointer<AstStatement> Clone() const override;
 
     virtual Tribool IsTrue() const override;

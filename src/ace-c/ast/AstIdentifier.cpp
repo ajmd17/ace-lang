@@ -77,16 +77,18 @@ int AstIdentifier::GetStackOffset(int stack_size) const
 const AstExpression *AstIdentifier::GetValueOf() const
 {
     if (const Identifier *ident = m_properties.GetIdentifier()) {
-        if (const auto current_value = ident->GetCurrentValue()) {
-            if (AstIdentifier *nested_identifier = dynamic_cast<AstIdentifier*>(current_value.get())) {
-                return nested_identifier->GetValueOf();
-            } else {
-                return current_value.get();
+        if (ident->GetFlags() & IdentifierFlags::FLAG_CONST) {
+            if (const auto current_value = ident->GetCurrentValue()) {
+                if (AstIdentifier *nested_identifier = dynamic_cast<AstIdentifier*>(current_value.get())) {
+                    return nested_identifier->GetValueOf();
+                } else {
+                    return current_value.get();
+                }
             }
         }
     }
 
-    return nullptr;
+    return this;
 }
 
 AstTypeObject *AstIdentifier::ExtractTypeObject() const

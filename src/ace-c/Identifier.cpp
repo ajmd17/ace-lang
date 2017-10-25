@@ -2,13 +2,15 @@
 
 #include <ace-c/type-system/BuiltinTypes.hpp>
 
-Identifier::Identifier(const std::string &name, int index, int flags)
+Identifier::Identifier(const std::string &name, int index, int flags, Identifier *aliasee)
     : m_name(name),
       m_index(index),
       m_stack_location(0),
       m_usecount(0),
       m_flags(flags),
-      m_symbol_type(BuiltinTypes::UNDEFINED)
+      m_aliasee(aliasee),
+      m_symbol_type(BuiltinTypes::UNDEFINED),
+      m_is_reassigned(false)
 {
 }
 
@@ -18,7 +20,9 @@ Identifier::Identifier(const Identifier &other)
       m_stack_location(other.m_stack_location),
       m_usecount(other.m_usecount),
       m_flags(other.m_flags),
+      m_aliasee(other.m_aliasee),
       m_current_value(other.m_current_value),
-      m_symbol_type(other.m_symbol_type)
+      m_symbol_type(other.m_symbol_type),
+      m_is_reassigned(false)
 {
 }

@@ -43,7 +43,6 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
 
         if (is_type) {
             const AstExpression *value_of = m_proto->GetValueOf();
-            ASSERT(value_of != nullptr);
 
             // FIXME: this dynamic_casting stuff is nasty and we need a better way other than GetValueOf()
             // and such. having 2 separate ways of getting expression types (AstTypeObject vs. the internal SymbolType)
@@ -58,6 +57,10 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                     m_prototype_type = std::get<1>(proto_member);
                     m_default_value = std::get<2>(proto_member);
                 }
+            } else {
+                // dynamic type?
+                m_symbol_type = BuiltinTypes::ANY;
+                m_prototype_type = BuiltinTypes::ANY;
             }
         } else {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(

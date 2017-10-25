@@ -2,6 +2,7 @@
 #include <ace-c/ast/AstTemplateExpression.hpp>
 #include <ace-c/ast/AstAliasDeclaration.hpp>
 #include <ace-c/ast/AstMixinDeclaration.hpp>
+#include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/ast/AstBlock.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
@@ -70,19 +71,41 @@ void AstTemplateInstantiation::Visit(AstVisitor *visitor, Module *mod)
             visitor, mod, generic_param_types, m_generic_args, m_location
         );
 
+
+        m_block.reset(new AstBlock({}, m_location));
+
         // there can be more because of varargs
         if (args_substituted.size() >= generic_parameters.size()) {
-            m_mixin_overrides.reserve(generic_parameters.size());
+            //m_mixin_overrides.reserve(generic_parameters.size());
+            //m_param_overrides.reserve(generic_parameters.size());
             
             for (size_t i = 0; i < generic_parameters.size(); i++) {
                 ASSERT(args_substituted[i]->GetExpr() != nullptr);
 
+                // if (!args_substituted[i]->GetExpr()->IsLiteral()) {
+                //     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                //         LEVEL_ERROR,
+                //         Msg_generic_argument_must_be_literal,
+                //         args_substituted[i]->GetLocation()
+                //     ));
+                // }
+
                 if (args_substituted[i]->GetExpr()->GetExprType() != BuiltinTypes::UNDEFINED) {
                     // declare aliases for all generic params
                     // these will cause the previous decls to be shadowed
-                    m_mixin_overrides.push_back(std::shared_ptr<AstAliasDeclaration>(new AstAliasDeclaration(
+                    // m_mixin_overrides.push_back(std::shared_ptr<AstAliasDeclaration>(new AstAliasDeclaration(
+                    //     generic_parameters[i]->GetName(),
+                    //     CloneAstNode(args_substituted[i]->GetExpr()), // extract value from AstArgument
+                    //     args_substituted[i]->GetLocation()
+                    // )));
+
+                    /*m_param_overrides.push_back*/
+                    m_block->AddChild(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
                         generic_parameters[i]->GetName(),
-                        CloneAstNode(args_substituted[i]->GetExpr()), // extract value from AstArgument
+                        nullptr,
+                        CloneAstNode(args_substituted[i]->GetExpr()),
+                        {},
+                        true, // const
                         args_substituted[i]->GetLocation()
                     )));
                 }
@@ -96,14 +119,16 @@ void AstTemplateInstantiation::Visit(AstVisitor *visitor, Module *mod)
                 )));*/
             }
 
-            for (auto &it : m_mixin_overrides) {
-                it->Visit(visitor, mod);
-            }
+            // for (auto &it : m_param_overrides/*m_mixin_overrides*/) {
+            //     it->Visit(visitor, mod);
+            // }
 
             ASSERT(template_expr->GetInnerExpression() != nullptr);
 
-            m_inst_expr = CloneAstNode(template_expr->GetInnerExpression());
-            m_inst_expr->Visit(visitor, mod);
+            // m_inst_expr = CloneAstNode(template_expr->GetInnerExpression());
+            // m_inst_expr->Visit(visitor, mod);
+            m_block->AddChild(CloneAstNode(template_expr->GetInnerExpression()));
+            m_block->Visit(visitor, mod);
 
             // TODO: Cache instantiations so we don't create a new one for every set of arguments
         }
@@ -125,13 +150,17 @@ std::unique_ptr<Buildable> AstTemplateInstantiation::Build(AstVisitor *visitor, 
 
     std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 
-    for (auto &it : m_mixin_overrides) {
-        chunk->Append(it->Build(visitor, mod));
-    }
+    // for (auto &it : m_param_overrides/*m_mixin_overrides*/) {
+    //     chunk->Append(it->Build(visitor, mod));
+    // }
 
-    // visit the expression
-    ASSERT(m_inst_expr != nullptr);
-    chunk->Append(m_inst_expr->Build(visitor, mod));
+    // // visit the expression
+    // ASSERT(m_inst_expr != nullptr);
+    // chunk->Append(m_inst_expr->Build(visitor, mod));
+
+    ASSERT(m_block != nullptr);
+    chunk->Append(m_block->Build(visitor, mod));
+
 
     // pop stack for all mixin values
     //chunk->Append(Compiler::PopStack(visitor, m_mixin_overrides.size()));
@@ -144,13 +173,16 @@ void AstTemplateInstantiation::Optimize(AstVisitor *visitor, Module *mod)
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
 
-    for (auto &it : m_mixin_overrides) {
-        it->Optimize(visitor, mod);
-    }
+    // for (auto &it : m_param_overrides/*m_mixin_overrides*/) {
+    //     it->Optimize(visitor, mod);
+    // }
 
-    // optimize the expression
-    ASSERT(m_inst_expr != nullptr);
-    m_inst_expr->Optimize(visitor, mod);
+    // // optimize the expression
+    // ASSERT(m_inst_expr != nullptr);
+    // m_inst_expr->Optimize(visitor, mod);
+
+    ASSERT(m_block != nullptr);
+    m_block->Optimize(visitor, mod);
 }
 
 Pointer<AstStatement> AstTemplateInstantiation::Clone() const
@@ -170,9 +202,10 @@ bool AstTemplateInstantiation::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstTemplateInstantiation::GetExprType() const
 {
-    if (m_inst_expr != nullptr) {
-        return m_inst_expr->GetExprType();
-    }
+    // if (m_inst_expr != nullptr) {
+    //     return m_inst_expr->GetExprType();
+    // }
+    return BuiltinTypes::ANY;
 
     return BuiltinTypes::UNDEFINED;
 }

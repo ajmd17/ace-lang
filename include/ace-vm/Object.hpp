@@ -15,6 +15,7 @@ namespace ace {
 namespace vm {
 
 struct Member {
+    char name[255];
     uint32_t hash;
     Value value;
 };

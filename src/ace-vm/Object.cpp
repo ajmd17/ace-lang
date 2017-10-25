@@ -217,10 +217,12 @@ void Object::GetRepresentation(std::stringstream &ss, bool add_type_name) const
 {
     const size_t size = GetSize();
 
-    ss << '{';
+    ss << "{ ";
 
     for (size_t i = 0; i < size; i++) {
         vm::Member &mem = m_members[i];
+
+        ss << mem.name << ": ";
 
         if (mem.value.m_type == Value::HEAP_POINTER &&
             mem.value.m_value.ptr != nullptr &&
@@ -231,11 +233,11 @@ void Object::GetRepresentation(std::stringstream &ss, bool add_type_name) const
         }
 
         if (i != size - 1) {
-            ss << ',';
+            ss << ", ";
         }
     }
 
-    ss << '}';
+    ss << " }";
 }
 
 } // namespace vm

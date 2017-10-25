@@ -1189,6 +1189,27 @@ void Global_call(ace::sdk::Params params)
     );
 }
 
+void Global_inspect(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    // create heap value for string
+    vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+    ASSERT(ptr != nullptr);
+
+    std::stringstream ss;
+    params.args[0]->ToRepresentation(ss);
+    const std::string &str = ss.str();
+    ptr->Assign(vm::ImmutableString(str.c_str()));
+
+    vm::Value res;
+    // assign register value to the allocated object
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = ptr;
+
+    ACE_RETURN(res);
+}
+
 void Global_spawn_thread(ace::sdk::Params params)
 {
     ACE_CHECK_ARGS(>=, 1);
@@ -1989,6 +2010,9 @@ void BuildLibraries(
                 }
             ) }
         }, Global_call)
+        .Function("inspect", BuiltinTypes::STRING, {
+            { "obj", BuiltinTypes::ANY }
+        }, Global_inspect)
         .Function("spawn_thread", BuiltinTypes::ANY, {
             { "f", BuiltinTypes::FUNCTION },
             { "args", SymbolType::GenericInstance(

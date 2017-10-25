@@ -36,9 +36,13 @@ int IdentifierTable::CountUsedVariables() const
 Identifier *IdentifierTable::AddAlias(const std::string &name, Identifier *aliasee)
 {
     ASSERT(aliasee != nullptr);
-    
-    m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(name,
-        aliasee->GetIndex(), aliasee->GetFlags() | FLAG_ALIAS)));
+
+    m_identifiers.push_back(std::shared_ptr<Identifier>(new Identifier(
+        name,
+        aliasee->GetIndex(),
+        aliasee->GetFlags() | FLAG_ALIAS,
+        aliasee
+    )));
     
     return m_identifiers.back().get();
 }
@@ -75,7 +79,7 @@ Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
     for (auto &ident : m_identifiers) {
         if (ident != nullptr) {
             if (ident->GetName() == name) {
-                return ident.get();
+                return ident.get()->Unalias();
             }
         }
     }

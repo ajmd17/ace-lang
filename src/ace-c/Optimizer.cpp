@@ -12,8 +12,11 @@ std::shared_ptr<AstConstant> Optimizer::ConstantFold(
     Operators op_type,
     AstVisitor *visitor)
 {
-    AstConstant *left_as_constant  = dynamic_cast<AstConstant*>(left.get());
-    AstConstant *right_as_constant = dynamic_cast<AstConstant*>(right.get());
+    ASSERT(left != nullptr);
+    ASSERT(right != nullptr);
+
+    const AstConstant *left_as_constant  = dynamic_cast<const AstConstant*>(left->GetValueOf());
+    const AstConstant *right_as_constant = dynamic_cast<const AstConstant*>(right->GetValueOf());
 
     std::shared_ptr<AstConstant> result;
 

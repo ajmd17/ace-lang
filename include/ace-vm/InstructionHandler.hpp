@@ -16,6 +16,7 @@
 #include <common/hasher.hpp>
 
 #include <stdint.h>
+#include <cstring>
 
 namespace ace {
 namespace vm {
@@ -185,6 +186,7 @@ struct InstructionHandler {
         Member *members = new Member[size];
         
         for (size_t i = 0; i < size; i++) {
+            std::strncpy(members[i].name, names[i], 255);
             members[i].hash = hash_fnv_1(names[i]);
         }
 

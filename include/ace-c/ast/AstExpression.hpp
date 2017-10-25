@@ -31,6 +31,10 @@ public:
     
     virtual Pointer<AstStatement> Clone() const override = 0;
 
+    /**
+     * Overridden by derived classes to allow "constexpr"-type functionality.
+     */
+    virtual bool IsLiteral() const { return false; }
     virtual const AstExpression *GetValueOf() const { return this; }
 
     /** Determine whether the expression would evaluate to true.

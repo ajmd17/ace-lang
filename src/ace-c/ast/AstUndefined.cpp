@@ -42,7 +42,7 @@ SymbolTypePtr_t AstUndefined::GetExprType() const
     return BuiltinTypes::UNDEFINED;
 }
 
-std::shared_ptr<AstConstant> AstUndefined::HandleOperator(Operators op_type, AstConstant *right) const
+std::shared_ptr<AstConstant> AstUndefined::HandleOperator(Operators op_type, const AstConstant *right) const
 {
     return nullptr;
 }

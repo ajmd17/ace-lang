@@ -4,6 +4,7 @@
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstArgumentList.hpp>
 #include <ace-c/ast/AstIdentifier.hpp>
+#include <ace-c/ast/AstBlock.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 #include <string>
@@ -34,8 +35,10 @@ private:
     std::vector<std::shared_ptr<AstArgument>> m_generic_args;
 
     // set while analyzing
-    std::shared_ptr<AstExpression> m_inst_expr;
-    std::vector<std::shared_ptr<AstAliasDeclaration>> m_mixin_overrides;
+    //std::shared_ptr<AstExpression> m_inst_expr;
+    //std::vector<std::shared_ptr<AstAliasDeclaration>> m_mixin_overrides;
+    //std::vector<std::shared_ptr<AstVariableDeclaration>> m_param_overrides;
+    std::shared_ptr<AstBlock> m_block;
 
     inline Pointer<AstTemplateInstantiation> CloneImpl() const
     {

@@ -107,7 +107,8 @@ private:
     std::shared_ptr<AstArgument> ParseArgument(std::shared_ptr<AstExpression> expr);
     std::shared_ptr<AstArgumentList> ParseArguments(bool require_parentheses = true,
         const std::shared_ptr<AstExpression> &expr = nullptr);
-    std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target);
+    std::shared_ptr<AstCallExpression> ParseCallExpression(std::shared_ptr<AstExpression> target,
+        bool require_parentheses = true);
     std::shared_ptr<AstModuleAccess> ParseModuleAccess();
     std::shared_ptr<AstModuleProperty> ParseModuleProperty();
     std::shared_ptr<AstMember> ParseMemberExpression(std::shared_ptr<AstExpression> target);

@@ -23,7 +23,7 @@ static std::shared_ptr<AstConstant> ConstantFold(
 {
     std::shared_ptr<AstConstant> result;
 
-    if (AstConstant *target_as_constant = dynamic_cast<AstConstant*>(target.get())) {
+    if (const AstConstant *target_as_constant = dynamic_cast<const AstConstant*>(target.get())) {
         result = target_as_constant->HandleOperator(op_type, nullptr);
     }
 

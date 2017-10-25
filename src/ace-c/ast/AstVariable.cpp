@@ -13,7 +13,8 @@
 
 #include <iostream>
 
-AstVariable::AstVariable(const std::string &name,
+AstVariable::AstVariable(
+    const std::string &name,
     const SourceLocation &location)
     : AstIdentifier(name, location),
       m_should_inline(false)
@@ -45,7 +46,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             const SymbolTypePtr_t ident_type = m_properties.GetIdentifier()->GetSymbolType();
             ASSERT(ident_type != nullptr);
 
-            const bool is_const = ident_type->IsConstType();
+            const bool is_const = ident_type->IsConstType() || (!is_generic && (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST));
             const bool force_inline = is_alias || is_mixin;
 
             // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
@@ -75,16 +76,14 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                     m_properties.GetIdentifier()->SetSymbolType(inline_value_type);
                 }
             } else {
-                if (m_should_inline) {
-                    if (const SymbolTypePtr_t value_type = m_inline_value->GetExprType()) {
-                        // only load basic types inline.
-                        if (value_type->GetTypeClass() != SymbolTypeClass::TYPE_BUILTIN) {
-                            m_should_inline = false;
-                        }
-                    }
+                if (m_should_inline && !m_inline_value->IsLiteral()) {
+                    m_should_inline = false;
                 }
 
-                m_properties.GetIdentifier()->IncUseCount();
+                // increase useage count
+                if (!m_should_inline) {
+                    m_properties.GetIdentifier()->IncUseCount();
+                }
 
                 if (m_properties.IsInFunction()) {
                     if (m_properties.IsInPureFunction()) {
@@ -249,6 +248,23 @@ bool AstVariable::MayHaveSideEffects() const
 {
     // a simple variable reference does not cause side effects
     return false;
+}
+
+bool AstVariable::IsLiteral() const
+{
+    const Identifier *ident = m_properties.GetIdentifier();
+    ASSERT(ident != nullptr);
+
+    const Identifier *ident_unaliased = ident->Unalias();
+    ASSERT(ident_unaliased != nullptr);
+
+    const SymbolTypePtr_t ident_type = ident_unaliased->GetSymbolType();
+    ASSERT(ident_type != nullptr);
+
+    const bool is_const = ident_type->IsConstType();
+    const bool is_generic = ident_unaliased->GetFlags() && IdentifierFlags::FLAG_GENERIC;
+
+    return is_const || is_generic;
 }
 
 SymbolTypePtr_t AstVariable::GetExprType() const

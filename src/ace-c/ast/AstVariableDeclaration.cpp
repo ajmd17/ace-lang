@@ -2,6 +2,7 @@
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/ast/AstTypeObject.hpp>
 #include <ace-c/ast/AstTemplateExpression.hpp>
+#include <ace-c/ast/AstBlockExpression.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Keywords.hpp>
 #include <ace-c/Configuration.hpp>
@@ -47,7 +48,26 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
     const bool has_user_specified_type = m_proto != nullptr;
     const bool is_generic = !m_template_params.empty();
 
+    if (m_is_const) {
+        if (!has_user_assigned) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_const_missing_assignment,
+                m_location
+            ));
+        }
+    }
+
     if (is_generic) {
+        if (!m_is_const) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_generic_expression_must_be_const,
+                m_location,
+                m_name
+            ));
+        }
+
         // declare template params in a new scope
         // open the new scope for parameters
         mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
@@ -56,21 +76,12 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             ASSERT(param != nullptr);
             param->Visit(visitor, mod);
         }
-        
-        if (!has_user_assigned) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_generic_expression_requires_assignment,
-                m_location,
-                m_name
-            ));
-        } else {
-            template_expr.reset(new AstTemplateExpression(
-                m_assignment,
-                m_template_params,
-                m_location
-            ));
-        }
+
+        template_expr.reset(new AstTemplateExpression(
+            m_assignment,
+            m_template_params,
+            m_location
+        ));
     }
 
     // not generic - if user provided an assignment, set 'real assignment' to be what the user specified.

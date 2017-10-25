@@ -257,7 +257,7 @@ bool Parser::ExpectEndOfStmt()
 {
     const SourceLocation location = CurrentLocation();
 
-    if (!Match(TK_NEWLINE, true) && !Match(TK_SEMICOLON, true)) {
+    if (!Match(TK_NEWLINE, true) && !Match(TK_SEMICOLON, true) && !Match(TK_CLOSE_BRACE, false)) {
         m_compilation_unit->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
             Msg_expected_end_of_statement,
@@ -265,11 +265,11 @@ bool Parser::ExpectEndOfStmt()
         ));
 
         // skip until end of statement, end of line, or end of file.
-        do {
-            m_token_stream->Next();
-        } while (m_token_stream->HasNext() &&
-            !Match(TK_NEWLINE, true) &&
-            !Match(TK_SEMICOLON, true));
+        // do {
+        //     m_token_stream->Next();
+        // } while (m_token_stream->HasNext() &&
+        //     !Match(TK_NEWLINE, true) &&
+        //     !Match(TK_SEMICOLON, true));
 
         return false;
     }
@@ -623,21 +623,27 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
         if (Match(TK_DOT)) {
             expr = ParseMemberExpression(expr);
         }
+
         if (Match(TK_OPEN_BRACKET)) {
             expr = ParseArrayAccess(expr);
         }
+
         if (Match(TK_OPEN_PARENTH)) {
             expr = ParseCallExpression(expr);
         }
+
         if (!override_fat_arrows && Match(TK_FAT_ARROW)) {
             expr = ParseActionExpression(expr);
         }
+
         if (!override_commas && Match(TK_COMMA)) {
             expr = ParseTupleExpression(expr);
         }
+
         /*if (!override_angle_brackets && MatchOperator("<")) {
             expr = ParseAngleBrackets(expr);
         }*/
+
         if (MatchKeyword(Keyword_has)) {
             expr = ParseHasExpression(expr);
         }
@@ -654,7 +660,7 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
 
     Expect(TK_OPEN_PARENTH, true);
 
-    if (!Match(TK_CLOSE_PARENTH) && !Match(TK_IDENT) && !MatchKeyword(Keyword_self) && !MatchKeyword(Keyword_const)) {
+    if (!Match(TK_CLOSE_PARENTH) && !Match(TK_IDENT) && !Match(TK_KEYWORD)) {
         expr = ParseExpression(true);
         Expect(TK_CLOSE_PARENTH, true);
     } else {
@@ -737,7 +743,6 @@ std::shared_ptr<AstExpression> Parser::ParseParentheses()
 
 std::shared_ptr<AstExpression> Parser::ParseAngleBrackets(std::shared_ptr<AstExpression> target)
 {
-    std::cout << "parse angle brackets\n";
     SourceLocation location = CurrentLocation();
     int before_pos = m_token_stream->GetPosition();
 
@@ -917,7 +922,8 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
     return nullptr;
 }
 
-std::shared_ptr<AstArgumentList> Parser::ParseArguments(bool require_parentheses,
+std::shared_ptr<AstArgumentList> Parser::ParseArguments(
+    bool require_parentheses,
     const std::shared_ptr<AstExpression> &expr)
 {
     const SourceLocation location = CurrentLocation();
@@ -966,10 +972,10 @@ std::shared_ptr<AstArgumentList> Parser::ParseArguments(bool require_parentheses
     ));
 }
 
-std::shared_ptr<AstCallExpression> Parser::ParseCallExpression(std::shared_ptr<AstExpression> target)
+std::shared_ptr<AstCallExpression> Parser::ParseCallExpression(std::shared_ptr<AstExpression> target, bool require_parentheses)
 {
     if (target != nullptr) {
-        if (auto args = ParseArguments()) {
+        if (auto args = ParseArguments(require_parentheses)) {
             return std::shared_ptr<AstCallExpression>(new AstCallExpression(
                 target,
                 args->GetArguments(),
@@ -1994,12 +2000,11 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
         }
 
         bool is_const = false;
-
-        if (MatchKeyword(Keyword_const, true)) {
+        if (MatchKeyword(Keyword_const, false)) {
             is_const = true;
         }
         
-        if ((token = MatchKeyword(Keyword_self, true)) || (token = Expect(TK_IDENT, true))) {
+        if (token = ExpectIdentifier(true, true)) {
             std::shared_ptr<AstPrototypeSpecification> type_spec;
             std::shared_ptr<AstExpression> default_param;
 
@@ -2182,8 +2187,7 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                                     nullptr,
                                     expr,
                                     {}, // TODO generic functions
-                                    true, // (free functions are also implicitly const,
-                                        // so set the member to be const as well for consistency)
+                                    false,
                                     identifier.GetLocation()
                                 ));
 

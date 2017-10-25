@@ -19,7 +19,7 @@ public:
     virtual ace::afloat32 FloatValue() const override;
     virtual SymbolTypePtr_t GetExprType() const override;
 
-    virtual std::shared_ptr<AstConstant> HandleOperator(Operators op_type, AstConstant *right) const override;
+    virtual std::shared_ptr<AstConstant> HandleOperator(Operators op_type, const AstConstant *right) const override;
 
 private:
     ace::aint32 m_value;

@@ -43,6 +43,7 @@ const std::map<std::string, Keywords> Keyword::keyword_strings = {
     { "valueof",  Keyword_valueof },
     { "typeof",   Keyword_typeof },
     { "$meta",    Keyword_meta },
+    { "syntax",   Keyword_syntax }
 };
 
 bool Keyword::IsKeyword(const std::string &str)

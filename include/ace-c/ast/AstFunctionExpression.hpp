@@ -14,7 +14,7 @@
 class AstFunctionExpression : public AstExpression {
 public:
     AstFunctionExpression(const std::vector<std::shared_ptr<AstParameter>> &parameters,
-        const std::shared_ptr<AstTypeSpecification> &type_specification,
+        const std::shared_ptr<AstTypeSpecification> &return_type_specification,
         const std::shared_ptr<AstBlock> &block,
         bool is_async,
         bool is_pure,
@@ -37,7 +37,7 @@ public:
 
 protected:
     std::vector<std::shared_ptr<AstParameter>> m_parameters;
-    std::shared_ptr<AstTypeSpecification> m_type_specification;
+    std::shared_ptr<AstTypeSpecification> m_return_type_specification;
     std::shared_ptr<AstBlock> m_block;
     bool m_is_async;
     bool m_is_pure;
@@ -67,7 +67,7 @@ protected:
     {
         return Pointer<AstFunctionExpression>(new AstFunctionExpression(
             CloneAllAstNodes(m_parameters),
-            CloneAstNode(m_type_specification),
+            CloneAstNode(m_return_type_specification),
             CloneAstNode(m_block),
             m_is_async,
             m_is_pure,

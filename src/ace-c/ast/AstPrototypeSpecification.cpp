@@ -35,8 +35,8 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_proto->GetExprType() != nullptr);
     SymbolTypePtr_t constructor_type = m_proto->GetExprType();
 
-    m_symbol_type = BuiltinTypes::UNDEFINED;
-    m_prototype_type = BuiltinTypes::UNDEFINED;
+    m_symbol_type = BuiltinTypes::ANY; // defaults to dynamic type.
+    m_prototype_type = BuiltinTypes::ANY;
 
     if (constructor_type != BuiltinTypes::ANY) {
         const bool is_type = constructor_type == BuiltinTypes::TYPE_TYPE;
@@ -50,17 +50,16 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 ASSERT(type_obj->GetHeldType() != nullptr);
                 m_symbol_type = type_obj->GetHeldType();
 
-                //m_default_value = m_symbol_type->GetPrototypeValue();
-
                 SymbolMember_t proto_member;
                 if (m_symbol_type->FindMember("$proto", proto_member)) {
                     m_prototype_type = std::get<1>(proto_member);
-                    m_default_value = std::get<2>(proto_member);
+
+                    // only give default value IFF it is a built-in type
+                    // this is to prevent huge prototypes being inlined.
+                    if (m_prototype_type->GetTypeClass() == TYPE_BUILTIN) {
+                        m_default_value = std::get<2>(proto_member);
+                    }
                 }
-            } else {
-                // dynamic type?
-                m_symbol_type = BuiltinTypes::ANY;
-                m_prototype_type = BuiltinTypes::ANY;
             }
         } else {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
@@ -70,10 +69,7 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 constructor_type->GetName()
             ));
         }
-    } else {
-        m_symbol_type = BuiltinTypes::ANY;
-        m_prototype_type = BuiltinTypes::ANY;
-    }
+    } // if not, it is a dynamic type
 }
 
 std::unique_ptr<Buildable> AstPrototypeSpecification::Build(AstVisitor *visitor, Module *mod)

@@ -35,6 +35,7 @@ public:
 
     void MarkLabel(LabelId label_id);
     void AddFixup(LabelId label_id, size_t offset = 0);
+
     std::vector<std::uint8_t> &Bake();
 
 private:

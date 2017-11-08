@@ -417,6 +417,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseYieldStatement();
         } else if (MatchKeyword(Keyword_meta, false)) {
             res = ParseMetaBlock();
+        } else if (MatchKeyword(Keyword_syntax, false)) {
+            res = ParseSyntaxDefinition();
         } else {
             res = ParseExpression();
         }
@@ -1445,7 +1447,7 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool override_commas,
 
 std::shared_ptr<AstPrototypeSpecification> Parser::ParsePrototypeSpecification()
 {
-    if (auto term = ParseTerm()) {
+    if (auto term = ParseTerm(true/* override commas */)) {
         return std::shared_ptr<AstPrototypeSpecification>(new AstPrototypeSpecification(
             term,
             term->GetLocation()
@@ -2441,6 +2443,39 @@ std::shared_ptr<AstMetaBlock> Parser::ParseMetaBlock()
                 location
             ));
         }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstSyntaxDefinition> Parser::ParseSyntaxDefinition()
+{
+    const SourceLocation location = CurrentLocation();
+
+    if (Token token = ExpectKeyword(Keyword_syntax, true)) {
+        const std::shared_ptr<AstString> syntax_string = ParseStringLiteral();
+        
+        if (!syntax_string) {
+            return nullptr;
+        }
+        
+        const Token op = ExpectOperator("=", true);
+        
+        if (!op) {
+            return nullptr;
+        }
+        
+        const std::shared_ptr<AstString> transform_string = ParseStringLiteral();
+
+        if (!transform_string) {
+            return nullptr;
+        }
+
+        return std::shared_ptr<AstSyntaxDefinition>(new AstSyntaxDefinition(
+            syntax_string,
+            transform_string,
+            location
+        ));
     }
 
     return nullptr;

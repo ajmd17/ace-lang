@@ -112,44 +112,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             ASSERT(m_proto->GetHeldType() != nullptr);
             symbol_type = m_proto->GetHeldType();
 
-            std::shared_ptr<AstExpression> default_value = m_proto->GetDefaultValue();
-
-            /*ASSERT(m_proto->GetExprType() != nullptr);
-            m_constructor_type = m_proto->GetExprType();
-
-            const bool is_type = m_constructor_type == BuiltinTypes::TYPE_TYPE;
-
-            m_instance_type = BuiltinTypes::ANY;
-
-            if (const AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_proto.get())) {
-                if (const auto current_value = as_ident->GetProperties().GetIdentifier()->GetCurrentValue()) {
-                    if (AstTypeObject *type_object = dynamic_cast<AstTypeObject*>(current_value.get())) {
-                        ASSERT(type_object->GetHeldType() != nullptr);
-                        m_instance_type = type_object->GetHeldType();
-
-                        SymbolMember_t proto_member;
-                        if (type_object->GetHeldType()->FindMember("$proto", proto_member)) {
-                            m_object_value = std::get<2>(proto_member); // NOTE: may be null causing NEW operand to be emitted
-                        }
-                    } else if (!is_type) {
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            LEVEL_ERROR,
-                            Msg_not_a_type,
-                            m_location
-                        ));
-                    }
-                }
-            } else if (!is_type) {
-                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                    LEVEL_ERROR,
-                    Msg_not_a_type,
-                    m_location
-                ));
-            }*/
-
-            //symbol_type = m_type_specification->GetSpecifiedType();
-            //ASSERT(symbol_type != nullptr);
-
             if (symbol_type == BuiltinTypes::ANY) {
                 // Any type is reserved for method parameters
                 visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
@@ -158,6 +120,10 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     m_location
                 ));
             }
+
+            std::cout << "symbol_type: " << symbol_type->GetName() << "\n";
+
+            const std::shared_ptr<AstExpression> default_value = m_proto->GetDefaultValue();
 
             // if no assignment provided, set the assignment to be the default value of the provided type
             if (m_real_assignment == nullptr) {
@@ -172,7 +138,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 } else if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
                     // generic not yet promoted to an instance.
                     // since there is no assignment to go by, we can't promote it
-
                     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                         LEVEL_ERROR,
                         Msg_generic_parameters_missing,
@@ -180,17 +145,14 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                         symbol_type->GetName(),
                         symbol_type->GetGenericInfo().m_num_parameters
                     ));
-                } else {
-                    // generic parameters will be resolved upon instantiation
-                    if (!symbol_type->IsGenericParameter()) {
-                        // no default assignment for this type
-                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                            LEVEL_ERROR,
-                            Msg_type_no_default_assignment,
-                            m_location,
-                            symbol_type->GetName()
-                        ));
-                    }
+                } else if (!symbol_type->IsGenericParameter()) { // generic parameters will be resolved upon instantiation
+                    // no default assignment for this type
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        LEVEL_ERROR,
+                        Msg_type_no_default_assignment,
+                        m_location,
+                        symbol_type->GetName()
+                    ));
                 }
             }
         }
@@ -209,7 +171,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             SymbolTypePtr_t assignment_type = m_real_assignment->GetExprType();
             ASSERT(assignment_type != nullptr);
 
-            if (has_user_specified_type && !is_generic) { // for generics, dont check compatibility
+            if (has_user_specified_type) {
                 // symbol_type should be the user-specified type
                 symbol_type = SymbolType::GenericPromotion(symbol_type, assignment_type);
                 ASSERT(symbol_type != nullptr);
@@ -263,7 +225,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         // this way if the inner expression gets visited on its own (with no provided arguments)
         // we can show an error
         m_real_assignment = template_expr;
-        //symbol_type = BuiltinTypes::UNDEFINED;
     }
 
     AstDeclaration::Visit(visitor, mod);

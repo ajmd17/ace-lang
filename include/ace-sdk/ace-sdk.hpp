@@ -25,13 +25,22 @@
                 ace::vm::Exception::InvalidArgsException(#cmp " " #amt, params.nargs)); \
             return; \
         } \
-    } while (false)
+    } while (0)
 
 #define ACE_RETURN(value) \
     do { \
         params.handler->thread->GetRegisters()[0] = value; \
         return; \
-    } while (false)
+    } while (0)
+
+#define ACE_THROW(exception) \
+    do { \
+        params.handler->state->ThrowException( \
+            params.handler->thread, \
+            exception \
+        ); \
+        return; \
+    } while (0)
 
 namespace ace {
 namespace sdk {

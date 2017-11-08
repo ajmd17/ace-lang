@@ -58,8 +58,8 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
     APIInstance meta_api;
 
     meta_api.Module(compiler::Config::global_module_name)
-        .Variable("__meta_context", BuiltinTypes::ANY, (UserData_t)&meta_context);
-        /*.Variable("compiler", BuiltinTypes::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+        .Variable("__meta_context", BuiltinTypes::ANY, (UserData_t)&meta_context)
+        .Variable("compiler", BuiltinTypes::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
@@ -89,7 +89,7 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
             // assign the out value to this
             out->m_type = vm::Value::ValueType::HEAP_POINTER;
             out->m_value.ptr = object;
-        });*/
+        });
     
     meta_api.BindAll(&vm, &compilation_unit);
 

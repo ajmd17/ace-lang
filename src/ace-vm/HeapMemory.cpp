@@ -2,6 +2,7 @@
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/Slice.hpp>
 #include <ace-vm/Value.hpp>
 #include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/TypeInfo.hpp>
@@ -26,7 +27,7 @@ std::ostream &operator<<(std::ostream &os, const Heap &heap)
 
     HeapNode *tmp_head = heap.m_head;
     while (tmp_head != nullptr) {
-        os << std::setw(16) << (void*)tmp_head->value.GetId() << "| ";
+        os << std::setw(16) << (void*)tmp_head << "| ";
         os << std::setw(8) << std::bitset<sizeof(tmp_head->value.GetFlags())>(tmp_head->value.GetFlags()) << "| ";
         os << std::setw(10);
 
@@ -34,6 +35,7 @@ std::ostream &operator<<(std::ostream &os, const Heap &heap)
             union {
                 ImmutableString *str_ptr;
                 Array *array_ptr;
+                Slice *slice_ptr;
                 Object *obj_ptr;
                 TypeInfo *type_info_ptr;
             } data;
@@ -54,6 +56,13 @@ std::ostream &operator<<(std::ostream &os, const Heap &heap)
                 
                 std::stringstream ss;
                 data.array_ptr->GetRepresentation(ss, false);
+                os << ss.rdbuf();
+            } else if ((data.slice_ptr = tmp_head->value.GetPointer<Slice>()) != nullptr) {
+                os << "ArraySlice" << "| ";
+                os << std::setw(16);
+
+                std::stringstream ss;
+                data.slice_ptr->GetRepresentation(ss, false);
                 os << ss.rdbuf();
             } else if ((data.obj_ptr = tmp_head->value.GetPointer<Object>()) != nullptr) {
                 os << "Object" << "| ";
@@ -110,6 +119,7 @@ void Heap::Purge()
 HeapValue *Heap::Alloc()
 {
     HeapNode *node = new HeapNode;
+    node->value.GetFlags() |= GC_MARKED; // mark by default
 
     node->after = nullptr;
     

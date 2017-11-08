@@ -1,6 +1,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/Slice.hpp>
 #include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/HeapValue.hpp>
 
@@ -35,31 +36,9 @@ void Value::Mark()
         
         case Value::HEAP_POINTER: {
             HeapValue *ptr = m_value.ptr;
+
             if (ptr != nullptr && !(ptr->GetFlags() & GC_MARKED)) {
-                if (Object *object = ptr->GetPointer<Object>()) {
-                    HeapValue *proto = nullptr;
-
-                    do {
-                        const size_t size = object->GetSize();
-
-                        for (size_t i = 0; i < size; i++) {
-                            object->GetMember(i).value.Mark();
-                        }
-
-                        proto = object->GetPrototype();
-
-                        if (proto != nullptr) {
-                            proto->GetFlags() |= GC_MARKED;
-                            object = proto->GetPointer<Object>();
-                        }
-                    } while (proto != nullptr);
-                } else if (Array *array = ptr->GetPointer<Array>()) {
-                    const size_t size = array->GetSize();
-                    for (int i = 0; i < size; i++) {
-                        array->AtIndex(i).Mark();
-                    }
-                }
-
+                ptr->Mark();
                 ptr->GetFlags() |= GC_MARKED;
             }
         }
@@ -86,7 +65,7 @@ const char *Value::GetTypeString() const
                 return "Null";
             } else if (m_value.ptr->GetPointer<ImmutableString>()) {
                 return "String";
-            } else if (m_value.ptr->GetPointer<Array>()) {
+            } else if (m_value.ptr->GetPointer<Array>() || m_value.ptr->GetPointer<Slice>()) {
                 return "Array";
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 return "Object"; // TODO prototype name
@@ -162,6 +141,11 @@ ImmutableString Value::ToString() const
                 array->GetRepresentation(ss, true);
                 const std::string &str = ss.str();
                 return ImmutableString(str.c_str());
+            } else if (Slice *slice = m_value.ptr->GetPointer<Slice>()) {
+                std::stringstream ss;
+                slice->GetRepresentation(ss, true);
+                const std::string &str = ss.str();
+                return ImmutableString(str.c_str());
             } /*else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 std::stringstream ss;
                 object->GetRepresentation(ss, true);
@@ -197,6 +181,8 @@ void Value::ToRepresentation(std::stringstream &ss, bool add_type_name) const
                 ss << '\"';
             } else if (Array *array = m_value.ptr->GetPointer<Array>()) {
                 array->GetRepresentation(ss, add_type_name);
+            } else if (Slice *slice = m_value.ptr->GetPointer<Slice>()) {
+                slice->GetRepresentation(ss, add_type_name);
             } else if (Object *object = m_value.ptr->GetPointer<Object>()) {
                 object->GetRepresentation(ss, add_type_name);
             } else {

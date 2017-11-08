@@ -57,6 +57,7 @@
 #include <ace-c/ast/AstMetaBlock.hpp>
 #include <ace-c/ast/AstTemplateExpression.hpp>
 #include <ace-c/ast/AstTemplateInstantiation.hpp>
+#include <ace-c/ast/AstSyntaxDefinition.hpp>
 
 #include <string>
 
@@ -164,6 +165,7 @@ private:
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
     std::shared_ptr<AstYieldStatement> ParseYieldStatement();
     std::shared_ptr<AstMetaBlock> ParseMetaBlock();
+    std::shared_ptr<AstSyntaxDefinition> ParseSyntaxDefinition();
 };
 
 #endif

@@ -31,6 +31,7 @@
 
 #include <ace-vm/Object.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/Slice.hpp>
 #include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/Value.hpp>
 #include <ace-vm/InstructionHandler.hpp>
@@ -168,9 +169,9 @@ void Events_call_action(ace::sdk::Params params)
                         } a, b;
 
                         enum {
-                            MATCH_TYPES,
-                            MATCH_VALUES
-                        } match_mode = MATCH_VALUES;
+                            MATCH_BY_TYPE,
+                            MATCH_BY_VALUE
+                        } match_mode = MATCH_BY_VALUE;
 
                         vm::Value *res_func = nullptr;
 
@@ -204,17 +205,17 @@ void Events_call_action(ace::sdk::Params params)
 
                                 // compare integers
                                 if (value_ptr->GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
-                                    if (match_mode == MATCH_TYPES || a.i == b.i) {
+                                    if (match_mode == MATCH_BY_TYPE || a.i == b.i) {
                                         res_func = &handler_func;
                                         break;
                                     }
                                 } else if (value_ptr->GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
-                                    if (match_mode == MATCH_TYPES || a.f == b.f) {
+                                    if (match_mode == MATCH_BY_TYPE || a.f == b.f) {
                                         res_func = &handler_func;
                                         break;
                                     }
                                 } else if (value_ptr->m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
-                                    if (match_mode == MATCH_TYPES || value_ptr->m_value.b == handler_value.m_value.b) {
+                                    if (match_mode == MATCH_BY_TYPE || value_ptr->m_value.b == handler_value.m_value.b) {
                                         res_func = &handler_func;
                                         break;
                                     }
@@ -232,7 +233,7 @@ void Events_call_action(ace::sdk::Params params)
                                     } else if (vm::TypeInfo *type_ptr = hv_a->GetPointer<vm::TypeInfo>()) {
                                         // left is a TypeInfo object, satisfies if type holds
                                     } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
-                                        if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {
+                                        if (match_mode == MATCH_BY_TYPE || *hv_a == *hv_b) {
                                             res_func = &handler_func;
                                             break;
                                         }
@@ -339,7 +340,7 @@ void Events_get_action_handler(ace::sdk::Params params)
                         } a, b;
 
                         enum {
-                            MATCH_TYPES,
+                            MATCH_BY_TYPE,
                             MATCH_VALUES
                         } match_mode = MATCH_VALUES;
 
@@ -375,17 +376,17 @@ void Events_get_action_handler(ace::sdk::Params params)
 
                                 // compare integers
                                 if (value.GetInteger(&a.i) && handler_value.GetInteger(&b.i)) {
-                                    if (match_mode == MATCH_TYPES || a.i == b.i) {
+                                    if (match_mode == MATCH_BY_TYPE || a.i == b.i) {
                                         res_func = &handler_func;
                                         break;
                                     }
                                 } else if (value.GetNumber(&a.f) && handler_value.GetNumber(&b.f)) {
-                                    if (match_mode == MATCH_TYPES || a.f == b.f) {
+                                    if (match_mode == MATCH_BY_TYPE || a.f == b.f) {
                                         res_func = &handler_func;
                                         break;
                                     }
                                 } else if (value.m_type == vm::Value::BOOLEAN && handler_value.m_type == vm::Value::BOOLEAN) {
-                                    if (match_mode == MATCH_TYPES || value.m_value.b == handler_value.m_value.b) {
+                                    if (match_mode == MATCH_BY_TYPE || value.m_value.b == handler_value.m_value.b) {
                                         res_func = &handler_func;
                                         break;
                                     }
@@ -401,7 +402,7 @@ void Events_get_action_handler(ace::sdk::Params params)
                                         // one is null... not same
                                         // continue.
                                     } else if (hv_a->GetTypeId() == hv_b->GetTypeId()) {
-                                        if (match_mode == MATCH_TYPES || *hv_a == *hv_b) {
+                                        if (match_mode == MATCH_BY_TYPE || *hv_a == *hv_b) {
                                             res_func = &handler_func;
                                             break;
                                         }
@@ -454,6 +455,61 @@ void Time_now(ace::sdk::Params params)
     vm::Value res;
     res.m_type = vm::Value::ValueType::I64;
     res.m_value.i64 = unix_timestamp;
+    ACE_RETURN(res);
+}
+
+void Object_is_instance_of_type(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 2);
+
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    vm::Value *class_ptr = params.args[1];
+    ASSERT(class_ptr != nullptr);
+
+    if (class_ptr->m_type != vm::Value::HEAP_POINTER) {
+        ACE_THROW(vm::Exception("type should be an object"));
+    }
+
+    bool result_value = false;
+
+    if (target_ptr->m_type == vm::Value::HEAP_POINTER) {
+        if (target_ptr->m_value.ptr == nullptr) {
+            // true if type is null.
+            result_value = class_ptr->m_value.ptr == nullptr;
+        } else if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+            result_value = object->GetPrototype() == class_ptr->m_value.ptr;
+        }
+    }
+
+    vm::Value res;
+    res.m_type = vm::Value::BOOLEAN;
+    res.m_value.b = result_value;
+    ACE_RETURN(res);
+}
+
+void Object_get_type_object_of(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 1);
+
+    vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    if (target_ptr->m_type != vm::Value::HEAP_POINTER) {
+        ACE_THROW(vm::Exception("obj should be an object"));
+    }
+
+    vm::Value res;
+    res.m_type = vm::Value::HEAP_POINTER;
+    res.m_value.ptr = nullptr;
+
+    if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
+        res.m_value.ptr = object->GetPrototype();
+    } else {
+        ACE_THROW(vm::Exception("obj is not an object"));
+    }
+
     ACE_RETURN(res);
 }
 
@@ -1097,7 +1153,7 @@ void Global_array_push(ace::sdk::Params params)
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         vm::Array *array_ptr = nullptr;
-        
+
         if (target_ptr->GetValue().ptr == nullptr) {
             params.handler->state->ThrowException(
                 params.handler->thread,
@@ -1114,6 +1170,60 @@ void Global_array_push(ace::sdk::Params params)
 
     // return same value
     ACE_RETURN(*target_ptr);
+}
+
+void Global_array_slice(ace::sdk::Params params)
+{
+    ACE_CHECK_ARGS(==, 3);
+
+    const vm::Value *target_ptr = params.args[0];
+    ASSERT(target_ptr != nullptr);
+
+    const vm::Value *start_ptr = params.args[1];
+    ASSERT(start_ptr != nullptr);
+
+    const vm::Value *end_ptr = params.args[2];
+    ASSERT(end_ptr != nullptr);
+
+    aint64 start, end;
+
+    if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
+        vm::Array *array_ptr = nullptr;
+        
+        if (target_ptr->GetValue().ptr == nullptr) {
+            ACE_THROW(vm::Exception::NullReferenceException());
+        } else if ((array_ptr = target_ptr->GetValue().ptr->GetPointer<vm::Array>()) != nullptr) {
+            if (!start_ptr->GetInteger(&start)) {
+                ACE_THROW(vm::Exception("'start' should be an integer"));
+            }
+            
+            if (!end_ptr->GetInteger(&end)) {
+                ACE_THROW(vm::Exception("'end' should be an integer"));
+            }
+
+            // store the result in a variable
+            vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
+            ASSERT(ptr != nullptr);
+            // assign it to the array slice
+            ptr->Assign(vm::Slice(array_ptr, start, end));
+
+            vm::Value res;
+            // assign register value to the allocated object
+            res.m_type = vm::Value::HEAP_POINTER;
+            res.m_value.ptr = ptr;
+
+            ACE_RETURN(res);
+        }
+    }
+
+    const int buffer_size = 256;
+    char buffer[buffer_size];
+    std::snprintf(
+        buffer,
+        buffer_size,
+        "slice() requires an Array"
+    );
+    ACE_THROW(vm::Exception(buffer));
 }
 
 void Global_length(ace::sdk::Params params)
@@ -1838,6 +1948,15 @@ void BuildLibraries(
     api.Module("time")
         .Function("now", BuiltinTypes::INT, {}, Time_now);
 
+    api.Module("object")
+        .Function("is_instance_of_type", BuiltinTypes::BOOLEAN, {
+            { "org", BuiltinTypes::ANY },
+            { "type", BuiltinTypes::TYPE_TYPE }
+        }, Object_is_instance_of_type)
+        .Function("get_type_object_of", BuiltinTypes::TYPE_TYPE, {
+            { "obj", BuiltinTypes::ANY }
+        }, Object_get_type_object_of);
+
     api.Module("runtime")
         .Function("gc", BuiltinTypes::NULL_TYPE, {}, Runtime_gc)
         .Function("dump_heap", BuiltinTypes::NULL_TYPE, {}, Runtime_dump_heap)
@@ -1996,6 +2115,11 @@ void BuildLibraries(
                 }
             ) }
         }, Global_array_push)
+        .Function("array_slice", BuiltinTypes::ARRAY, {
+            { "arr", BuiltinTypes::ARRAY },
+            { "start", BuiltinTypes::INT },
+            { "end", BuiltinTypes::INT }
+        }, Global_array_slice)
         .Function("length", BuiltinTypes::INT, {
             { "object", BuiltinTypes::ANY }
         }, Global_length)

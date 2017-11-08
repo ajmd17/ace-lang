@@ -257,7 +257,9 @@ void AstPrototypeDefinition::Visit(AstVisitor *visitor, Module *mod)
     AstDeclaration::Visit(visitor, mod);
 
     ASSERT(m_identifier != nullptr);
-    
+
+    // set it to be const so we can get the held type later on.
+    m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_CONST);
     m_identifier->SetSymbolType(base_type);
     m_identifier->SetCurrentValue(std::shared_ptr<AstTypeObject>(new AstTypeObject(
         m_symbol_type,

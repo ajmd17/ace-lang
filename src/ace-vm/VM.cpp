@@ -2,6 +2,7 @@
 #include <ace-vm/Value.hpp>
 #include <ace-vm/HeapValue.hpp>
 #include <ace-vm/Array.hpp>
+#include <ace-vm/Slice.hpp>
 #include <ace-vm/Object.hpp>
 #include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/TypeInfo.hpp>
@@ -167,7 +168,7 @@ void VM::Invoke(InstructionHandler *handler,
             value.m_value.native_func(params);
 
             // re-enable auto gc
-            state->enable_auto_gc = true;
+            state->enable_auto_gc = ENABLE_GC;
 
             delete[] args;
 

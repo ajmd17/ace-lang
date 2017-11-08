@@ -101,6 +101,7 @@ HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
             return nullptr;
         }
 
+#if ENABLE_GC
         if (enable_auto_gc) {
             // run the gc
             GC();
@@ -115,6 +116,7 @@ HeapValue *VMState::HeapAlloc(ExecutionThread *thread)
                 );
             }
         }
+#endif
     }
 
     return m_heap.Alloc();

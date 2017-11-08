@@ -689,10 +689,40 @@ struct InstructionHandler {
 
         Member *proto_mem = proto_obj->LookupMemberFromHash(Object::PROTO_MEMBER_HASH);
         ASSERT(proto_mem != nullptr);
-        //ASSERT(proto_mem->value.m_type == Value::HEAP_POINTER);
+
+        if (proto_mem->value.m_value.ptr == nullptr) {
+            state->ThrowException(
+                thread,
+                Exception::NullReferenceException()
+            );
+        }
+
+        Value &res = thread->m_regs[dst];
+
+        if (proto_mem->value.m_type == Value::HEAP_POINTER) {
+            if (Object *proto_mem_obj = proto_mem->value.m_value.ptr->GetPointer<Object>()) {
+                // allocate heap value for new object
+                HeapValue *hv = state->HeapAlloc(thread);
+                ASSERT(hv != nullptr);
+
+                hv->Assign(Object(proto_mem_obj->GetMembers(), proto_mem_obj->GetSize(), proto_sv.m_value.ptr));
+
+                res.m_type = Value::HEAP_POINTER;
+                res.m_value.ptr = hv;
+            } else {
+                state->ThrowException(
+                    thread,
+                    Exception::InvalidConstructorException()
+                );
+            }
+        } else {
+            // simply copy the value into the new value as it is not a heap pointer.
+            res.m_type = proto_mem->value.m_type;
+            res.m_value = proto_mem->value.m_value;
+        }
 
         // assign destination to cloned value
-        state->CloneValue(proto_mem->value, thread, thread->m_regs[dst]);
+        //state->CloneValue(proto_mem->value, thread, thread->m_regs[dst]);
 
         /*
         // allocate heap object

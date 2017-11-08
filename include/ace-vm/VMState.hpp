@@ -9,6 +9,7 @@
 
 #include <common/non_owning_ptr.hpp>
 
+#define ENABLE_GC 1
 #define GC_THRESHOLD_MIN 20
 #define GC_THRESHOLD_MAX 1000
 
@@ -71,7 +72,7 @@ struct VMState {
     non_owning_ptr<VM> m_vm;
 
     bool good = true;
-    bool enable_auto_gc = true;
+    bool enable_auto_gc = ENABLE_GC;
     int m_max_heap_objects = GC_THRESHOLD_MIN;
 
     /** Reset the state of the VM, destroying all heap objects,

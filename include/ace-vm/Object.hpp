@@ -60,7 +60,7 @@ public:
 
     // construct from prototype (holds pointer)
     Object(HeapValue *proto);
-    Object(const Member *members, size_t size);
+    Object(const Member *members, size_t size, HeapValue *proto=nullptr);
     Object(const Object &other);
     ~Object();
 

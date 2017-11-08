@@ -103,6 +103,8 @@ public:
     inline auto GetPointer() -> typename std::decay<T>::type*
         { return TypeCompatible<T>() ? GetRawPointer<T>() : nullptr; }
 
+    void Mark();
+
 private:
     // base class for an 'any' holder with pure virtual functions
     struct BaseHolder {

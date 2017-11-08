@@ -175,8 +175,8 @@ Object::Object(HeapValue *proto)
     m_object_map->Push(hash, &m_members[i]);*/
 }
 
-Object::Object(const Member *members, size_t size)
-    : m_proto(nullptr)
+Object::Object(const Member *members, size_t size, HeapValue *proto)
+    : m_proto(proto)
 {
     ASSERT(members != nullptr);
 

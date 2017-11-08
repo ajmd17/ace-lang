@@ -23,7 +23,7 @@
 
 AstFunctionExpression::AstFunctionExpression(
     const std::vector<std::shared_ptr<AstParameter>> &parameters,
-    const std::shared_ptr<AstTypeSpecification> &type_specification,
+    const std::shared_ptr<AstTypeSpecification> &return_type_specification,
     const std::shared_ptr<AstBlock> &block,
     bool is_async,
     bool is_pure,
@@ -31,7 +31,7 @@ AstFunctionExpression::AstFunctionExpression(
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_parameters(parameters),
-      m_type_specification(type_specification),
+      m_return_type_specification(return_type_specification),
       m_block(block),
       m_is_async(is_async),
       m_is_pure(is_pure),
@@ -132,7 +132,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                 false,
                 m_location
             )) },
-            m_type_specification,
+            m_return_type_specification,
             m_block,
             m_is_async,
             m_is_pure,
@@ -185,11 +185,11 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
             m_block->Visit(visitor, mod);
         }
 
-        if (m_type_specification != nullptr) {
-            m_type_specification->Visit(visitor, mod);
+        if (m_return_type_specification != nullptr) {
+            m_return_type_specification->Visit(visitor, mod);
 
-            ASSERT(m_type_specification->GetSpecifiedType() != nullptr);
-            m_return_type = m_type_specification->GetSpecifiedType();
+            ASSERT(m_return_type_specification->GetSpecifiedType() != nullptr);
+            m_return_type = m_return_type_specification->GetSpecifiedType();
         }
 
         const Scope &function_scope = mod->m_scopes.Top();
@@ -208,7 +208,7 @@ void AstFunctionExpression::Visit(AstVisitor *visitor, Module *mod)
                     }
                 } */
 
-                if (m_type_specification != nullptr) {
+                if (m_return_type_specification != nullptr) {
                     // strict mode, because user specifically stated the intended return type
                     if (!m_return_type->TypeCompatible(*it.first, true)) {
                         // error; does not match what user specified

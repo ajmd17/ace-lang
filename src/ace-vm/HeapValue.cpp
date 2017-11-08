@@ -1,4 +1,8 @@
 #include <ace-vm/HeapValue.hpp>
+#include <ace-vm/Object.hpp>
+#include <ace-vm/Array.hpp>
+#include <ace-vm/Slice.hpp>
+#include <ace-vm/ImmutableString.hpp>
 
 namespace ace {
 namespace vm {
@@ -14,6 +18,40 @@ HeapValue::~HeapValue()
 {
     if (m_holder != nullptr) {
         delete m_holder;
+    }
+}
+
+void HeapValue::Mark()
+{
+    if (Object *object = GetPointer<Object>()) {
+        HeapValue *proto = nullptr;
+
+        do {
+            const size_t size = object->GetSize();
+
+            for (size_t i = 0; i < size; i++) {
+                object->GetMember(i).value.Mark();
+            }
+
+            proto = object->GetPrototype();
+
+            if (proto != nullptr) {
+                proto->GetFlags() |= GC_MARKED;
+                object = proto->GetPointer<Object>();
+            }
+        } while (proto != nullptr);
+    } else if (Array *array = GetPointer<Array>()) {
+        const size_t size = array->GetSize();
+
+        for (int i = 0; i < size; i++) {
+            array->AtIndex(i).Mark();
+        }
+    } else if (Slice *slice = GetPointer<Slice>()) {
+        const size_t size = slice->GetSize();
+
+        for (int i = 0; i < size; i++) {
+            slice->AtIndex(i).Mark();
+        }
     }
 }
 

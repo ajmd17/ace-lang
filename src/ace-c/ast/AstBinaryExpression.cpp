@@ -658,7 +658,8 @@ std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaratio
                 nullptr,
                 m_right,
                 {},
-                false,
+                false, // not const
+                false, // not generic
                 m_left->GetLocation()
             ));
         }

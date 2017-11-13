@@ -3,6 +3,7 @@
 
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstParameter.hpp>
+#include <ace-c/ast/AstPrototypeSpecification.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 #include <string>
@@ -11,6 +12,7 @@ class AstTemplateExpression : public AstExpression {
 public:
     AstTemplateExpression(const std::shared_ptr<AstExpression> &expr,
         const std::vector<std::shared_ptr<AstParameter>> &generic_params,
+        const std::shared_ptr<AstPrototypeSpecification> &return_type_specification,
         const SourceLocation &location);
     virtual ~AstTemplateExpression() = default;
 
@@ -30,12 +32,17 @@ public:
 private:
     std::shared_ptr<AstExpression> m_expr;
     std::vector<std::shared_ptr<AstParameter>> m_generic_params;
+    std::shared_ptr<AstPrototypeSpecification> m_return_type_specification;
+
+    // set while analyzing
+    SymbolTypePtr_t m_symbol_type;
 
     inline Pointer<AstTemplateExpression> CloneImpl() const
     {
         return Pointer<AstTemplateExpression>(new AstTemplateExpression(
             CloneAstNode(m_expr),
             CloneAllAstNodes(m_generic_params),
+            CloneAstNode(m_return_type_specification),
             m_location
         ));
     }

@@ -63,15 +63,15 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
-            static const char *items[] = { "define", "fields" };
-
-            vm::Value meta_define;
-            meta_define.m_type = vm::Value::I32;
-            meta_define.m_value.i32 = 12345;
-
-            static const vm::Member members[] = {
-                vm::Member { hash_fnv_1("define"), vm::Value(meta_define) }
+            NativeFunctionPtr_t compiler_define_func = [](ace::sdk::Params params) {
+                std::cout << "HELLO\n";
             };
+
+            vm::Member members[1]; // TODO make a builder class or something to do this
+            std::strcpy(members[0].name, "define");
+            members[0].hash = hash_fnv_1("define");
+            members[0].value.m_type = vm::Value::NATIVE_FUNCTION;
+            members[0].value.m_value.native_func = compiler_define_func;
 
             // create prototype object.
             vm::HeapValue *proto = state->HeapAlloc(thread);

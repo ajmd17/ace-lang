@@ -118,7 +118,8 @@ void AstTypeDefinition::Visit(AstVisitor *visitor, Module *mod)
                         m_location
                     )),
                     {},
-                    false,
+                    false, // not const
+                    false, // not generic
                     m_location
                 )));
             }

@@ -26,12 +26,14 @@ AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
     const std::shared_ptr<AstExpression> &assignment,
     const std::vector<std::shared_ptr<AstParameter>> &template_params,
     bool is_const,
+    bool is_generic,
     const SourceLocation &location)
     : AstDeclaration(name, location),
       m_proto(proto),
       m_assignment(assignment),
       m_template_params(template_params),
       m_is_const(is_const),
+      m_is_generic(is_generic),
       m_assignment_already_visited(false)
 {
 }
@@ -46,7 +48,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     const bool has_user_assigned = m_assignment != nullptr;
     const bool has_user_specified_type = m_proto != nullptr;
-    const bool is_generic = !m_template_params.empty();
+    // const bool is_generic = !m_template_params.empty();
 
     if (m_is_const) {
         if (!has_user_assigned) {
@@ -58,7 +60,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    if (is_generic) {
+    if (m_is_generic) {
         if (!m_is_const) {
             visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                 LEVEL_ERROR,
@@ -68,21 +70,34 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             ));
         }
 
-        // declare template params in a new scope
-        // open the new scope for parameters
         mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
-
-        for (auto &param : m_template_params) {
-            ASSERT(param != nullptr);
-            param->Visit(visitor, mod);
-        }
-
-        template_expr.reset(new AstTemplateExpression(
-            m_assignment,
-            m_template_params,
-            m_location
-        ));
     }
+
+    // if (is_generic) {
+    //     if (!m_is_const) {
+    //         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+    //             LEVEL_ERROR,
+    //             Msg_generic_expression_must_be_const,
+    //             m_location,
+    //             m_name
+    //         ));
+    //     }
+
+    //     // declare template params in a new scope
+    //     // open the new scope for parameters
+    //     mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
+
+    //     for (auto &param : m_template_params) {
+    //         ASSERT(param != nullptr);
+    //         param->Visit(visitor, mod);
+    //     }
+
+    //     template_expr.reset(new AstTemplateExpression(
+    //         m_assignment,
+    //         m_template_params,
+    //         m_location
+    //     ));
+    // }
 
     // not generic - if user provided an assignment, set 'real assignment' to be what the user specified.
     if (has_user_assigned) {
@@ -98,13 +113,13 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             m_name
         ));
     } else {
-        // the type_strict flag means that errors will be shown if
+        // the is_default_assigned flag means that errors will /not/ be shown if
         // the assignment type and the user-supplied type differ.
-        // it is to be turned off for built-in (default) values
+        // it is to be enabled for built-in (default) values:
         // for example, the default type of Array is Any.
         // this flag will allow an Array(Float) to be constructed 
         // with an empty array of type Array(Any)
-        bool is_type_strict = true;
+        bool is_default_assigned = false;
 
         if (m_proto != nullptr) {
             m_proto->Visit(visitor, mod);
@@ -121,8 +136,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 ));
             }
 
-            std::cout << "symbol_type: " << symbol_type->GetName() << "\n";
-
             const std::shared_ptr<AstExpression> default_value = m_proto->GetDefaultValue();
 
             // if no assignment provided, set the assignment to be the default value of the provided type
@@ -134,7 +147,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     // Assign variable to the default value for the specified type.
                     m_real_assignment = CloneAstNode(default_value);
                     // built-in assignment, turn off strict mode
-                    is_type_strict = false;
+                    is_default_assigned = true;
                 } else if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
                     // generic not yet promoted to an instance.
                     // since there is no assignment to go by, we can't promote it
@@ -168,63 +181,33 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         if (has_user_assigned) {
             // has received an explicit assignment
             // make sure type is compatible with assignment
-            SymbolTypePtr_t assignment_type = m_real_assignment->GetExprType();
-            ASSERT(assignment_type != nullptr);
+            ASSERT(m_real_assignment->GetExprType() != nullptr);
 
             if (has_user_specified_type) {
-                // symbol_type should be the user-specified type
-                symbol_type = SymbolType::GenericPromotion(symbol_type, assignment_type);
-                ASSERT(symbol_type != nullptr);
-
-                // generic not yet promoted to an instance
-                if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_generic_parameters_missing,
-                        m_location,
-                        symbol_type->GetName(),
-                        symbol_type->GetGenericInfo().m_num_parameters
-                    ));
-                }
-
-                if (is_type_strict) {
-                    SymbolTypePtr_t comparison_type = symbol_type;
-
-                    // unboxing values
-                    // note that this is below the default assignment check,
-                    // because these "box" types may have a default assignment of their own
-                    // (or they may intentionally not have one)
-                    // e.g Maybe(T) defaults to null, and Const(T) has no assignment.
-                    if (symbol_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
-                        if (symbol_type->IsBoxedType()) {
-                            comparison_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
-                            ASSERT(comparison_type != nullptr);
-                        }
-                    }
-
-                    SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
+                if (!is_default_assigned) {
+                    SemanticAnalyzer::Helpers::EnsureLooseTypeAssignmentCompatibility(
                         visitor,
                         mod,
-                        comparison_type,
-                        assignment_type,
+                        symbol_type,
+                        m_real_assignment->GetExprType(),
                         m_real_assignment->GetLocation()
                     );
                 }
             } else {
                 // Set the type to be the deduced type from the expression.
-                symbol_type = assignment_type;
+                symbol_type = m_real_assignment->GetExprType();
             }
         }
     }
 
-    if (is_generic) {
+    if (m_is_generic/*is_generic*/) {
         // close template param scope
         mod->m_scopes.Close();
 
         // set the real assignment to be the template expression here.
         // this way if the inner expression gets visited on its own (with no provided arguments)
         // we can show an error
-        m_real_assignment = template_expr;
+        //m_real_assignment = template_expr;
     }
 
     AstDeclaration::Visit(visitor, mod);
@@ -234,7 +217,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_CONST);
         }
 
-        if (is_generic) {
+        if (m_is_generic/*is_generic*/) {
             //m_identifier->SetTemplateParams(ident_template_params);
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_GENERIC);
         }
@@ -256,10 +239,8 @@ std::unique_ptr<Buildable> AstVariableDeclaration::Build(AstVisitor *visitor, Mo
     ASSERT(m_real_assignment != nullptr);
 
     if (!ace::compiler::Config::cull_unused_objects || m_identifier->GetUseCount() > 0) {
-        // get current stack size
-        const int stack_location = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
-        // set identifier stack location
-        m_identifier->SetStackLocation(stack_location);
+        // update identifier stack location to be current stack size.
+        m_identifier->SetStackLocation(visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize());
 
         chunk->Append(m_real_assignment->Build(visitor, mod));
 

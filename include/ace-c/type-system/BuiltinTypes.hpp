@@ -33,6 +33,7 @@ struct BuiltinTypes {
     static const SymbolTypePtr_t BLOCK_TYPE;
     static const SymbolTypePtr_t CLOSURE_TYPE;
     static const SymbolTypePtr_t META_CLOSURE_TYPE;
+    static const SymbolTypePtr_t GENERIC_VARIABLE_TYPE;
 };
 
 #endif

@@ -39,6 +39,7 @@ private:
     //std::vector<std::shared_ptr<AstAliasDeclaration>> m_mixin_overrides;
     //std::vector<std::shared_ptr<AstVariableDeclaration>> m_param_overrides;
     std::shared_ptr<AstBlock> m_block;
+    SymbolTypePtr_t m_return_type;
 
     inline Pointer<AstTemplateInstantiation> CloneImpl() const
     {

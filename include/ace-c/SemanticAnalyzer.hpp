@@ -44,6 +44,14 @@ public:
             const SourceLocation &location
         );
 
+        static void EnsureLooseTypeAssignmentCompatibility(
+            AstVisitor *visitor,
+            Module *mod,
+            const SymbolTypePtr_t &symbol_type,
+            const SymbolTypePtr_t &assignment_type,
+            const SourceLocation &location
+        );
+
         static void EnsureTypeAssignmentCompatibility(
             AstVisitor *visitor,
             Module *mod,

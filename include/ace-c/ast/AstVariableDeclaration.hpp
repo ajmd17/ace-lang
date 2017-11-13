@@ -18,6 +18,7 @@ public:
         const std::shared_ptr<AstExpression> &assignment,
         const std::vector<std::shared_ptr<AstParameter>> &template_params,
         bool is_const,
+        bool is_generic,
         const SourceLocation &location);
     virtual ~AstVariableDeclaration() = default;
 
@@ -25,6 +26,7 @@ public:
         { return m_assignment; }
     inline const std::shared_ptr<AstExpression> &GetRealAssignment() const
         { return m_real_assignment; }
+
     inline bool IsConst() const { return m_is_const; }
 
     virtual void Visit(AstVisitor *visitor, Module *mod) override;
@@ -39,6 +41,7 @@ protected:
     std::shared_ptr<AstExpression> m_assignment;
     std::vector<std::shared_ptr<AstParameter>> m_template_params;
     bool m_is_const;
+    bool m_is_generic;
 
     // set while analyzing
     bool m_assignment_already_visited;
@@ -55,6 +58,7 @@ protected:
             CloneAstNode(m_assignment),
             CloneAllAstNodes(m_template_params),
             m_is_const,
+            m_is_generic,
             m_location
         ));
     }

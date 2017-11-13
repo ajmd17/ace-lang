@@ -310,34 +310,76 @@ FunctionTypeSignature_t SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
     const std::vector<std::shared_ptr<AstArgument>> &args,
     const SourceLocation &location)
 {
+    // BuiltinTypes::FUNCTION, BuiltinTypes::GENERIC_VARIABLE_TYPE, etc.
     if (identifier_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
         const SymbolTypePtr_t base = identifier_type->GetBaseType();
 
-        if (base == BuiltinTypes::FUNCTION) {
-            const auto &generic_args = identifier_type->GetGenericInstanceInfo().m_generic_args;
+        const auto &generic_args = identifier_type->GetGenericInstanceInfo().m_generic_args;
 
-            // make sure the "return type" of the function is not null
-            ASSERT(generic_args.size() >= 1);
-            ASSERT(generic_args[0].m_type != nullptr);
+        // make sure the "return type" of the function is not null
+        ASSERT(generic_args.size() >= 1);
+        ASSERT(generic_args[0].m_type != nullptr);
 
-            const std::vector<GenericInstanceTypeInfo::Arg> generic_args_without_return(generic_args.begin() + 1, generic_args.end());
-            const auto res_args = SemanticAnalyzer::Helpers::SubstituteGenericArgs(visitor, mod, generic_args_without_return, args, location);
+        const std::vector<GenericInstanceTypeInfo::Arg> generic_args_without_return(generic_args.begin() + 1, generic_args.end());
+        const auto res_args = SemanticAnalyzer::Helpers::SubstituteGenericArgs(visitor, mod, generic_args_without_return, args, location);
 
-            // return the "return type" of the function
-            return FunctionTypeSignature_t {
-                generic_args[0].m_type, res_args
-            };
-        }
-    } else if (identifier_type == BuiltinTypes::FUNCTION || identifier_type == BuiltinTypes::ANY) {
-        // abstract function, allow any params
+        // return the "return type" of the function
         return FunctionTypeSignature_t {
-            BuiltinTypes::ANY, args
+            generic_args[0].m_type, res_args
         };
     }
     
     return FunctionTypeSignature_t {
-        nullptr, args
+        BuiltinTypes::ANY, args
     };
+}
+
+void SemanticAnalyzer::Helpers::EnsureLooseTypeAssignmentCompatibility(
+    AstVisitor *visitor,
+    Module *mod,
+    const SymbolTypePtr_t &symbol_type,
+    const SymbolTypePtr_t &assignment_type,
+    const SourceLocation &location)
+{
+    ASSERT(symbol_type != nullptr);
+    ASSERT(assignment_type != nullptr);
+
+    // symbol_type should be the user-specified type
+    SymbolTypePtr_t symbol_type_promoted = SymbolType::GenericPromotion(symbol_type, assignment_type);
+    ASSERT(symbol_type_promoted != nullptr);
+
+    // generic not yet promoted to an instance
+    if (symbol_type_promoted->GetTypeClass() == TYPE_GENERIC) {
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_generic_parameters_missing,
+            location,
+            symbol_type_promoted->GetName(),
+            symbol_type_promoted->GetGenericInfo().m_num_parameters
+        ));
+    }
+
+    SymbolTypePtr_t comparison_type = symbol_type;
+
+    // unboxing values
+    // note that this is below the default assignment check,
+    // because these "box" types may have a default assignment of their own
+    // (or they may intentionally not have one)
+    // e.g Maybe(T) defaults to null, and Const(T) has no assignment.
+    if (symbol_type->GetTypeClass() == TYPE_GENERIC_INSTANCE) {
+        if (symbol_type->IsBoxedType()) {
+            comparison_type = symbol_type->GetGenericInstanceInfo().m_generic_args[0].m_type;
+            ASSERT(comparison_type != nullptr);
+        }
+    }
+
+    SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(
+        visitor,
+        mod,
+        comparison_type,
+        assignment_type,
+        location
+    );
 }
 
 void SemanticAnalyzer::Helpers::EnsureTypeAssignmentCompatibility(

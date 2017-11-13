@@ -50,36 +50,24 @@ void AstTemplateInstantiation::Visit(AstVisitor *visitor, Module *mod)
     const AstExpression *value_of = m_expr->GetValueOf();
     // no need to check if null because if it is the template_expr cast will return null
 
+    m_return_type = BuiltinTypes::ANY;
+
     if (const AstTemplateExpression *template_expr = dynamic_cast<const AstTemplateExpression*>(value_of)) {
-        //const auto &template_params = ident->GetTemplateParams();
-        const auto &generic_parameters = template_expr->GetGenericParameters();
-
-        // construct the SymbolType objects for all parameters
-        std::vector<GenericInstanceTypeInfo::Arg> generic_param_types;
-
-        for (auto &param : generic_parameters) {
-            ASSERT(param->GetIdentifier() != nullptr);
-
-            generic_param_types.push_back(GenericInstanceTypeInfo::Arg {
-                param->GetName(),
-                param->GetIdentifier()->GetSymbolType(),
-                param->GetDefaultValue()
-            });
-        }
-
-        const auto args_substituted = SemanticAnalyzer::Helpers::SubstituteGenericArgs(
-            visitor, mod, generic_param_types, m_generic_args, m_location
+        FunctionTypeSignature_t substituted = SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
+            visitor, mod, template_expr->GetExprType(), m_generic_args, m_location
         );
 
+        m_return_type = substituted.first;
+        const auto args_substituted = substituted.second;
 
         m_block.reset(new AstBlock({}, m_location));
 
         // there can be more because of varargs
-        if (args_substituted.size() >= generic_parameters.size()) {
+        if (args_substituted.size() >= template_expr->GetGenericParameters().size()) {
             //m_mixin_overrides.reserve(generic_parameters.size());
             //m_param_overrides.reserve(generic_parameters.size());
             
-            for (size_t i = 0; i < generic_parameters.size(); i++) {
+            for (size_t i = 0; i <  template_expr->GetGenericParameters().size(); i++) {
                 ASSERT(args_substituted[i]->GetExpr() != nullptr);
 
                 // if (!args_substituted[i]->GetExpr()->IsLiteral()) {
@@ -101,11 +89,12 @@ void AstTemplateInstantiation::Visit(AstVisitor *visitor, Module *mod)
 
                     /*m_param_overrides.push_back*/
                     m_block->AddChild(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
-                        generic_parameters[i]->GetName(),
+                        template_expr->GetGenericParameters()[i]->GetName(),
                         nullptr,
                         CloneAstNode(args_substituted[i]->GetExpr()),
                         {},
                         true, // const
+                        false, // generic
                         args_substituted[i]->GetLocation()
                     )));
                 }
@@ -202,6 +191,8 @@ bool AstTemplateInstantiation::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstTemplateInstantiation::GetExprType() const
 {
+    ASSERT(m_return_type != nullptr);
+    return m_return_type;
     // if (m_inst_expr != nullptr) {
     //     return m_inst_expr->GetExprType();
     // }

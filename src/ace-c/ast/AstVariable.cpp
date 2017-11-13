@@ -47,6 +47,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             ASSERT(ident_type != nullptr);
 
             const bool is_const = ident_type->IsConstType() || (!is_generic && (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST));
+
             const bool force_inline = is_alias || is_mixin;
 
             // NOTE: if we are loading a const and current_value == nullptr, proceed with loading the
@@ -76,11 +77,12 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                     m_properties.GetIdentifier()->SetSymbolType(inline_value_type);
                 }
             } else {
+                // if the value to be inlined is not literal - do not inline
                 if (m_should_inline && !m_inline_value->IsLiteral()) {
                     m_should_inline = false;
                 }
 
-                // increase useage count
+                // increase usage count for variable loads (non-inlined)
                 if (!m_should_inline) {
                     m_properties.GetIdentifier()->IncUseCount();
                 }
@@ -187,6 +189,9 @@ std::unique_ptr<Buildable> AstVariable::Build(AstVisitor *visitor, Module *mod)
         } else {
             int stack_size = visitor->GetCompilationUnit()->GetInstructionStream().GetStackSize();
             int stack_location = m_properties.GetIdentifier()->GetStackLocation();
+
+            ASSERT(stack_location != -1);
+
             int offset = stack_size - stack_location;
 
             // get active register

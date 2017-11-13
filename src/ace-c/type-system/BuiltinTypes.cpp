@@ -379,3 +379,27 @@ const SymbolTypePtr_t BuiltinTypes::META_CLOSURE_TYPE = SymbolType::Generic(
     GenericTypeInfo { -1 },
     BuiltinTypes::FUNCTION
 );
+
+const SymbolTypePtr_t BuiltinTypes::GENERIC_VARIABLE_TYPE = SymbolType::Generic(
+    "Generic",
+    std::vector<SymbolMember_t> {
+        SymbolMember_t {
+            "$proto",
+            SymbolType::Primitive(
+                "GenericInstance", nullptr
+            ),
+            nullptr
+        },
+        SymbolMember_t {
+            "base",
+            BuiltinTypes::TYPE_TYPE,
+            sp<AstTypeObject>(new AstTypeObject(
+                BuiltinTypes::TYPE_TYPE,
+                nullptr,
+                SourceLocation::eof
+            )),
+        }
+    },
+    GenericTypeInfo { -1 },
+    BuiltinTypes::TYPE_TYPE
+);

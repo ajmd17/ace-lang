@@ -1,5 +1,6 @@
 module Example_Varargs {
   test: String = 'hello'
+
   sum: Function = (args...) {
     sum: Any = 0
 

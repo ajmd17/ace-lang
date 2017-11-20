@@ -12,6 +12,7 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Optimizer.hpp>
 #include <ace-c/Compiler.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Configuration.hpp>
 
@@ -68,23 +69,7 @@ void AstBinaryExpression::Visit(AstVisitor *visitor, Module *mod)
             visitor->GetCompilationUnit()->GetErrorList().AddError(error);
         }
 
-        AstVariable *left_as_var = nullptr;
-
-        if (auto *left_as_mem = dynamic_cast<AstMemberAccess*>(m_left.get())) {
-            AstIdentifier *last = left_as_mem->GetLast().get();
-            left_as_var = dynamic_cast<AstVariable*>(last);
-        } else if (auto *left_as_mod = dynamic_cast<AstModuleAccess*>(m_left.get())) {
-            AstModuleAccess *target = left_as_mod;
-            // loop until null or found
-            while (left_as_var == nullptr && target != nullptr) {
-                if (!(left_as_var = dynamic_cast<AstVariable*>(target->GetExpression().get()))) {
-                    // check if rhs of module access is also a module access
-                    target = dynamic_cast<AstModuleAccess*>(target->GetExpression().get());
-                }
-            }
-        } else {
-            left_as_var = dynamic_cast<AstVariable*>(m_left.get());
-        }
+        AstVariable *left_as_var = SemanticAnalyzer::ExprToVar(m_left.get());
 
         if (left_as_var) {
             if (left_as_var->GetProperties().GetIdentifier()) {
@@ -815,9 +800,12 @@ std::shared_ptr<AstVariableDeclaration> AstBinaryExpression::CheckLazyDeclaratio
                 return nullptr;
             }
 
+            // TODO: maybe if a name is typed as this:
+            // &x = y
+            // it would be declared as a reference?
             return std::shared_ptr<AstVariableDeclaration>(
                 new AstVariableDeclaration(var_name,
-                    nullptr, m_right, m_left->GetLocation()));
+                    nullptr, m_right, false, m_left->GetLocation()));
         }
     }
 

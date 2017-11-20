@@ -4,6 +4,8 @@
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Identifier.hpp>
 #include <ace-c/enums.hpp>
+#include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/ast/AstVariable.hpp>
 
 #include <memory>
 #include <vector>
@@ -30,6 +32,8 @@ public:
         const SymbolTypePtr_t &identifier_type, 
         const std::vector<std::shared_ptr<AstExpression>> &args,
         const SourceLocation &location);
+
+    static AstVariable *ExprToVar(AstExpression *expr);
 
 public:
     SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit);

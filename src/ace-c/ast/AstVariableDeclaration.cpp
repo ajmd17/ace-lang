@@ -4,6 +4,7 @@
 #include <ace-c/Keywords.hpp>
 #include <ace-c/ObjectType.hpp>
 #include <ace-c/Configuration.hpp>
+#include <ace-c/SemanticAnalyzer.hpp>
 
 #include <common/instructions.hpp>
 #include <common/my_assert.hpp>
@@ -14,10 +15,12 @@
 AstVariableDeclaration::AstVariableDeclaration(const std::string &name,
     const std::shared_ptr<AstTypeSpecification> &type_specification,
     const std::shared_ptr<AstExpression> &assignment,
+    bool is_ref,
     const SourceLocation &location)
     : AstDeclaration(name, location),
       m_type_specification(type_specification),
       m_assignment(assignment),
+      m_is_ref(is_ref),
       m_assignment_already_visited(false)
 {
 }
@@ -61,6 +64,18 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             if (!m_assignment_already_visited) {
                 // visit assignment
                 m_real_assignment->Visit(visitor, mod);
+            }
+
+            // if this is a reference then make sure the assignment 
+            // is a variable
+            if (m_is_ref) {
+                if (auto *assignment_as_var = SemanticAnalyzer::ExprToVar(m_real_assignment.get())) {
+                    // TODO
+                } else {
+                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                        Level_fatal, Msg_ref_not_assigned_to_identifier, m_location
+                    ));
+                }
             }
 
             // make sure type is compatible with assignment

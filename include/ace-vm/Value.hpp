@@ -32,7 +32,7 @@ struct Value {
         
         struct {
             uint32_t addr;
-            uint32_t varargs_push;
+            int32_t varargs_push;
         } call;
 
         uint32_t addr;

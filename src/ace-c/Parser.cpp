@@ -1111,9 +1111,15 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool re
     }
 
     if (Token identifier = ExpectIdentifier(allow_keyword_names, true)) {
+        bool is_ref = false;
         std::shared_ptr<AstTypeSpecification> type_spec;
 
         if (Match(TK_COLON, true)) {
+            // check if ref
+            // allow either & or 'ref'
+            if (MatchOperator(&Operator::operator_bitwise_and, true) || MatchKeyword(Keyword_ref, true)) {
+                is_ref = true;
+            }
             // read object type
             type_spec = ParseTypeSpecification();
         }
@@ -1140,7 +1146,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool re
 
         return std::shared_ptr<AstVariableDeclaration>(
             new AstVariableDeclaration(identifier.GetValue(),
-                type_spec, assignment, location));
+                type_spec, assignment, is_ref, location));
     }
 
     return nullptr;

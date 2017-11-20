@@ -12,6 +12,7 @@ public:
     AstVariableDeclaration(const std::string &name,
         const std::shared_ptr<AstTypeSpecification> &type_specification,
         const std::shared_ptr<AstExpression> &assignment,
+        bool is_ref,
         const SourceLocation &location);
     virtual ~AstVariableDeclaration() = default;
 
@@ -29,6 +30,7 @@ public:
 protected:
     std::shared_ptr<AstTypeSpecification> m_type_specification;
     std::shared_ptr<AstExpression> m_assignment;
+    bool m_is_ref;
 
     // set while analyzing
     std::shared_ptr<AstExpression> m_real_assignment;
@@ -39,6 +41,7 @@ protected:
             m_name,
             CloneAstNode(m_type_specification),
             CloneAstNode(m_assignment),
+            m_is_ref,
             m_location));
     }
 };

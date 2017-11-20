@@ -67,7 +67,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_self_outside_class, "'self' not allowed outside of a class" },
     { Msg_else_outside_if, "'else' not connected to an if statement" },
     { Msg_alias_missing_assignment, "alias '%' must have an assignment" },
-    { Msg_alias_must_be_identifier, "alias '%' must reference an identifier" },
+    { Msg_ref_not_assigned_to_identifier, "reference must be assigned to an identifier" },
     { Msg_unrecognized_alias_type, "only identifiers, types and module names may be aliased" },
     { Msg_type_contract_outside_definition, "type contracts not allowed outside of function definitions" },
     { Msg_unknown_type_contract_requirement, "unknown type contract requirement: '%'" },

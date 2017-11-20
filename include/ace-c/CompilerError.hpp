@@ -87,7 +87,7 @@ enum ErrorMessage {
     Msg_self_outside_class,
     Msg_else_outside_if,
     Msg_alias_missing_assignment,
-    Msg_alias_must_be_identifier,
+    Msg_ref_not_assigned_to_identifier,
     Msg_unrecognized_alias_type,
     Msg_type_contract_outside_definition,
     Msg_unknown_type_contract_requirement,

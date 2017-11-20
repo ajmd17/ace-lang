@@ -1,5 +1,8 @@
 #include <ace-c/SemanticAnalyzer.hpp>
 #include <ace-c/ast/AstModuleDeclaration.hpp>
+#include <ace-c/ast/AstIdentifier.hpp>
+#include <ace-c/ast/AstMemberAccess.hpp>
+#include <ace-c/ast/AstModuleAccess.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/SymbolType.hpp>
 
@@ -105,6 +108,29 @@ SymbolTypePtr_t SemanticAnalyzer::SubstituteFunctionArgs(AstVisitor *visitor, Mo
     }
     
     return nullptr;
+}
+
+AstVariable *SemanticAnalyzer::ExprToVar(AstExpression *expr)
+{
+    AstVariable *as_var = nullptr;
+
+    if (auto *as_mem = dynamic_cast<AstMemberAccess*>(expr)) {
+        AstIdentifier *last = as_mem->GetLast().get();
+        as_var = dynamic_cast<AstVariable*>(last);
+    } else if (auto *as_mod = dynamic_cast<AstModuleAccess*>(expr)) {
+        AstModuleAccess *target = as_mod;
+        // loop until null or found
+        while (!as_var && target) {
+            if (!(as_var = dynamic_cast<AstVariable*>(target->GetExpression().get()))) {
+                // check if rhs of module access is also a module access
+                target = dynamic_cast<AstModuleAccess*>(target->GetExpression().get());
+            }
+        }
+    } else {
+        as_var = dynamic_cast<AstVariable*>(expr);
+    }
+
+    return as_var;
 }
 
 SemanticAnalyzer::SemanticAnalyzer(AstIterator *ast_iterator, CompilationUnit *compilation_unit)

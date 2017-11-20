@@ -10,11 +10,13 @@
 
 AstArgument::AstArgument(
     const std::shared_ptr<AstExpression> &expr,
+    bool is_splat,
     bool is_named,
     const std::string &name,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
       m_expr(expr),
+      m_is_splat(is_splat),
       m_is_named(is_named),
       m_name(name)
 {
@@ -22,6 +24,15 @@ AstArgument::AstArgument(
 
 void AstArgument::Visit(AstVisitor *visitor, Module *mod)
 {
+    if (m_is_splat) {
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_not_implemented,
+            m_location,
+            "splat-expressions"
+        ));
+    }
+
     ASSERT(m_expr != nullptr);
     m_expr->Visit(visitor, mod);
 }

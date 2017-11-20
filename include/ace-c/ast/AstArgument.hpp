@@ -10,6 +10,7 @@ class AstArgument : public AstExpression {
 public:
     AstArgument(
         const std::shared_ptr<AstExpression> &expr,
+        bool is_splat,
         bool is_named,
         const std::string &name,
         const SourceLocation &location);
@@ -17,6 +18,9 @@ public:
 
     inline const std::shared_ptr<AstExpression> &GetExpr() const
       { return m_expr; }
+
+    inline bool IsSplat() const { return m_is_splat; }
+
     inline bool IsNamed() const { return m_is_named; }
     inline const std::string &GetName() const { return m_name; }
 
@@ -34,6 +38,7 @@ public:
 
 private:
     std::shared_ptr<AstExpression> m_expr;
+    bool m_is_splat;
     bool m_is_named;
     std::string m_name;
 
@@ -41,6 +46,7 @@ private:
     {
         return Pointer<AstArgument>(new AstArgument(
             CloneAstNode(m_expr),
+            m_is_splat,
             m_is_named,
             m_name,
             m_location

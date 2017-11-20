@@ -65,7 +65,6 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             if (m_should_inline) {
                 // set access options for this variable based on those of the current value
                 m_access_options = m_inline_value->GetAccessOptions();
-
                 // if alias, accept the current value instead
                 m_inline_value->Visit(visitor, mod);
             }

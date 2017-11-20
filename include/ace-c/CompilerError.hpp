@@ -17,10 +17,12 @@ enum ErrorMessage {
     /* Fatal errors */
     Msg_internal_error,
     Msg_custom_error,
+    Msg_not_implemented,
     Msg_illegal_syntax,
     Msg_illegal_expression,
     Msg_illegal_operator,
     Msg_invalid_operator_for_type,
+    Msg_invalid_symbol_query,
     Msg_const_modified,
     Msg_const_missing_assignment,
     Msg_cannot_modify_rvalue,

@@ -16,7 +16,9 @@
 #include <ace-c/emit/aex-builder/AEXGenerator.hpp>
 
 #include <ace-vm/VM.hpp>
+#include <ace-vm/InstructionHandler.hpp>
 #include <ace-vm/BytecodeStream.hpp>
+#include <ace-vm/ImmutableString.hpp>
 #include <ace-vm/Array.hpp>
 #include <ace-vm/Object.hpp>
 #include <ace-vm/TypeInfo.hpp>
@@ -41,7 +43,7 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_block != nullptr);
 
-    struct {
+    struct MetaContext {
         AstVisitor *m_visitor;
         Module *m_mod;
     } meta_context;
@@ -59,19 +61,44 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
 
     meta_api.Module(compiler::Config::global_module_name)
         .Variable("__meta_context", BuiltinTypes::ANY, (UserData_t)&meta_context)
-        .Variable("compiler", BuiltinTypes::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
+        .Variable("scope", BuiltinTypes::ANY, [](vm::VMState *state, vm::ExecutionThread *thread, vm::Value *out) {
             ASSERT(state != nullptr);
             ASSERT(out != nullptr);
 
-            NativeFunctionPtr_t compiler_define_func = [](ace::sdk::Params params) {
-                std::cout << "HELLO\n";
+            NativeFunctionPtr_t lookup_func = [](ace::sdk::Params params) {
+                ACE_CHECK_ARGS(==, 3); // 3 args because first should be self (meta_state)
+
+                vm::Exception e("lookup() expects arguments of type MetaContext and String");
+
+                vm::Value *arg1 = params.args[1];
+                ASSERT(arg1 != nullptr);
+                MetaContext *meta_context = (MetaContext*)arg1->m_value.user_data;
+
+                vm::Value *arg2 = params.args[2];
+                ASSERT(arg2 != nullptr);
+
+                if (vm::ImmutableString *str_ptr = arg2->GetValue().ptr->GetPointer<vm::ImmutableString>()) {
+                    if (Identifier *ident = meta_context->m_mod->LookUpIdentifier(std::string(str_ptr->GetData()), false, true)) {
+                        // @TODO return a "Variable" instance that gives info on the variable
+                        std::cout << "found " << ident->GetName() << "\n";
+                    } else {
+                        // not found... return null
+                        vm::Value res;
+                        res.m_type = vm::Value::HEAP_POINTER;
+                        res.m_value.ptr = nullptr;
+
+                        ACE_RETURN(res);
+                    }
+                } else {
+                    ACE_THROW(e);
+                }
             };
 
             vm::Member members[1]; // TODO make a builder class or something to do this
-            std::strcpy(members[0].name, "define");
-            members[0].hash = hash_fnv_1("define");
+            std::strcpy(members[0].name, "lookup");
+            members[0].hash = hash_fnv_1("lookup");
             members[0].value.m_type = vm::Value::NATIVE_FUNCTION;
-            members[0].value.m_value.native_func = compiler_define_func;
+            members[0].value.m_value.native_func = lookup_func;
 
             // create prototype object.
             vm::HeapValue *proto = state->HeapAlloc(thread);
@@ -80,7 +107,6 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
 
             // create Object instance
             vm::Object ins(proto);
-            // TODO
 
             vm::HeapValue *object = state->HeapAlloc(thread);
             ASSERT(object != nullptr);

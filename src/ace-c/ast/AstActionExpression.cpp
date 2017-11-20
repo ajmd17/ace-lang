@@ -60,6 +60,7 @@ void AstActionExpression::Visit(AstVisitor *visitor, Module *mod)
     std::shared_ptr<AstArgument> self_arg((new AstArgument(
         m_target,
         false,
+        false,
         "",
         SourceLocation::eof
     )));

@@ -76,15 +76,24 @@ Pointer<AstStatement> AstModuleAccess::Clone() const
 
 Tribool AstModuleAccess::IsTrue() const
 {
+    ASSERT(m_expr != nullptr);
     return m_expr->IsTrue();
 }
 
 bool AstModuleAccess::MayHaveSideEffects() const
 {
+    ASSERT(m_expr != nullptr);
     return m_expr->MayHaveSideEffects();
 }
 
 SymbolTypePtr_t AstModuleAccess::GetExprType() const
 {
+    ASSERT(m_expr != nullptr);
     return m_expr->GetExprType();
+}
+
+const AstExpression *AstModuleAccess::GetValueOf() const
+{
+    ASSERT(m_expr != nullptr);
+    return m_expr->GetValueOf();
 }

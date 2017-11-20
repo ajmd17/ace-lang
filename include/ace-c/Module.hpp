@@ -4,6 +4,7 @@
 #include <ace-c/Scope.hpp>
 #include <ace-c/SourceLocation.hpp>
 #include <ace-c/Tree.hpp>
+#include <ace-c/Configuration.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 #include <vector>
@@ -54,7 +55,7 @@ public:
         If this_scope_only is set to true, only the current scope will be
         searched.
     */
-    Identifier *LookUpIdentifier(const std::string &name, bool this_scope_only);
+    Identifier *LookUpIdentifier(const std::string &name, bool this_scope_only, bool outside_modules=ACE_ALLOW_IDENTIFIERS_OTHER_MODULES);
     
     /** Check to see if the identifier exists in this scope or above this one.
         Will only search the number of depth levels it is given.

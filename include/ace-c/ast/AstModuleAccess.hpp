@@ -33,6 +33,8 @@ public:
     virtual bool MayHaveSideEffects() const override;
     virtual SymbolTypePtr_t GetExprType() const override;
 
+    virtual const AstExpression *GetValueOf() const override;
+
 private:
     std::string m_target;
     std::shared_ptr<AstExpression> m_expr;

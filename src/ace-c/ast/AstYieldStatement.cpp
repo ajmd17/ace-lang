@@ -50,6 +50,7 @@ void AstYieldStatement::Visit(AstVisitor *visitor, Module *mod)
             { std::shared_ptr<AstArgument>(new AstArgument(
                 m_expr,
                 false,
+                false,
                 "",
                 m_location
              )) },

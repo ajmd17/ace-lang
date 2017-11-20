@@ -223,6 +223,5 @@ bool AstTypeObject::MayHaveSideEffects() const
 SymbolTypePtr_t AstTypeObject::GetExprType() const
 {
     ASSERT(m_symbol_type != nullptr);
-
     return m_symbol_type->GetBaseType();
 }

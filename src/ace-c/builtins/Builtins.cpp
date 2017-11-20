@@ -17,6 +17,10 @@ Builtins::Builtins()
         BuiltinTypes::TYPE_TYPE, nullptr, SourceLocation::eof
     ));
 
+    m_vars["Null"].reset(new AstTypeObject(
+        BuiltinTypes::NULL_TYPE, nullptr, SourceLocation::eof
+    ));
+
     m_vars["Int"].reset(new AstTypeObject(
         BuiltinTypes::INT, nullptr, SourceLocation::eof
     ));

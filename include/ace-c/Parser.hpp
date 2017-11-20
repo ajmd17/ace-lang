@@ -55,6 +55,7 @@
 #include <ace-c/ast/AstReturnStatement.hpp>
 #include <ace-c/ast/AstYieldStatement.hpp>
 #include <ace-c/ast/AstMetaBlock.hpp>
+#include <ace-c/ast/AstSymbolQuery.hpp>
 #include <ace-c/ast/AstTemplateExpression.hpp>
 #include <ace-c/ast/AstTemplateInstantiation.hpp>
 #include <ace-c/ast/AstSyntaxDefinition.hpp>
@@ -97,7 +98,8 @@ private:
     std::shared_ptr<AstExpression> ParseTerm(
         bool override_commas = false,
         bool override_fat_arrows = false,
-        bool override_angle_brackets = false
+        bool override_angle_brackets = false,
+        bool override_square_brackets = false
     );
     std::shared_ptr<AstExpression> ParseParentheses();
     std::shared_ptr<AstExpression> ParseAngleBrackets(std::shared_ptr<AstExpression> target);
@@ -165,6 +167,7 @@ private:
     std::shared_ptr<AstReturnStatement> ParseReturnStatement();
     std::shared_ptr<AstYieldStatement> ParseYieldStatement();
     std::shared_ptr<AstMetaBlock> ParseMetaBlock();
+    std::shared_ptr<AstExpression> ParseMetaProperty();
     std::shared_ptr<AstSyntaxDefinition> ParseSyntaxDefinition();
 };
 

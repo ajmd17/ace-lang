@@ -4,10 +4,12 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     /* Fatal errors */
     { Msg_internal_error, "Internal error" },
     { Msg_custom_error, "%" },
+    { Msg_not_implemented, "Feature '%' not implemented." },
     { Msg_illegal_syntax, "Illegal syntax" },
     { Msg_illegal_expression, "Illegal expression" },
     { Msg_illegal_operator, "Illegal usage of operator '%'" },
     { Msg_invalid_operator_for_type, "Operator '%' is not valid for type '%'" },
+    { Msg_invalid_symbol_query, "Unknown symbol query '%'" },
     { Msg_const_modified, "Cannot modify a constant" },
     { Msg_const_missing_assignment, "Constant is missing an assignment" },
     { Msg_cannot_modify_rvalue, "The left hand side is not suitable for assignment" },

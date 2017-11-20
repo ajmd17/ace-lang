@@ -245,7 +245,7 @@ std::unique_ptr<Buildable> Compiler::CreateConditional(
             label_id = end_label;
         }
 
-        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, label_id));
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JE, label_id));
     }
 
     // enter the block
@@ -253,7 +253,7 @@ std::unique_ptr<Buildable> Compiler::CreateConditional(
 
     if (else_part != nullptr) {
         // jump to the very end now that we've accepted the if-block
-        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JMP, end_label));
+        chunk->Append(BytecodeUtil::Make<Jump>(Jump::JNE, end_label));
 
         // set the label's position to where the else-block would be
         chunk->Append(BytecodeUtil::Make<LabelMarker>(else_label));

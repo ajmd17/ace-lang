@@ -61,14 +61,14 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
     }
 
     if (m_is_generic) {
-        if (!m_is_const) {
-            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                LEVEL_ERROR,
-                Msg_generic_expression_must_be_const,
-                m_location,
-                m_name
-            ));
-        }
+        // if (!m_is_const) {
+        //     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+        //         LEVEL_ERROR,
+        //         Msg_generic_expression_must_be_const,
+        //         m_location,
+        //         m_name
+        //     ));
+        // }
 
         mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
     }
@@ -127,14 +127,14 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             ASSERT(m_proto->GetHeldType() != nullptr);
             symbol_type = m_proto->GetHeldType();
 
-            if (symbol_type == BuiltinTypes::ANY) {
-                // Any type is reserved for method parameters
-                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                    LEVEL_ERROR,
-                    Msg_any_reserved_for_parameters,
-                    m_location
-                ));
-            }
+            // if (symbol_type == BuiltinTypes::ANY) {
+            //     // Any type is reserved for method parameters
+            //     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            //         LEVEL_ERROR,
+            //         Msg_any_reserved_for_parameters,
+            //         m_location
+            //     ));
+            // }
 
             const std::shared_ptr<AstExpression> default_value = m_proto->GetDefaultValue();
 
@@ -213,7 +213,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
     AstDeclaration::Visit(visitor, mod);
 
     if (m_identifier != nullptr) {
-        if (m_is_const) {
+        if (m_is_const || m_is_generic) {
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_CONST);
         }
 
@@ -221,6 +221,8 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             //m_identifier->SetTemplateParams(ident_template_params);
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_GENERIC);
         }
+
+        ASSERT(symbol_type != nullptr);
 
         m_identifier->SetSymbolType(symbol_type);
         m_identifier->SetCurrentValue(m_real_assignment);

@@ -381,7 +381,7 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseDirective();
         } else if (MatchKeyword(Keyword_import, false)) {
             res = ParseImport();
-        } else if (MatchKeyword(Keyword_let, false) || MatchKeyword(Keyword_const, true) || MatchKeyword(Keyword_generic, true)) {
+        } else if (MatchKeyword(Keyword_let) || MatchKeyword(Keyword_const) || MatchKeyword(Keyword_generic)) {
             res = ParseVariableDeclaration(true);
         } else if (MatchKeyword(Keyword_func, false)) {
             if (MatchAhead(TK_IDENT, 1)) {
@@ -515,7 +515,8 @@ std::shared_ptr<AstDirective> Parser::ParseDirective()
 
 std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
     bool override_fat_arrows,
-    bool override_angle_brackets)
+    bool override_angle_brackets,
+    bool override_square_brackets)
 {
     Token token = m_token_stream->Peek();
     
@@ -556,9 +557,9 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
             expr = ParseModuleAccess();
         } else {
             expr = ParseIdentifier();
-            if (!override_angle_brackets && MatchOperator("<")) {
-                expr = ParseAngleBrackets(expr);
-            }
+        }
+        if (!override_angle_brackets && MatchOperator("<")) {
+            expr = ParseAngleBrackets(expr);
         }
     } else if (Match(TK_DOUBLE_COLON)) {
         expr = ParseModuleAccess();
@@ -586,6 +587,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
         expr = ParseValueOfExpression();
     } else if (MatchKeyword(Keyword_typeof)) {
         expr = ParseTypeOfExpression();
+    } else if (MatchKeyword(Keyword_meta)) {
+        expr = ParseMetaProperty();
     } else if (Match(TK_OPERATOR)) {
         expr = ParseUnaryExpression();
     } else {
@@ -613,10 +616,10 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
 
     while (expr != nullptr &&
            (Match(TK_DOT) ||
-            Match(TK_OPEN_BRACKET) ||
             Match(TK_OPEN_PARENTH) ||
             (!override_commas && Match(TK_COMMA)) ||
             (!override_fat_arrows && Match(TK_FAT_ARROW)) ||
+            (!override_square_brackets && Match(TK_OPEN_BRACKET)) ||
             //(!override_angle_brackets && MatchOperator("<")) ||
             MatchKeyword(Keyword_has)))
     {
@@ -624,7 +627,7 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
             expr = ParseMemberExpression(expr);
         }
 
-        if (Match(TK_OPEN_BRACKET)) {
+        if (!override_square_brackets && Match(TK_OPEN_BRACKET)) {
             expr = ParseArrayAccess(expr);
         }
 
@@ -759,8 +762,13 @@ std::shared_ptr<AstExpression> Parser::ParseAngleBrackets(std::shared_ptr<AstExp
 
         do {
             const SourceLocation arg_location = CurrentLocation();
+            bool is_splat_arg = false;
             bool is_named_arg = false;
             std::string arg_name;
+
+            if (Match(TK_ELLIPSIS, true)) {
+                is_splat_arg = true;
+            }
 
             // check for name: value expressions (named arguments)
             if (Match(TK_IDENT)) {
@@ -778,6 +786,7 @@ std::shared_ptr<AstExpression> Parser::ParseAngleBrackets(std::shared_ptr<AstExp
             if (auto term = ParseTerm(true)) { // override commas
                 args.push_back(std::shared_ptr<AstArgument>(new AstArgument(
                     term,
+                    is_splat_arg,
                     is_named_arg,
                     arg_name,
                     arg_location
@@ -884,12 +893,14 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
 {
     SourceLocation location = CurrentLocation();
 
+    bool is_splat_arg = false;
     bool is_named_arg = false;
     std::string arg_name;
 
     if (expr == nullptr) {
-        // check for name: value expressions (named arguments)
-        if (Match(TK_IDENT)) {
+        if (Match(TK_ELLIPSIS, true)) {
+            is_splat_arg = true;
+        } else if (Match(TK_IDENT)) { // check for name: value expressions (named arguments)
             if (MatchAhead(TK_COLON, 1)) {
                 // named argument
                 is_named_arg = true;
@@ -907,6 +918,7 @@ std::shared_ptr<AstArgument> Parser::ParseArgument(std::shared_ptr<AstExpression
     if (expr != nullptr) {
         return std::shared_ptr<AstArgument>(new AstArgument(
             expr,
+            is_splat_arg,
             is_named_arg,
             arg_name,
             location
@@ -1072,8 +1084,18 @@ std::shared_ptr<AstMember> Parser::ParseMemberExpression(std::shared_ptr<AstExpr
 std::shared_ptr<AstArrayAccess> Parser::ParseArrayAccess(std::shared_ptr<AstExpression> target)
 {
     if (Token token = Expect(TK_OPEN_BRACKET, true)) {
-        auto expr = ParseExpression();
-        Expect(TK_CLOSE_BRACKET, true);
+        std::shared_ptr<AstExpression> expr;
+
+        if (Match(TK_CLOSE_BRACKET, true)) {
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_illegal_expression,
+                token.GetLocation()
+            ));
+        } else {
+            expr = ParseExpression();
+            Expect(TK_CLOSE_BRACKET, true);
+        }
 
         if (expr != nullptr) {
             return std::shared_ptr<AstArrayAccess>(new AstArrayAccess(
@@ -1445,7 +1467,49 @@ std::shared_ptr<AstExpression> Parser::ParseExpression(bool override_commas,
 
 std::shared_ptr<AstPrototypeSpecification> Parser::ParsePrototypeSpecification()
 {
-    if (auto term = ParseTerm(true/* override commas */)) {
+    if (auto term = ParseTerm(true, true, false, true)) {
+        //while (Match(TK_OPEN_BRACKET) || Match(TK_QUESTION_MARK)) {
+            // question mark at the end of a type is syntactical sugar for `Maybe(T)`
+            /*if (Token token = Match(TK_QUESTION_MARK, true)) {
+                term = std::shared_ptr<AstTemplateInstantiation>(new AstTemplateInstantiation(
+                    std::shared_ptr<AstVariable>(new AstVariable(
+                        "Maybe",
+                        token.GetLocation()
+                    )),
+                    {
+                        std::shared_ptr<AstArgument>(new AstArgument(
+                            term,
+                            false,
+                            false,
+                            "",
+                            term->GetLocation()
+                        ))
+                    },
+                    term->GetLocation()
+                ));
+            } else */if (Token token = Match(TK_OPEN_BRACKET, true)) {
+                // array braces at the end of a type are syntactical sugar for `Array(T)`
+                term = std::shared_ptr<AstTemplateInstantiation>(new AstTemplateInstantiation(
+                    std::shared_ptr<AstVariable>(new AstVariable(
+                        "Array",
+                        token.GetLocation()
+                    )),
+                    {
+                        std::shared_ptr<AstArgument>(new AstArgument(
+                            term,
+                            false,
+                            false,
+                            "",
+                            term->GetLocation()
+                        ))
+                    },
+                    term->GetLocation()
+                ));
+
+                Expect(TK_CLOSE_BRACKET, true);
+            }
+        //}
+
         return std::shared_ptr<AstPrototypeSpecification>(new AstPrototypeSpecification(
             term,
             term->GetLocation()
@@ -1627,7 +1691,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
 {
     const SourceLocation location = CurrentLocation();
 
-    std::set<int> used_specifiers;
+    std::set<Keywords> used_specifiers;
 
     while (MatchKeyword(Keyword_generic) || MatchKeyword(Keyword_const) || MatchKeyword(Keyword_let)) {
         if (MatchKeyword(Keyword_const, true) && used_specifiers.find(Keyword_const) == used_specifiers.end()) {
@@ -2460,6 +2524,46 @@ std::shared_ptr<AstMetaBlock> Parser::ParseMetaBlock()
         if (auto block = ParseBlock()) {
             return std::shared_ptr<AstMetaBlock>(new AstMetaBlock(
                 block,
+                location
+            ));
+        }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstExpression> Parser::ParseMetaProperty()
+{
+    const SourceLocation location = CurrentLocation();
+
+    if (Token token = ExpectKeyword(Keyword_meta, true)) {
+        Expect(TK_DOUBLE_COLON, true);
+
+        Token ident = ExpectIdentifier(true, true);
+
+        // @TODO refactor this to use ParseFunctionParameters() etc...
+        // rather than having it hard-coded. makes it hard to add new features..
+
+        if (ident.GetValue() == "query") {
+            Expect(TK_OPEN_PARENTH, true);
+
+            std::shared_ptr<AstString> query_command_name = ParseStringLiteral();
+            if (query_command_name == nullptr) {
+                return nullptr;
+            }
+
+            Expect(TK_COMMA, true);
+
+            std::shared_ptr<AstExpression> term = ParseTerm();
+            if (term == nullptr) {
+                return nullptr;
+            }
+
+            Expect(TK_CLOSE_PARENTH, true);
+
+            return std::shared_ptr<AstSymbolQuery>(new AstSymbolQuery(
+                query_command_name->GetValue(),
+                term,
                 location
             ));
         }

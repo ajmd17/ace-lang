@@ -49,14 +49,18 @@ void CheckArgTypeCompatible(
 
     // make sure argument types are compatible
     // use strict numbers so that floats cannot be passed as explicit ints
-    if (!param_type->TypeCompatible(*arg_type, true)) {
-        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-            LEVEL_ERROR,
-            Msg_arg_type_incompatible,
-            location,
-            arg_type->GetName(),
-            param_type->GetName()
-        ));
+    // @NOTE: do not add error for undefined, it causes too many unnecessary errors
+    //        that would've already been conveyed via 'not declared' errors
+    if (arg_type != BuiltinTypes::UNDEFINED) {
+        if (!param_type->TypeCompatible(*arg_type, true)) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_arg_type_incompatible,
+                location,
+                arg_type->GetName(),
+                param_type->GetName()
+            ));
+        }
     }
 }
 

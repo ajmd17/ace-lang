@@ -1,10 +1,13 @@
 generic TypeOf <X> : String = () {
-  if typeof X == "Any" || typeof X == "Number" {
+  const ct_type = $meta::query("inspect_type", X);
+
+  if ct_type == "Any" || ct_type == "Number" {
     return runtime::typeof(X);
   }
 
-  return $meta::query("inspect_type", X);
+  return ct_type;
 }();
 
-generic Number <X>: Bool = TypeOf<X> == "Int" || TypeOf<X> == "Float";
-generic Callable <X>: Bool = TypeOf<X> == "Function" || X has "$invoke";
+generic Number <X> : Bool = TypeOf<X> == "Int" || TypeOf<X> == "Float";
+generic Callable <X> : Bool = TypeOf<X> == "Function" || X has "$invoke";
+generic Container <X> : Bool = TypeOf<X> == "Array";

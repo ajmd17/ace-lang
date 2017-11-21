@@ -4,6 +4,7 @@
 #include <string>
 
 #include <ace-c/ast/AstExpression.hpp>
+#include <ace-c/ast/AstString.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 class AstTypeOfExpression : public AstExpression {
@@ -25,10 +26,13 @@ public:
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
     virtual SymbolTypePtr_t GetExprType() const override;
+
+    virtual const AstExpression *GetValueOf() const override { return m_string_expr.get(); }
     
 private:
     std::shared_ptr<AstExpression> m_expr;
 
+    std::shared_ptr<AstString> m_string_expr;
     std::shared_ptr<AstExpression> m_runtime_typeof_call;
 
     // set while compiling

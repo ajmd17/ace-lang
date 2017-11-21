@@ -46,87 +46,58 @@ void AstTemplateInstantiation::Visit(AstVisitor *visitor, Module *mod)
         arg->Visit(visitor, mod);
     }
 
-    // temporarily define all generic parameters.
-    const AstExpression *value_of = m_expr->GetValueOf();
-    // no need to check if null because if it is the template_expr cast will return null
+    m_block.reset(new AstBlock({}, m_location));
 
-    m_return_type = BuiltinTypes::ANY;
+    if (m_expr->GetExprType() != BuiltinTypes::ANY) {
+        // temporarily define all generic parameters.
+        const AstExpression *value_of = m_expr->GetValueOf();
+        // no need to check if null because if it is the template_expr cast will return null
 
-    if (const AstTemplateExpression *template_expr = dynamic_cast<const AstTemplateExpression*>(value_of)) {
-        FunctionTypeSignature_t substituted = SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
-            visitor, mod, template_expr->GetExprType(), m_generic_args, m_location
-        );
+        m_return_type = BuiltinTypes::ANY;
 
-        m_return_type = substituted.first;
-        const auto args_substituted = substituted.second;
+        if (const AstTemplateExpression *template_expr = dynamic_cast<const AstTemplateExpression*>(value_of)) {
+            FunctionTypeSignature_t substituted = SemanticAnalyzer::Helpers::SubstituteFunctionArgs(
+                visitor, mod, template_expr->GetExprType(), m_generic_args, m_location
+            );
 
-        m_block.reset(new AstBlock({}, m_location));
+            m_return_type = substituted.first;
+            const auto args_substituted = substituted.second;
 
-        // there can be more because of varargs
-        if (args_substituted.size() >= template_expr->GetGenericParameters().size()) {
-            //m_mixin_overrides.reserve(generic_parameters.size());
-            //m_param_overrides.reserve(generic_parameters.size());
-            
-            for (size_t i = 0; i <  template_expr->GetGenericParameters().size(); i++) {
-                ASSERT(args_substituted[i]->GetExpr() != nullptr);
+            // there can be more because of varargs
+            if (args_substituted.size() >= template_expr->GetGenericParameters().size()) {
+                for (size_t i = 0; i <  template_expr->GetGenericParameters().size(); i++) {
+                    ASSERT(args_substituted[i]->GetExpr() != nullptr);
 
-                // if (!args_substituted[i]->GetExpr()->IsLiteral()) {
-                //     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                //         LEVEL_ERROR,
-                //         Msg_generic_argument_must_be_literal,
-                //         args_substituted[i]->GetLocation()
-                //     ));
-                // }
-
-                if (args_substituted[i]->GetExpr()->GetExprType() != BuiltinTypes::UNDEFINED) {
-                    // declare aliases for all generic params
-                    // these will cause the previous decls to be shadowed
-                    // m_mixin_overrides.push_back(std::shared_ptr<AstAliasDeclaration>(new AstAliasDeclaration(
-                    //     generic_parameters[i]->GetName(),
-                    //     CloneAstNode(args_substituted[i]->GetExpr()), // extract value from AstArgument
-                    //     args_substituted[i]->GetLocation()
-                    // )));
-
-                    /*m_param_overrides.push_back*/
-                    m_block->AddChild(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
-                        template_expr->GetGenericParameters()[i]->GetName(),
-                        nullptr,
-                        CloneAstNode(args_substituted[i]->GetExpr()),
-                        {},
-                        true, // const
-                        false, // generic
-                        args_substituted[i]->GetLocation()
-                    )));
+                    if (args_substituted[i]->GetExpr()->GetExprType() != BuiltinTypes::UNDEFINED) {
+                        m_block->AddChild(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
+                            template_expr->GetGenericParameters()[i]->GetName(),
+                            nullptr,
+                            CloneAstNode(args_substituted[i]->GetExpr()),
+                            {},
+                            true, // const
+                            false, // generic
+                            args_substituted[i]->GetLocation()
+                        )));
+                    }
                 }
-                /*m_mixin_overrides.push_back(std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
-                    template_params[i].m_name,
-                    nullptr,
-                    args_substituted[i]->GetExpr(), // extract value from AstArgument
-                    {},
-                    false,
-                    args_substituted[i]->GetLocation()
-                )));*/
+
+                ASSERT(template_expr->GetInnerExpression() != nullptr);
+
+                m_block->AddChild(CloneAstNode(template_expr->GetInnerExpression()));
+                m_block->Visit(visitor, mod);
+
+                // TODO: Cache instantiations so we don't create a new one for every set of arguments
             }
-
-            // for (auto &it : m_param_overrides/*m_mixin_overrides*/) {
-            //     it->Visit(visitor, mod);
-            // }
-
-            ASSERT(template_expr->GetInnerExpression() != nullptr);
-
-            // m_inst_expr = CloneAstNode(template_expr->GetInnerExpression());
-            // m_inst_expr->Visit(visitor, mod);
-            m_block->AddChild(CloneAstNode(template_expr->GetInnerExpression()));
-            m_block->Visit(visitor, mod);
-
-            // TODO: Cache instantiations so we don't create a new one for every set of arguments
+        } else {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_expression_not_generic,
+                m_expr->GetLocation(),
+                m_expr->GetExprType()->GetName()
+            ));
         }
     } else {
-        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-            LEVEL_ERROR,
-            Msg_expression_not_generic,
-            m_expr->GetLocation()
-        ));
+        m_return_type = BuiltinTypes::ANY;
     }
 
     mod->m_scopes.Close();
@@ -193,10 +164,4 @@ SymbolTypePtr_t AstTemplateInstantiation::GetExprType() const
 {
     ASSERT(m_return_type != nullptr);
     return m_return_type;
-    // if (m_inst_expr != nullptr) {
-    //     return m_inst_expr->GetExprType();
-    // }
-    return BuiltinTypes::ANY;
-
-    return BuiltinTypes::UNDEFINED;
 }

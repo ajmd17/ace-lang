@@ -33,7 +33,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
 
             // clone the AST node so we don't double-visit
             if (auto current_value = m_properties.GetIdentifier()->GetCurrentValue()) {
-                m_inline_value = CloneAstNode(current_value);
+                m_inline_value = current_value;//CloneAstNode(current_value);
             }
 
             // if alias or const, load direct value.

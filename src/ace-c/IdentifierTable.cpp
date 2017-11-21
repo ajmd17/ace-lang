@@ -87,7 +87,7 @@ Identifier *IdentifierTable::LookUpIdentifier(const std::string &name)
     return nullptr;
 }
 
-Identifier *IdentifierTable::BindTypeToIdentifier(const std::string &name, SymbolTypePtr_t symbol_type)
+void IdentifierTable::BindTypeToIdentifier(const std::string &name, SymbolTypePtr_t symbol_type)
 {
     AddIdentifier(name, 0, std::shared_ptr<AstTypeObject>(new AstTypeObject(
         symbol_type, nullptr, SourceLocation::eof

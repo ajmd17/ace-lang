@@ -48,7 +48,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     const bool has_user_assigned = m_assignment != nullptr;
     const bool has_user_specified_type = m_proto != nullptr;
-    // const bool is_generic = !m_template_params.empty();
 
     if (m_is_const) {
         if (!has_user_assigned) {
@@ -60,48 +59,12 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    if (m_is_generic) {
-        // if (!m_is_const) {
-        //     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-        //         LEVEL_ERROR,
-        //         Msg_generic_expression_must_be_const,
-        //         m_location,
-        //         m_name
-        //     ));
-        // }
-
-        mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
-    }
-
-    // if (is_generic) {
-    //     if (!m_is_const) {
-    //         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-    //             LEVEL_ERROR,
-    //             Msg_generic_expression_must_be_const,
-    //             m_location,
-    //             m_name
-    //         ));
-    //     }
-
-    //     // declare template params in a new scope
-    //     // open the new scope for parameters
-    //     mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, 0));
-
-    //     for (auto &param : m_template_params) {
-    //         ASSERT(param != nullptr);
-    //         param->Visit(visitor, mod);
-    //     }
-
-    //     template_expr.reset(new AstTemplateExpression(
-    //         m_assignment,
-    //         m_template_params,
-    //         m_location
-    //     ));
-    // }
-
-    // not generic - if user provided an assignment, set 'real assignment' to be what the user specified.
     if (has_user_assigned) {
         m_real_assignment = m_assignment;
+    }
+
+    if (m_is_generic) {
+        mod->m_scopes.Open(Scope(SCOPE_TYPE_NORMAL, UNINSTANTIATED_GENERIC_FLAG));
     }
 
     if (!has_user_specified_type && !has_user_assigned) {
@@ -121,29 +84,19 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         // with an empty array of type Array(Any)
         bool is_default_assigned = false;
 
-        if (m_proto != nullptr) {
+        /* ===== handle type specification ===== */
+        if (has_user_specified_type) {
             m_proto->Visit(visitor, mod);
 
             ASSERT(m_proto->GetHeldType() != nullptr);
             symbol_type = m_proto->GetHeldType();
-
-            // if (symbol_type == BuiltinTypes::ANY) {
-            //     // Any type is reserved for method parameters
-            //     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-            //         LEVEL_ERROR,
-            //         Msg_any_reserved_for_parameters,
-            //         m_location
-            //     ));
-            // }
-
-            const std::shared_ptr<AstExpression> default_value = m_proto->GetDefaultValue();
 
             // if no assignment provided, set the assignment to be the default value of the provided type
             if (m_real_assignment == nullptr) {
                 // generic/non-concrete types that have default values
                 // will get assigned to their default value without causing
                 // an error
-                if (default_value != nullptr) {
+                if (const std::shared_ptr<AstExpression> default_value = m_proto->GetDefaultValue()) {
                     // Assign variable to the default value for the specified type.
                     m_real_assignment = CloneAstNode(default_value);
                     // built-in assignment, turn off strict mode
@@ -178,13 +131,14 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         // visit assignment
         m_real_assignment->Visit(visitor, mod);
 
+        /* ===== handle assignment ===== */
+        // has received an explicit assignment
+        // make sure type is compatible with the type.
         if (has_user_assigned) {
-            // has received an explicit assignment
-            // make sure type is compatible with assignment
             ASSERT(m_real_assignment->GetExprType() != nullptr);
 
             if (has_user_specified_type) {
-                if (!is_default_assigned) {
+                if (!is_default_assigned) { // default assigned is not typechecked
                     SemanticAnalyzer::Helpers::EnsureLooseTypeAssignmentCompatibility(
                         visitor,
                         mod,
@@ -200,14 +154,9 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         }
     }
 
-    if (m_is_generic/*is_generic*/) {
+    if (m_is_generic) {
         // close template param scope
         mod->m_scopes.Close();
-
-        // set the real assignment to be the template expression here.
-        // this way if the inner expression gets visited on its own (with no provided arguments)
-        // we can show an error
-        //m_real_assignment = template_expr;
     }
 
     AstDeclaration::Visit(visitor, mod);
@@ -231,7 +180,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
 std::unique_ptr<Buildable> AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
-    if (!m_template_params.empty()) {
+    if (m_is_generic) {
         // generics do not build anything
         return nullptr;
     }

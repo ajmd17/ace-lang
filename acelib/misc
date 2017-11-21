@@ -1,9 +1,9 @@
-iterate: Function = (it: Array) * {
-  i: Int
-  len: Int = ::length(it)
+each: Function = (it: Array) * {
+  i: Int;
+  len: Int = ::length(it);
 
   while i < len {
-    yield it[i]
-    i += 1
+    yield it[i];
+    i += 1;
   }
-}
+};

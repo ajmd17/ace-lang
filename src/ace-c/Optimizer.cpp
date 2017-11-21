@@ -22,59 +22,6 @@ std::shared_ptr<AstConstant> Optimizer::ConstantFold(
 
     if (left_as_constant != nullptr && right_as_constant != nullptr) {
         result = left_as_constant->HandleOperator(op_type, right_as_constant);
-
-        /*// perform operations on these constants
-        switch (op_type) {
-            case Operators::OP_add:
-                result = (*left_as_constant) + right_as_constant;
-                break;
-            case Operators::OP_subtract:
-                result = (*left_as_constant) - right_as_constant;
-                break;
-            case Operators::OP_multiply:
-                result = (*left_as_constant) * right_as_constant;
-                break;
-            case Operators::OP_divide:
-                result = (*left_as_constant) / right_as_constant;
-                break;
-            case Operators::OP_modulus:
-                result = (*left_as_constant) % right_as_constant;
-                break;
-            case Operators::OP_bitwise_xor:
-                result = (*left_as_constant) ^ right_as_constant;
-                break;
-            case Operators::OP_bitwise_and:
-                result = (*left_as_constant) & right_as_constant;
-                break;
-            case Operators::OP_bitshift_left:
-                result = (*left_as_constant) << right_as_constant;
-                break;
-            case Operators::OP_bitshift_right:
-                result = (*left_as_constant) >> right_as_constant;
-                break;
-            case Operators::OP_logical_and:
-                result = (*left_as_constant) && right_as_constant;
-                break;
-            case Operators::OP_logical_or:
-                result = (*left_as_constant) || right_as_constant;
-                break;
-            case Operators::OP_less:
-                result = (*left_as_constant) < right_as_constant;
-                break;
-            case Operators::OP_greater:
-                result = (*left_as_constant) > right_as_constant;
-                break;
-            case Operators::OP_less_eql:
-                result = (*left_as_constant) <= right_as_constant;
-                break;
-            case Operators::OP_greater_eql:
-                result = (*left_as_constant) >= right_as_constant;
-                break;
-            case Operators::OP_equals:
-                result = left_as_constant->Equals(right_as_constant);
-                break;
-        }*/
-
         // don't have to worry about assignment operations,
         // because at this point both sides are const and literal.
     }

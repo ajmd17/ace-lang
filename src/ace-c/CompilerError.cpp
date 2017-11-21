@@ -38,7 +38,7 @@ const std::map<ErrorMessage, std::string> CompilerError::error_message_strings {
     { Msg_expected_type_got_identifier, "'%' is an identifier, expected a type" },
     { Msg_missing_type_and_assignment, "No type or assignment has been provided for '%'" },
     { Msg_type_no_default_assignment, "Type '%' has no default assignment" },
-    { Msg_expression_not_generic, "Generic parameters provided to a non-generic expression" },
+    { Msg_expression_not_generic, "Generic arguments provided non-generic type, '%'" },
     { Msg_too_many_generic_args, "Too many generic arguments provided: % required, found %" },
     { Msg_too_few_generic_args, "Too few generic arguments provided: % required, found %" },
     { Msg_multiple_return_types, "Function has more than one possible return type" },

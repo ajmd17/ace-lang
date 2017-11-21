@@ -72,17 +72,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                     m_location,
                     symbol_type->GetName()
                 ));
-            }
-            /*if (symbol_type == nullptr) {
-                // error, unknown type
-                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                    LEVEL_ERROR,
-                    Msg_undefined_type,
-                    m_location,
-                    m_left
-                ));
-            }*/
-            else {
+            } else {
                 // get type of the '$proto' member, which is an instance type
                 if (SymbolTypePtr_t proto_member_type = symbol_type->FindMember("$proto")) {
                     symbol_type = proto_member_type;
@@ -217,20 +207,6 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                             }
                         } else {
                             m_symbol_type = symbol_type;
-
-                            /*if (symbol_type->GetDefaultValue() != nullptr) {
-                                // if generics have a default value,
-                                // allow user to omit parameters.
-                                m_symbol_type = symbol_type;
-                            } else {
-                                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                                    LEVEL_ERROR,
-                                    Msg_generic_parameters_missing,
-                                    m_location,
-                                    symbol_type->GetName(),
-                                    symbol_type->GetGenericInfo().m_num_parameters
-                                ));
-                            }*/
                         }
 
                         break;

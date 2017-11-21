@@ -540,10 +540,13 @@ void AstBinaryExpression::Optimize(AstVisitor *visitor, Module *mod)
 #endif
 
     ASSERT(m_left != nullptr);
-    ASSERT(m_right != nullptr);
 
     m_left->Optimize(visitor, mod);
     m_left = Optimizer::OptimizeExpr(m_left, visitor, mod);
+
+    if (m_right == nullptr) {
+        return;
+    }
 
     m_right->Optimize(visitor, mod);
     m_right = Optimizer::OptimizeExpr(m_right, visitor, mod);
@@ -609,6 +612,10 @@ bool AstBinaryExpression::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstBinaryExpression::GetExprType() const
 {
+    ASSERT(m_op != nullptr);
+    if ((m_op->GetType() & LOGICAL) || (m_op->GetType() & COMPARISON)) {
+        return BuiltinTypes::BOOLEAN;
+    }
     // if (m_member_access) {
     //     return m_member_access->GetExprType();
     // } else {

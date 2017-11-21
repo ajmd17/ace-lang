@@ -441,7 +441,6 @@ std::unique_ptr<Buildable> AstFunctionExpression::Build(AstVisitor *visitor, Mod
         rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
         const int closure_obj_reg = rp;
-        std::cout << "closure_obj_reg = " << closure_obj_reg << std::endl;
 
         chunk->Append(m_closure_object->Build(visitor, mod));
 

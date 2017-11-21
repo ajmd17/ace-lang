@@ -35,7 +35,7 @@ public:
     /** Look up an identifier by name. Returns nullptr if not found */
     Identifier *LookUpIdentifier(const std::string &name);
 
-    Identifier *BindTypeToIdentifier(const std::string &name, SymbolTypePtr_t symbol_type);
+    void BindTypeToIdentifier(const std::string &name, SymbolTypePtr_t symbol_type);
 
     /** Look up symbol type by name */
     SymbolTypePtr_t LookupSymbolType(const std::string &name) const;

@@ -79,70 +79,6 @@ void Events_call_action(ace::sdk::Params params)
     vm::Exception ex("call_action() expects an Object or Function as the first argument");
     vm::Exception ex1("Each item in event array should be of type Array");
 
-    if (value_ptr->m_type == vm::Value::FUNCTION && (value_ptr->m_value.func.m_flags & FunctionFlags::GENERATOR)) {
-        // if the key is a generator, it should look like this internally:
-        /*
-            () {
-                return (<arguments>, callback) {
-                    // ...
-                    callback(...)
-                }
-            }
-        */
-        
-
-        // so we should invoke the object which will return the nested closure,
-        // and pass our found handler to it (at the end of this function)
-        // as `callback`
-        ace::vm::Value tmp(*target_ptr);
-        *target_ptr = *value_ptr;
-        *value_ptr = tmp;
-    } else if (value_ptr->m_type == vm::Value::HEAP_POINTER && value_ptr->m_value.ptr != nullptr) {
-        if (vm::Object *object = value_ptr->m_value.ptr->GetPointer<vm::Object>()) {
-            if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
-                if (member->value.m_type == vm::Value::FUNCTION && (member->value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
-
-                    
-                    // keep track of function depth so we can
-                    // quit the thread when the function returns
-                    const int func_depth_start = params.handler->thread->m_func_depth;
-
-                    params.handler->thread->GetStack().Push(*value_ptr);
-                    
-                    // call the generator function
-                    vm::VM::Invoke(
-                        params.handler,
-                        member->value,
-                        1
-                    );
-
-                    while (!params.handler->bs->Eof() && params.handler->state->good && (params.handler->thread->m_func_depth - func_depth_start)) {
-                        uint8_t code;
-                        params.handler->bs->Read(&code, 1);
-
-                        utf::cout << "pos : " << params.handler->bs->Position() << "\n";
-                        utf::cout << "code : " << (int)code << "\n";
-
-                        params.handler->state->m_vm->HandleInstruction(
-                            params.handler,
-                            code
-                        );
-                        utf::cout << "next\n";
-                    }
-
-                    params.handler->thread->GetStack().Pop();
-
-                    utf::cout << "!res : " << params.handler->thread->GetRegisters()[0].ToString().GetData() << "\n";
-                    
-                    // value is a generator, so swap.
-                    ace::vm::Value tmp(*target_ptr);
-                    *target_ptr = *value_ptr;
-                    *value_ptr = tmp;
-                }
-            }
-        }
-    }
-
     switch (target_ptr->GetType()) {
         case vm::Value::HEAP_POINTER: {
             if (target_ptr->m_value.ptr == nullptr) {
@@ -1430,11 +1366,13 @@ static int RunBytecodeFile(
     }
 
     int64_t bytecode_size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    ASSERT(bytecode_size > 0);
+    if (bytecode_size == 0) {
+        return 0;
+    }
 
     char *bytecodes = new char[bytecode_size];
+
+    file.seekg(0, std::ios::beg);
     file.read(bytecodes, bytecode_size);
     file.close();
 

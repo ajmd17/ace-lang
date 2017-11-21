@@ -1,0 +1,10 @@
+generic TypeOf <X> : String = () {
+  if typeof X == "Any" || typeof X == "Number" {
+    return runtime::typeof(X);
+  }
+
+  return $meta::query("inspect_type", X);
+}();
+
+generic Number <X>: Bool = TypeOf<X> == "Int" || TypeOf<X> == "Float";
+generic Callable <X>: Bool = TypeOf<X> == "Function" || X has "$invoke";

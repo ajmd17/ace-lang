@@ -73,8 +73,6 @@ void AstTemplateExpression::Visit(AstVisitor *visitor, Module *mod)
         expr_return_type
     });
 
-    // std::string signature;
-
     for (size_t i = 0; i < m_generic_params.size(); i++) {
         const auto &param = m_generic_params[i];
 
@@ -85,17 +83,6 @@ void AstTemplateExpression::Visit(AstVisitor *visitor, Module *mod)
             param->GetIdentifier()->GetSymbolType(),
             nullptr
         });
-
-        //ASSERT(param->GetIdentifier() != nullptr);
-        //ASSERT(param->GetIdentifier()->GetSymbolType() != nullptr);
-
-        //signature.append(param->GetName());
-        //signature.append(" : ");
-        //signature.append(param->GetIdentifier()->GetSymbolType()->GetName());
-
-        // if (i != m_generic_params.size() - 1) {
-        //     signature.append(", ");
-        // }
     }
 
     m_symbol_type = SymbolType::GenericInstance(
@@ -104,28 +91,6 @@ void AstTemplateExpression::Visit(AstVisitor *visitor, Module *mod)
             generic_param_types
         }
     );
-
-    // visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-    //     LEVEL_ERROR,
-    //     Msg_generic_expression_invalid_arguments,
-    //     m_location,
-    //     m_symbol_type->GetName()
-    // ));
-
-   /* // temporarily define all generic parameters.
-    mod->m_scopes.Open(Scope());
-
-    for (auto &param : m_generic_params) {
-        ASSERT(param != nullptr);
-        // add the identifier to the table
-        param->Visit(visitor, mod);
-    }
-
-    // now, visit the expression
-    ASSERT(m_expr != nullptr);
-    m_expr->Visit(visitor, mod);
-
-    mod->m_scopes.Close();*/
 }
 
 std::unique_ptr<Buildable> AstTemplateExpression::Build(AstVisitor *visitor, Module *mod)

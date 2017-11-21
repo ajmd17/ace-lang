@@ -46,6 +46,7 @@
 #include <ace-c/ast/AstBlockExpression.hpp>
 #include <ace-c/ast/AstIfStatement.hpp>
 #include <ace-c/ast/AstWhileLoop.hpp>
+#include <ace-c/ast/AstForLoop.hpp>
 #include <ace-c/ast/AstPrintStatement.hpp>
 #include <ace-c/ast/AstTryCatch.hpp>
 #include <ace-c/ast/AstPrototypeSpecification.hpp>
@@ -127,6 +128,7 @@ private:
     std::shared_ptr<AstBlockExpression> ParseBlockExpression();
     std::shared_ptr<AstIfStatement> ParseIfStatement();
     std::shared_ptr<AstWhileLoop> ParseWhileLoop();
+    std::shared_ptr<AstForLoop> ParseForLoop();
     std::shared_ptr<AstPrintStatement> ParsePrintStatement();
     std::shared_ptr<AstTryCatch> ParseTryCatchStatement();
     std::shared_ptr<AstExpression> ParseBinaryExpression(int expr_prec,

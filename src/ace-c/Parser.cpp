@@ -405,6 +405,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseIfStatement();
         } else if (MatchKeyword(Keyword_while, false)) {
             res = ParseWhileLoop();
+        } else if (MatchKeyword(Keyword_for, false)) {
+            res = ParseForLoop();
         } else if (MatchKeyword(Keyword_print, false)) {
             res = ParsePrintStatement();
         } else if (MatchKeyword(Keyword_try, false)) {
@@ -795,7 +797,7 @@ std::shared_ptr<AstExpression> Parser::ParseAngleBrackets(std::shared_ptr<AstExp
                 // not an argument, revert to start.
                 m_token_stream->SetPosition(before_pos);
                 // return as comparison expression
-                return ParseTerm(false, false, true);
+                return ParseBinaryExpression(0, target);
             }
         } while (Match(TK_COMMA, true));
 
@@ -809,7 +811,7 @@ std::shared_ptr<AstExpression> Parser::ParseAngleBrackets(std::shared_ptr<AstExp
             // no closing bracket found
             m_token_stream->SetPosition(before_pos);
             // return as comparison expression
-            return ParseTerm(false, false, true);
+            return ParseBinaryExpression(0, target);
         }
     }
 
@@ -1334,6 +1336,34 @@ std::shared_ptr<AstWhileLoop> Parser::ParseWhileLoop()
 
         return std::shared_ptr<AstWhileLoop>(new AstWhileLoop(
             conditional,
+            block,
+            token.GetLocation()
+        ));
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstForLoop> Parser::ParseForLoop()
+{
+    if (Token token = ExpectKeyword(Keyword_for, true)) {
+        std::vector<std::shared_ptr<AstParameter>> params = ParseFunctionParameters();
+
+        ExpectKeyword(Keyword_in, true);
+
+        std::shared_ptr<AstExpression> iteree;
+        if ((iteree = ParseExpression()) == nullptr) {
+            return nullptr;
+        }
+
+        std::shared_ptr<AstBlock> block;
+        if ((block = ParseBlock()) == nullptr) {
+            return nullptr;
+        }
+
+        return std::shared_ptr<AstForLoop>(new AstForLoop(
+            params,
+            iteree,
             block,
             token.GetLocation()
         ));

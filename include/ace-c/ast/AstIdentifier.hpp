@@ -18,6 +18,7 @@ struct AstIdentifierProperties {
 
     bool m_is_in_function = false;
     bool m_is_in_pure_function = false;
+
     int m_depth = 0;
     Scope *m_function_scope = nullptr;
 

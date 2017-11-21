@@ -11,3 +11,16 @@ generic TypeOf <X> : String = () {
 generic Number <X> : Bool = TypeOf<X> == "Int" || TypeOf<X> == "Float";
 generic Callable <X> : Bool = TypeOf<X> == "Function" || X has "$invoke";
 generic Container <X> : Bool = TypeOf<X> == "Array";
+
+/*
+
+// maybe types could "implement" traits, which would just be a compile-time
+// assertion to check if the type passes...
+
+// e.g
+
+type LinkedList : Container {
+  // ...
+}
+
+*/

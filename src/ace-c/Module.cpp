@@ -43,27 +43,17 @@ std::string Module::GenerateFullModuleName() const
     return m_name;
 }
 
-bool Module::IsInFunction()
+bool Module::IsInGlobalScope() const
 {
-    TreeNode<Scope> *top = m_scopes.TopNode();
-    
-    while (top != nullptr) {
-        if (top->m_value.GetScopeType() == SCOPE_TYPE_FUNCTION) {
-            return true;
-        }
-        
-        top = top->m_parent;
-    }
-
-    return false;
+    return m_scopes.TopNode()->m_parent == nullptr;
 }
 
-bool Module::IsInTypeDefinition()
+bool Module::IsInScopeOfType(ScopeType scope_type) const
 {
-    TreeNode<Scope> *top = m_scopes.TopNode();
-    
+    const TreeNode<Scope> *top = m_scopes.TopNode();
+
     while (top != nullptr) {
-        if (top->m_value.GetScopeType() == SCOPE_TYPE_TYPE_DEFINITION) {
+        if (top->m_value.GetScopeType() == scope_type) {
             return true;
         }
         

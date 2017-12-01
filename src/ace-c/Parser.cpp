@@ -591,6 +591,8 @@ std::shared_ptr<AstExpression> Parser::ParseTerm(bool override_commas,
         expr = ParseTypeOfExpression();
     } else if (MatchKeyword(Keyword_meta)) {
         expr = ParseMetaProperty();
+    } else if (MatchKeyword(Keyword_type)) {
+        expr = ParseTypeExpression();
     } else if (Match(TK_OPERATOR)) {
         expr = ParseUnaryExpression();
     } else {
@@ -2170,6 +2172,112 @@ std::vector<std::shared_ptr<AstParameter>> Parser::ParseFunctionParameters()
     return parameters;
 }
 
+std::shared_ptr<AstTypeExpression> Parser::ParseTypeExpression()
+{
+    if (Token token = ExpectKeyword(Keyword_type, true)) {
+        std::vector<std::shared_ptr<AstVariableDeclaration>> members;
+        std::vector<std::shared_ptr<AstVariableDeclaration>> static_members;
+
+        if (Expect(TK_OPEN_BRACE, true)) {
+            while (!Match(TK_CLOSE_BRACE, true)) {
+                bool is_static = false;
+
+                if (MatchKeyword(Keyword_static, true)) {
+                    is_static = true;
+                    !Match(TK_STRING, false) || ExpectIdentifier(true, false);
+                } else {
+                    if (!MatchIdentifier(true, false) && !Match(TK_STRING, false)) {
+                        // error; unexpected token
+                        m_compilation_unit->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_unexpected_token,
+                            m_token_stream->Peek().GetLocation(),
+                            m_token_stream->Peek().GetValue()
+                        ));
+
+                        if (m_token_stream->HasNext()) {
+                            m_token_stream->Next();
+                        }
+
+                        continue;
+                    }
+                }
+
+                // do not require declaration keyword for data members.
+                // also, data members may be specifiers.
+                // note: a variable may be declared with ANY name if it enquoted
+
+                // if parentheses matched, it will be a function:
+                /* type Whatever { 
+                    do_something() {
+                    // ...
+                    }
+                } */
+                if (MatchAhead(TK_OPEN_PARENTH, 1)) {
+                    // read the identifier token
+                    Token identifier = Match(TK_STRING, false)
+                        ? m_token_stream->Next()
+                        : ExpectIdentifier(true, true);
+
+                    MatchKeyword(Keyword_func, true); // skip 'function' keyword if found
+
+                    std::vector<std::shared_ptr<AstParameter>> params;
+                    
+                    if (Match(TK_OPEN_PARENTH, true)) {
+                        params = ParseFunctionParameters();
+                        Expect(TK_CLOSE_PARENTH, true);
+                    }
+
+                    if (auto expr = ParseFunctionExpression(false, params)) {
+                        // first, read the identifier
+                        std::shared_ptr<AstVariableDeclaration> member(new AstVariableDeclaration(
+                            identifier.GetValue(),
+                            nullptr,
+                            expr,
+                            {}, // TODO generic functions
+                            false, // not const
+                            false, // not generic
+                            identifier.GetLocation()
+                        ));
+
+                        if (is_static) {
+                            static_members.push_back(member);
+                        } else {
+                            members.push_back(member);
+                        }
+                    }
+                } else {
+                    if (auto member = ParseVariableDeclaration(
+                        false, // do not require keyword
+                        true, // allow keyword names
+                        true // allow quoted names
+                    )) {
+                        if (is_static) {
+                            static_members.push_back(member);
+                        } else {
+                            members.push_back(member);
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                ExpectEndOfStmt();
+                SkipStatementTerminators();
+            }
+
+            return std::shared_ptr<AstTypeExpression>(new AstTypeExpression(
+                nullptr, // TODO
+                members,
+                static_members,
+                token.GetLocation()
+            ));
+        }
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
 {
     if (Token token = ExpectKeyword(Keyword_type, true)) {
@@ -2423,10 +2531,10 @@ std::shared_ptr<AstMixin> Parser::ParseMixinExpression(const std::string &name)
 
 std::shared_ptr<AstImport> Parser::ParseImport()
 {
-    if (ExpectKeyword(Keyword_import, true)) {
-        if (Match(TK_STRING, false)) {
+    if (ExpectKeyword(Keyword_import)) {
+        if (MatchAhead(TK_STRING, 1)) {
             return ParseFileImport();
-        } else if (Match(TK_IDENT, false)) {
+        } else if (MatchAhead(TK_IDENT, 1)) {
             return ParseModuleImport();
         }
     }
@@ -2436,15 +2544,15 @@ std::shared_ptr<AstImport> Parser::ParseImport()
 
 std::shared_ptr<AstFileImport> Parser::ParseFileImport()
 {
-    const SourceLocation location = CurrentLocation();
+    if (Token token = ExpectKeyword(Keyword_import, true)) {
+        if (Token file = Expect(TK_STRING, true)) {
+            std::shared_ptr<AstFileImport> result(new AstFileImport(
+                file.GetValue(),
+                token.GetLocation()
+            ));
 
-    if (Token file = Expect(TK_STRING, true)) {
-        std::shared_ptr<AstFileImport> result(new AstFileImport(
-            file.GetValue(),
-            location
-        ));
-
-        return result;
+            return result;
+        }
     }
 
     return nullptr;
@@ -2498,17 +2606,17 @@ std::shared_ptr<AstModuleImportPart> Parser::ParseModuleImportPart(bool allow_br
 
 std::shared_ptr<AstModuleImport> Parser::ParseModuleImport()
 {
-    const SourceLocation location = CurrentLocation();
+    if (Token token = ExpectKeyword(Keyword_import, true)) {
+        std::vector<std::shared_ptr<AstModuleImportPart>> parts;
 
-    std::vector<std::shared_ptr<AstModuleImportPart>> parts;
+        if (auto part = ParseModuleImportPart(false)) {
+            parts.push_back(part);
 
-    if (auto part = ParseModuleImportPart(false)) {
-        parts.push_back(part);
-
-        return std::shared_ptr<AstModuleImport>(new AstModuleImport(
-            parts,
-            location
-        ));
+            return std::shared_ptr<AstModuleImport>(new AstModuleImport(
+                parts,
+                token.GetLocation()
+            ));
+        }
     }
 
     return nullptr;
@@ -2553,7 +2661,7 @@ std::shared_ptr<AstMetaBlock> Parser::ParseMetaBlock()
     if (Token token = ExpectKeyword(Keyword_meta, true)) {
         if (auto block = ParseBlock()) {
             return std::shared_ptr<AstMetaBlock>(new AstMetaBlock(
-                block,
+                block->GetChildren(),
                 location
             ));
         }

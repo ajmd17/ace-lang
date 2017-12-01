@@ -204,6 +204,9 @@ enum Instructions : char {
     NEG, // neg [% src] - mathematical negation
     NOT, // not [% src] - bitwise complement
 
+    /* Binary to source trace map functionality */
+    TRACEMAP, // tracemap [u32 length]
+
     /* Signifies the end of the stream */
     EXIT,
 };

@@ -36,14 +36,18 @@ public:
         { return m_identifier_table; }
     inline const IdentifierTable &GetIdentifierTable() const
         { return m_identifier_table; }
+
     inline ScopeType GetScopeType() const
         { return m_scope_type; }
+
     inline int GetScopeFlags() const
         { return m_scope_flags; }
+
     inline void AddReturnType(const SymbolTypePtr_t &type, const SourceLocation &location) 
         { m_return_types.push_back({type, location}); }
     inline const std::vector<ReturnType_t> &GetReturnTypes() const
         { return m_return_types; }
+
     inline Identifier *FindClosureCapture(const std::string &name) 
     {
         auto it = m_closure_captures.find(name);

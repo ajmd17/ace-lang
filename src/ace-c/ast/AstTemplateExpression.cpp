@@ -95,8 +95,18 @@ void AstTemplateExpression::Visit(AstVisitor *visitor, Module *mod)
 
 std::unique_ptr<Buildable> AstTemplateExpression::Build(AstVisitor *visitor, Module *mod)
 {
+    std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
+
+    for (auto &generic_param : m_generic_params) {
+        ASSERT(generic_param != nullptr);
+        chunk->Append(generic_param->Build(visitor, mod));
+    }
+
     // attempt at using the template expression directly...
-    return nullptr;
+    ASSERT(m_expr != nullptr);
+    chunk->Append(m_expr->Build(visitor, mod));
+
+    return std::move(chunk);
 }
 
 void AstTemplateExpression::Optimize(AstVisitor *visitor, Module *mod)

@@ -4,6 +4,8 @@
 #include <ace-vm/Slice.hpp>
 #include <ace-vm/ImmutableString.hpp>
 
+#include <iostream>
+
 namespace ace {
 namespace vm {
 
@@ -33,11 +35,14 @@ void HeapValue::Mark()
                 object->GetMember(i).value.Mark();
             }
 
-            proto = object->GetPrototype();
-
-            if (proto != nullptr) {
+            if ((proto = object->GetPrototype()) != nullptr) {
                 proto->GetFlags() |= GC_MARKED;
-                object = proto->GetPointer<Object>();
+
+                // get object value of prototype
+                if ((object = proto->GetPointer<Object>()) == nullptr) {
+                    // if prototype is not an object (has been modified to another value), we're done.
+                    return;
+                }
             }
         } while (proto != nullptr);
     } else if (Array *array = GetPointer<Array>()) {

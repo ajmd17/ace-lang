@@ -10,7 +10,7 @@
 
 class AstMetaBlock : public AstStatement {
 public:
-    AstMetaBlock(const std::shared_ptr<AstBlock> &block,
+    AstMetaBlock(const std::vector<std::shared_ptr<AstStatement>> &children,
         const SourceLocation &location);
     virtual ~AstMetaBlock() = default;
 
@@ -21,7 +21,7 @@ public:
     virtual Pointer<AstStatement> Clone() const override;
 
 protected:
-    std::shared_ptr<AstBlock> m_block;
+    std::vector<std::shared_ptr<AstStatement>> m_children;
 
     // set while analyzing
     std::shared_ptr<AstFunctionExpression> m_result_closure;
@@ -29,7 +29,7 @@ protected:
     inline Pointer<AstMetaBlock> CloneImpl() const
     {
         return Pointer<AstMetaBlock>(new AstMetaBlock(
-            CloneAstNode(m_block),
+            CloneAllAstNodes(m_children),
             m_location
         ));
     }

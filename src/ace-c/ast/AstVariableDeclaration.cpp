@@ -84,6 +84,9 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
         // with an empty array of type Array(Any)
         bool is_default_assigned = false;
 
+        // flag that is turned on when there is no default type or assignment (an error)
+        bool no_default_assignment = false;
+
         /* ===== handle type specification ===== */
         if (has_user_specified_type) {
             m_proto->Visit(visitor, mod);
@@ -113,12 +116,7 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     ));
                 } else if (!symbol_type->IsGenericParameter()) { // generic parameters will be resolved upon instantiation
                     // no default assignment for this type
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_type_no_default_assignment,
-                        m_location,
-                        symbol_type->GetName()
-                    ));
+                    no_default_assignment = true;
                 }
             }
         }
@@ -149,8 +147,21 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                 }
             } else {
                 // Set the type to be the deduced type from the expression.
-                symbol_type = m_real_assignment->GetExprType();
+                // if (const AstTypeObject *real_assignment_as_type_object = dynamic_cast<const AstTypeObject*>(m_real_assignment->GetValueOf())) {
+                //     symbol_type = real_assignment_as_type_object->GetHeldType();
+                // } else {
+                    symbol_type = m_real_assignment->GetExprType();
+                // }
             }
+        }
+
+        if (no_default_assignment) {
+            visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_type_no_default_assignment,
+                m_location,
+                symbol_type->GetName()
+            ));
         }
     }
 
@@ -180,10 +191,10 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
 std::unique_ptr<Buildable> AstVariableDeclaration::Build(AstVisitor *visitor, Module *mod)
 {
-    if (m_is_generic) {
-        // generics do not build anything
-        return nullptr;
-    }
+    // if (m_is_generic) {
+    //     // generics do not build anything
+    //     return nullptr;
+    // }
 
     std::unique_ptr<BytecodeChunk> chunk = BytecodeUtil::Make<BytecodeChunk>();
 

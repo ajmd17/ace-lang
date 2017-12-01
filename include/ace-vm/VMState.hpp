@@ -6,6 +6,7 @@
 #include <ace-vm/HeapMemory.hpp>
 #include <ace-vm/Exception.hpp>
 #include <ace-vm/BytecodeStream.hpp>
+#include <ace-vm/Tracemap.hpp>
 
 #include <common/non_owning_ptr.hpp>
 
@@ -70,6 +71,7 @@ struct VMState {
     Heap m_heap;
     StaticMemory m_static_memory;
     non_owning_ptr<VM> m_vm;
+    Tracemap m_tracemap;
 
     bool good = true;
     bool enable_auto_gc = ENABLE_GC;

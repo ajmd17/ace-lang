@@ -32,17 +32,15 @@
 using namespace ace;
 
 AstMetaBlock::AstMetaBlock(
-    const std::shared_ptr<AstBlock> &block,
+    const std::vector<std::shared_ptr<AstStatement>> &children,
     const SourceLocation &location)
     : AstStatement(location),
-      m_block(block)
+      m_children(children)
 {
 }
 
 void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
 {
-    ASSERT(m_block != nullptr);
-
     struct MetaContext {
         AstVisitor *m_visitor;
         Module *m_mod;
@@ -52,7 +50,12 @@ void AstMetaBlock::Visit(AstVisitor *visitor, Module *mod)
     meta_context.m_mod = mod;
 
     AstIterator ast_iterator;
-    ast_iterator.Push(m_block);
+
+    // visit all children in the meta block
+    for (auto &child : m_children) {
+        ASSERT(child != nullptr);
+        ast_iterator.Push(child);
+    }
 
     vm::VM vm;
     CompilationUnit compilation_unit;

@@ -1201,6 +1201,21 @@ void DecompilationUnit::DecodeNext(
 
         break;
     }
+    case TRACEMAP:
+    {
+        uint32_t len;
+        bs.Read(&len);
+
+        if (os != nullptr) {
+            (*os)
+                << "tracemap ["
+                    << "u32(" << len << ")"
+                << "]"
+                << std::endl;
+        }
+
+        break;
+    }
     case EXIT:
     {
         if (os != nullptr) {

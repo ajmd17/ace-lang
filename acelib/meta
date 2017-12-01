@@ -1,3 +1,7 @@
 generic make_variable <T> = (ident) {
   print "make_variable()";
 };
+
+let Variable = type {
+  cat: String;
+}

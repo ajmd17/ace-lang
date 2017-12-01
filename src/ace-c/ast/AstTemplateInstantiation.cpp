@@ -83,8 +83,14 @@ void AstTemplateInstantiation::Visit(AstVisitor *visitor, Module *mod)
 
                 ASSERT(template_expr->GetInnerExpression() != nullptr);
 
-                m_block->AddChild(CloneAstNode(template_expr->GetInnerExpression()));
+                const auto &inner_expr = CloneAstNode(template_expr->GetInnerExpression());
+
+                m_block->AddChild(inner_expr);
                 m_block->Visit(visitor, mod);
+
+                // if (const AstTypeObject *inner_expr_as_type_object = dynamic_cast<const AstTypeObject*>(inner_expr->GetValueOf())) {
+                //     m_return_type = inner_expr_as_type_object->GetHeldType();
+                // }
 
                 // TODO: Cache instantiations so we don't create a new one for every set of arguments
             }

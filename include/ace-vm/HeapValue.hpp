@@ -122,6 +122,10 @@ private:
     template <typename T> struct DerivedHolder : public BaseHolder {
         explicit DerivedHolder(const T &value) : BaseHolder(GetTypeId<T>()), m_value(value) {}
 
+        virtual ~DerivedHolder()
+        {
+        }
+
         virtual bool operator==(const BaseHolder &other) const override
         {
             const DerivedHolder<T> *other_casted = dynamic_cast<const DerivedHolder<T>*>(&other);

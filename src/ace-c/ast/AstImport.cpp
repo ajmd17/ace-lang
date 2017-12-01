@@ -47,10 +47,7 @@ void AstImport::CopyModules(
     }
 
     // function to copy nested modules 
-    std::function<void(TreeNode<Module*>*)> copy_nodes =
-
-    [visitor, &copy_nodes, &update_tree_link](TreeNode<Module*> *link)
-    {
+    std::function<void(TreeNode<Module*>*)> copy_nodes = [visitor, &copy_nodes, &update_tree_link](TreeNode<Module*> *link) {
         ASSERT(link != nullptr);
         ASSERT(link->m_value != nullptr);
 
@@ -104,6 +101,16 @@ void AstImport::PerformImport(
 {
     ASSERT(visitor != nullptr);
     ASSERT(mod != nullptr);
+
+    if (!mod->IsInGlobalScope()) {
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_import_outside_global,
+            m_location
+        ));
+
+        return;
+    }
 
     // parse path into vector
     std::vector<std::string> path_vec = str_util::split_path(filepath);

@@ -14,6 +14,7 @@
 #include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/ast/AstTupleExpression.hpp>
 #include <ace-c/ast/AstTypeDefinition.hpp>
+#include <ace-c/ast/AstTypeExpression.hpp>
 #include <ace-c/ast/AstPrototypeDefinition.hpp>
 #include <ace-c/ast/AstTypeAlias.hpp>
 #include <ace-c/ast/AstAliasDeclaration.hpp>
@@ -159,6 +160,7 @@ private:
     std::shared_ptr<AstTypeOfExpression> ParseTypeOfExpression();
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstStatement> ParseTypeDefinition();
+    std::shared_ptr<AstTypeExpression> ParseTypeExpression();
     std::shared_ptr<AstAliasDeclaration> ParseAliasDeclaration();
     std::shared_ptr<AstMixinDeclaration> ParseMixinDeclaration();
     std::shared_ptr<AstMixin> ParseMixinExpression(const std::string &name);

@@ -641,7 +641,7 @@ struct InstructionHandler {
         ASSERT(top.GetType() == Value::FUNCTION_CALL);
         
         // leave function and return to previous position
-        bs->Seek(top.GetValue().call.addr);
+        bs->Seek(top.GetValue().call.return_address);
 
         // increase stack size by the amount required by the call
         thread->GetStack().m_sp += top.GetValue().call.varargs_push - 1;

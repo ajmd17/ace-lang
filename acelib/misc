@@ -1,4 +1,5 @@
 each: Function = (it: Array) * {
+  print "EACH()";
   i: Int;
   len: Int = ::length(it);
 

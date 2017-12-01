@@ -46,7 +46,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
             const SymbolTypePtr_t ident_type = m_properties.GetIdentifier()->GetSymbolType();
             ASSERT(ident_type != nullptr);
 
-            const bool is_const = ident_type->IsConstType() || (!is_generic && (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST));
+            const bool is_const = ident_type->IsConstType() || (m_properties.GetIdentifier()->GetFlags() & IdentifierFlags::FLAG_CONST);
 
             const bool force_inline = is_alias || is_mixin;
 
@@ -56,7 +56,7 @@ void AstVariable::Visit(AstVisitor *visitor, Module *mod)
                 ASSERT(m_inline_value != nullptr);
             }
 
-            m_should_inline = force_inline || is_const;
+            m_should_inline = force_inline || (!is_generic && is_const);
 
             if (m_inline_value == nullptr) {
                 m_should_inline = false;

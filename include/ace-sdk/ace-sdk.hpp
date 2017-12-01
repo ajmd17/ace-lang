@@ -123,7 +123,7 @@ struct Value {
         UserData_t user_data;
         
         struct {
-            bc_address_t addr;
+            bc_address_t return_address;
             int32_t varargs_push;
         } call;
 

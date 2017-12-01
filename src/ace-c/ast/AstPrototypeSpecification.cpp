@@ -32,14 +32,23 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_proto != nullptr);
     m_proto->Visit(visitor, mod);
 
-    ASSERT(m_proto->GetExprType() != nullptr);
-    SymbolTypePtr_t constructor_type = m_proto->GetExprType();
+    SymbolTypePtr_t constructor_type;
+
+    if (const AstTypeObject *as_type_object = dynamic_cast<const AstTypeObject*>(m_proto->GetValueOf())) {
+        constructor_type = as_type_object->GetHeldType();
+    } else {
+        ASSERT(m_proto->GetExprType() != nullptr);
+        constructor_type = m_proto->GetExprType();
+    }
+
+    ASSERT(constructor_type != nullptr);
 
     m_symbol_type = BuiltinTypes::ANY; // defaults to dynamic type.
     m_prototype_type = BuiltinTypes::ANY;
 
     if (constructor_type != BuiltinTypes::ANY) {
-        const bool is_type = constructor_type == BuiltinTypes::TYPE_TYPE;
+        const bool is_type = constructor_type == BuiltinTypes::TYPE_TYPE ||
+            constructor_type->HasBase(*BuiltinTypes::TYPE_TYPE);
 
         if (is_type) {
             const AstExpression *value_of = m_proto->GetValueOf();
@@ -69,7 +78,10 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 constructor_type->GetName()
             ));
         }
-    } // if not, it is a dynamic type
+    } else {
+        // if not, it is a dynamic type
+        m_default_value = BuiltinTypes::ANY->GetDefaultValue();
+    }
 }
 
 std::unique_ptr<Buildable> AstPrototypeSpecification::Build(AstVisitor *visitor, Module *mod)

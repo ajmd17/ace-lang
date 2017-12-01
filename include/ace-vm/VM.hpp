@@ -3,6 +3,7 @@
 
 #include <ace-vm/BytecodeStream.hpp>
 #include <ace-vm/VMState.hpp>
+#include <ace-vm/StackTrace.hpp>
 
 #include <array>
 #include <limits>
@@ -96,6 +97,8 @@ public:
     }
 
 private:
+    StackTrace CreateStackTrace(ExecutionThread *thread);
+
     VMState m_state;
 };
 

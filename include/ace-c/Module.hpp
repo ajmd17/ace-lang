@@ -39,13 +39,11 @@ public:
         relative to the global scope */
     std::string GenerateFullModuleName() const;
 
-    /** Reverse iterate the scopes starting from the currently opened scope,
-        checking if the scope is nested within a function */
-    bool IsInFunction();
+    bool IsInGlobalScope() const;
 
     /** Reverse iterate the scopes starting from the currently opened scope,
-        checking if the scope is nested within a type definition */
-    bool IsInTypeDefinition();
+        checking if the scope is nested within a scope of the given type. */
+    bool IsInScopeOfType(ScopeType scope_type) const;
 
     /** Look up a child module of this module */
     Module *LookupNestedModule(const std::string &name);

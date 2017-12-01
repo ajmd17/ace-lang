@@ -5,6 +5,7 @@
 
 #include <ace-c/ast/AstExpression.hpp>
 #include <ace-c/ast/AstString.hpp>
+#include <ace-c/ast/AstArrayExpression.hpp>
 #include <ace-c/type-system/SymbolType.hpp>
 
 class AstSymbolQuery : public AstExpression {
@@ -24,7 +25,6 @@ public:
     virtual Tribool IsTrue() const override;
     virtual bool MayHaveSideEffects() const override;
     virtual SymbolTypePtr_t GetExprType() const override;
-
     virtual const AstExpression *GetValueOf() const override;
 
 private:
@@ -34,6 +34,7 @@ private:
     // set while analyzing
     SymbolTypePtr_t m_symbol_type;
     std::shared_ptr<AstString> m_string_result_value;
+    std::shared_ptr<AstArrayExpression> m_array_result_value;
 
     inline Pointer<AstSymbolQuery> CloneImpl() const
     {

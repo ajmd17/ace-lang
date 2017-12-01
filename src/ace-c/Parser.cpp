@@ -2267,6 +2267,7 @@ std::shared_ptr<AstTypeExpression> Parser::ParseTypeExpression()
             }
 
             return std::shared_ptr<AstTypeExpression>(new AstTypeExpression(
+                "<Anonymous>",
                 nullptr, // TODO
                 members,
                 static_members,

@@ -13,7 +13,8 @@ SymbolType::SymbolType(const std::string &name,
       m_type_class(type_class),
       m_base(base),
       m_default_value(nullptr),
-      m_id(-1)
+      m_id(-1),
+      m_flags(0)
 {
 }
 
@@ -27,7 +28,8 @@ SymbolType::SymbolType(const std::string &name,
       m_base(base),
       m_default_value(default_value),
       m_members(members),
-      m_id(0)
+      m_id(0),
+      m_flags(0)
 {
 }
 
@@ -37,7 +39,8 @@ SymbolType::SymbolType(const SymbolType &other)
       m_base(other.m_base),
       m_default_value(other.m_default_value),
       m_members(other.m_members),
-      m_id(other.m_id)
+      m_id(other.m_id),
+      m_flags(other.m_flags)
 {
 }
 

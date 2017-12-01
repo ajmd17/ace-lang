@@ -1,5 +1,7 @@
 #include <ace-c/ast/AstSymbolQuery.hpp>
 #include <ace-c/ast/AstTypeObject.hpp>
+#include <ace-c/ast/AstIdentifier.hpp>
+#include <ace-c/ast/AstNil.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Configuration.hpp>
 
@@ -31,7 +33,7 @@ void AstSymbolQuery::Visit(AstVisitor *visitor, Module *mod)
         SymbolTypePtr_t expr_type = m_expr->GetExprType();
         ASSERT(expr_type != nullptr);
 
-        m_string_result_value = std::shared_ptr<AstString>(new AstString(
+        m_result_value = std::shared_ptr<AstString>(new AstString(
             expr_type->GetName(),
             m_location
         ));
@@ -39,26 +41,26 @@ void AstSymbolQuery::Visit(AstVisitor *visitor, Module *mod)
         SymbolTypePtr_t expr_type = m_expr->GetExprType();
         ASSERT(expr_type != nullptr);
 
-        //if (AstTypeObject *as_type_object = dynamic_cast<AstTypeObject*>(m_expr.get())) {
-           // if (const SymbolTypePtr_t &held_type = as_type_object->GetHeldType()) {
-                std::vector<std::shared_ptr<AstExpression>> field_names;
+        std::vector<std::shared_ptr<AstExpression>> field_names;
 
-                for (const auto &member : expr_type->GetMembers()) {
-                    field_names.push_back(std::shared_ptr<AstString>(new AstString(
-                        std::get<0>(member),
-                        m_location
-                    )));
-                }
+        for (const auto &member : expr_type->GetMembers()) {
+            field_names.push_back(std::shared_ptr<AstString>(new AstString(
+                std::get<0>(member),
+                m_location
+            )));
+        }
 
-                m_array_result_value = std::shared_ptr<AstArrayExpression>(new AstArrayExpression(
-                    field_names,
-                    m_location
-                ));
-
-                m_array_result_value->Visit(visitor, mod);
-                
-           // }
-        //}
+        m_result_value = std::shared_ptr<AstArrayExpression>(new AstArrayExpression(
+            field_names,
+            m_location
+        ));
+    } else if (m_command_name == "name") {
+        if (AstIdentifier *as_ident = dynamic_cast<AstIdentifier*>(m_expr.get())) {
+            m_result_value = std::shared_ptr<AstString>(new AstString(
+                as_ident->GetName(),
+                m_location
+            ));
+        }
     } else {
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
@@ -67,12 +69,22 @@ void AstSymbolQuery::Visit(AstVisitor *visitor, Module *mod)
             m_command_name
         ));
     }
+
+    if (m_result_value == nullptr) {
+        m_result_value = std::shared_ptr<AstNil>(new AstNil(
+            m_location
+        ));
+    }
+
+    m_result_value->Visit(visitor, mod);
 }
 
 std::unique_ptr<Buildable> AstSymbolQuery::Build(AstVisitor *visitor, Module *mod)
 {
     if (AstExpression *value_of = const_cast<AstExpression*>(GetValueOf())) {
-        return value_of->Build(visitor, mod);
+        if (value_of != this) {
+            return value_of->Build(visitor, mod);
+        }
     }
 
     return nullptr;
@@ -89,6 +101,10 @@ Pointer<AstStatement> AstSymbolQuery::Clone() const
 
 Tribool AstSymbolQuery::IsTrue() const
 {
+    if (const AstExpression *value_of = GetValueOf()) {
+        return value_of->IsTrue();
+    }
+
     return Tribool::Indeterminate();
 }
 
@@ -99,10 +115,8 @@ bool AstSymbolQuery::MayHaveSideEffects() const
 
 SymbolTypePtr_t AstSymbolQuery::GetExprType() const
 {
-    if (m_string_result_value != nullptr) {
-        return m_string_result_value->GetExprType();
-    } else if (m_array_result_value != nullptr) {
-        return m_array_result_value->GetExprType();
+    if (m_result_value != nullptr) {
+        return m_result_value->GetExprType();
     }
 
     return BuiltinTypes::UNDEFINED;
@@ -110,10 +124,8 @@ SymbolTypePtr_t AstSymbolQuery::GetExprType() const
 
 const AstExpression *AstSymbolQuery::GetValueOf() const
 {
-    if (m_string_result_value != nullptr) {
-        return m_string_result_value.get();
-    } else if (m_array_result_value != nullptr) {
-        return m_array_result_value.get();
+    if (m_result_value != nullptr) {
+        return m_result_value.get();
     }
 
     return this;

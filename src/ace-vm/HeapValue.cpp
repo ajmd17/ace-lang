@@ -4,7 +4,7 @@
 #include <ace-vm/Slice.hpp>
 #include <ace-vm/ImmutableString.hpp>
 
-#include <iostream>
+#include <common/my_assert.hpp>
 
 namespace ace {
 namespace vm {
@@ -25,8 +25,12 @@ HeapValue::~HeapValue()
 
 void HeapValue::Mark()
 {
+    ASSERT_MSG(!(m_flags & GC_MARKED), "doubly marked"); // there have been issues when marking right after allocating
+
     if (Object *object = GetPointer<Object>()) {
         HeapValue *proto = nullptr;
+
+        size_t iter = 0;
 
         do {
             const size_t size = object->GetSize();
@@ -44,6 +48,8 @@ void HeapValue::Mark()
                     return;
                 }
             }
+
+            iter++;
         } while (proto != nullptr);
     } else if (Array *array = GetPointer<Array>()) {
         const size_t size = array->GetSize();

@@ -16,11 +16,13 @@
 #include <common/my_assert.hpp>
 
 AstTypeExpression::AstTypeExpression(
+    const std::string &name,
     const std::shared_ptr<AstTypeSpecification> &base_specification,
     const std::vector<std::shared_ptr<AstVariableDeclaration>> &members,
     const std::vector<std::shared_ptr<AstVariableDeclaration>> &static_members,
     const SourceLocation &location)
     : AstExpression(location, ACCESS_MODE_LOAD),
+      m_name(name),
       m_base_specification(base_specification),
       m_members(members),
       m_static_members(static_members),
@@ -60,7 +62,7 @@ void AstTypeExpression::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Close();
 
     SymbolTypePtr_t prototype_type = SymbolType::Object(
-        "AnonymousInstance", // Prototype type
+        m_name + "Instance", // Prototype type
         member_types,
         BuiltinTypes::OBJECT
     );
@@ -137,7 +139,7 @@ void AstTypeExpression::Visit(AstVisitor *visitor, Module *mod)
     mod->m_scopes.Close();
 
     m_symbol_type = SymbolType::Extend(
-        "Anonymous",
+        m_name,
         base_type,
         static_members
     );

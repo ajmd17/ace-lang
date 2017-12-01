@@ -118,15 +118,13 @@ void Heap::Purge()
 
 HeapValue *Heap::Alloc()
 {
-    HeapNode *node = new HeapNode;
-    node->value.GetFlags() |= GC_MARKED; // mark by default
-
+    HeapNode *node = new HeapNode();
     node->after = nullptr;
     
     if (m_head != nullptr) {
         m_head->after = node;
     }
-    
+
     node->before = m_head;
     m_head = node;
 
@@ -138,18 +136,19 @@ HeapValue *Heap::Alloc()
 void Heap::Sweep()
 {
     HeapNode *last = m_head;
-    while (last) {
+
+    while (last != nullptr) {
         if (!(last->value.GetFlags() & GC_MARKED)) {
             // unmarked object, so delete it
 
             HeapNode *after = last->after;
             HeapNode *before = last->before;
 
-            if (before) {
+            if (before != nullptr) {
                 before->after = after;
             }
 
-            if (after) {
+            if (after != nullptr) {
                 // removing an item from the middle, so
                 // make the nodes to the other sides now
                 // point to each other

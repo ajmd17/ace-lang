@@ -32,6 +32,10 @@ enum SymbolTypeClass {
     TYPE_GENERIC_PARAMETER,
 };
 
+enum SymbolTypeFlags {
+    FLAG_ANONYMOUS_TYPE = 0b00000001
+};
+
 struct AliasTypeInfo {
     SymbolTypeWeakPtr_t m_aliasee;
 };
@@ -212,6 +216,9 @@ public:
     inline int GetId() const { return m_id; }
     inline void SetId(int id) { m_id = id; }
 
+    inline int GetFlags() const { return m_flags; }
+    inline int &GetFlags() { return m_flags; }
+
     bool TypeEqual(const SymbolType &other) const;
     bool TypeCompatible(const SymbolType &other,
         bool strict_numbers,
@@ -234,6 +241,7 @@ public:
     bool IsArrayType() const;
     bool IsConstType() const;
     bool IsBoxedType() const;
+    inline bool IsAnonymousType() const { return m_flags & FLAG_ANONYMOUS_TYPE; }
     /** Is is an uninstantiated generic parameter? (e.g T) */
     bool IsGenericParameter() const;
 
@@ -258,6 +266,7 @@ private:
     GenericParameterTypeInfo m_generic_param_info;
 
     int m_id;
+    int m_flags;
 };
 
 #endif

@@ -33,8 +33,7 @@ private:
 
     // set while analyzing
     SymbolTypePtr_t m_symbol_type;
-    std::shared_ptr<AstString> m_string_result_value;
-    std::shared_ptr<AstArrayExpression> m_array_result_value;
+    std::shared_ptr<AstExpression> m_result_value;
 
     inline Pointer<AstSymbolQuery> CloneImpl() const
     {

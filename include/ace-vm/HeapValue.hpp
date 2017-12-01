@@ -15,6 +15,8 @@ enum HeapValueFlags {
 };
 
 class HeapValue {
+    friend class Heap;
+
 public:
     HeapValue();
     HeapValue(const HeapValue &other) = delete;

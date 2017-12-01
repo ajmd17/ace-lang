@@ -143,6 +143,7 @@ struct InstructionHandler {
     {
         // allocate heap value
         HeapValue *hv = state->HeapAlloc(thread);
+
         if (hv != nullptr) {
             hv->Assign(ImmutableString(str));
 
@@ -184,7 +185,7 @@ struct InstructionHandler {
 
         // create members
         Member *members = new Member[size];
-        
+
         for (size_t i = 0; i < size; i++) {
             std::strncpy(members[i].name, names[i], 255);
             members[i].hash = hash_fnv_1(names[i]);

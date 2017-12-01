@@ -1,6 +1,6 @@
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
-#include <ace-c/ast/AstTypeObject.hpp>
+#include <ace-c/ast/AstTypeExpression.hpp>
 #include <ace-c/ast/AstTemplateExpression.hpp>
 #include <ace-c/ast/AstBlockExpression.hpp>
 #include <ace-c/AstVisitor.hpp>
@@ -126,6 +126,12 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             m_real_assignment.reset(new AstUndefined(m_location));
         }
 
+        // if the variable has been assigned to an anonymous type,
+        // rename the type to be the name of this variable
+        if (AstTypeExpression *real_assignment_as_type_expr = dynamic_cast<AstTypeExpression*>(m_real_assignment.get())) {
+            real_assignment_as_type_expr->SetName(m_name);
+        }
+
         // visit assignment
         m_real_assignment->Visit(visitor, mod);
 
@@ -153,6 +159,10 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     symbol_type = m_real_assignment->GetExprType();
                 // }
             }
+        }
+
+        if (symbol_type == BuiltinTypes::ANY) {
+            no_default_assignment = false;
         }
 
         if (no_default_assignment) {

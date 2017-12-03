@@ -156,7 +156,9 @@ void AstTypeExpression::Visit(AstVisitor *visitor, Module *mod)
 std::unique_ptr<Buildable> AstTypeExpression::Build(AstVisitor *visitor, Module *mod)
 {
     ASSERT(m_expr != nullptr);
-    return m_expr->Build(visitor, mod);
+    auto buildable = m_expr->Build(visitor, mod);
+
+    return std::move(buildable);
 }
 
 void AstTypeExpression::Optimize(AstVisitor *visitor, Module *mod)

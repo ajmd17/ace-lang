@@ -1,4 +1,5 @@
 #include <ace-c/ast/AstTemplateExpression.hpp>
+#include <ace-c/ast/AstNil.hpp>
 #include <ace-c/AstVisitor.hpp>
 #include <ace-c/Module.hpp>
 #include <ace-c/Compiler.hpp>
@@ -99,12 +100,22 @@ std::unique_ptr<Buildable> AstTemplateExpression::Build(AstVisitor *visitor, Mod
 
     for (auto &generic_param : m_generic_params) {
         ASSERT(generic_param != nullptr);
-        chunk->Append(generic_param->Build(visitor, mod));
+
+        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
+
+        chunk->Append(AstNil(generic_param->GetLocation()).Build(visitor, mod));
+
+        auto instr_push = BytecodeUtil::Make<RawOperation<>>();
+        instr_push->opcode = PUSH;
+        instr_push->Accept<uint8_t>(rp); // src
+        chunk->Append(std::move(instr_push));
     }
 
     // attempt at using the template expression directly...
     ASSERT(m_expr != nullptr);
     chunk->Append(m_expr->Build(visitor, mod));
+
+    chunk->Append(Compiler::PopStack(visitor, m_generic_params.size()));
 
     return std::move(chunk);
 }

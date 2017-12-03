@@ -119,6 +119,7 @@ void Heap::Purge()
 HeapValue *Heap::Alloc()
 {
     HeapNode *node = new HeapNode();
+    node->value.GetFlags() |= GC_MARKED;
     node->after = nullptr;
     
     if (m_head != nullptr) {

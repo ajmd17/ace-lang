@@ -256,7 +256,7 @@ std::vector<std::shared_ptr<AstArgument>> SemanticAnalyzer::Helpers::SubstituteG
                     // too many args supplied
                     visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                         LEVEL_ERROR,
-                        Msg_too_many_args,
+                        Msg_incorrect_number_of_arguments,
                         location,
                         generic_args.size(),
                         args.size()
@@ -291,13 +291,9 @@ std::vector<std::shared_ptr<AstArgument>> SemanticAnalyzer::Helpers::SubstituteG
         }
     } else {
         // wrong number of args given
-        ErrorMessage msg = (args.size() > generic_args.size())
-            ? Msg_too_many_args
-            : Msg_too_few_args;
-        
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
-            msg,
+            Msg_incorrect_number_of_arguments,
             location,
             is_varargs ? generic_args.size() - 1 : generic_args.size(),
             args.size()

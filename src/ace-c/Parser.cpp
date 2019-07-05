@@ -302,22 +302,29 @@ void Parser::Parse(bool expect_module_decl)
         // build up the module declaration with statements
         while (m_token_stream->HasNext() && !Match(TK_CLOSE_BRACE, false)) {
             // skip statement terminator tokens
-            if (!Match(TK_SEMICOLON, true) && !Match(TK_NEWLINE, true)) {
+            if (Match(TK_SEMICOLON, true) || Match(TK_NEWLINE, true)) {
+                goto push_module;
+            }
 
-                // parse at top level, to allow for nested modules
-                module_ast->AddChild(ParseStatement(true));
+            // parse at top level, to allow for nested modules
+            if (auto stmt = ParseStatement(true)) {
+                module_ast->AddChild(stmt);
             }
         }
 
+    push_module:
         m_ast_iterator->Push(module_ast);
     } else {
         // build up the module declaration with statements
         while (m_token_stream->HasNext() && !Match(TK_CLOSE_BRACE, false)) {
             // skip statement terminator tokens
-            if (!Match(TK_SEMICOLON, true) && !Match(TK_NEWLINE, true)) {
+            if (Match(TK_SEMICOLON, true) || Match(TK_NEWLINE, true)) {
+                return;
+            }
 
-                // parse at top level, to allow for nested modules
-                m_ast_iterator->Push(ParseStatement(true));
+            // parse at top level, to allow for nested modules
+            if (auto stmt = ParseStatement(true)) {
+                m_ast_iterator->Push(stmt);
             }
         }
     }
@@ -369,10 +376,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
             res = ParseDirective();
         } else if (MatchKeyword(Keyword_import, false)) {
             res = ParseImport();
-        } else if (MatchKeyword(Keyword_let, false)) {
-            res = ParseVariableDeclaration(true);
         } else if (MatchKeyword(Keyword_const, false)) {
-            res = ParseVariableDeclaration(true);
+            res = ParseVariableDeclaration();
         } else if (MatchKeyword(Keyword_func, false)) {
             if (MatchAhead(TK_IDENT, 1)) {
                 res = ParseFunctionDefinition();
@@ -406,8 +411,8 @@ std::shared_ptr<AstStatement> Parser::ParseStatement(bool top_level)
         } else {
             res = ParseExpression();
         }
-    } else if (Match(TK_IDENT, false) && MatchAhead(TK_COLON, 1)) {
-        res = ParseVariableDeclaration(false);
+    } else if (Match(TK_IDENT, false) && (MatchAhead(TK_COLON, 1) || MatchAhead(TK_DEFINE, 1))) {
+        res = ParseVariableDeclaration();
     } else if (Match(TK_OPEN_BRACE, false)) {
         res = ParseBlock();
     } else {
@@ -1527,9 +1532,27 @@ std::shared_ptr<AstTypeContractExpression> Parser::ParseTypeContractBinaryExpres
 
 #endif
 
-std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
-    bool require_keyword,
-    bool allow_keyword_names,
+std::shared_ptr<AstExpression> Parser::ParseAssignment()
+{
+    if (MatchOperator("=", true) || Match(TK_DEFINE, true)) {
+        // read assignment expression
+        const SourceLocation expr_location = CurrentLocation();
+
+        if (auto assignment = ParseExpression()) {
+            return assignment;
+        } else {
+            m_compilation_unit->GetErrorList().AddError(CompilerError(
+                LEVEL_ERROR,
+                Msg_illegal_expression,
+                expr_location
+            ));
+        }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(bool allow_keyword_names,
     bool allow_quoted_names)
 {
     const SourceLocation location = CurrentLocation();
@@ -1538,15 +1561,6 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
 
     if (MatchKeyword(Keyword_const, true)) {
         is_const = true;
-    } else {
-        if (require_keyword) {
-            if (!ExpectKeyword(Keyword_let, true)) {
-                return nullptr;
-            }
-        } else {
-            // match and read in the case that it is found
-            MatchKeyword(Keyword_let, true);
-        }
     }
 
     Token identifier = Token::EMPTY;
@@ -1568,20 +1582,7 @@ std::shared_ptr<AstVariableDeclaration> Parser::ParseVariableDeclaration(
             type_spec = ParseTypeSpecification();
         }
 
-        std::shared_ptr<AstExpression> assignment;
-
-        if (Token op = MatchOperator("=", true)) {
-            // read assignment expression
-            const SourceLocation expr_location = CurrentLocation();
-
-            if (!(assignment = ParseExpression())) {
-                m_compilation_unit->GetErrorList().AddError(CompilerError(
-                    LEVEL_ERROR,
-                    Msg_illegal_expression,
-                    expr_location
-                ));
-            }
-        }
+        const std::shared_ptr<AstExpression> assignment = ParseAssignment();
 
         return std::shared_ptr<AstVariableDeclaration>(new AstVariableDeclaration(
             identifier.GetValue(),
@@ -2010,7 +2011,6 @@ std::shared_ptr<AstStatement> Parser::ParseTypeDefinition()
                             }
                         } else {
                             if (auto member = ParseVariableDeclaration(
-                                false, // do not require keyword
                                 true, // allow keyword names
                                 true // allow quoted names
                             )) {

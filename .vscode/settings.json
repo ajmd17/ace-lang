@@ -67,6 +67,19 @@
     "valarray": "cpp",
     "queue": "cpp",
     "cmakeccompilerid.c": "cpp",
-    "cstring": "cpp"
+    "cstring": "cpp",
+    "__debug": "cpp",
+    "__errc": "cpp",
+    "__mutex_base": "cpp",
+    "__node_handle": "cpp",
+    "__nullptr": "cpp",
+    "__string": "cpp",
+    "__threading_support": "cpp",
+    "cstdarg": "cpp",
+    "ctime": "cpp",
+    "iostream": "cpp",
+    "mutex": "cpp",
+    "optional": "cpp",
+    "string_view": "cpp"
   }
 }

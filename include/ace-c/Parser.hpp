@@ -120,8 +120,8 @@ private:
     std::shared_ptr<AstExpression> ParseExpression(bool override_commas = false,
         bool override_fat_arrows = false);
     std::shared_ptr<AstTypeSpecification> ParseTypeSpecification();
-    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool require_keyword = true,
-        bool allow_keyword_names = false,
+    std::shared_ptr<AstExpression> ParseAssignment();
+    std::shared_ptr<AstVariableDeclaration> ParseVariableDeclaration(bool allow_keyword_names = false,
         bool allow_quoted_names = false);
     std::shared_ptr<AstFunctionDefinition> ParseFunctionDefinition(bool require_keyword = true);
     std::shared_ptr<AstFunctionExpression> ParseFunctionExpression(bool require_keyword = true,

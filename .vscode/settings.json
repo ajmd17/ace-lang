@@ -70,8 +70,18 @@
     "cstring": "cpp",
     "clocale": "cpp",
     "condition_variable": "cpp",
+    "__debug": "cpp",
+    "__errc": "cpp",
+    "__mutex_base": "cpp",
+    "__node_handle": "cpp",
+    "__nullptr": "cpp",
+    "__string": "cpp",
+    "__threading_support": "cpp",
+    "cstdarg": "cpp",
     "ctime": "cpp",
     "iostream": "cpp",
-    "mutex": "cpp"
+    "mutex": "cpp",
+    "optional": "cpp",
+    "string_view": "cpp"
   }
 }

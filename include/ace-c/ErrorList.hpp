@@ -20,7 +20,7 @@ public:
         { m_errors.insert(m_errors.end(), other.m_errors.begin(), other.m_errors.end()); }
 
     bool HasFatalErrors() const;
-    std::ostream &WriteOutput(std::ostream &os) const;
+    std::ostream &WriteOutput(std::ostream &os) const; // @TODO make UTF8 compatible
 
     std::vector<CompilerError> m_errors;
 };

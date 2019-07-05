@@ -93,6 +93,16 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
             ASSERT(m_proto->GetHeldType() != nullptr);
             symbol_type = m_proto->GetHeldType();
+#if ACE_ANY_ONLY_FUNCTION_PARAMATERS
+            if (symbol_type == BuiltinTypes::ANY) {
+                // Any type is reserved for method parameters
+                visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                    LEVEL_ERROR,
+                    Msg_any_reserved_for_parameters,
+                    m_location
+                ));
+            }
+#endif
 
             // if no assignment provided, set the assignment to be the default value of the provided type
             if (m_real_assignment == nullptr) {

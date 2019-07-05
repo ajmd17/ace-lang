@@ -432,10 +432,9 @@ void SemanticAnalyzer::Analyze(bool expect_module_decl)
     ASSERT(mod != nullptr);
 
     while (m_ast_iterator->HasNext()) {
-        auto next = m_ast_iterator->Next();
+        auto node = m_ast_iterator->Next();
+        ASSERT(node != nullptr);
 
-        if (next != nullptr) {
-            next->Visit(this, mod);
-        }
+        node->Visit(this, mod);
     }
 }

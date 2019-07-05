@@ -10,9 +10,9 @@
 #include <cstdint>
 #include <cstring>
 
-#ifdef __MINGW32__
-#undef _WIN32
-#endif
+// #ifdef __MINGW32__
+// #undef _WIN32
+// #endif
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -70,7 +70,7 @@ typedef uint32_t u32char;
 inline void init()
 {
 #ifdef _WIN32
-    _setmode(_fileno(stdout), _O_U16TEXT);
+    _setmode(_fileno(stdout), 0x00020000/*_O_U16TEXT*/);
 #endif
 }
 
@@ -614,7 +614,7 @@ public:
             delete[] m_data;
             m_data = new_data;
         }
-        
+
         // recalculate length
         m_length = utf8_strlen(m_data);
 
@@ -655,5 +655,7 @@ private:
 };
 
 } // namespace utf
+
+#undef NOMINMAX
 
 #endif

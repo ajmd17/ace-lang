@@ -19,6 +19,7 @@ enum TokenClass {
     TK_SEMICOLON,
     TK_COLON,
     TK_DOUBLE_COLON,
+    TK_DEFINE,
     TK_QUESTION_MARK,
     TK_DOT,
     TK_ELLIPSIS,

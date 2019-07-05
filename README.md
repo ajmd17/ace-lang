@@ -3,6 +3,10 @@
 Ace is a dynamic, optionally typed programming language created in C++.
 It is inspired by languages such as C++, JavaScript, Rust and Ruby.
 
+
+See *proto* branch to see some cool stuff. Experimental.
+
+
 ## Philosophy
 
 To give programmers the freedom to learn by making mistakes, explore programming in a way that works best for them, and to provide them with the ability to not only use existing features, but to create new ones for themselves.

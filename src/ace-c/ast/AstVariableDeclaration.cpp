@@ -198,12 +198,11 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
-
     if (symbol_type == nullptr) {
         visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
             LEVEL_ERROR,
             Msg_could_not_deduce_type_for_expression,
-            m_real_assignment->GetLocation(),
+            m_location,
             m_name
         ));
 

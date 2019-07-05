@@ -7,20 +7,19 @@ module types {
     printUsername := (self) {
       print self.username
     }
-
-    "HIII"
   }
 
-  print 'User = ', User
+  user := new User
+  print 'user = ', user
 
   // create an instance of the type
   //user := new User
 
   // array of User objects
-  //users: User[] // NOTE: same as writing Array(User)
+  users: Array<User> // NOTE: same as writing Array<User>
 
   // NOTE: a User object cannot be null by default
-  // to allow null, use Maybe(User) or User? (they're the same, but different syntax)
+  // to allow null, use Maybe<User> or User? (they're the same, but different syntax)
 
   //maybeUser: User? // NOTE: set to null by default.
   //maybeUser = new User // no longer null.

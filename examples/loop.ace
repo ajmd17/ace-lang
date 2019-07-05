@@ -20,7 +20,7 @@ module loop {
 		end   : T
 		lol   : Int
 		
-		fun = () {
+		fun = (self) {
 			t: T
 			print "t == ", t
 			print "Hi"
@@ -34,15 +34,15 @@ module loop {
 	range.fun()
 	
 	forloop : Function = (the_range: Range<Any>) {
-		let start = the_range.start
-		let end   = the_range.end
+		start := the_range.start
+		end := the_range.end
 		
 		print 'end - start == ', end - start
 	}
 
 	forloop(range)
 	
-	//myobj: MyGeneric<Int, String>
+	myobj: MyGeneric<Int, String>
 	
 	print 'myobj == ', myobj
 	print 'myobj.j == ', myobj.name
@@ -57,9 +57,9 @@ module loop {
 	print "meow == ", meow
 	
 	foreach_range: Function = (range, callback: Function) {
-		let start = range.start
-		let end = range.end
-		let increment = 1
+		start := range.start
+		end := range.end
+		increment := 1
 		
 		if start > end {
 			increment = -1

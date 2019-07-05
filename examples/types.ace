@@ -1,23 +1,27 @@
 module types {
   // custom types
-  type User {
+  User := type {
     username: String
     password: String
 
-    printUsername = (self) {
+    printUsername := (self) {
       print self.username
     }
+
+    "HIII"
   }
 
+  print 'User = ', User
+
   // create an instance of the type
-  user = new User
+  //user := new User
 
   // array of User objects
-  users: User[] // NOTE: same as writing Array(User)
+  //users: User[] // NOTE: same as writing Array(User)
 
   // NOTE: a User object cannot be null by default
   // to allow null, use Maybe(User) or User? (they're the same, but different syntax)
 
-  maybeUser: User? // NOTE: set to null by default.
-  maybeUser = new User // no longer null.
+  //maybeUser: User? // NOTE: set to null by default.
+  //maybeUser = new User // no longer null.
 }

@@ -41,12 +41,14 @@ void AstPrototypeSpecification::Visit(AstVisitor *visitor, Module *mod)
         constructor_type = m_proto->GetExprType();
     }
 
+    //printf("expr type: %s\n", m_proto->GetExprType()->GetName().c_str());
+
     ASSERT(constructor_type != nullptr);
 
     m_symbol_type = BuiltinTypes::ANY; // defaults to dynamic type.
     m_prototype_type = BuiltinTypes::ANY;
 
-    if (constructor_type != BuiltinTypes::ANY) {
+    if (constructor_type != BuiltinTypes::ANY_TYPE) {
         const bool is_type = constructor_type == BuiltinTypes::TYPE_TYPE ||
             constructor_type->HasBase(*BuiltinTypes::TYPE_TYPE);
 

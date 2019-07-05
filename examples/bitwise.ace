@@ -18,7 +18,7 @@ module bitwise_test {
 
   }()
 
-  mul_2_time = stopwatch::stop()
+  mul_2_time := stopwatch::stop()
 
   stopwatch::start()
   () {
@@ -32,7 +32,7 @@ module bitwise_test {
     }
 
   }()
-  bitshift_time = stopwatch::stop()
+  bitshift_time := stopwatch::stop()
 
   print "time taken to multiply by 2: ", mul_2_time
   print "time taken to bitshift left: ", bitshift_time

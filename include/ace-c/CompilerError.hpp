@@ -50,6 +50,7 @@ enum ErrorMessage {
     Msg_expected_type_got_identifier,
     Msg_missing_type_and_assignment,
     Msg_type_no_default_assignment,
+    Msg_could_not_deduce_type_for_expression,
     Msg_expression_not_generic,
     Msg_too_many_generic_args,
     Msg_too_few_generic_args,

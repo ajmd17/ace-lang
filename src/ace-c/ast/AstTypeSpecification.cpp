@@ -109,8 +109,12 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                             if (m_symbol_type == nullptr) {
                                 // nothing found from lookup,
                                 // so create new generic instance
-                                const bool valid_parameters = symbol_type->GetGenericInfo().m_num_parameters == -1
-                                    || symbol_type->GetGenericInfo().m_num_parameters == generic_types.size();
+                                const bool num_provided_parameters_matches =
+                                    symbol_type->GetGenericInfo().m_num_parameters == generic_types.size();
+
+                                const bool no_parameters_required = symbol_type->GetGenericInfo().m_num_parameters == -1;
+
+                                const bool valid_parameters = no_parameters_required || num_provided_parameters_matches;
 
                                 if (valid_parameters) {
                                     // open the scope for data members

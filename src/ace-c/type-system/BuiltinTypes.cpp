@@ -31,10 +31,16 @@ const SymbolTypePtr_t BuiltinTypes::UNDEFINED = SymbolType::Primitive(
     BuiltinTypes::PRIMITIVE_TYPE
 );
 
+const SymbolTypePtr_t BuiltinTypes::ANY_TYPE = SymbolType::Primitive(
+    "AnyType",
+    sp<AstUndefined>(new AstUndefined(SourceLocation::eof)),
+    BuiltinTypes::PRIMITIVE_TYPE
+);
+
 const SymbolTypePtr_t BuiltinTypes::ANY = SymbolType::Primitive(
     "Any",
     sp<AstNil>(new AstNil(SourceLocation::eof)),
-    BuiltinTypes::TRAIT_TYPE
+    BuiltinTypes::ANY_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::OBJECT = SymbolType::Primitive(

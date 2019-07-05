@@ -115,15 +115,21 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
                     // built-in assignment, turn off strict mode
                     is_default_assigned = true;
                 } else if (symbol_type->GetTypeClass() == TYPE_GENERIC) {
-                    // generic not yet promoted to an instance.
-                    // since there is no assignment to go by, we can't promote it
-                    visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
-                        LEVEL_ERROR,
-                        Msg_generic_parameters_missing,
-                        m_location,
-                        symbol_type->GetName(),
-                        symbol_type->GetGenericInfo().m_num_parameters
-                    ));
+                    const bool no_parameters_required = symbol_type->GetGenericInfo().m_num_parameters == -1;
+
+                    if (no_parameters_required) {
+                        // @TODO - idk. instantiate generic? it works for now, example being 'Function' type
+                    } else {
+                        // generic not yet instantiated; assignment does not fulfill enough to complete the type.
+                        // since there is no assignment to go by, we can't promote it
+                        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+                            LEVEL_ERROR,
+                            Msg_generic_parameters_missing,
+                            m_location,
+                            symbol_type->GetName(),
+                            symbol_type->GetGenericInfo().m_num_parameters
+                        ));
+                    }
                 } else if (!symbol_type->IsGenericParameter()) { // generic parameters will be resolved upon instantiation
                     // no default assignment for this type
                     no_default_assignment = true;
@@ -192,6 +198,18 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
     AstDeclaration::Visit(visitor, mod);
 
+
+    if (symbol_type == nullptr) {
+        visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
+            LEVEL_ERROR,
+            Msg_could_not_deduce_type_for_expression,
+            m_real_assignment->GetLocation(),
+            m_name
+        ));
+
+        return;
+    }
+
     if (m_identifier != nullptr) {
         if (m_is_const || m_is_generic) {
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_CONST);
@@ -201,8 +219,6 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
             //m_identifier->SetTemplateParams(ident_template_params);
             m_identifier->SetFlags(m_identifier->GetFlags() | IdentifierFlags::FLAG_GENERIC);
         }
-
-        ASSERT(symbol_type != nullptr);
 
         m_identifier->SetSymbolType(symbol_type);
         m_identifier->SetCurrentValue(m_real_assignment);

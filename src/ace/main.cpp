@@ -87,7 +87,7 @@ void Events_call_action(ace::sdk::Params params)
                 }
             }
         */
-        
+
 
         // so we should invoke the object which will return the nested closure,
         // and pass our found handler to it (at the end of this function)
@@ -100,13 +100,13 @@ void Events_call_action(ace::sdk::Params params)
             if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
                 if (member->value.m_type == vm::Value::FUNCTION && (member->value.m_value.func.m_flags & FunctionFlags::GENERATOR)) {
 
-                    
+
                     // keep track of function depth so we can
                     // quit the thread when the function returns
                     const int func_depth_start = params.handler->thread->m_func_depth;
 
                     params.handler->thread->GetStack().Push(*value_ptr);
-                    
+
                     // call the generator function
                     vm::VM::Invoke(
                         params.handler,
@@ -131,7 +131,7 @@ void Events_call_action(ace::sdk::Params params)
                     params.handler->thread->GetStack().Pop();
 
                     utf::cout << "!res : " << params.handler->thread->GetRegisters()[0].ToString().GetData() << "\n";
-                    
+
                     // value is a generator, so swap.
                     ace::vm::Value tmp(*target_ptr);
                     *target_ptr = *value_ptr;
@@ -259,7 +259,7 @@ void Events_call_action(ace::sdk::Params params)
                         }
                     }
                 } else if (vm::Member *member = object->LookupMemberFromHash(hash_fnv_1("$invoke"))) {
-                    if (member->value.m_type == vm::Value::FUNCTION || 
+                    if (member->value.m_type == vm::Value::FUNCTION ||
                         member->value.m_type == vm::Value::NATIVE_FUNCTION) {
                         // callable object
                         vm::VM::Invoke(
@@ -422,7 +422,7 @@ void Events_get_action_handler(ace::sdk::Params params)
                     }
                 }
             }
-        
+
         return_null_handler:
             // not found, return null
             vm::Value res;
@@ -466,7 +466,7 @@ void Runtime_gc(ace::sdk::Params params)
     params.handler->state->GC();
 
     const size_t heap_size_after = params.handler->state->GetHeap().Size();
-    
+
     utf::cout << (heap_size_before - heap_size_after) << " object(s) collected.\n";
 }
 
@@ -527,7 +527,7 @@ void Runtime_load_library(ace::sdk::Params params)
             }
 
             full_path.append("." ACE_DYLIB_EXT);
-            
+
             Library lib = Runtime::Load(full_path.c_str());
 
             if (lib.GetHandle() == nullptr) {
@@ -624,7 +624,7 @@ void Global_get_keys(ace::sdk::Params params)
 
     // create array
     vm::Array keys_arr;
-    
+
     if (target_ptr->m_type == vm::Value::HEAP_POINTER && target_ptr->m_value.ptr != nullptr) {
         if (vm::Object *object = target_ptr->m_value.ptr->GetPointer<vm::Object>()) {
             ASSERT(object->GetTypePtr() != nullptr);
@@ -754,7 +754,7 @@ void Global_to_array(ace::sdk::Params params)
         res_arr.Resize(params.nargs);
         res_arr.PushMany(params.nargs, params.args);
     }
-    
+
     // store in memory
     vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
     ASSERT(ptr != nullptr);
@@ -922,7 +922,7 @@ void Global_decompile(ace::sdk::Params params)
         std::string ss_str = ss.str();
         bytecode_str.append(ss_str.data());
     }
-    
+
     // create heap value for string
     vm::HeapValue *ptr = params.handler->state->HeapAlloc(params.handler->thread);
     ASSERT(ptr != nullptr);
@@ -1013,7 +1013,7 @@ void Global_fmt(ace::sdk::Params params)
         } else if (vm::ImmutableString *str_ptr = target_ptr->GetValue().ptr->GetPointer<vm::ImmutableString>()) {
             // scan through string and merge each argument where there is a '%'
             const size_t original_length = str_ptr->GetLength();
-            
+
             std::string result_string;
             result_string.reserve(original_length);
 
@@ -1026,7 +1026,7 @@ void Global_fmt(ace::sdk::Params params)
             // number of '%' characters handled
             int num_fmts = 0;
             int buffer_idx = 0;
-            
+
             for (size_t i = 0; i < original_length; i++) {
 
                 if (original_data[i] == '%' && num_fmts < params.nargs - 1) {
@@ -1096,7 +1096,7 @@ void Global_array_push(ace::sdk::Params params)
 
     if (target_ptr->GetType() == vm::Value::ValueType::HEAP_POINTER) {
         vm::Array *array_ptr = nullptr;
-        
+
         if (target_ptr->GetValue().ptr == nullptr) {
             params.handler->state->ThrowException(
                 params.handler->thread,
@@ -1140,7 +1140,7 @@ void Global_length(ace::sdk::Params params)
             vm::Array *array_ptr;
             vm::Object *obj_ptr;
         } data;
-        
+
         if (target_ptr->GetValue().ptr == nullptr) {
             params.handler->state->ThrowException(
                 params.handler->thread,
@@ -1157,7 +1157,7 @@ void Global_length(ace::sdk::Params params)
             // first, get type
             const vm::TypeInfo *type_ptr = data.obj_ptr->GetTypePtr();
             ASSERT(type_ptr != nullptr);
-            
+
             len = type_ptr->GetSize();
         } else {
             params.handler->state->ThrowException(params.handler->thread, e);
@@ -1227,7 +1227,7 @@ void Global_spawn_thread(ace::sdk::Params params)
         }
         ASSERT(params.handler != nullptr);
         ASSERT(params.handler->bs != nullptr);
-        
+
         const vm::BytecodeStream bs_before = *params.handler->bs;
         vm::VMState *vm_state = params.handler->state;
         const size_t nargs = params.nargs;
@@ -1246,7 +1246,7 @@ void Global_spawn_thread(ace::sdk::Params params)
             // keep track of function depth so we can
             // quit the thread when the function returns
             const int func_depth_start = new_thread->m_func_depth;
-            
+
             // call the function
             vm::VM::Invoke(
                 &instruction_handler,
@@ -1279,7 +1279,7 @@ static std::vector<std::uint8_t> GenerateBytes(BytecodeChunk *chunk, BuildParams
 
     AEXGenerator gen(build_params);
     gen.Visit(chunk);
-    
+
     return gen.GetInternalByteStream().Bake();
 }
 
@@ -1414,7 +1414,7 @@ static int REPL(
 
         bool wait_for_next = false;
         bool cont_token = false;
-        
+
         {
             // run lexer on entered line to determine
             // if we should keep reading input
@@ -1427,7 +1427,7 @@ static int REPL(
                 current_line.GetData(),
                 current_line.GetBufferSize()
             );
-            
+
             SourceStream source_stream(&source_file);
 
             TokenStream tmp_ts(TokenStreamInfo {
@@ -1452,10 +1452,10 @@ static int REPL(
             int old_stack_record = compilation_unit.GetInstructionStream().GetStackSize();
             // store the number of identifiers in the global scope,
             // so we can remove them on error
-            
+
             ASSERT(compilation_unit.GetCurrentModule() != nullptr);
             ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
-            
+
             size_t num_identifiers = compilation_unit
                 .GetCurrentModule()
                 ->m_scopes.Top()
@@ -1488,7 +1488,7 @@ static int REPL(
             semantic_analyzer.Analyze(false);
 
             compilation_unit.GetErrorList().SortErrors();
-            compilation_unit.GetErrorList().WriteOutput(utf::cout);
+            compilation_unit.GetErrorList().WriteOutput(std::cout); // TODO make utf8 compatible
 
             if (!compilation_unit.GetErrorList().HasFatalErrors()) {
                 // only optimize if there were no errors
@@ -1512,10 +1512,10 @@ static int REPL(
                 std::ifstream is("serialized.ir.json");
                 std::unique_ptr<BytecodeChunk> bc2 = BytecodeUtil::LoadSerialized(is);
                 is.close();*/
-                
+
                 // get active register
                 int active_reg = compilation_unit.GetInstructionStream().GetCurrentRegister();
-                
+
                 // emit bytecode instructions to file
                 std::ofstream temp_bytecode_file(
                     out_filename.GetData(),
@@ -1637,7 +1637,7 @@ static int REPL(
                 // remove the identifiers that were since declared
                 ASSERT(compilation_unit.GetCurrentModule() != nullptr);
                 ASSERT(compilation_unit.GetCurrentModule()->m_scopes.TopNode() != nullptr);
-                
+
                 IdentifierTable &tbl = compilation_unit
                     .GetCurrentModule()
                     ->m_scopes.Top()
@@ -1648,7 +1648,7 @@ static int REPL(
                 for (size_t i = 0; i < diff; i++) {
                     tbl.PopIdentifier();
                 }
-                
+
                 for (int i = old_pos; i < ast_iterator.GetPosition(); i++) {
                     ast_iterator.Pop();
                 }
@@ -1707,7 +1707,7 @@ void HandleArgs(
         utf::Utf8String out_filename;
 
         bool native_mode = false;
-        
+
         if (CLI::HasOption(argv, argv + argc, "cppgen")) {
             native_mode = true;
         }
@@ -1765,7 +1765,7 @@ void HandleArgs(
                         out_filename.GetData(),
                         std::ios::out | std::ios::binary
                     );
-                    
+
                     if (!out_file.is_open()) {
                         utf::cout << "Could not open file for writing: " << out_filename << "\n";
                     } else {
@@ -1775,7 +1775,7 @@ void HandleArgs(
                         build_params.local_offset = 0;
 
                         std::vector<std::uint8_t> bytes = GenerateBytes(bc.get(), build_params);
-                        
+
                         out_file.write((char*)&bytes[0], bytes.size());
                         //out_file << compilation_unit.GetInstructionStream();
                     }

@@ -24,7 +24,7 @@ bool ErrorList::HasFatalErrors() const
             }
         }
     }
-    
+
     return false;
 }
 

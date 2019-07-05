@@ -65,7 +65,7 @@ std::unique_ptr<BytecodeChunk> BuildSourceFile(
         semantic_analyzer.Analyze();
 
         compilation_unit.GetErrorList().SortErrors();
-        compilation_unit.GetErrorList().WriteOutput(utf::cout);
+        compilation_unit.GetErrorList().WriteOutput(std::cout); // TODO make utf8 compatible
 
         /*for (CompilerError &error : compilation_unit.GetErrorList().m_errors) {
             if (error_filenames.insert(error.GetLocation().GetFileName()).second) {

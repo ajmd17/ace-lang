@@ -18,7 +18,7 @@ public:
     inline void SortErrors() { std::sort(m_errors.begin(), m_errors.end()); }
 
     bool HasFatalErrors() const;
-    std::ostream &WriteOutput(std::ostream &os) const;
+    std::ostream &WriteOutput(std::ostream &os) const; // @TODO make UTF8 compatible
 
     std::vector<CompilerError> m_errors;
 };

@@ -285,12 +285,8 @@ std::unique_ptr<Buildable> AstPrototypeDefinition::Build(AstVisitor *visitor, Mo
         // get active register
         uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
 
-        { // add instruction to store on stack
-            auto instr_push = BytecodeUtil::Make<RawOperation<>>();
-            instr_push->opcode = PUSH;
-            instr_push->Accept<uint8_t>(rp);
-            chunk->Append(std::move(instr_push));
-        }
+        // add instruction to store on stack
+        chunk->Append(BytecodeUtil::Make<StoreLocal>(rp));
 
         // increment stack size
         visitor->GetCompilationUnit()->GetInstructionStream().IncStackSize();

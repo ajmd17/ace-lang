@@ -70,6 +70,12 @@ const SymbolTypePtr_t BuiltinTypes::TYPE_TYPE = SymbolType::Extend(
     }
 );
 
+const SymbolTypePtr_t BuiltinTypes::ENUM_TYPE = SymbolType::Primitive(
+    "Enum",
+    sp<AstUndefined>(new AstUndefined(SourceLocation::eof)),
+    BuiltinTypes::PRIMITIVE_TYPE
+);
+
 const SymbolTypePtr_t BuiltinTypes::INT = SymbolType::Extend(
     "Int",
     BuiltinTypes::TYPE_TYPE,
@@ -355,12 +361,18 @@ const SymbolTypePtr_t BuiltinTypes::MAYBE = SymbolType::Generic(
     BuiltinTypes::BOXED_TYPE
 );
 
+const SymbolTypePtr_t BuiltinTypes::CONST_TYPE_TYPE = SymbolType::Primitive(
+    "ConstType",
+    sp<AstUndefined>(new AstUndefined(SourceLocation::eof)),
+    BuiltinTypes::PRIMITIVE_TYPE
+);
+
 const SymbolTypePtr_t BuiltinTypes::CONST_TYPE = SymbolType::Generic(
     "Const",
     nullptr,
     {},
     GenericTypeInfo { 1 },
-    BuiltinTypes::BOXED_TYPE
+    BuiltinTypes::CONST_TYPE_TYPE
 );
 
 const SymbolTypePtr_t BuiltinTypes::BLOCK_TYPE = SymbolType::Generic(

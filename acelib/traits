@@ -1,11 +1,17 @@
-generic TypeOf <X> : String = () {
-  const ct_type = $meta::query("inspect_type", X);
 
-  if ct_type == "Any" || ct_type == "Number" {
-    return runtime::typeof(X);
-  }
 
-  return ct_type;
+generic TypeOf <X=String> : String = () {
+  return (() {
+    ct_type : Const<String> = $meta::query("inspect_type", X);
+
+    print 'new String = ', new String
+    print 'new X = ', new X
+    if ct_type == "Any" || ct_type == "Number" {
+      return runtime::typeof(X);
+    }
+
+    return ct_type;
+  })()
 }();
 
 generic Number <X> : Bool = TypeOf<X> == "Int" || TypeOf<X> == "Float";

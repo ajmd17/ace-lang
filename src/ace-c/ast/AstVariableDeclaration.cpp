@@ -1,6 +1,7 @@
 #include <ace-c/ast/AstVariableDeclaration.hpp>
 #include <ace-c/ast/AstUndefined.hpp>
 #include <ace-c/ast/AstTypeExpression.hpp>
+#include <ace-c/ast/AstEnumExpression.hpp>
 #include <ace-c/ast/AstTemplateExpression.hpp>
 #include <ace-c/ast/AstBlockExpression.hpp>
 #include <ace-c/AstVisitor.hpp>
@@ -144,9 +145,11 @@ void AstVariableDeclaration::Visit(AstVisitor *visitor, Module *mod)
 
         // if the variable has been assigned to an anonymous type,
         // rename the type to be the name of this variable
-        if (AstTypeExpression *real_assignment_as_type_expr = dynamic_cast<AstTypeExpression*>(m_real_assignment.get())) {
-            real_assignment_as_type_expr->SetName(m_name);
-        }
+        if (AstTypeExpression *as_type_expr = dynamic_cast<AstTypeExpression*>(m_real_assignment.get())) {
+            as_type_expr->SetName(m_name);
+        } else if (AstEnumExpression *as_enum_expr = dynamic_cast<AstEnumExpression*>(m_real_assignment.get())) {
+            as_enum_expr->SetName(m_name);
+        } // @TODO more polymorphic way of doing this..
 
         // visit assignment
         m_real_assignment->Visit(visitor, mod);

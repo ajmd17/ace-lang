@@ -35,6 +35,15 @@ void AstTemplateExpression::Visit(AstVisitor *visitor, Module *mod)
     // for things that may be used in the expression
     for (auto &generic_param : m_generic_params) {
         ASSERT(generic_param != nullptr);
+
+        // gross, but we gotta do this our else on first pass,
+        // these will just refer to the wrong memory
+        if (generic_param->GetDefaultValue() == nullptr) {
+            generic_param->SetDefaultValue(std::shared_ptr<AstNil>(
+                new AstNil(generic_param->GetLocation())
+            ));
+        }
+
         generic_param->Visit(visitor, mod);
     }
 
@@ -45,7 +54,7 @@ void AstTemplateExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_expr->GetExprType() != nullptr);
 
     std::vector<GenericInstanceTypeInfo::Arg> generic_param_types;
-    generic_param_types.reserve(m_generic_params.size() + 1);
+    generic_param_types.reserve(m_generic_params.size() + 1); // anotha one
     
     SymbolTypePtr_t expr_return_type;
 
@@ -75,8 +84,7 @@ void AstTemplateExpression::Visit(AstVisitor *visitor, Module *mod)
     });
 
     for (size_t i = 0; i < m_generic_params.size(); i++) {
-        const auto &param = m_generic_params[i];
-
+        const std::shared_ptr<AstParameter> &param = m_generic_params[i];
         ASSERT(param != nullptr);
 
         generic_param_types.push_back(GenericInstanceTypeInfo::Arg {
@@ -100,22 +108,12 @@ std::unique_ptr<Buildable> AstTemplateExpression::Build(AstVisitor *visitor, Mod
 
     for (auto &generic_param : m_generic_params) {
         ASSERT(generic_param != nullptr);
-
-        uint8_t rp = visitor->GetCompilationUnit()->GetInstructionStream().GetCurrentRegister();
-
-        chunk->Append(AstNil(generic_param->GetLocation()).Build(visitor, mod));
-
-        auto instr_push = BytecodeUtil::Make<RawOperation<>>();
-        instr_push->opcode = PUSH;
-        instr_push->Accept<uint8_t>(rp); // src
-        chunk->Append(std::move(instr_push));
+        chunk->Append(generic_param->Build(visitor, mod));
     }
 
     // attempt at using the template expression directly...
     ASSERT(m_expr != nullptr);
     chunk->Append(m_expr->Build(visitor, mod));
-
-    chunk->Append(Compiler::PopStack(visitor, m_generic_params.size()));
 
     return std::move(chunk);
 }

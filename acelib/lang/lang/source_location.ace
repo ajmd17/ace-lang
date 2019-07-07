@@ -1,0 +1,25 @@
+use library ['../..']
+
+import misc
+
+SourceLocation = type {
+  line: Int
+  column: Int
+  filename: String
+
+  '<' = (self, other) -> Bool {
+    if self.filename == other.filename {
+      if self.line == other.line {
+        return self.column < other.column
+      }
+
+      return self.line < other.line
+    }
+
+    return self.filename < other.filename // not implemented yet..
+  }
+
+  '==' = (self, other) -> Bool {
+
+  }
+}

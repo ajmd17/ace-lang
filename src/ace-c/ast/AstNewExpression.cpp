@@ -42,8 +42,8 @@ void AstNewExpression::Visit(AstVisitor *visitor, Module *mod)
     ASSERT(m_proto->GetHeldType() != nullptr);
     m_instance_type = m_proto->GetHeldType();
 
-    // may be nullptr
-    m_object_value = m_proto->GetDefaultValue();
+    
+    m_object_value = m_proto->GetDefaultValue(); // may be nullptr
     m_prototype_type = m_proto->GetPrototypeType();
 
     /*BuiltinTypes::ANY;
@@ -136,9 +136,14 @@ std::unique_ptr<Buildable> AstNewExpression::Build(AstVisitor *visitor, Module *
 
     ASSERT(m_prototype_type != nullptr);
 
+#if ACE_ENABLE_BUILTIN_CONSTRUCTOR_OVERRIDE
+    // does not currently work in templates
+    // e.g `new X` where `X` is `String` as a template argument, attempts to
+    // construct the object rather than baking in
     if (m_object_value != nullptr && m_prototype_type->GetTypeClass() == TYPE_BUILTIN) {
         chunk->Append(m_object_value->Build(visitor, mod));
     } else {
+#endif
         ASSERT(m_proto != nullptr);
         chunk->Append(m_proto->Build(visitor, mod));
 
@@ -149,7 +154,9 @@ std::unique_ptr<Buildable> AstNewExpression::Build(AstVisitor *visitor, Module *
         instr_new->Accept<uint8_t>(rp); // dst (overwrite proto)
         instr_new->Accept<uint8_t>(rp); // src (holds proto)
         chunk->Append(std::move(instr_new));
+#if ACE_ENABLE_BUILTIN_CONSTRUCTOR_OVERRIDE
     }
+#endif
     
     
     /*ASSERT(m_proto != nullptr);

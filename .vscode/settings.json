@@ -82,6 +82,7 @@
     "iostream": "cpp",
     "mutex": "cpp",
     "optional": "cpp",
-    "string_view": "cpp"
+    "string_view": "cpp",
+    "numeric": "cpp"
   }
 }

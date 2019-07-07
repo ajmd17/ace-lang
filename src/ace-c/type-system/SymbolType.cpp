@@ -357,6 +357,11 @@ const sp<AstExpression> SymbolType::GetPrototypeValue() const
     return nullptr;
 }
 
+bool SymbolType::IsOrHasBase(const SymbolType &base_type) const
+{
+    return TypeEqual(base_type ) || HasBase(base_type);
+}
+
 bool SymbolType::HasBase(const SymbolType &base_type) const
 {
     if (SymbolTypePtr_t this_base = GetBaseType()) {

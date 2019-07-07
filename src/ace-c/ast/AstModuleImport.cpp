@@ -106,16 +106,14 @@ void AstModuleImport::Visit(AstVisitor *visitor, Module *mod)
         std::ifstream file;
         std::string found_path;
 
-        std::unordered_set<std::string> scan_paths;
+        std::unordered_set<std::string> scan_paths = mod->GenerateAllScanPaths();
 
         // add current directory as first.
         scan_paths.insert(current_dir);
 
-        // add this module's scan paths.
-        scan_paths.insert(
-            mod->GetScanPaths().begin(),
-            mod->GetScanPaths().end()
-        );
+        for (auto p :  mod->GetScanPaths()) { 
+            std::cout << "p = " << p << std::endl << std::flush;
+        }
 
         // add global module's scan paths
         const std::unordered_set<std::string> &global_scan_paths =

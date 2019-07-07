@@ -64,8 +64,7 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
             if (expr_type == BuiltinTypes::ANY || (expr_type == BuiltinTypes::TYPE_TYPE && symbol_type == nullptr)) {
                 // ???
                 m_symbol_type = BuiltinTypes::ANY;
-            } else if (symbol_type != BuiltinTypes::TYPE_TYPE && !symbol_type->HasBase(*BuiltinTypes::TYPE_TYPE) &&
-                symbol_type != BuiltinTypes::TRAIT_TYPE && !symbol_type->HasBase(*BuiltinTypes::TRAIT_TYPE)) {
+            } else if (!symbol_type->IsOrHasBase(*BuiltinTypes::TYPE_TYPE) && !symbol_type->IsOrHasBase(*BuiltinTypes::TRAIT_TYPE)) {
                 visitor->GetCompilationUnit()->GetErrorList().AddError(CompilerError(
                     LEVEL_ERROR,
                     Msg_not_a_type,
@@ -74,9 +73,9 @@ void AstTypeSpecification::Visit(AstVisitor *visitor, Module *mod)
                 ));
             } else {
                 // get type of the '$proto' member, which is an instance type
-                if (SymbolTypePtr_t proto_member_type = symbol_type->FindMember("$proto")) {
-                    symbol_type = proto_member_type;
-                }
+                // if (SymbolTypePtr_t proto_member_type = symbol_type->FindMember("$proto")) {
+                //     symbol_type = proto_member_type;
+                // }
 
                 m_original_type = symbol_type;
 

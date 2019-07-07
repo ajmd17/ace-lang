@@ -1,0 +1,43 @@
+import source_location
+
+module token {
+  TokenClass := enum {
+    TK_EMPTY,
+    TK_INTEGER,
+    TK_FLOAT,
+    TK_STRING,
+    TK_IDENT,
+    TK_KEYWORD,
+    TK_OPERATOR,
+    TK_DIRECTIVE,
+    TK_NEWLINE,
+    TK_COMMA,
+    TK_SEMICOLON,
+    TK_COLON,
+    TK_DOUBLE_COLON,
+    TK_DEFINE,
+    TK_QUESTION_MARK,
+    TK_DOT,
+    TK_ELLIPSIS,
+    TK_LEFT_ARROW,
+    TK_RIGHT_ARROW,
+    TK_FAT_ARROW,
+    TK_OPEN_PARENTH,
+    TK_CLOSE_PARENTH,
+    TK_OPEN_BRACKET,
+    TK_CLOSE_BRACKET,
+    TK_OPEN_BRACE,
+    TK_CLOSE_BRACE
+}
+
+  Token := type {
+    token_class: TokenClass
+    value: String
+    location: source_location::SourceLocation
+
+    empty(self) -> Bool {
+      return self.token_class == TokenClass.TK_EMPTY
+    }
+  }
+
+}

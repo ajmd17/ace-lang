@@ -15,6 +15,7 @@
 #include <ace-c/ast/AstTupleExpression.hpp>
 #include <ace-c/ast/AstTypeDefinition.hpp>
 #include <ace-c/ast/AstTypeExpression.hpp>
+#include <ace-c/ast/AstEnumExpression.hpp>
 #include <ace-c/ast/AstPrototypeDefinition.hpp>
 #include <ace-c/ast/AstTypeAlias.hpp>
 #include <ace-c/ast/AstAliasDeclaration.hpp>
@@ -74,6 +75,8 @@ public:
     void Parse(bool expect_module_decl = true);
 
 private:
+    int m_template_argument_depth = 0; // until a better way is found..
+
     AstIterator *m_ast_iterator;
     TokenStream *m_token_stream;
     CompilationUnit *m_compilation_unit;
@@ -161,6 +164,7 @@ private:
     std::vector<std::shared_ptr<AstParameter>> ParseFunctionParameters();
     std::shared_ptr<AstStatement> ParseTypeDefinition();
     std::shared_ptr<AstTypeExpression> ParseTypeExpression();
+    std::shared_ptr<AstEnumExpression> ParseEnumExpression();
     std::shared_ptr<AstAliasDeclaration> ParseAliasDeclaration();
     std::shared_ptr<AstMixinDeclaration> ParseMixinDeclaration();
     std::shared_ptr<AstMixin> ParseMixinExpression(const std::string &name);

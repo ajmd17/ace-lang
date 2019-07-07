@@ -232,6 +232,7 @@ public:
     bool FindPrototypeMember(const std::string &name, SymbolMember_t &out) const;
     const sp<AstExpression> GetPrototypeValue() const;
 
+    bool IsOrHasBase(const SymbolType &base_type) const;
     /** Search the inheritance chain to see if the given type
         is a base of this type. */
     bool HasBase(const SymbolType &base_type) const;

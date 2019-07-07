@@ -10,6 +10,31 @@ Module::Module(const std::string &name,
 {
 }
 
+std::unordered_set<std::string> Module::GenerateAllScanPaths() const
+{
+    std::unordered_set<std::string> scan_paths;
+
+    scan_paths.insert(
+        m_scan_paths.begin(),
+        m_scan_paths.end()
+    );
+
+    TreeNode<Module*> *top = m_tree_link;
+    
+    while (top != nullptr) {
+        ASSERT(top->m_value != nullptr);
+
+        scan_paths.insert(
+            top->m_value->GetScanPaths().begin(),
+            top->m_value->GetScanPaths().end()
+        );
+
+        top = top->m_parent;
+    }
+
+    return scan_paths;
+}
+
 std::string Module::GenerateFullModuleName() const
 {
     TreeNode<Module*> *top = m_tree_link;

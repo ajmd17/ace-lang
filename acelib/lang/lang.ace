@@ -1,0 +1,5 @@
+use library ['./lang']
+
+module lang {
+  import lexer
+}

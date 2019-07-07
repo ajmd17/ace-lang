@@ -2,6 +2,10 @@
 
 const SourceLocation SourceLocation::eof(-1, -1, "<eof>");
 
+SourceLocation::SourceLocation() : SourceLocation(SourceLocation::eof)
+{
+}
+
 SourceLocation::SourceLocation(int line, int column,
     const std::string &filename)
     : m_line(line),

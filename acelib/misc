@@ -8,3 +8,5 @@ each: Function = (it: Array) * {
     i += 1;
   }
 };
+
+Empty := type {}

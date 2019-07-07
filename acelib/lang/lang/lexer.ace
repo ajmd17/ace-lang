@@ -1,0 +1,53 @@
+import token
+
+module lexer {
+  Lexer := type {
+
+    analyze() {
+
+    }
+
+    nextToken() {
+
+    }
+
+    readEscapeCode() {
+
+    }
+
+    readStringLiteral() {
+
+    }
+
+    readHexNumberLiteral() {
+
+    }
+
+    readLineComment() {
+
+    }
+
+    readBlockComment() {
+
+    }
+
+    readDocumentation() {
+
+    }
+
+    readOperator() {
+
+    }
+
+    readDirective() {
+
+    }
+
+    readIdentifier() {
+
+    }
+
+
+  }
+
+}
